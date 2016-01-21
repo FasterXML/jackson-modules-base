@@ -8,7 +8,7 @@
   </parent>
   <groupId>com.fasterxml.jackson.module</groupId>
   <artifactId>jackson-module-mrbean</artifactId>
-  <name>Jackson-module-mr.Bean</name>
+  <name>Jackson module mrbean</name>
   <packaging>bundle</packaging>
 
   <description>Functionality for implementing interfaces and abstract types
