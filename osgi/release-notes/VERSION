@@ -1,0 +1,19 @@
+Project: jackson-module-osgi
+
+------------------------------------------------------------------------
+=== Releases ===
+------------------------------------------------------------------------
+
+2.7.0 (10-Jan-2016)
+
+No changes since 2.6
+
+2.6.3 (12-Oct-2015)
+2.6.2 (15-Sep-2015)
+2.6.1 (09-Aug-2015)
+
+- Fix version information generation, module version was not being exposed.
+
+2.6.0 (03-Aug-2015)
+
+The first official release!
