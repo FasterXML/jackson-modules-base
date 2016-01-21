@@ -8,13 +8,13 @@
   </parent>
   <groupId>com.fasterxml.jackson.module</groupId>
   <artifactId>jackson-module-mrbean</artifactId>
-  <name>Jackson module mrbean</name>
+  <name>Jackson module: Mr Bean</name>
   <packaging>bundle</packaging>
 
   <description>Functionality for implementing interfaces and abstract types
 dynamically ("bean materialization"), integrated with Jackson (although usable externally as well)
   </description>
-  <url>https://github.com/FasterXML/jackson-base-modules</url>
+  <url>https://github.com/FasterXML/jackson-modules-base</url>
 
   <properties>
     <version.jackson.core>2.7.0</version.jackson.core>

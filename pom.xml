@@ -7,7 +7,7 @@
   </parent>
   <groupId>com.fasterxml.jackson.module</groupId>
   <artifactId>jackson-modules-base</artifactId>
-  <name>jackson-modules-base</name>
+  <name>Jackson modules: Base</name>
   <version>2.7.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <description>Parent pom for Jackson "base" modules: modules that build directly on databind, and are
