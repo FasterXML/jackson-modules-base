@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion> 
+  <parent>
+    <groupId>com.fasterxml.jackson.module</groupId>
+    <artifactId>jackson-base-modules-parent</artifactId>
+    <version>2.7.1-SNAPSHOT</version>
+  </parent>
+  <groupId>com.fasterxml.jackson.module</groupId>
+  <artifactId>jackson-module-mrbean</artifactId>
+  <name>Jackson-module-mr.Bean</name>
+  <packaging>bundle</packaging>
+
+  <description>Functionality for implementing interfaces and abstract types
+dynamically ("bean materialization"), integrated with Jackson (although usable externally as well)
+  </description>
+  <url>https://github.com/FasterXML/jackson-base-modules</url>
+
+  <properties>
+    <version.jackson.core>2.7.0</version.jackson.core>
+   <!-- Generate PackageVersion.java into this directory. -->
+    <packageVersion.dir>com/fasterxml/jackson/module/mrbean</packageVersion.dir>
+    <packageVersion.package>${project.groupId}.mrbean</packageVersion.package>
+    <!-- not 100% sure this is needed, but due to shading better safe than sorry -->
+    <osgi.export>
+${project.groupId}.mrbean.*;version=${project.version}
+    </osgi.export>
+    <!-- default import definitions should work fine -->
+    <osgi.private>org.objectweb.asm.*</osgi.private>
+  </properties>
+
+  <dependencies>
+    <!-- Extends Jackson mapper, but also uses types from core, hence direct dep as well
+     -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${version.jackson.core}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${version.jackson.core}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>5.0.4</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <!-- Inherited from oss-base. Generate PackageVersion.java.-->
+        <groupId>com.google.code.maven-replacer-plugin</groupId>
+        <artifactId>replacer</artifactId>
+        <executions>
+          <execution>
+            <id>process-packageVersion</id>
+            <phase>generate-sources</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!--  We will shade ASM, to simplify deployment, avoid version conflicts -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${version.plugin.shade}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+<shadedArtifactAttached>false</shadedArtifactAttached>
+<shadedArtifactId>foobar-shaded</shadedArtifactId>
+              <artifactSet>
+                <includes>
+                  <include>org.objectweb.asm:asm</include>
+                </includes>
+              </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>org.objectweb.asm</pattern>
+                  <shadedPattern>com.fasterxml.jackson.module.mrbean.asm</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${version.plugin.surefire}</version>
+        <configuration>
+          <excludes>
+            <exclude>com/fasterxml/jackson/module/mrbean/failing/*.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

@@ -1,0 +1,100 @@
+Project: jackson-module-mrbean
+
+------------------------------------------------------------------------
+= Releases
+------------------------------------------------------------------------
+
+2.7.0 (10-Jan-2016)
+
+No changes since 2.6
+
+2.6.3 (12-Oct-2015)
+
+#25: Should ignore `static` methods (setter/getter)
+
+2.6.2 (15-Sep-2015)
+2.6.1 (09-Aug-2015)
+
+No changes since 2.6.0
+
+2.6.0 (19-Jul-2015)
+
+#21: Change default package used for materialized classes to reflect Jackson 2.x
+
+2.5.4 (09-Jun-2015)
+2.5.3 (24-Apr-2015)
+2.5.2 (29-Mar-2015)
+
+#20: Serialized beans have extra parameters in JSON
+ (reported by Craig B, craigwblake@github)
+
+2.5.1 (06-Feb-2015)
+2.5.0 (01-Jan-2015)
+
+No changes since 2.4.0
+
+2.4.6 (23-Apr-2015)
+2.4.5 (13-Jan-2015)
+2.4.4 (24-Nov-2014)
+2.4.3 (04-Oct-2014)
+2.4.2
+2.4.1 (17-Jun-2014)
+
+No changes since 2.4.0
+
+2.4.0 (02-Jun-2014)
+
+#16: Handle overloaded methods properly
+ (suggested by galdosd@github)
+
+2.3.3 (xx-Apr-2014)
+
+#12: Fix problem with `Number` as Map value (and probably other types too)
+ (contributed by Steven S)
+
+2.3.2 (01-Mar-2014)
+2.3.1 (28-Dec-2013)
+2.3.0 (14-Nov-2013)
+
+No functional changes.
+
+2.2.3 (23-Aug-2013)
+
+#8: Add LICENSE, NOTICE files in artifacts
+
+2.2.2 (27-May-2013)
+2.2.1 (03-May-2013)
+2.2.0 (22-Apr-2013)
+
+No functional changes.
+
+2.1.2 (04-Dec-2012)
+
+#1: Generate generic type signatures
+ (contributed by jonnyzzz@github)
+
+2.1.1 (11-Nov-2012)
+
+No functional changes.
+
+2.1.0 (08-Oct-2012)
+
+A minor 2.x release. No new functionality beyond 2.0.
+
+2.0.5 (27-Jul-2012)
+
+No fixes, just updated dependencies to core components
+
+2.0.3, 2.0.4: Not released
+
+2.0.2 (14-May-2012)
+
+Fixes:
+
+* Issue-2: Make 'AbstractTypeMaterializer.materializeClass()' public
+
+2.0.0 (27-Mar-2012)
+
+  - no new features; upgraded to work with core 2.0.0.
+
+[entries for versions 1.x and earlier not retained; refer to earlier releases)
