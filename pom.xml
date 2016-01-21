@@ -6,11 +6,12 @@
     <version>2.7</version>
   </parent>
   <groupId>com.fasterxml.jackson.module</groupId>
-  <artifactId>jackson-base-modules-parent</artifactId>
-  <name>jackson-base-modules</name>
+  <artifactId>jackson-modules-base</artifactId>
+  <name>jackson-modules-base</name>
   <version>2.7.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <description>Parent pom for Jackson Collection datatype modules
+  <description>Parent pom for Jackson "base" modules: modules that build directly on databind, and are
+not datatype, data format, or JAX-RS provider modules.
   </description>
 
   <modules>
@@ -18,15 +19,15 @@
     <module>osgi</module>
   </modules>
 
-  <url>https://github.com/FasterXML/jackson-base-modules</url>
+  <url>https://github.com/FasterXML/jackson-modules-base</url>
   <scm>
-    <connection>scm:git:git@github.com:FasterXML/jackson-base-modules.git</connection>
-    <developerConnection>scm:git:git@github.com:FasterXML/jackson-base-modules.git</developerConnection>
-    <url>http://github.com/FasterXML/jackson-base-modules</url>    
+    <connection>scm:git:git@github.com:FasterXML/jackson-modules-base.git</connection>
+    <developerConnection>scm:git:git@github.com:FasterXML/jackson-modules-base.git</developerConnection>
+    <url>http://github.com/FasterXML/jackson-modules-base</url>    
     <tag>HEAD</tag>
   </scm>
   <issueManagement>
-    <url>https://github.com/FasterXML/jackson-base-modules/issues</url>
+    <url>https://github.com/FasterXML/jackson-modules-base/issues</url>
   </issueManagement>
 
   <properties>
