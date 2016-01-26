@@ -8,7 +8,6 @@
     </parent>
     <groupId>com.fasterxml.jackson.module</groupId>
     <artifactId>jackson-module-guice</artifactId>
-    <version>2.7.1-SNAPSHOT</version>
     <name>Jackson module: Guice</name>
 
     <description>Stuff to make integration with Guice a bit easier</description>
@@ -44,38 +43,15 @@
             <artifactId>guice</artifactId>
             <version>${version.guice}</version>
         </dependency>
-        <!-- and for testing, JUnit (or TestNG?) is needed -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.10</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <!-- Inherited from oss-base. Generate PackageVersion.java.-->
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
-                <executions>
-                    <execution>
-                        <id>process-packageVersion</id>
-                        <phase>generate-sources</phase>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>com/fasterxml/jackson/module/guice/failing/*.java</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+    <plugins>
+      <plugin>
+	<groupId>com.google.code.maven-replacer-plugin</groupId>
+	<artifactId>replacer</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

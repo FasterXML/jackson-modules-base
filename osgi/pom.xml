@@ -46,15 +46,8 @@
   <build>
     <plugins>
       <plugin>
-        <!-- Inherited from oss-base. Generate PackageVersion.java.-->
         <groupId>com.google.code.maven-replacer-plugin</groupId>
         <artifactId>replacer</artifactId>
-        <executions>
-          <execution>
-            <id>process-packageVersion</id>
-            <phase>generate-sources</phase>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
