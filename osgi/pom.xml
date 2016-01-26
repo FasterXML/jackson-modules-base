@@ -8,8 +8,8 @@
     </parent>
     <groupId>com.fasterxml.jackson.module</groupId>
     <artifactId>jackson-module-osgi</artifactId>
-    <name>Jackson module: OSGi</name>
     <packaging>bundle</packaging>
+    <name>Jackson module: OSGi</name>
 
     <description>Jackson module to inject OSGI services in deserialized beans.</description>
     <url>https://github.com/FasterXML/jackson-modules-base</url>

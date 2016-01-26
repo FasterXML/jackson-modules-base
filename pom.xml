@@ -15,6 +15,7 @@ not datatype, data format, or JAX-RS provider modules.
   </description>
 
   <modules>
+    <module>guice</module>
     <module>mrbean</module>
     <module>osgi</module>
   </modules>
