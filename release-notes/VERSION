@@ -1,0 +1,15 @@
+Project: jackson-modules-base
+Modules:
+  jackson-module-guice
+  jackson-module-mrbean
+  jackson-module-osgi
+
+------------------------------------------------------------------------
+=== Releases ===
+------------------------------------------------------------------------
+
+2.7.1 (02-Feb-2016)
+
+No changes since 2.7.0.
+
+
