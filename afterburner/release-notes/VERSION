@@ -1,0 +1,178 @@
+Project: jackson-module-afterburner
+
+------------------------------------------------------------------------
+=== Releases ===
+------------------------------------------------------------------------
+
+2.7.1 (02-Feb-2016)
+
+#63: Revert back expansion of NON_EMPTY handling
+ (reported by Lucas P)
+
+2.7.0 (10-Jan-2016)
+
+No changes since 2.6.
+
+2.6.3 (12-Oct-2015)
+
+#59: Cannot customize String deserialization behavior
+ (reported by brianwyantora@github)
+#60: Cannot read some "pretty" documents (NOTE: actually fixed by [jackson-core#220] in 2.6.3)
+ (reported by lehcim@github)
+
+2.6.2 (15-Sep-2015)
+
+#56: Afterburner does not respect DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS
+ (reported by shollander@github)
+#57: `@JsonAppend` causes `NullPointerException`
+ (reported by cleiner@github)
+#58: Specific ordering of type information for polymorphic deserialization
+ (reported by Steve M)
+
+2.6.1 (09-Aug-2015)
+
+No changes since 2.6.0
+
+2.6.0 (19-Jul-2015)
+
+#46: Log-warning "Disabling Afterburner deserialization for type" using wrong logger-name
+#53: Include checksum in generated class names (to resolve #52)
+
+2.5.4 (09-Jun-2015)
+2.5.3 (24-Apr-2015)
+2.5.2 (29-Mar-2015)
+
+No changes since 2.5.1
+
+2.5.1 (06-Feb-2015)
+
+#47: java.lang.VerifyError (Illegal type in constant pool ...)
+ (reported by huxi@github)
+#52: Invalidating SerializationInclusion.NON_NULL of other modules
+ (reported by natnan@github)
+
+2.5.0 (01-Jan-2015)
+
+- Remove coupling of `_name` field of `BeanPropertyWriter`
+
+2.4.5 (not yet released)
+
+#48: Problem passing custom `JsonSerializer`, causing an NPE
+ (reported, fix contributed by Joost v-d-W)
+
+2.4.4 (24-Nov-2014)
+
+No changes since 2.4.3.
+
+2.4.3 (03-Oct-2014)
+
+#42: Problems trying to deserialize final fields
+#43: Problem deserializing type with one polymorphic property that
+  uses inclusion of `As.EXTERNAL_PROPERTY`
+ (reported by steveme@github)
+#44: Optimize `boolean` property access (read/write)
+- Upgrade to ASM 5.0
+- Change AfterburnerModule to directly extend Module, not SimpleModule
+
+2.4.2 (14-Aug-2014)
+
+#40: Failure to deserialize non-static inner classes
+ (reported by nigelzor@github)
+#41: Serialization of `javax.security.auth.AuthPermission` fails
+
+2.4.1 (17-Jun-2014)
+
+- Make accessor class 'final'
+
+2.4.0 (02-Jun-2014)
+
+#13: Upgrade to ASM5
+
+2.3.2 (01-Mar-2014)
+
+#39: Afterburner does not respect JsonInclude.Include.NON_EMPTY
+ (reported by mahileeb@github)
+
+2.3.1 (28-Dec-2013)
+
+#38: Handling of @JsonRawValue broken (require 2.3.1 of jackson-databind for fix)
+ (reported by willcheck@github)
+
+2.3.0 (14-Nov-2013)
+
+#33: `SuperSonicBeanDeserializer` not working (missing optimization)
+#34: Needs to skip private creators, can not access even from sub-class.
+
+
+2.2.3 (23-Aug-2013)
+
+#9: Ensure that `@JsonUnwrapped` handling still works
+#23: Support deserialization of interface types
+ (contributed by bonifaido@github)
+#26: Use `java.util.logging` for logging warnings: it sucks, but is
+ overridable, does not require a new dependency
+#29: NON_DEFAULT inclusion setting ignored by primitive writers
+ (reported by rwbergstrom@github)
+
+2.2.2 (27-May-2013)
+
+#20: Protect Afterburner against IllegalAccessError and SecurityException
+ (contributed by Steven S)
+#22: Problems with Builder-style deserialization (actual bug in jackson-databind;
+  requires 2.2.2 of databind)
+ (reported by celkings@github)
+#24: Disable handling of interface types (for now)
+
+2.2.1 (03-May-2013)
+
+#16: Problems with non-void setters, part 2
+ (contributed by Steven S)
+#21: Prevent attempts to generate classes in sealed packages
+ (contributed by Steven S)
+
+2.2.0 (22-Apr-2013)
+
+#14: Problems deserializing a complex POJO with serialization inclusion of
+  NotNull.
+
+2.1.2 (04-Dec-2012)
+
+#11: problems with property-based @JsonCreator
+
+2.1.1 (11-Nov-2012)
+
+#10: null String got coerced to "null" on deserialization
+
+2.1.0 (08-Oct-2012)
+
+New minor version. No functional changes, but has to be updated to
+ensure that 2.1 core methods are covered.
+
+2.0.6 (22-Sep-2012)
+
+Fixes:
+
+* [Issue-5] Failed to use setters that return something (non-void setters)
+ (reported by chillenious@GH)
+* [Issue-6] Annotation-indicated (de)serializers were being overridden
+  by Afterburner optimizer.
+
+2.0.5 (27-Jul-2012)
+
+No fixes, just dependency updates.
+
+2.0.4 (28-Jun-2012)
+
+No fixes, just dependency updates.
+
+2.0.3: skipped
+
+2.0.2 (14-May-2012)
+
+- No changes, updated dependencies.
+
+2.0.0 (25-Mar-2012)
+
+- No new features; upgraded to work with core 2.0.0.
+
+[entries for versions 1.x and earlier not retained; refer to earlier releases)

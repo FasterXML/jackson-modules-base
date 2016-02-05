@@ -1,0 +1,48 @@
+Here are people who have contributed to development Jackson JSON processor
+Afterburner component,  version 2.x
+(version numbers in brackets indicate release in which the problem was fixed)
+
+(note: for older credits, check out release notes for 1.x versions)
+
+Tatu Saloranta, tatu.saloranta@iki.fi: author
+Steven Schlansker, co-author (numerous fixes, patches)
+
+celkings@github:
+
+* Reported [#22]: Problems with Builder-style deserialization
+ (2.2.2)
+
+R.W Bergstom (rwbergstom@github)
+
+* Reported, contributed [#29]: NON_DEFAULT inclusion setting ignored by primitive
+  writers
+ (2.2.3)
+
+Nándor István Krácser (bonifaido@github)
+
+* Contributed #27/#23: ability to deserialize interface types
+ (2.2.3)
+
+Joost van de Wijgerd (jwijgerd@github)
+
+* Contributed fix to #48: Problem passing custom `JsonSerializer`, causing an NPE
+ (2.4.5)
+
+Jörn Huxhorn (huxi@github)
+
+* Reported #47: java.lang.VerifyError (Illegal type in constant pool ...)
+ (2.5.1)
+
+natnan@github
+
+* Reported #52: Invalidating SerializationInclusion.NON_NULL of other modules
+ (2.5.2)
+
+Steve Metcalfe (steveme@github)
+* Reported #58: Specific ordering of type information for polymorphic deserialization
+ (2.6.2)
+
+Lucas Pouzac (lucaspouzac@github)
+
+* Reported, constributed fix to  #63: Revert back expansion of NON_EMPTY handling
+ (2.7.1)

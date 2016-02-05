@@ -7,7 +7,7 @@
   </parent>
   <groupId>com.fasterxml.jackson.module</groupId>
   <artifactId>jackson-module-afterburner</artifactId>
-  <name>jackson-module-afterburner</name>
+  <name>Jackson module: Afterburner</name>
   <packaging>bundle</packaging>
   <description>Jackson (https://github.com/FasterXML/jackson) extension module
 used to enhance performance using bytecode generation to replace use of Reflection for
