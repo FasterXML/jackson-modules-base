@@ -9,6 +9,7 @@
     <groupId>com.fasterxml.jackson.module</groupId>
     <artifactId>jackson-module-guice</artifactId>
     <name>Jackson module: Guice</name>
+    <packaging>bundle</packaging>
 
     <description>Stuff to make integration with Guice a bit easier</description>
     <url>https://github.com/FasterXML/jackson-modules-base</url>
