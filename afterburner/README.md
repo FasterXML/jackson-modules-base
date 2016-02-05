@@ -2,15 +2,12 @@ Module that will add dynamic bytecode generation for standard Jackson POJO seria
 
 Plugs in using standard Module interface (requiring Jackson 2.0.0 or above).
 
-For Javadocs, Download, see: [Wiki](jackson-module-afterburner/wiki).
-
 ## Status
 
 Module is stable and has been used in production environments. Its adoption is not quite as wide as that of
 core Jackson components, so rough edges may still exist. However, versions from 2.2 up are considered
 production ready.
 
-[![Build Status](https://travis-ci.org/FasterXML/jackson-module-afterburner.svg)](https://travis-ci.org/FasterXML/jackson-module-afterburner)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-afterburner/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-afterburner/)
 [![Javadoc](https://javadoc-emblem.rhcloud.com/doc/com.fasterxml.jackson.module/jackson-module-afterburner/badge.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-afterburner)
 
@@ -24,7 +21,7 @@ To use module on Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.module</groupId>
   <artifactId>jackson-module-afterburner</artifactId>
-  <version>2.4.0</version>
+  <version>2.7.1</version>
 </dependency>
 ```
 
@@ -57,12 +54,12 @@ mapper.writeValue(new File("result.json"), val);
 Following things are optimized:
 
 * For serialization (POJOs to JSON):
- * Accessors for "getting" values (field access, calling getter method) are inlined using generated code instead of reflection
- * Serializers for small number of 'primitive' types (`int`, `long`, String) are replaced with direct calls, instead of getting delegated to `JsonSerializer`s
+    * Accessors for "getting" values (field access, calling getter method) are inlined using generated code instead of reflection
+    * Serializers for small number of 'primitive' types (`int`, `long`, String) are replaced with direct calls, instead of getting delegated to `JsonSerializer`s
 * For deserialization (JSON to POJOs)
- * Calls to default (no-argument) constructors are byte-generated instead of using reflection
- * Mutators for "setting" values (field access, calling setter method) are inlined using generated code instead of reflection
- * Deserializers for small number of 'primitive' types (`int`, `long`, String) are replaced with direct calls, instead of getting delegated to `JsonDeserializer`s
+    * Calls to default (no-argument) constructors are byte-generated instead of using reflection
+    * Mutators for "setting" values (field access, calling setter method) are inlined using generated code instead of reflection
+    * Deserializers for small number of 'primitive' types (`int`, `long`, String) are replaced with direct calls, instead of getting delegated to `JsonDeserializer`s
 
 ### ... and what is not?
 
