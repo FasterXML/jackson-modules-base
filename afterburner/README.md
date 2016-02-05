@@ -1,12 +1,10 @@
 Module that will add dynamic bytecode generation for standard Jackson POJO serializers and deserializers, eliminating majority of remaining data binding overhead.
 
-Plugs in using standard Module interface (requiring Jackson 2.0.0 or above).
+Afterburner plugs in using standard `Module` interface.
 
 ## Status
 
-Module is stable and has been used in production environments. Its adoption is not quite as wide as that of
-core Jackson components, so rough edges may still exist. However, versions from 2.2 up are considered
-production ready.
+Module is considered stable and has been used in production environments since version 2.2.
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-afterburner/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-afterburner/)
 [![Javadoc](https://javadoc-emblem.rhcloud.com/doc/com.fasterxml.jackson.module/jackson-module-afterburner/badge.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-afterburner)
