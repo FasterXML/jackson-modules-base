@@ -8,6 +8,8 @@ for more mature (and generally slower moving, stable) modules.
 
 Currently included are:
 
+* [Afterburner](afterburner/)
+* [Guice](guice/)
 * [Mr Bean](mrbean/)
 * [OSGi](osgi/)
 
