@@ -144,7 +144,7 @@ public class JsonIncludeTest
     /**********************************************************
      */
 
-    final private ObjectMapper MAPPER = new ObjectMapper();
+    final private ObjectMapper MAPPER = mapperWithModule();
 
     public void testGlobal() throws IOException
     {
