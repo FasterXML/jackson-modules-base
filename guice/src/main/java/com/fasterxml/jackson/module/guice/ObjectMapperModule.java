@@ -1,5 +1,9 @@
 package com.fasterxml.jackson.module.guice;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
@@ -10,12 +14,6 @@ import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.binder.ScopedBindingBuilder;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- */
 public class ObjectMapperModule implements com.google.inject.Module
 {
   private final List<Module> modulesToAdd = new ArrayList<Module>();
@@ -29,23 +27,17 @@ public class ObjectMapperModule implements com.google.inject.Module
     this(Key.get(ObjectMapper.class));
   }
 
-  public ObjectMapperModule(
-      Class<? extends Annotation> annotation
-  )
+  public ObjectMapperModule(Class<? extends Annotation> annotation)
   {
     this(Key.get(ObjectMapper.class, annotation));
   }
 
-  public ObjectMapperModule(
-      Annotation annotation
-  )
+  public ObjectMapperModule(Annotation annotation)
   {
     this(Key.get(ObjectMapper.class, annotation));
   }
 
-  public ObjectMapperModule(
-      Key<ObjectMapper> objectMapperKey
-  )
+  public ObjectMapperModule(Key<ObjectMapper> objectMapperKey)
   {
     this.objectMapperKey = objectMapperKey;
   }
@@ -102,10 +94,8 @@ public class ObjectMapperModule implements com.google.inject.Module
     private final List<Provider<? extends Module>> providedModules;
     private Injector injector;
 
-    public ObjectMapperProvider(
-        List<Key<? extends Module>> modulesToInject,
-        List<Module> modulesToAdd
-    )
+    public ObjectMapperProvider(List<Key<? extends Module>> modulesToInject,
+        List<Module> modulesToAdd)
     {
       this.modulesToInject = modulesToInject;
       this.modulesToAdd = modulesToAdd;

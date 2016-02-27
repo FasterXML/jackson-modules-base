@@ -34,7 +34,7 @@ not datatype, data format, or JAX-RS provider modules.
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <version.jackson.core>2.7.1</version.jackson.core>
+    <version.jackson.core>2.7.2</version.jackson.core>
   </properties>
 
   <build>
