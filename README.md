@@ -12,8 +12,9 @@ Currently included are:
 * [Guice](guice/)
 * [Mr Bean](mrbean/)
 * [OSGi](osgi/)
+* [Paranamer](paranamer/)
 
-and more are likely to be moved during Jackson 2.7 maintenance cycle.
+## License
 
 All modules are licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
 

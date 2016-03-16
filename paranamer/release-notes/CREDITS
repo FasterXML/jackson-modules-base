@@ -1,0 +1,15 @@
+Here are people who have contributed to development Jackson JSON processor
+Paranamer module
+(version numbers in brackets indicate release in which the problem was fixed)
+
+Tatu Saloranta, tatu.saloranta@iki.fi: author
+
+Matthew Staebler (matthew-staebler@github)
+
+* Reported #3, contributed fix
+ (2.3.0)
+
+Chris Pilsworth (cpilsworth@github)
+
+* Reported #5 (probs with PropertyNamingStrategy), contributed fix
+ (2.3.2)

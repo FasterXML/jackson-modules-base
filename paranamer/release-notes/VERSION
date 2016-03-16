@@ -1,0 +1,63 @@
+Project: jackson-module-paranamer
+
+------------------------------------------------------------------------
+=== Releases ===
+------------------------------------------------------------------------
+
+2.7.3 (15-Mar-2016)
+2.7.2 (26-Feb-2016)
+2.7.1 (02-Feb-2016)
+
+No changes since 2.7.0
+
+2.7.0 (10-Jan-2016)
+
+#13: Upgrade to paranamer 2.8 to handle classfiles with java 8 lambdas
+
+2.6.3 (12-Oct-2015)
+2.6.2 (15-Sep-2015)
+2.6.1 (09-Aug-2015)
+2.6.0 (19-Jul-2015)
+
+No changes since 2.5.
+
+2.5.3 (24-Apr-2015)
+2.5.2 (29-Mar-2015)
+2.5.1 (06-Fev-2015)
+2.5.0 (01-Jan-2015)
+
+No changes since 2.4.
+
+2.4.4 (24-Nov-2014)
+2.4.3 (04-Oct-2014)
+2.4.2 (14-Aug-2014)
+2.4.1 (17-Jun-2014)
+
+No changes since 2.4.0.
+
+2.4.0 (02-Jun-2014)
+
+#10: Paranamer names not renamed as per PropertyNamingStrategy with Jackson 2.4
+ (note; related to #5 fixed for 2.3.3)
+
+2.3.2 (01-Mar-2014)
+
+- Upgrade Paranamer dep to 2.6.
+
+2.3.1 (28-Dec-2013)
+
+No functional changes.
+
+2.3.0 (14-Nov-2013)
+
+#3: Should not throw an exception if name not found
+ (reported by Matthew S)
+
+2.2.3 (24-Aug-2013)
+2.2.2 (27-May-2013)
+
+No functional changes.
+
+2.2.0 (03-May-2013)
+
+First released version
