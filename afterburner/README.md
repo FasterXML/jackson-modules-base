@@ -27,9 +27,9 @@ To use module on Maven-based projects, use following dependency:
 
 ### Non-Maven
 
-For non-Maven use cases, you download jars from [Central Maven repository](http://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-afterburner/) or [Download page](jackson-databind/wiki/JacksonDownload).
+For non-Maven use cases, you download jars from [Central Maven repository](http://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-afterburner/).
 
-Databind jar is also a functional OSGi bundle, with proper import/export declarations, so it can be use on OSGi container as is.
+Module jar is also a functional OSGi bundle, with proper import/export declarations, so it can be use on OSGi container as is.
 
 ### Registering module
 
@@ -66,4 +66,4 @@ Following things are optimized:
 
 ### More
 
-Check out [Wiki](https://github.com/FasterXML/jackson-module-afterburner/wiki).
+Check out [Wiki](../../../wiki).
