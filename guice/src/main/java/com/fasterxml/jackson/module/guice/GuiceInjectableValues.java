@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.InjectableValues;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 
-/**
-*/
 public class GuiceInjectableValues extends InjectableValues
 {
   private final Injector injector;
@@ -19,6 +17,6 @@ public class GuiceInjectableValues extends InjectableValues
       Object valueId, DeserializationContext ctxt, BeanProperty forProperty, Object beanInstance
   )
   {
-    return injector.getInstance((Key) valueId);
+    return injector.getInstance((Key<?>) valueId);
   }
 }

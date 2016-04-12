@@ -8,6 +8,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.7.4 (not yet released)
+
+#8 (mrbean): Problem with `Optional<T>`, `AtomicReference<T>` valued properties
+ (reported by Thomas V)
+
 2.7.3 (16-Mar-2016)
 2.7.2 (26-Feb-2016)
 2.7.1 (02-Feb-2016)
