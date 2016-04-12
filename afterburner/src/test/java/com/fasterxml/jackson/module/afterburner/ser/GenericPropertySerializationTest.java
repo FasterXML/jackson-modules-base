@@ -1,9 +1,9 @@
-package com.fasterxml.jackson.module.afterburner.failing;
+package com.fasterxml.jackson.module.afterburner.ser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
-public class GenericSerialize4Test extends AfterburnerTestBase
+public class GenericPropertySerializationTest extends AfterburnerTestBase
 {
     public static abstract class AbstractMyClass<ID> {
 

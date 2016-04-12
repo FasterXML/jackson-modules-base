@@ -10,8 +10,12 @@ Modules:
 
 2.7.4 (not yet released)
 
+#4: (afterburner) Serialization with Afterburner causes Java VerifyError for
+  generic with String as type
+ (reported by imfuraisoth@github)
 #8 (mrbean): Problem with `Optional<T>`, `AtomicReference<T>` valued properties
  (reported by Thomas V)
+- Upgrade to Asm 5.1 for mr-bean, afterburner
 
 2.7.3 (16-Mar-2016)
 2.7.2 (26-Feb-2016)

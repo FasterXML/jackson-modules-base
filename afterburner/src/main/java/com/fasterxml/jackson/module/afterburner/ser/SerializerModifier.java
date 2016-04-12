@@ -107,8 +107,13 @@ public class SerializerModifier extends BeanSerializerModifier
                 continue;
             }
 
-            Class<?> type = bpw.getType().getRawClass();
+            // 11-Apr-2016, tatu: Actually we have to consider actual physical type
+            //   of accessor, not just logical type, see [afterburner#4]; generic
+            //   types
+//            Class<?> type = bpw.getType().getRawClass();
+            Class<?> type = bpw.getMember().getRawType();
             boolean isMethod = (member instanceof AnnotatedMethod);
+            
             if (type.isPrimitive()) {
                 if (type == Integer.TYPE) {
 

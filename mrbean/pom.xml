@@ -44,8 +44,7 @@ ${project.groupId}.mrbean.*;version=${project.version}
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>5.0.4</version>
-      <scope>compile</scope>
+      <version>${version.asm}</version>
     </dependency>
   </dependencies>
 
