@@ -20,6 +20,11 @@ public class ObjectMapperModule implements com.google.inject.Module
   private final List<Key<? extends Module>> modulesToInject = new ArrayList<Key<? extends Module>>();
   private final Key<ObjectMapper> objectMapperKey;
 
+  /**
+   * @since 2.8
+   */
+  private ObjectMapper objectMapper;
+
   private Class<? extends Annotation> scope = null;
 
   public ObjectMapperModule()
@@ -75,11 +80,20 @@ public class ObjectMapperModule implements com.google.inject.Module
     return this;
   }
 
+  /**
+   * @since 2.8
+   */
+  public ObjectMapperModule withObjectMapper(ObjectMapper m)
+  {
+    objectMapper = m;
+    return this;
+  }
+
   @Override
   public void configure(Binder binder)
   {
     final ScopedBindingBuilder builder = binder.bind(objectMapperKey)
-                                               .toProvider(new ObjectMapperProvider(modulesToInject, modulesToAdd));
+            .toProvider(new ObjectMapperProvider(modulesToInject, modulesToAdd, objectMapper));
 
     if (scope != null) {
       builder.in(scope);
@@ -93,13 +107,14 @@ public class ObjectMapperModule implements com.google.inject.Module
 
     private final List<Provider<? extends Module>> providedModules;
     private Injector injector;
+    private final ObjectMapper objectMapper;
 
     public ObjectMapperProvider(List<Key<? extends Module>> modulesToInject,
-        List<Module> modulesToAdd)
+        List<Module> modulesToAdd, ObjectMapper mapper)
     {
       this.modulesToInject = modulesToInject;
       this.modulesToAdd = modulesToAdd;
-
+      objectMapper = mapper;
       this.providedModules = new ArrayList<Provider<? extends Module>>();
     }
 
@@ -114,7 +129,12 @@ public class ObjectMapperModule implements com.google.inject.Module
     @Override
     public ObjectMapper get()
     {
-      final ObjectMapper mapper = new ObjectMapper();
+      ObjectMapper mapper = objectMapper;
+      if (mapper == null) {
+          mapper = new ObjectMapper();
+      } else {
+          mapper = mapper.copy();
+      }
       mapper.registerModules(modulesToAdd);
       for (Provider<? extends Module> provider : providedModules) {
         mapper.registerModule(provider.get());
