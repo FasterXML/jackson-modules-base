@@ -10,6 +10,8 @@ Modules:
 
 2.7.6 (not yet released)
 
+#12: (mrbean) Problem deserializing Long into Calendar with mrBean
+ (reported by Kyle L)
 #13: (paranamer) Make `ParanamerAnnotationIntrospector` serializable
 
 2.7.5 (11-Jun-2016)

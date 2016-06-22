@@ -1,5 +1,8 @@
 package com.fasterxml.jackson.module.mrbean;
 
+import java.lang.reflect.Modifier;
+import java.util.*;
+
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.Versioned;
 import com.fasterxml.jackson.databind.AbstractTypeResolver;
@@ -8,8 +11,6 @@ import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
-
-import java.lang.reflect.Modifier;
 
 /**
  * Nifty class for pulling implementations of classes out of thin air.
@@ -261,12 +262,18 @@ public class AbstractTypeMaterializer
         // So as simple precaution, let's limit kinds of types we will try materialize
         // implementations for.
         if (type.isContainerType() || type.isReferenceType()
-                || type.isEnumType() || type.isPrimitive()
-                || type.hasRawClass(Number.class))
-        {
+                || type.isEnumType() || type.isPrimitive()) {
             return false;
         }
         Class<?> cls = type.getRawClass();
+        if ((cls == Number.class)
+                // 22-Jun-2016, tatu: As per [#12], avoid these too
+                || (cls == Date.class) || (cls == Calendar.class)
+                || (cls == CharSequence.class) || (cls == Iterable.class) || (cls == Iterator.class)
+                ) {
+            return false;
+        }
+
         // Fail on non-public classes, since we can't easily force  access to such
         // classes (unless we tried to generate impl classes in same package)
         if (!Modifier.isPublic(cls.getModifiers())) {
