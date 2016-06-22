@@ -11,9 +11,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class TestJDKSerializability extends ModuleTestBase
 {
     static class Point {
-        int x, y;
+        public int x, y;
     }
-    
+
     public void testMapper() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper().registerModule(new ParanamerModule());
