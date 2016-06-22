@@ -1,9 +1,5 @@
 package com.fasterxml.jackson.module.paranamer;
 
-import java.lang.reflect.*;
-
-import com.thoughtworks.paranamer.BytecodeReadingParanamer;
-import com.thoughtworks.paranamer.CachingParanamer;
 import com.thoughtworks.paranamer.Paranamer;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.PropertyName;
@@ -21,14 +17,29 @@ public class ParanamerOnJacksonAnnotationIntrospector
 {
     private static final long serialVersionUID = 1;
 
-    protected final Paranamer _paranamer;
+    /**
+     * Wrapper used to encapsulate actual Paranamer call, to allow serialization
+     * of this introspector
+     */
+    protected final SerializableParanamer _paranamer;
 
     public ParanamerOnJacksonAnnotationIntrospector() {
-        this(new CachingParanamer(new BytecodeReadingParanamer()));
+        this(new SerializableParanamer());
     }
 
-    public ParanamerOnJacksonAnnotationIntrospector(Paranamer pn) {
+    /**
+     * @since 2.7.6
+     */
+    public ParanamerOnJacksonAnnotationIntrospector(SerializableParanamer pn) {
         _paranamer = pn;
+    }
+
+    /**
+     * @deprecated since 2.7.6
+     */
+    @Deprecated
+    public ParanamerOnJacksonAnnotationIntrospector(Paranamer pn) {
+        this(new SerializableParanamer(pn));
     }
 
     @Override
@@ -42,7 +53,7 @@ public class ParanamerOnJacksonAnnotationIntrospector
         PropertyName name = super.findNameForDeserialization(a);
         if (name == null) {
             if (a instanceof AnnotatedParameter) {
-                String rawName = _findParaName((AnnotatedParameter) a);
+                String rawName _paranamer.findParameterName((AnnotatedParameter) a);
                 if (rawName != null) {
                     return new PropertyName(rawName);
                 }
@@ -52,28 +63,10 @@ public class ParanamerOnJacksonAnnotationIntrospector
         return null;
     }
 
-    // since 2.4
     @Override
     public String findImplicitPropertyName(AnnotatedMember param) {
         if (param instanceof AnnotatedParameter) {
-            return _findParaName((AnnotatedParameter) param);
-        }
-        return null;
-    }
-    
-    /*
-    /**********************************************************
-    /* Internal methods
-    /**********************************************************
-     */
-
-    protected String _findParaName(AnnotatedParameter param)
-    {
-        int index = param.getIndex();
-        AnnotatedElement ctor = param.getOwner().getAnnotated();
-        String[] names = _paranamer.lookupParameterNames((AccessibleObject) ctor);
-        if (names != null && index < names.length) {
-            return names[index];
+            return _paranamer.findParameterName((AnnotatedParameter) param);
         }
         return null;
     }

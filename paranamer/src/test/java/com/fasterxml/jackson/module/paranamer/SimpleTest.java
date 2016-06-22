@@ -50,7 +50,8 @@ public class SimpleTest extends ParanamerTestBase
         assertEquals(40, bean.age);
     }
 
-    // As per [Issue#3]
+    // Let's test handling of case where parameter names are not found; for example when
+    // trying to access things for JDK types
     public void testWrapper() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper().registerModule(new ParanamerModule());
