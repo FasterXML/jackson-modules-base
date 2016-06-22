@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.module.paranamer.ParanamerModule;
-import com.fasterxml.jackson.module.paranamer.ParanamerTestBase;
+import com.fasterxml.jackson.module.paranamer.ModuleTestBase;
 
 public class TestCreatorWithNamingStrategy
-    extends ParanamerTestBase
+    extends ModuleTestBase
 {
     static class StaticStringCreatorBean
     {

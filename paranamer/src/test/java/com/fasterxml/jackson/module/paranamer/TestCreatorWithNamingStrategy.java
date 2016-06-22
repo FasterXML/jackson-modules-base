@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
 public class TestCreatorWithNamingStrategy
-    extends ParanamerTestBase
+    extends ModuleTestBase
 {
     static class CreatorBean
     {

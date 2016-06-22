@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-public abstract class ParanamerTestBase
+public abstract class ModuleTestBase
     extends TestCase
 {
     protected void verifyException(Throwable e, String... matches)

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class SimpleTest extends ParanamerTestBase
+public class SimpleTest extends ModuleTestBase
 {
     static class CreatorBean
     {
