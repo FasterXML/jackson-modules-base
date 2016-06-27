@@ -1,9 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 public class TestInclusionAnnotations extends AfterburnerTestBase
@@ -49,7 +47,7 @@ public class TestInclusionAnnotations extends AfterburnerTestBase
         public NonEmptyStringWrapper2(String v) { value = v; }
     }
     
-    public class AnyWrapper
+    static class AnyWrapper
     {
         public String name = "Foo";
         
@@ -58,74 +56,70 @@ public class TestInclusionAnnotations extends AfterburnerTestBase
         
         public AnyWrapper(Object w) { wrapped = w; }
     }
-    
+
     /*
     /**********************************************************************
     /* Test methods
     /**********************************************************************
      */
 
+    private final ObjectMapper MAPPER = mapperWithModule();
+    
     public void testIncludeUsingAnnotation() throws Exception
     {
-        ObjectMapper mapper = mapperWithModule();
-
-        String json = mapper.writeValueAsString(new IntWrapper(3));
+        String json = MAPPER.writeValueAsString(new IntWrapper(3));
         assertEquals("{\"value\":3}", json);
-        json = mapper.writeValueAsString(new IntWrapper(null));
+        json = MAPPER.writeValueAsString(new IntWrapper(null));
         assertEquals("{}", json);
 
-        json = mapper.writeValueAsString(new AnyWrapper(new IntWrapper(null)));
+        json = MAPPER.writeValueAsString(new AnyWrapper(new IntWrapper(null)));
         assertEquals("{\"name\":\"Foo\",\"wrapped\":{}}", json);
-        json = mapper.writeValueAsString(new AnyWrapper(null));
+        json = MAPPER.writeValueAsString(new AnyWrapper(null));
         assertEquals("{\"name\":\"Foo\"}", json);
     }
 
     // [module-afterburner#39]
     public void testEmptyExclusion() throws Exception
     {
-        ObjectMapper mapper = mapperWithModule();
         String json;
 
-        json = mapper.writeValueAsString(new NonEmptyIntWrapper(3));
+        json = MAPPER.writeValueAsString(new NonEmptyIntWrapper(3));
         assertEquals("{\"value\":3}", json);
         // as per [module-afterburner#63], ints should not have "empty" value
         // (temporarily, for 2.6, they did have)
-        json = mapper.writeValueAsString(new NonEmptyIntWrapper(0));
+        json = MAPPER.writeValueAsString(new NonEmptyIntWrapper(0));
         assertEquals("{\"value\":0}", json);
 
-        json = mapper.writeValueAsString(new NonEmptyStringWrapper("x"));
+        json = MAPPER.writeValueAsString(new NonEmptyStringWrapper("x"));
         assertEquals("{\"value\":\"x\"}", json);
-        json = mapper.writeValueAsString(new NonEmptyStringWrapper(""));
+        json = MAPPER.writeValueAsString(new NonEmptyStringWrapper(""));
         assertEquals("{}", json);
-        json = mapper.writeValueAsString(new NonEmptyStringWrapper(null));
+        json = MAPPER.writeValueAsString(new NonEmptyStringWrapper(null));
         assertEquals("{}", json);
     }
     
     public void testEmptyExclusionViaClass() throws Exception
     {
-        ObjectMapper mapper = mapperWithModule();
-
         assertEquals("{\"value\":3}",
-                mapper.writeValueAsString(new NonEmptyIntWrapper2(3)));
+                MAPPER.writeValueAsString(new NonEmptyIntWrapper2(3)));
         assertEquals("{\"value\":0}",
-                mapper.writeValueAsString(new NonEmptyIntWrapper2(0)));
+                MAPPER.writeValueAsString(new NonEmptyIntWrapper2(0)));
 
         assertEquals("{\"value\":\"x\"}",
-                mapper.writeValueAsString(new NonEmptyStringWrapper2("x")));
+                MAPPER.writeValueAsString(new NonEmptyStringWrapper2("x")));
         assertEquals("{}",
-                mapper.writeValueAsString(new NonEmptyStringWrapper2("")));
+                MAPPER.writeValueAsString(new NonEmptyStringWrapper2("")));
         assertEquals("{}",
-                mapper.writeValueAsString(new NonEmptyStringWrapper2(null)));
+                MAPPER.writeValueAsString(new NonEmptyStringWrapper2(null)));
     }
 
     public void testDefaultExclusion() throws Exception
     {
-        ObjectMapper mapper = mapperWithModule();
         String json;
 
-        json = mapper.writeValueAsString(new NonDefaultIntWrapper(3));
+        json = MAPPER.writeValueAsString(new NonDefaultIntWrapper(3));
         assertEquals("{\"value\":3}", json);
-        json = mapper.writeValueAsString(new NonDefaultIntWrapper(0));
+        json = MAPPER.writeValueAsString(new NonDefaultIntWrapper(0));
         assertEquals("{}", json);
     }
 }
