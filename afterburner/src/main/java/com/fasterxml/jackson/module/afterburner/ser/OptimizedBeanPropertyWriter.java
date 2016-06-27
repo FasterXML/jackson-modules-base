@@ -82,6 +82,14 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
         }
     }
 
+    @Override // since 2.7.6
+    public void assignNullSerializer(JsonSerializer<Object> nullSer) {
+        super.assignNullSerializer(nullSer);
+        if (fallbackWriter != null) {
+            fallbackWriter.assignNullSerializer(nullSer);
+        }
+    }
+
     public abstract T withAccessor(BeanPropertyAccessor acc);
 
     public abstract BeanPropertyWriter withSerializer(JsonSerializer<Object> ser);
@@ -112,8 +120,8 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
             throw (Error) t;
         }
         throw (Exception) t;
-    }    
-    
+    }
+
     protected void _reportProblem(Object bean, Throwable e)
     {
         broken = true;
