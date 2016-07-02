@@ -1,6 +1,8 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Vector;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -142,6 +144,10 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
     static class Issue60Pojo {
         public List<Object> foos;
     }    
+
+    static class CheckGeneratedDeserializerName {
+        public String stringField;
+    }
 
     /*
     /**********************************************************************
@@ -323,5 +329,32 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
         assertNotNull(pojo);
         assertNotNull(pojo.foos);
         assertEquals(0, pojo.foos.size());
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testGeneratedDeserializerName() throws Exception {
+        MAPPER.readValue("{\"stringField\":\"foo\"}", CheckGeneratedDeserializerName.class);
+        ClassLoader cl = getClass().getClassLoader();
+        Field declaredField = ClassLoader.class.getDeclaredField("classes");
+        declaredField.setAccessible(true);
+        Class<?>[] os = new Class[2048];
+        ((Vector<Class<?>>) declaredField.get(cl)).copyInto(os);
+
+        String expectedClassName = TestSimpleDeserialize.class.getCanonicalName()
+                + "$CheckGeneratedDeserializerName$Access4JacksonDeserializer";
+        boolean found = false;
+        for (int i = 0; i < os.length; i++) {
+            Class<?> clz = os[i];
+            if (clz == null) {
+                break;
+            }
+            System.out.println(clz.getCanonicalName());
+            if (clz.getCanonicalName() != null
+                    && clz.getCanonicalName().startsWith(expectedClassName)) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue("Expected class not found:" + expectedClassName, found);
     }
 }
