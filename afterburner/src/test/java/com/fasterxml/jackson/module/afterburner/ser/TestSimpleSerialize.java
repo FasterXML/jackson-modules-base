@@ -242,7 +242,6 @@ public class TestSimpleSerialize extends AfterburnerTestBase
             if (clz == null) {
                 break;
             }
-            System.out.println(clz.getCanonicalName());
             if (clz.getCanonicalName() != null
                     && clz.getCanonicalName().startsWith(expectedClassName)) {
                 found = true;
