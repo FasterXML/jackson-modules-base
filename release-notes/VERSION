@@ -8,7 +8,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.8.0 (not yet released)
+2.8.0 (04-Jul-2016)
 
 #6: (guice) ObjectMapperModule doesn't allow configuring JsonFactory to use
  (reported by bogdan-neoworks@github)
