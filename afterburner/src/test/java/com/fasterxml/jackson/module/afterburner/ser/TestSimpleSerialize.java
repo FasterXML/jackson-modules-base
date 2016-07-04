@@ -1,5 +1,8 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
+import java.lang.reflect.Field;
+import java.util.Vector;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -111,7 +114,11 @@ public class TestSimpleSerialize extends AfterburnerTestBase
         public boolean a = true;
         public boolean getB() { return false; }
     }
-    
+
+    static class CheckGeneratedSerializerName {
+        public String stringField;
+    }
+
     /*
     /**********************************************************************
     /* Test methods, method access
@@ -214,5 +221,33 @@ public class TestSimpleSerialize extends AfterburnerTestBase
         String jsonPlain = plainMapper.writeValueAsString(input);
         String jsonAb = abMapper.writeValueAsString(input);
         assertEquals(jsonPlain, jsonAb);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testGeneratedSerializerName() throws Exception {
+        CheckGeneratedSerializerName bean = new CheckGeneratedSerializerName();
+        bean.stringField = "bar";
+        ObjectMapper mapper = mapperWithModule();
+        mapper.writeValueAsString(bean);
+        ClassLoader cl = getClass().getClassLoader();
+        Field declaredField = ClassLoader.class.getDeclaredField("classes");
+        declaredField.setAccessible(true);
+        Class<?>[] os = new Class[2048];
+        ((Vector<Class<?>>) declaredField.get(cl)).copyInto(os);
+        String expectedClassName = TestSimpleSerialize.class.getCanonicalName()
+                + "$CheckGeneratedSerializerName$Access4JacksonSerializer";
+        boolean found = false;
+        for (int i = 0; i < os.length; i++) {
+            Class<?> clz = os[i];
+            if (clz == null) {
+                break;
+            }
+            if (clz.getCanonicalName() != null
+                    && clz.getCanonicalName().startsWith(expectedClassName)) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue("Expected class not found:" + expectedClassName, found);
     }
 }

@@ -93,7 +93,7 @@ public class PropertyAccessorCollector
         if (classLoader == null) {
             classLoader = new MyClassLoader(beanClass.getClassLoader(), true);
         }
-        final ClassName baseName = ClassName.constructFor(beanClass, "$Access4JacksonDeserializer");
+        final ClassName baseName = ClassName.constructFor(beanClass, "$Access4JacksonSerializer");
         Class<?> accessorClass = generateAccessorClass(classLoader, baseName);
         try {
             return (BeanPropertyAccessor) accessorClass.newInstance();
