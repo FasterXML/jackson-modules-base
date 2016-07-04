@@ -12,6 +12,8 @@ Modules:
 
 #6: (guice) ObjectMapperModule doesn't allow configuring JsonFactory to use
  (reported by bogdan-neoworks@github)
+#16 (afterburner) Fixed typo of generated serializer name
+ (reported, proposed fix by tacoo@github)
 
 2.7.6 (not yet released)
 
