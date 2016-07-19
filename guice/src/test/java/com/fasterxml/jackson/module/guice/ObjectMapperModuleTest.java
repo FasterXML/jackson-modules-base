@@ -14,7 +14,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
-import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
 import org.junit.Assert;
@@ -23,8 +22,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.math.BigInteger;
 
-/**
- */
 public class ObjectMapperModuleTest
 {
     @Test
@@ -164,27 +161,27 @@ public class ObjectMapperModuleTest
         private long nine;
 
         @JacksonInject
-        private void injectSix(@com.google.inject.name.Named("six") int six)
+        private void injectSix(@com.google.inject.name.Named("six") int s)
         {
-            this.six = six;
+            this.six = s;
         }
 
         @JacksonInject
-        private void injectSeven(@javax.inject.Named("seven") int seven)
+        private void injectSeven(@javax.inject.Named("seven") int s)
         {
-            this.seven = seven;
+            this.seven = s;
         }
 
         @JacksonInject
-        private void injectEight(@Ann long eight)
+        private void injectEight(@Ann long e)
         {
-            this.eight = eight;
+            this.eight = e;
         }
 
         @JacksonInject
-        private void injectNine(long nine)
+        private void injectNine(long n)
         {
-            this.nine = nine;
+            this.nine = n;
         }
 
         public boolean verify()
@@ -203,7 +200,8 @@ public class ObjectMapperModuleTest
 
     }
 
-    private static class IntegerAsBase16Module extends SimpleModule
+    @SuppressWarnings("serial")
+    static class IntegerAsBase16Module extends SimpleModule
     {
         public IntegerAsBase16Module() {
             super("IntegerAsBase16");

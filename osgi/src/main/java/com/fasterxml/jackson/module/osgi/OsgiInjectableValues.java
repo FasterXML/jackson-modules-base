@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.InjectableValues;
 
 /**
  * Injects OSGI services in deserialized objects
- * <br/>
+ *<br>
  * Use the {@link com.fasterxml.jackson.annotation.JacksonInject} in the constructor parameters or the class members ask for injecting a matching OSGI services.
  * Use the {@link com.fasterxml.jackson.annotation.JacksonInject#value()} to specify an OSGI filter to select more accurately the OSGI services.
  * Null is injected when no matching OSGI service is registered.

@@ -36,25 +36,24 @@ public class ExtendInjectableTest
     public void testModulesRegisteredThroughInjectionWithKey() throws Exception
     {
         final Injector injector = Guice.createInjector(new ObjectMapperModule(),
-                                                       new Module()
+                                                       new Module() {
+                @Override
+                public void configure(Binder binder)
                 {
-                    public void configure(Binder binder)
-                    {
-                        binder.bind(ConstructorDependency.class).toInstance(constructorInjected);
-                        binder.bind(ConstructorDependency.class).annotatedWith(Ann.class).toInstance(constructorInjectedWithCustomAnnotation);
-                        binder.bind(ConstructorDependency.class).annotatedWith(Names.named("guice")).toInstance(constructorInjectedWithGuiceAnnotation);
-                        binder.bind(ConstructorDependency.class).annotatedWith(Names.named("javax")).toInstance(constructorInjectedWithJavaAnnotation);
-                        binder.bind(FieldDependency.class).toInstance(fieldInjected);
-                        binder.bind(FieldDependency.class).annotatedWith(Ann.class).toInstance(fieldInjectedWithCustomAnnotation);
-                        binder.bind(FieldDependency.class).annotatedWith(Names.named("guice")).toInstance(fieldInjectedWithGuiceAnnotation);
-                        binder.bind(FieldDependency.class).annotatedWith(Names.named("javax")).toInstance(fieldInjectedWithJavaAnnotation);
-                        binder.bind(MethodDependency.class).toInstance(methodInjected);
-                        binder.bind(MethodDependency.class).annotatedWith(Ann.class).toInstance(methodInjectedWithCustomAnnotation);
-                        binder.bind(MethodDependency.class).annotatedWith(Names.named("guice")).toInstance(methodInjectedWithGuiceAnnotation);
-                        binder.bind(MethodDependency.class).annotatedWith(Names.named("javax")).toInstance(methodInjectedWithJavaAnnotation);
-                    }
+                    binder.bind(ConstructorDependency.class).toInstance(constructorInjected);
+                    binder.bind(ConstructorDependency.class).annotatedWith(Ann.class).toInstance(constructorInjectedWithCustomAnnotation);
+                    binder.bind(ConstructorDependency.class).annotatedWith(Names.named("guice")).toInstance(constructorInjectedWithGuiceAnnotation);
+                    binder.bind(ConstructorDependency.class).annotatedWith(Names.named("javax")).toInstance(constructorInjectedWithJavaAnnotation);
+                    binder.bind(FieldDependency.class).toInstance(fieldInjected);
+                    binder.bind(FieldDependency.class).annotatedWith(Ann.class).toInstance(fieldInjectedWithCustomAnnotation);
+                    binder.bind(FieldDependency.class).annotatedWith(Names.named("guice")).toInstance(fieldInjectedWithGuiceAnnotation);
+                    binder.bind(FieldDependency.class).annotatedWith(Names.named("javax")).toInstance(fieldInjectedWithJavaAnnotation);
+                    binder.bind(MethodDependency.class).toInstance(methodInjected);
+                    binder.bind(MethodDependency.class).annotatedWith(Ann.class).toInstance(methodInjectedWithCustomAnnotation);
+                    binder.bind(MethodDependency.class).annotatedWith(Names.named("guice")).toInstance(methodInjectedWithGuiceAnnotation);
+                    binder.bind(MethodDependency.class).annotatedWith(Names.named("javax")).toInstance(methodInjectedWithJavaAnnotation);
                 }
-        );
+        });
 
         /* First of all, just get an InjectableBean out of guice to make sure it's correct (test the test) */
         verifyInjections("From Guice's Injector", injector.getInstance(InjectableBean.class));

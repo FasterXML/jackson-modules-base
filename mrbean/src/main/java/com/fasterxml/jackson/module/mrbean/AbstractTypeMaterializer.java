@@ -206,9 +206,10 @@ public class AbstractTypeMaterializer
      * Older variant of {@link #resolveAbstractType(DeserializationConfig, BeanDescription)},
      * obsoleted in 2.7. Kept around in 2.7 for backwards compatibility.
      *<p>
-     * TODO: remove from 2.8.
+     * TODO: remove from 2.9
      */
     @Override
+    @Deprecated
     public JavaType resolveAbstractType(DeserializationConfig config, JavaType type)
     {
         if (!_suitableType(type)) {

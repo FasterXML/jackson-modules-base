@@ -53,6 +53,7 @@ public class InjectOsgiServiceTest
             BeanWithNotFoundService.class);
     }
     
+    @SuppressWarnings("unchecked")
     @Before
     public void setUp() throws Exception
     {
@@ -103,7 +104,7 @@ public class InjectOsgiServiceTest
         }
     }
     
-    private static class BeanWithServiceInConstructor extends VerifyableBean
+    static class BeanWithServiceInConstructor extends VerifyableBean
     {
         public BeanWithServiceInConstructor(@JacksonInject Service service)
         {
@@ -151,7 +152,7 @@ public class InjectOsgiServiceTest
 
     }
 
-    private static class BeanWithFilter extends VerifyableBean
+    static class BeanWithFilter extends VerifyableBean
     {
         public BeanWithFilter(@JacksonInject(value = OSGI_FILTER) Service service)
         {
@@ -175,7 +176,7 @@ public class InjectOsgiServiceTest
         }
     }
 
-    private static class BeanWithNotFoundService extends VerifyableBean
+    static class BeanWithNotFoundService extends VerifyableBean
     {
         private final NotFoundService notFoundService;
         

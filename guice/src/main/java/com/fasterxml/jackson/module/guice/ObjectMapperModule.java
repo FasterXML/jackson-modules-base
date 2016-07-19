@@ -119,8 +119,8 @@ public class ObjectMapperModule implements com.google.inject.Module
     }
 
     @Inject
-    public void configure(Injector injector) {
-      this.injector = injector;
+    public void configure(Injector inj) {
+      injector = inj;
       for (Key<? extends Module> key : modulesToInject) {
         providedModules.add(injector.getProvider(key));
       }
