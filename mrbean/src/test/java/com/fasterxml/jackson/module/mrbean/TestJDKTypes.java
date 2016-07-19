@@ -34,11 +34,18 @@ public class TestJDKTypes extends BaseTest
         assertSame(Double.class, nr.getClass());
     }
 
-    public void testContainers() throws Exception
+    public void testIterable() throws Exception
     {
         Object ob = MAPPER.readValue("[ ]", Iterable.class);
         assertNotNull(ob);
         assertTrue(ob instanceof List<?>);
+
+        // Let's try with some data as well
+        Iterable<?> itrb = MAPPER.readValue("[ 123 ]", Iterable.class);
+        assertTrue(itrb instanceof List<?>);
+        List<?> l = (List<?>) itrb;
+        assertEquals(1, l.size());
+        assertEquals(Integer.valueOf(123), l.get(0));
     }
 
     public void testStringLike() throws Exception
