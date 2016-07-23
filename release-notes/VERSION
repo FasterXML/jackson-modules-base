@@ -8,7 +8,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.7.6 (not yet released)
+2.7.6 (23-Jul-2016)
 
 #7 (afterburner) Afterburner excludes serialization of some `null`-valued Object properties
  (reported by David H)
