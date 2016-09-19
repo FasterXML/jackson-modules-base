@@ -25,7 +25,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      * some calls are best just delegated
      */
     protected final SettableBeanProperty _originalSettable;
-    
+
     protected final BeanPropertyMutator _propertyMutator;
     protected final int _optimizedIndex;
 
@@ -66,6 +66,11 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     public abstract SettableBeanProperty withValueDeserializer(JsonDeserializer<?> deser);
 
     public abstract SettableBeanProperty withMutator(BeanPropertyMutator mut);
+
+    @Override // added in SettableBeanProperty in 2.8.3
+    public void fixAccess(DeserializationConfig config) {
+        _originalSettable.fixAccess(config);
+    }
 
     /*
     /********************************************************************** 
