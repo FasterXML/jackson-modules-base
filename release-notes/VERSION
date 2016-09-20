@@ -8,6 +8,8 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.0 (not yet released)
+
 2.8.3 (18-Sep-2016)
 
 [afterburner] Add override for `SettableBeanProperty.fixAccess()` introduced
