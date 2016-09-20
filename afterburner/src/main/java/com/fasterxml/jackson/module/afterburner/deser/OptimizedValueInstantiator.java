@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 /**
  * Base class for concrete bytecode-generated value instantiators.
@@ -18,7 +19,7 @@ public abstract class OptimizedValueInstantiator
      * dummy instance to call factory method.
      */
     protected OptimizedValueInstantiator() {
-        super(/*DeserializationConfig*/null, (Class<?>)String.class);
+        super(/*DeserializationConfig*/null, TypeFactory.unknownType());
     }
 
     /**

@@ -187,7 +187,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             return parsed;            
         }
         // Otherwise, no can do:
-        throw ctxt.mappingException(Boolean.TYPE, t);
+        return (Boolean) ctxt.handleUnexpectedToken(Boolean.TYPE, p);
     }
 
     protected final short _deserializeShort(JsonParser jp, DeserializationContext ctxt)
@@ -252,7 +252,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             return parsed;            
         }
         // Otherwise, no can do:
-        throw ctxt.mappingException(Integer.TYPE, t);
+        return (Integer) ctxt.handleUnexpectedToken(Integer.TYPE, p);
     }
 
     protected final long _deserializeLong(JsonParser p, DeserializationContext ctxt)
@@ -290,7 +290,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             }
             break;
         }
-        throw ctxt.mappingException(Long.TYPE, p.getCurrentToken());
+        return (Long) ctxt.handleUnexpectedToken(Long.TYPE, p);
     }
 
     protected final String _deserializeString(JsonParser p, DeserializationContext ctxt) throws IOException
@@ -328,7 +328,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
                 return text;
             }
         }
-        throw ctxt.mappingException(String.class, p.getCurrentToken());
+        return (String) ctxt.handleUnexpectedToken(String.class, p);
     }
 
     protected final boolean _deserializeBooleanFromOther(JsonParser p, DeserializationContext ctxt)

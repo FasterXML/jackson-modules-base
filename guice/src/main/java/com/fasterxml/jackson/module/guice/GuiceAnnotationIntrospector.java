@@ -72,13 +72,16 @@ public class GuiceAnnotationIntrospector extends NopAnnotationIntrospector
          * Depending on whether we have an annotation (or not) return the
          * correct Guice key that Jackson will use to query the Injector.
          */
-        if (guiceAnnotation == null)
-        {
-            return Key.get(guiceMember.getGenericType());
+        if (guiceAnnotation == null) {
+            // 19-Sep-2016, tatu: Used to pass `getGenericType()`, but that is now deprecated.
+            //    Looking at code in Guice Key, I don't think it does particularly good job
+            //    in resolving generic types, so I don't think change
+//            return Key.get(guiceMember.getGenericType());
+            return Key.get((java.lang.reflect.Type) guiceMember.getRawType());
         }
-        return Key.get(guiceMember.getGenericType(), guiceAnnotation);
+//        return Key.get(guiceMember.getGenericType(), guiceAnnotation);
+        return Key.get((java.lang.reflect.Type) guiceMember.getRawType(), guiceAnnotation);
     }
-
 
     /*
      * We want to figure out if a @BindingAnnotation or @Qualifier
