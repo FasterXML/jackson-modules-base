@@ -17,32 +17,14 @@ public final class SettableIntFieldProperty
         super(src, mutator, index);
     }
 
-    public SettableIntFieldProperty(SettableIntFieldProperty src,
-            JsonDeserializer<?> deser)
-    {
-        super(src, deser);
-    }
-
-    public SettableIntFieldProperty(SettableIntFieldProperty src, PropertyName name) {
-        super(src, name);
-    }
-    
     @Override
-    public SettableBeanProperty withName(PropertyName name) {
-        return new SettableIntFieldProperty(this, name);
-    }
-    
-    @Override
-    public SettableBeanProperty withValueDeserializer(JsonDeserializer<?> deser) {
-        if (!_isDefaultDeserializer(deser)) {
-            return _originalSettable.withValueDeserializer(deser);
-        }
-        return new SettableIntFieldProperty(this, deser);
+    protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
+        return new SettableIntFieldProperty(del, _propertyMutator, _optimizedIndex);
     }
     
     @Override
     public SettableBeanProperty withMutator(BeanPropertyMutator mut) {
-        return new SettableIntFieldProperty(_originalSettable, mut, _optimizedIndex);
+        return new SettableIntFieldProperty(delegate, mut, _optimizedIndex);
     }
 
     /*

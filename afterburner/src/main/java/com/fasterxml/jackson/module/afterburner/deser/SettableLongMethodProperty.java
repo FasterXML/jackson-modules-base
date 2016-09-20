@@ -17,30 +17,14 @@ public final class SettableLongMethodProperty
         super(src, mutator, index);
     }
 
-    public SettableLongMethodProperty(SettableLongMethodProperty src, JsonDeserializer<?> deser) {
-        super(src, deser);
+    @Override
+    protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
+        return new SettableLongMethodProperty(del, _propertyMutator, _optimizedIndex);
     }
 
-    public SettableLongMethodProperty(SettableLongMethodProperty src, PropertyName name) {
-        super(src, name);
-    }
-    
-    @Override
-    public SettableBeanProperty withName(PropertyName name) {
-        return new SettableLongMethodProperty(this, name);
-    }
-    
-    @Override
-    public SettableBeanProperty withValueDeserializer(JsonDeserializer<?> deser) {
-        if (!_isDefaultDeserializer(deser)) {
-            return _originalSettable.withValueDeserializer(deser);
-        }
-        return new SettableLongMethodProperty(this, deser);
-    }
-    
     @Override
     public SettableBeanProperty withMutator(BeanPropertyMutator mut) {
-        return new SettableLongMethodProperty(_originalSettable, mut, _optimizedIndex);
+        return new SettableLongMethodProperty(delegate, mut, _optimizedIndex);
     }
 
     /*

@@ -1,14 +1,12 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.*;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 
 /**
@@ -16,15 +14,9 @@ import com.fasterxml.jackson.databind.util.ClassUtil;
  * implementations.
  */
 abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProperty<T>>
-    extends SettableBeanProperty
+    extends SettableBeanProperty.Delegating
 {
-    private static final long serialVersionUID = 1L; // since 2.5
-
-    /**
-     * We will need to keep the original instance handy as
-     * some calls are best just delegated
-     */
-    protected final SettableBeanProperty _originalSettable;
+    private static final long serialVersionUID = 1L;
 
     protected final BeanPropertyMutator _propertyMutator;
     protected final int _optimizedIndex;
@@ -35,59 +27,35 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     /********************************************************************** 
      */
 
-    public OptimizedSettableBeanProperty(SettableBeanProperty src,
+    protected OptimizedSettableBeanProperty(SettableBeanProperty src,
             BeanPropertyMutator mutator, int index)
     {
         super(src);
-        _originalSettable = src;
         _propertyMutator = mutator;
         _optimizedIndex = index;
     }
 
-    protected OptimizedSettableBeanProperty(OptimizedSettableBeanProperty<T> src,
-            JsonDeserializer<?> deser)
-    {
-        super(src, deser);
-        _originalSettable = src._originalSettable.withValueDeserializer(deser);
-        _propertyMutator = src._propertyMutator;
-        _optimizedIndex = src._optimizedIndex;
-    }
+    // Base impl of `withName()` fine as-is:
+    // public SettableBeanProperty withName(PropertyName name);
 
-    protected OptimizedSettableBeanProperty(OptimizedSettableBeanProperty<T> src,
-            PropertyName name)
-    {
-        super(src, name);
-        _originalSettable = src._originalSettable.withName(name);
-        _propertyMutator = src._propertyMutator;
-        _optimizedIndex = src._optimizedIndex;
+    // But value deserializer handling needs some more care
+    @Override
+    public final SettableBeanProperty withValueDeserializer(JsonDeserializer<?> deser) {
+        SettableBeanProperty newDelegate = delegate.withValueDeserializer(deser);
+        if (newDelegate == delegate) {
+            return this;
+        }
+        if (!_isDefaultDeserializer(deser)) {
+            return newDelegate;
+        }
+        return withDelegate(newDelegate);
     }
 
     @Override
-    public abstract SettableBeanProperty withValueDeserializer(JsonDeserializer<?> deser);
+    protected abstract SettableBeanProperty withDelegate(SettableBeanProperty d);
 
     public abstract SettableBeanProperty withMutator(BeanPropertyMutator mut);
 
-    @Override // added in SettableBeanProperty in 2.8.3
-    public void fixAccess(DeserializationConfig config) {
-        _originalSettable.fixAccess(config);
-    }
-
-    /*
-    /********************************************************************** 
-    /* Overridden getters
-    /********************************************************************** 
-     */
-
-    @Override
-    public <A extends Annotation> A getAnnotation(Class<A> ann) {
-        return _originalSettable.getAnnotation(ann);
-    }
-
-    @Override
-    public AnnotatedMember getMember() {
-        return _originalSettable.getMember();
-    }
-    
     /*
     /********************************************************************** 
     /* Deserialization, regular
@@ -124,7 +92,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        return _originalSettable.setAndReturn(instance, value);
+        return delegate.setAndReturn(instance, value);
     }
 
     /*
@@ -134,7 +102,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      */
 
     public SettableBeanProperty getOriginalProperty() {
-        return _originalSettable;
+        return delegate;
     }
 
     public int getOptimizedIndex() {

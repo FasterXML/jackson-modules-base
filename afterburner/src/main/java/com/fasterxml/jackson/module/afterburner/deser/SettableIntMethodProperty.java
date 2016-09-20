@@ -17,30 +17,14 @@ public final class SettableIntMethodProperty
         super(src, mutator, index);
     }
 
-    public SettableIntMethodProperty(SettableIntMethodProperty src, JsonDeserializer<?> deser) {
-        super(src, deser);
+    @Override
+    protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
+        return new SettableIntMethodProperty(del, _propertyMutator, _optimizedIndex);
     }
 
-    public SettableIntMethodProperty(SettableIntMethodProperty src, PropertyName name) {
-        super(src, name);
-    }
-
-    @Override
-    public SettableBeanProperty withName(PropertyName name) {
-        return new SettableIntMethodProperty(this, name);
-    }
-    
-    @Override
-    public SettableBeanProperty withValueDeserializer(JsonDeserializer<?> deser) {
-        if (!_isDefaultDeserializer(deser)) {
-            return _originalSettable.withValueDeserializer(deser);
-        }
-        return new SettableIntMethodProperty(this, deser);
-    }
-    
     @Override
     public SettableBeanProperty withMutator(BeanPropertyMutator mut) {
-        return new SettableIntMethodProperty(_originalSettable, mut, _optimizedIndex);
+        return new SettableIntMethodProperty(delegate, mut, _optimizedIndex);
     }
 
     /*
@@ -48,7 +32,7 @@ public final class SettableIntMethodProperty
     /* Deserialization
     /********************************************************************** 
      */
-    
+
     @Override
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException

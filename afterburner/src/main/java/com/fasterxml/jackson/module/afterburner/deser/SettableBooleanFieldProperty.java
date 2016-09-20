@@ -17,32 +17,14 @@ public final class SettableBooleanFieldProperty
         super(src, mutator, index);
     }
 
-    public SettableBooleanFieldProperty(SettableBooleanFieldProperty src,
-            JsonDeserializer<?> deser)
-    {
-        super(src, deser);
-    }
-
-    public SettableBooleanFieldProperty(SettableBooleanFieldProperty src, PropertyName name) {
-        super(src, name);
-    }
-    
     @Override
-    public SettableBeanProperty withName(PropertyName name) {
-        return new SettableBooleanFieldProperty(this, name);
-    }
-
-    @Override
-    public SettableBeanProperty withValueDeserializer(JsonDeserializer<?> deser) {
-        if (!_isDefaultDeserializer(deser)) {
-            return _originalSettable.withValueDeserializer(deser);
-        }
-        return new SettableBooleanFieldProperty(this, deser);
+    protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
+        return new SettableBooleanFieldProperty(del, _propertyMutator, _optimizedIndex);
     }
 
     @Override
     public SettableBeanProperty withMutator(BeanPropertyMutator mut) {
-        return new SettableBooleanFieldProperty(_originalSettable, mut, _optimizedIndex);
+        return new SettableBooleanFieldProperty(delegate, mut, _optimizedIndex);
     }
 
     /*
