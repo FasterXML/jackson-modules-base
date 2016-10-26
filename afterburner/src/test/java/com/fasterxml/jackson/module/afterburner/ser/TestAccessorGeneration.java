@@ -1,8 +1,10 @@
-package com.fasterxml.jackson.module.afterburner.ser;
+ package com.fasterxml.jackson.module.afterburner.ser;
 
 import java.lang.reflect.Method;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyName;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.util.SimpleBeanPropertyDefinition;
@@ -42,18 +44,22 @@ public class TestAccessorGeneration extends AfterburnerTestBase
     /* Test methods
     /**********************************************************************
      */
-    
+
+    // We need MapperConfig to pass, so easiest way is to:
+    private final ObjectMapper MAPPER = new ObjectMapper();
+    private final MapperConfig<?> MAPPER_CONFIG = MAPPER.getSerializationConfig();
+
     public void testSingleIntAccessorGeneration() throws Exception
     {
         Method method = Bean1.class.getDeclaredMethod("getX");
         AnnotatedMethod annMethod = new AnnotatedMethod(null, method, null, null);
         PropertyAccessorCollector coll = new PropertyAccessorCollector(Bean1.class);
         BeanPropertyWriter bpw = new BeanPropertyWriter(SimpleBeanPropertyDefinition
-                .construct(null, annMethod, new PropertyName("x")),
+                .construct(MAPPER_CONFIG, annMethod, new PropertyName("x")),
                 annMethod, null,
                 null,
                 null, null, null,
-                false, null);
+                false, null, null);
         coll.addIntGetter(bpw);
         BeanPropertyAccessor acc = coll.findAccessor(null);
         Bean1 bean = new Bean1();
@@ -82,11 +88,11 @@ public class TestAccessorGeneration extends AfterburnerTestBase
             AnnotatedMethod annMethod = new AnnotatedMethod(null, method, null, null);
             // should we translate from method name to property name?
             coll.addIntGetter(new BeanPropertyWriter(SimpleBeanPropertyDefinition
-                    .construct(null, annMethod, new PropertyName(methodName)),
+                    .construct(MAPPER_CONFIG, annMethod, new PropertyName(methodName)),
                     annMethod, null,
                     null,
                     null, null, null,
-                    false, null));
+                    false, null, null));
         }
 
         BeanPropertyAccessor acc = coll.findAccessor(null);
@@ -108,11 +114,11 @@ public class TestAccessorGeneration extends AfterburnerTestBase
             Method method = BeanN.class.getDeclaredMethod(methodName);
             AnnotatedMethod annMethod = new AnnotatedMethod(null, method, null, null);
             coll.addIntGetter(new BeanPropertyWriter(SimpleBeanPropertyDefinition.construct(
-                    null, annMethod, new PropertyName(methodName)),
+                    MAPPER_CONFIG, annMethod, new PropertyName(methodName)),
                     annMethod, null,
                     null,
                     null, null, null,
-                    false, null));
+                    false, null, null));
         }
 
         BeanPropertyAccessor acc = coll.findAccessor(null);
