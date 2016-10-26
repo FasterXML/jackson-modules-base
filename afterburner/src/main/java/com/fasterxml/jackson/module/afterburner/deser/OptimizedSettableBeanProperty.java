@@ -149,8 +149,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             final boolean parsed = _deserializeBooleanFromOther(p, ctxt);
             t = p.nextToken();
             if (t != JsonToken.END_ARRAY) {
-                throw ctxt.wrongTokenException(p, JsonToken.END_ARRAY, 
-                        "Attempted to unwrap single value array for single 'boolean' value but there was more than a single value in the array");
+                _handleMissingEndArrayForSingle(p, ctxt);
             }            
             return parsed;            
         }
@@ -214,8 +213,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             final int parsed = _deserializeInt(p, ctxt);
             t = p.nextToken();
             if (t != JsonToken.END_ARRAY) {
-                throw ctxt.wrongTokenException(p, JsonToken.END_ARRAY, 
-                        "Attempted to unwrap single value array for single 'int' value but there was more than a single value in the array");
+                _handleMissingEndArrayForSingle(p, ctxt);
             }            
             return parsed;            
         }
@@ -251,8 +249,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
                 final long parsed = _deserializeLong(p, ctxt);
                 JsonToken t = p.nextToken();
                 if (t != JsonToken.END_ARRAY) {
-                    throw ctxt.wrongTokenException(p, JsonToken.END_ARRAY, 
-                            "Attempted to unwrap single value array for single 'long' value but there was more than a single value in the array");
+                    _handleMissingEndArrayForSingle(p, ctxt);
                 }            
                 return parsed;
             }
@@ -273,8 +270,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
                 p.nextToken();
                 final String parsed = _deserializeString(p, ctxt);
                 if (p.nextToken() != JsonToken.END_ARRAY) {
-                    throw ctxt.wrongTokenException(p, JsonToken.END_ARRAY, 
-                            "Attempted to unwrap single value array for single 'String' value but there was more than a single value in the array");
+                    _handleMissingEndArrayForSingle(p, ctxt);
                 }            
                 return parsed;            
             }
@@ -318,8 +314,9 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     protected void _failDoubleToIntCoercion(JsonParser p, DeserializationContext ctxt,
             String type) throws IOException
     {
-        throw ctxt.mappingException("Can not coerce a floating-point value ('%s') into %s; enable `DeserializationFeature.ACCEPT_FLOAT_AS_INT` to allow",
-                        p.getValueAsString(), type);
+        ctxt.reportInputMismatch(getType(),
+                "Can not coerce a floating-point value (%s) into %s; enable `DeserializationFeature.ACCEPT_FLOAT_AS_INT` to allow",
+                p.getValueAsString(), type);
     }
 
     protected boolean _hasTextualNull(String value) {
@@ -333,5 +330,16 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      */
     protected boolean _isDefaultDeserializer(JsonDeserializer<?> deser) {
         return (deser == null) || ClassUtil.isJacksonStdImpl(deser);
+    }
+
+    protected void _handleMissingEndArrayForSingle(JsonParser p, DeserializationContext ctxt)
+        throws IOException
+    {
+        JavaType type = getType();
+        ctxt.reportWrongTokenException(type, JsonToken.END_ARRAY, 
+"Attempted to unwrap single value array for single %s value but there was more than a single value in the array",
+getType());
+        // 05-May-2016, tatu: Should recover somehow (maybe skip until END_ARRAY);
+        //     but for now just fall through
     }
 }
