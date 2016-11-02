@@ -35,8 +35,10 @@ public final class SettableObjectMethodProperty
 
     @Override
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
-            Object bean) throws IOException {
-        set(bean, deserialize(p, ctxt));
+            Object bean) throws IOException
+    {
+        // inlined `set()`
+        _propertyMutator.objectSetter(bean, deserialize(p, ctxt));
     }
 
     @Override

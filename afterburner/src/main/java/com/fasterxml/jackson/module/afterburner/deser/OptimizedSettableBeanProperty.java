@@ -64,7 +64,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     
     @Override
     public abstract void deserializeAndSet(JsonParser jp, DeserializationContext ctxt,
-            Object arg2) throws IOException, JsonProcessingException;
+            Object arg2) throws IOException;
 
     @Override
     public abstract void set(Object bean, Object value) throws IOException;
@@ -100,10 +100,6 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     /* Extended API
     /********************************************************************** 
      */
-
-    public SettableBeanProperty getOriginalProperty() {
-        return delegate;
-    }
 
     public int getOptimizedIndex() {
         return _optimizedIndex;

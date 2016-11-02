@@ -37,7 +37,8 @@ public final class SettableObjectFieldProperty
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException
     {
-        set(bean, deserialize(p, ctxt));
+        // inlined `set()`
+        _propertyMutator.objectField(bean, deserialize(p, ctxt));
     }
 
     @Override
