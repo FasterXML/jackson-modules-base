@@ -30,7 +30,6 @@ to introspect names of constructor (and factory method) parameters.
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>${version.jackson.core}</version>
     </dependency>
 
     <!-- and paranamer for introspection -->

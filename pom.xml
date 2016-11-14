@@ -39,6 +39,22 @@ not datatype, data format, or JAX-RS provider modules.
     <version.asm>5.1</version.asm>
   </properties>
 
+  <dependencyManagement>
+    <!-- jackson-annotations managed by jackson-parent -->
+    <dependencies>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${version.jackson.core}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${version.jackson.core}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency> <!-- all modules use junit for testing -->
       <groupId>junit</groupId>
