@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.util.ClassUtil;
 abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter<T>>
     extends BeanPropertyWriter
 {
-    protected final BeanPropertyAccessor _propertyAccessor;
+    protected final BeanPropertyWriter fallbackWriter;
 
     /**
      * Locally stored version of efficiently serializable name.
@@ -31,10 +31,12 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
     protected final SerializableString _fastName;
     protected final int _propertyIndex;
 
-    protected final BeanPropertyWriter fallbackWriter;
-    // Not volatile to prevent overhead, worst case is we trip the exception a few extra times
-    protected boolean broken = false;
+    protected final int bogus = 0; // just to try to align
 
+    protected BeanPropertyAccessor _propertyAccessor;
+
+    private volatile boolean broken = false;
+    
     protected OptimizedBeanPropertyWriter(BeanPropertyWriter src,
             BeanPropertyAccessor propertyAccessor, int propertyIndex,
             JsonSerializer<Object> ser)
@@ -95,24 +97,40 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
     public abstract BeanPropertyWriter withSerializer(JsonSerializer<Object> ser);
 
     @Override
-    public abstract void serializeAsField(Object bean, JsonGenerator jgen, SerializerProvider prov) throws Exception;
+    public abstract void serializeAsField(Object bean, JsonGenerator g, SerializerProvider prov) throws Exception;
 
     // since 2.4.3
     @Override
-    public abstract void serializeAsElement(Object bean, JsonGenerator jgen, SerializerProvider prov) throws Exception;
+    public abstract void serializeAsElement(Object bean, JsonGenerator g, SerializerProvider prov)
+        throws Exception;
 
-    // note: synchronized used to try to minimize race conditions; also, should NOT
-    // be a performance problem
-    protected synchronized void _handleProblem(Object bean, JsonGenerator gen, SerializerProvider prov,
+    /**
+     * Helper method called when field/method access failed with an exception,
+     */
+    protected void _handleProblem(Object bean, JsonGenerator gen, SerializerProvider prov,
             Throwable t, boolean element) throws Exception
     {
+System.err.println("Trouble!!!! "+t);
+
         if ((t instanceof IllegalAccessError)
                 || (t instanceof SecurityException)) {
-            _reportProblem(bean, t);
-            if (element) {
-                fallbackWriter.serializeAsElement(bean, gen, prov);
-            } else {
-                fallbackWriter.serializeAsField(bean, gen, prov);
+            synchronized (this) {
+                // yes, double-locking, so not guaranteed; but all we want here is to reduce likelihood
+                // of multiple logging of same underlying problem. Not guaranteed, just improved.
+                if (!broken || true) {
+                    broken = true;
+                    String msg = String.format("Disabling Afterburner serialization for %s (field #%d; mutator %s), due to access error (type %s, message=%s)%n",
+                            bean.getClass(), _propertyIndex, getClass().getName(),
+                            t.getClass().getName(), t.getMessage());
+                    Logger.getLogger(OptimizedBeanPropertyWriter.class.getName()).log(Level.WARNING, msg, t);
+                    // plus try to reroute future handling
+                    _propertyAccessor = new DelegatingPropertyAccessor(fallbackWriter);
+                }
+                if (element) {
+                    fallbackWriter.serializeAsElement(bean, gen, prov);
+                } else {
+                    fallbackWriter.serializeAsField(bean, gen, prov);
+                }
             }
             return;
         }
@@ -122,16 +140,7 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
         throw (Exception) t;
     }
 
-    protected void _reportProblem(Object bean, Throwable e)
-    {
-        broken = true;
-        String msg = String.format("Disabling Afterburner serialization for %s (field #%d; mutator %s), due to access error (type %s, message=%s)%n",
-                bean.getClass(), _propertyIndex, getClass().getName(),
-                e.getClass().getName(), e.getMessage());
-        Logger.getLogger(OptimizedBeanPropertyWriter.class.getName()).log(Level.WARNING, msg, e);
-    }
-
-    /**
+        /**
      * Helper method used to check whether given serializer is the default
      * serializer implementation: this is necessary to avoid overriding other
      * kinds of deserializers.

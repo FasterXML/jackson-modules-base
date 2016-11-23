@@ -46,10 +46,6 @@ public final class BooleanFieldPropertyWriter
     @Override
     public final void serializeAsField(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
     {
-        if (broken) {
-            fallbackWriter.serializeAsField(bean, gen, prov);
-            return;
-        }
         boolean value;
         try {
             value = _propertyAccessor.booleanField(bean, _propertyIndex);
@@ -66,10 +62,6 @@ public final class BooleanFieldPropertyWriter
     @Override
     public final void serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
     {
-        if (broken) {
-            fallbackWriter.serializeAsElement(bean, gen, prov);
-            return;
-        }
         boolean value;
         try {
             value = _propertyAccessor.booleanField(bean, _propertyIndex);
