@@ -35,6 +35,10 @@ public class StringMethodPropertyWriter
     @Override
     public final void serializeAsField(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
     {
+        if (broken) {
+            fallbackWriter.serializeAsField(bean, gen, prov);
+            return;
+        }
         String value;
         try {
             value = _propertyAccessor.stringGetter(bean, _propertyIndex);
@@ -66,6 +70,11 @@ public class StringMethodPropertyWriter
     @Override
     public final void serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
     {
+        if (broken) {
+            fallbackWriter.serializeAsElement(bean, gen, prov);
+            return;
+        }
+
         String value;
         try {
             value = _propertyAccessor.stringGetter(bean, _propertyIndex);

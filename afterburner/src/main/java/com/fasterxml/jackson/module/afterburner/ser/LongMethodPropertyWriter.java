@@ -46,6 +46,10 @@ public final class LongMethodPropertyWriter
     @Override
     public final void serializeAsField(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
     {
+        if (broken) {
+            fallbackWriter.serializeAsField(bean, gen, prov);
+            return;
+        }
         long value;
         try {
             value = _propertyAccessor.longGetter(bean, _propertyIndex);
@@ -62,6 +66,10 @@ public final class LongMethodPropertyWriter
     @Override
     public final void serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
     {
+        if (broken) {
+            fallbackWriter.serializeAsElement(bean, gen, prov);
+            return;
+        }
         long value;
         try {
             value = _propertyAccessor.longGetter(bean, _propertyIndex);

@@ -46,17 +46,17 @@ public final class IntMethodPropertyWriter
     @Override
     public final void serializeAsField(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
     {
-System.err.println("INT-prop: serializeAsField");        
+        if (broken) {
+            fallbackWriter.serializeAsField(bean, gen, prov);
+            return;
+        }
         int value;
         try {
             value = _propertyAccessor.intGetter(bean, _propertyIndex);
-System.err.println("INT-prop: value == "+value);
-System.err.println(" using "+_propertyAccessor);
         } catch (Throwable t) {
             _handleProblem(bean, gen, prov, t, false);
             return;
         }
-System.err.println("INT-prop: value to be written...");
         if (!_suppressableIntSet || _suppressableInt != value) {
             gen.writeFieldName(_fastName);
             gen.writeNumber(value);
@@ -66,6 +66,10 @@ System.err.println("INT-prop: value to be written...");
     @Override
     public final void serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
     {
+        if (broken) {
+            fallbackWriter.serializeAsElement(bean, gen, prov);
+            return;
+        }
         int value;
         try {
             value = _propertyAccessor.intGetter(bean, _propertyIndex);

@@ -42,11 +42,8 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
         @Override
         public void serialize(Integer value0, JsonGenerator gen,
                 SerializerProvider provider) throws IOException {
-System.err.println("DEBUG MyIntSerializer.serialize() value0 == "+value0);
             int v = -value0.intValue();
-System.err.println("DEBUG MyIntSerializer.serialize() v = "+v);
             gen.writeNumber(v);
-System.err.println("DEBUG MyIntSerializer.serialize() DONE!");
         }
     }
 
@@ -57,11 +54,8 @@ System.err.println("DEBUG MyIntSerializer.serialize() DONE!");
         @Override
         public void serialize(Long value0, JsonGenerator gen,
                 SerializerProvider provider) throws IOException {
-System.err.println("DEBUG MyLongSerializer.serialize() value0 == "+value0);
-long v = -value0.longValue();
-System.err.println("DEBUG MyLongSerializer.serialize() v = "+v);
+            long v = -value0.longValue();
             gen.writeNumber(v);
-System.err.println("DEBUG MyLongSerializer.serialize() DONE!");
         }
     }
     
