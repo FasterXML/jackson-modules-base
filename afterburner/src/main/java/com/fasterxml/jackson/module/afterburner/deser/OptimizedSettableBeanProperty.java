@@ -1,6 +1,8 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
@@ -18,8 +20,15 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 {
     private static final long serialVersionUID = 1L;
 
-    protected final BeanPropertyMutator _propertyMutator;
+    protected BeanPropertyMutator _propertyMutator;
+
     protected final int _optimizedIndex;
+
+    /**
+     * Marker that we set if mutator turns out to be broken in a systemic
+     * way that we can handle by redirecting it back to standard one.
+     */
+    private volatile boolean broken = false;
 
     /*
     /********************************************************************** 
@@ -61,7 +70,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     /* Deserialization, regular
     /********************************************************************** 
      */
-    
+
     @Override
     public abstract void deserializeAndSet(JsonParser jp, DeserializationContext ctxt,
             Object arg2) throws IOException;
@@ -74,7 +83,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     /* Deserialization, builders
     /********************************************************************** 
      */
-    
+
     /* !!! 19-Feb-2012, tatu:
      * 
      * We do not yet generate code for these methods: it would not be hugely
@@ -103,6 +112,52 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 
     public int getOptimizedIndex() {
         return _optimizedIndex;
+    }
+
+    /*
+    /********************************************************************** 
+    /* Error handling
+    /********************************************************************** 
+     */
+
+    /**
+     * Helper method called when an exception is throw from mutator, to figure
+     * out what to do.
+     *
+     * @since 2.9
+     */
+    protected void _reportProblem(Object bean, Object value, Throwable e)
+        throws IOException
+    {
+        if ((e instanceof IllegalAccessError)
+                || (e instanceof SecurityException)) {
+            synchronized (this) {
+                // yes, double-locking, so not guaranteed; but all we want here is to reduce likelihood
+                // of multiple logging of same underlying problem. Not guaranteed, just improved.
+                if (!broken) {
+                    broken = true;
+                    String msg = String.format("Disabling Afterburner deserialization for %s (field #%d; mutator %s), due to access error (type %s, message=%s)%n",
+                            bean.getClass(), _optimizedIndex, getClass().getName(),
+                            e.getClass().getName(), e.getMessage());
+                    Logger.getLogger(BeanPropertyMutator.class.getName()).log(Level.WARNING, msg, e);
+                    // and for next time around, should be re-routed:
+                    _propertyMutator = new DelegatingPropertyMutator(delegate);
+                }
+            }
+            delegate.set(bean, value);
+            return;
+        }
+        if (e instanceof IOException) {
+            throw (IOException) e;
+        }
+        if (e instanceof Error) {
+            throw (Error) e;
+        }
+        if (e instanceof RuntimeException) {
+            throw (RuntimeException) e;
+        }
+        // how could this ever happen?
+        throw new RuntimeException(e);
     }
 
     /*

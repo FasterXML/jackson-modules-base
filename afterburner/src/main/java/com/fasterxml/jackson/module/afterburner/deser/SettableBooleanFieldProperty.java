@@ -44,13 +44,22 @@ public final class SettableBooleanFieldProperty
         } else {
             b = _deserializeBoolean(p, ctxt);
         }
-        _propertyMutator.booleanField(bean, b);
+        try {
+            _propertyMutator.booleanField(bean, _optimizedIndex, b);
+        } catch (Throwable e) {
+            _reportProblem(bean, b, e);
+        }
     }
 
     @Override
     public void set(Object bean, Object value) throws IOException {
         // not optimal (due to boxing), but better than using reflection:
-        _propertyMutator.booleanField(bean, ((Boolean) value).booleanValue());
+        final boolean b = ((Boolean) value).booleanValue();
+        try {
+            _propertyMutator.booleanField(bean, _optimizedIndex, b);
+        } catch (Throwable e) {
+            _reportProblem(bean, b, e);
+        }
     }
 
     @Override

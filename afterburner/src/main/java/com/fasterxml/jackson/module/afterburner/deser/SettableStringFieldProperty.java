@@ -41,12 +41,21 @@ public final class SettableStringFieldProperty
         if (text == null) {
             text = _deserializeString(p, ctxt);
         }
-        _propertyMutator.stringField(bean, text);
+        try {
+            _propertyMutator.stringField(bean, _optimizedIndex, text);
+        } catch (Throwable e) {
+            _reportProblem(bean, text, e);
+        }
     }
 
     @Override
     public void set(Object bean, Object value) throws IOException {
-        _propertyMutator.stringField(bean, (String) value);
+        final String text = (String) value;
+        try {
+            _propertyMutator.stringField(bean, _optimizedIndex, text);
+        } catch (Throwable e) {
+            _reportProblem(bean, text, e);
+        }
     }
 
     @Override

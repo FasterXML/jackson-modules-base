@@ -128,35 +128,6 @@ public class PropertyMutatorCollector
         mv.visitMaxs(0, 0); // don't care (real values: 1,1)
         mv.visitEnd();
 
-        // then two-argument constructor to be used by "with"
-        String ctorSig = String.format("(L%s;I)V",
-                internalClassName(SettableBeanProperty.class.getName()));
-        mv = cw.visitMethod(ACC_PUBLIC, "<init>", ctorSig, null, null);
-
-        mv.visitCode();
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitVarInsn(ILOAD, 2);
-        mv.visitMethodInsn(INVOKESPECIAL, superClass, "<init>", ctorSig, false);
-        mv.visitInsn(RETURN);
-        mv.visitMaxs(0, 0); // don't care (real values: 1,1)
-        mv.visitEnd();
-
-        // same signature as 2-arg constructor:
-        String withSig = String.format("(L%s;I)L%s;",
-                internalClassName(SettableBeanProperty.class.getName()), superClass);
-        mv = cw.visitMethod(ACC_PUBLIC, "with", withSig, null, null);
-        mv.visitCode();
-        mv.visitTypeInsn(NEW, tmpClassName);
-        mv.visitInsn(DUP);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitVarInsn(ILOAD, 2);
-        mv.visitMethodInsn(INVOKESPECIAL, tmpClassName, "<init>", ctorSig, false);
-        mv.visitInsn(ARETURN);
-        mv.visitMaxs(0, 0); // don't care (real values: 1,1)
-        mv.visitEnd();
-        
-        
         // and then add various accessors; first field accessors:
         if (!_intFields.isEmpty()) {
             _addFields(cw, _intFields, "intField", Type.INT_TYPE, ILOAD);

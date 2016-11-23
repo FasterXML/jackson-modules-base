@@ -38,13 +38,23 @@ public final class SettableIntMethodProperty
             Object bean) throws IOException
     {
         int v = p.hasToken(JsonToken.VALUE_NUMBER_INT) ? p.getIntValue() : _deserializeInt(p, ctxt);
-        _propertyMutator.intSetter(bean, v);
+        try {
+            _propertyMutator.intSetter(bean, _optimizedIndex, v);
+            return;
+        } catch (Throwable e) {
+            _reportProblem(bean, v, e);
+        }
     }
 
     @Override
     public void set(Object bean, Object value) throws IOException {
         // not optimal (due to boxing), but better than using reflection:
-        _propertyMutator.intSetter(bean, ((Number) value).intValue());
+        int v = ((Number) value).intValue();
+        try {
+            _propertyMutator.intSetter(bean, _optimizedIndex, v);
+        } catch (Throwable e) {
+            _reportProblem(bean, v, e);
+        }
     }
 
     @Override

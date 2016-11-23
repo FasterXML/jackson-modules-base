@@ -37,14 +37,23 @@ public final class SettableLongMethodProperty
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException
     {
-        long l = p.hasToken(JsonToken.VALUE_NUMBER_INT) ? p.getLongValue() : _deserializeLong(p, ctxt);
-        _propertyMutator.longSetter(bean, l);
+        long v = p.hasToken(JsonToken.VALUE_NUMBER_INT) ? p.getLongValue() : _deserializeLong(p, ctxt);
+        try {
+            _propertyMutator.longSetter(bean, _optimizedIndex, v);
+        } catch (Throwable e) {
+            _reportProblem(bean, v, e);
+        }
     }
 
     @Override
     public void set(Object bean, Object value) throws IOException {
         // not optimal (due to boxing), but better than using reflection:
-        _propertyMutator.longSetter(bean, ((Number) value).longValue());
+        final long v = ((Number) value).longValue();
+        try {
+            _propertyMutator.longSetter(bean, _optimizedIndex, v);
+        } catch (Throwable e) {
+            _reportProblem(bean, v, e);
+        }
     }
 
     @Override
