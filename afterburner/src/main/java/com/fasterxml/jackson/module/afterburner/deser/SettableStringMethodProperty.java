@@ -41,12 +41,21 @@ public final class SettableStringMethodProperty
         if (text == null) {
             text = _deserializeString(p, ctxt);
         }
-        _propertyMutator.stringSetter(bean, text);
+        try {
+            _propertyMutator.stringSetter(bean, _optimizedIndex, text);
+        } catch (Throwable e) {
+            _reportProblem(bean, text, e);
+        }
     }
 
     @Override
     public void set(Object bean, Object value) throws IOException {
-        _propertyMutator.stringSetter(bean, (String) value);
+        final String text = (String) value;
+        try {
+            _propertyMutator.stringSetter(bean, _optimizedIndex, text);
+        } catch (Throwable e) {
+            _reportProblem(bean, text, e);
+        }
     }
 
     @Override

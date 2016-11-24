@@ -9,6 +9,8 @@ import static org.objectweb.asm.Opcodes.*;
 
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.introspect.AnnotatedField;
+
+import com.fasterxml.jackson.module.afterburner.deser.impl.*;
 import com.fasterxml.jackson.module.afterburner.util.ClassName;
 import com.fasterxml.jackson.module.afterburner.util.DynamicPropertyAccessorBase;
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
@@ -23,17 +25,29 @@ public class PropertyMutatorCollector
     private static final Type STRING_TYPE = Type.getType(String.class);
     private static final Type OBJECT_TYPE = Type.getType(Object.class);
 
-    private final List<SettableIntMethodProperty> _intSetters = new LinkedList<SettableIntMethodProperty>();
-    private final List<SettableLongMethodProperty> _longSetters = new LinkedList<SettableLongMethodProperty>();
-    private final List<SettableBooleanMethodProperty> _booleanSetters = new LinkedList<SettableBooleanMethodProperty>();
-    private final List<SettableStringMethodProperty> _stringSetters = new LinkedList<SettableStringMethodProperty>();
-    private final List<SettableObjectMethodProperty> _objectSetters = new LinkedList<SettableObjectMethodProperty>();
+    private static final int SPECIAL_SETTERS_BOOLEAN = 0; // since 2.9
+    private static final int SPECIAL_SETTERS_INT = 4; // since 2.9
+    private static final int SPECIAL_SETTERS_LONG = 2; // since 2.9
+    private static final int SPECIAL_SETTERS_STRING = 4; // since 2.9
+    private static final int SPECIAL_SETTERS_OBJECT = 2; // since 2.9
 
-    private final List<SettableIntFieldProperty> _intFields = new LinkedList<SettableIntFieldProperty>();
-    private final List<SettableLongFieldProperty> _longFields = new LinkedList<SettableLongFieldProperty>();
-    private final List<SettableBooleanFieldProperty> _booleanFields = new LinkedList<SettableBooleanFieldProperty>();
-    private final List<SettableStringFieldProperty> _stringFields = new LinkedList<SettableStringFieldProperty>();
-    private final List<SettableObjectFieldProperty> _objectFields = new LinkedList<SettableObjectFieldProperty>();
+    private static final int SPECIAL_FIELDS_BOOLEAN = 0; // since 2.9
+    private static final int SPECIAL_FIELDS_INT = 2; // since 2.9
+    private static final int SPECIAL_FIELDS_LONG = 0; // since 2.9
+    private static final int SPECIAL_FIELDS_STRING = 2; // since 2.9
+    private static final int SPECIAL_FIELDS_OBJECT = 0; // since 2.9
+    
+    private final List<OptimizedSettableBeanProperty<?>> _intSetters = new LinkedList<>();
+    private final List<OptimizedSettableBeanProperty<?>> _longSetters = new LinkedList<>();
+    private final List<OptimizedSettableBeanProperty<?>> _booleanSetters = new LinkedList<>();
+    private final List<OptimizedSettableBeanProperty<?>> _stringSetters = new LinkedList<>();
+    private final List<OptimizedSettableBeanProperty<?>> _objectSetters = new LinkedList<>();
+
+    private final List<OptimizedSettableBeanProperty<?>> _intFields = new LinkedList<>();
+    private final List<OptimizedSettableBeanProperty<?>> _longFields = new LinkedList<>();
+    private final List<OptimizedSettableBeanProperty<?>> _booleanFields = new LinkedList<>();
+    private final List<OptimizedSettableBeanProperty<?>> _stringFields = new LinkedList<>();
+    private final List<OptimizedSettableBeanProperty<?>> _objectFields = new LinkedList<>();
 
     private final Class<?> beanClass;
     private final String beanClassName;
@@ -49,35 +63,119 @@ public class PropertyMutatorCollector
     /**********************************************************
      */
 
-    public SettableIntMethodProperty addIntSetter(SettableBeanProperty prop) {
-        return _add(_intSetters, new SettableIntMethodProperty(prop, null, _intSetters.size()));
+    public OptimizedSettableBeanProperty<?> addIntSetter(SettableBeanProperty prop) {
+        int ix = _intSetters.size();
+        OptimizedSettableBeanProperty<?> optProp;
+        switch (ix) {
+        case 0:
+            optProp = new SettableInt0MethodProperty(prop, null, ix);
+            break;
+        case 1:
+            optProp = new SettableInt1MethodProperty(prop, null, ix);
+            break;
+        case 2:
+            optProp = new SettableInt2MethodProperty(prop, null, ix);
+            break;
+        case 3:
+            optProp = new SettableInt3MethodProperty(prop, null, ix);
+            break;
+        default:
+            optProp = new SettableIntMethodProperty(prop, null, ix-4);
+        }
+        return _add(_intSetters, optProp);
     }
-    public SettableLongMethodProperty addLongSetter(SettableBeanProperty prop) {
-        return _add(_longSetters, new SettableLongMethodProperty(prop, null, _longSetters.size()));
+    public OptimizedSettableBeanProperty<?> addLongSetter(SettableBeanProperty prop) {
+        int ix = _longSetters.size();
+        OptimizedSettableBeanProperty<?> optProp;
+        switch (ix) {
+        case 0:
+            optProp = new SettableLong0MethodProperty(prop, null, ix);
+            break;
+        case 1:
+            optProp = new SettableLong1MethodProperty(prop, null, ix);
+            break;
+        default:
+            optProp = new SettableLongMethodProperty(prop, null, ix-2);
+        }
+        return _add(_longSetters, optProp);
     }
-    public SettableBooleanMethodProperty addBooleanSetter(SettableBeanProperty prop) {
+    public OptimizedSettableBeanProperty<?> addBooleanSetter(SettableBeanProperty prop) {
         return _add(_booleanSetters, new SettableBooleanMethodProperty(prop, null, _booleanSetters.size()));
     }
-    public SettableStringMethodProperty addStringSetter(SettableBeanProperty prop) {
-        return _add(_stringSetters, new SettableStringMethodProperty(prop, null, _stringSetters.size()));
+    public OptimizedSettableBeanProperty<?> addStringSetter(SettableBeanProperty prop) {
+        int ix = _stringSetters.size();
+        OptimizedSettableBeanProperty<?> optProp;
+        switch (ix) {
+        case 0:
+            optProp = new SettableString0MethodProperty(prop, null, ix);
+            break;
+        case 1:
+            optProp = new SettableString1MethodProperty(prop, null, ix);
+            break;
+        case 2:
+            optProp = new SettableString2MethodProperty(prop, null, ix);
+            break;
+        case 3:
+            optProp = new SettableString3MethodProperty(prop, null, ix);
+            break;
+        default:
+            optProp = new SettableStringMethodProperty(prop, null, ix-4);
+        }
+        return _add(_stringSetters, optProp);
     }
-    public SettableObjectMethodProperty addObjectSetter(SettableBeanProperty prop) {
-        return _add(_objectSetters, new SettableObjectMethodProperty(prop, null, _objectSetters.size()));
+    public OptimizedSettableBeanProperty<?> addObjectSetter(SettableBeanProperty prop) {
+        int ix = _objectSetters.size();
+        OptimizedSettableBeanProperty<?> optProp;
+        switch (ix) {
+        case 0:
+            optProp = new SettableObject0MethodProperty(prop, null, ix);
+            break;
+        case 1:
+            optProp = new SettableObject1MethodProperty(prop, null, ix);
+            break;
+        default:
+            optProp = new SettableObjectMethodProperty(prop, null, ix-2);
+        }
+        return _add(_objectSetters, optProp);
     }
 
-    public SettableIntFieldProperty addIntField(SettableBeanProperty prop) {
-        return _add(_intFields, new SettableIntFieldProperty(prop, null, _intFields.size()));
+    public OptimizedSettableBeanProperty<?> addIntField(SettableBeanProperty prop) {
+        int ix = _intFields.size();
+        OptimizedSettableBeanProperty<?> optProp;
+        switch (ix) {
+        case 0:
+            optProp = new SettableInt0FieldProperty(prop, null, ix);
+            break;
+        case 1:
+            optProp = new SettableInt1FieldProperty(prop, null, ix);
+            break;
+        default:
+            optProp = new SettableIntFieldProperty(prop, null, ix-2);
+        }
+        return _add(_intFields, optProp);
     }
-    public SettableLongFieldProperty addLongField(SettableBeanProperty prop) {
+    public OptimizedSettableBeanProperty<?> addLongField(SettableBeanProperty prop) {
         return _add(_longFields, new SettableLongFieldProperty(prop, null, _longFields.size()));
     }
-    public SettableBooleanFieldProperty addBooleanField(SettableBeanProperty prop) {
+    public OptimizedSettableBeanProperty<?> addBooleanField(SettableBeanProperty prop) {
         return _add(_booleanFields, new SettableBooleanFieldProperty(prop, null, _booleanFields.size()));
     }
-    public SettableStringFieldProperty addStringField(SettableBeanProperty prop) {
-        return _add(_stringFields, new SettableStringFieldProperty(prop, null, _stringFields.size()));
+    public OptimizedSettableBeanProperty<?> addStringField(SettableBeanProperty prop) {
+        int ix = _stringFields.size();
+        OptimizedSettableBeanProperty<?> optProp;
+        switch (ix) {
+        case 0:
+            optProp = new SettableString0FieldProperty(prop, null, ix);
+            break;
+        case 1:
+            optProp = new SettableString1FieldProperty(prop, null, ix);
+            break;
+        default:
+            optProp = new SettableStringFieldProperty(prop, null, ix-2);
+        }
+        return _add(_stringFields, optProp);
     }
-    public SettableObjectFieldProperty addObjectField(SettableBeanProperty prop) {
+    public OptimizedSettableBeanProperty<?> addObjectField(SettableBeanProperty prop) {
         return _add(_objectFields, new SettableObjectFieldProperty(prop, null, _objectFields.size()));
     }
 
@@ -128,69 +226,50 @@ public class PropertyMutatorCollector
         mv.visitMaxs(0, 0); // don't care (real values: 1,1)
         mv.visitEnd();
 
-        // then two-argument constructor to be used by "with"
-        String ctorSig = String.format("(L%s;I)V",
-                internalClassName(SettableBeanProperty.class.getName()));
-        mv = cw.visitMethod(ACC_PUBLIC, "<init>", ctorSig, null, null);
-
-        mv.visitCode();
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitVarInsn(ILOAD, 2);
-        mv.visitMethodInsn(INVOKESPECIAL, superClass, "<init>", ctorSig, false);
-        mv.visitInsn(RETURN);
-        mv.visitMaxs(0, 0); // don't care (real values: 1,1)
-        mv.visitEnd();
-
-        // same signature as 2-arg constructor:
-        String withSig = String.format("(L%s;I)L%s;",
-                internalClassName(SettableBeanProperty.class.getName()), superClass);
-        mv = cw.visitMethod(ACC_PUBLIC, "with", withSig, null, null);
-        mv.visitCode();
-        mv.visitTypeInsn(NEW, tmpClassName);
-        mv.visitInsn(DUP);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitVarInsn(ILOAD, 2);
-        mv.visitMethodInsn(INVOKESPECIAL, tmpClassName, "<init>", ctorSig, false);
-        mv.visitInsn(ARETURN);
-        mv.visitMaxs(0, 0); // don't care (real values: 1,1)
-        mv.visitEnd();
-        
-        
         // and then add various accessors; first field accessors:
         if (!_intFields.isEmpty()) {
-            _addFields(cw, _intFields, "intField", Type.INT_TYPE, ILOAD);
+            _addFields(cw, _intFields, "intField", SPECIAL_FIELDS_INT,
+                    Type.INT_TYPE, ILOAD);
         }
         if (!_longFields.isEmpty()) {
-            _addFields(cw, _longFields, "longField", Type.LONG_TYPE, LLOAD);
+            _addFields(cw, _longFields, "longField", SPECIAL_FIELDS_LONG,
+                    Type.LONG_TYPE, LLOAD);
         }
         if (!_booleanFields.isEmpty()) {
             // booleans are simply ints 0 and 1
-            _addFields(cw, _booleanFields, "booleanField", Type.BOOLEAN_TYPE, ILOAD);
+            _addFields(cw, _booleanFields, "booleanField", SPECIAL_FIELDS_BOOLEAN,
+                    Type.BOOLEAN_TYPE, ILOAD);
         }
         if (!_stringFields.isEmpty()) {
-            _addFields(cw, _stringFields, "stringField", STRING_TYPE, ALOAD);
+            _addFields(cw, _stringFields, "stringField", SPECIAL_FIELDS_STRING,
+                    STRING_TYPE, ALOAD);
         }
         if (!_objectFields.isEmpty()) {
-            _addFields(cw, _objectFields, "objectField", OBJECT_TYPE, ALOAD);
+            _addFields(cw, _objectFields, "objectField", SPECIAL_FIELDS_OBJECT,
+                    OBJECT_TYPE, ALOAD);
         }
 
         // and then method accessors:
         if (!_intSetters.isEmpty()) {
-            _addSetters(cw, _intSetters, "intSetter", Type.INT_TYPE, ILOAD);
+            _addSetters(cw, _intSetters, "intSetter", SPECIAL_SETTERS_INT,
+                    Type.INT_TYPE, ILOAD);
         }
         if (!_longSetters.isEmpty()) {
-            _addSetters(cw, _longSetters, "longSetter", Type.LONG_TYPE, LLOAD);
+            _addSetters(cw, _longSetters, "longSetter", SPECIAL_SETTERS_LONG,
+                    Type.LONG_TYPE, LLOAD);
         }
         if (!_booleanSetters.isEmpty()) {
             // booleans are simply ints 0 and 1
-            _addSetters(cw, _booleanSetters, "booleanSetter", Type.BOOLEAN_TYPE, ILOAD);
+            _addSetters(cw, _booleanSetters, "booleanSetter", SPECIAL_SETTERS_BOOLEAN,
+                    Type.BOOLEAN_TYPE, ILOAD);
         }
         if (!_stringSetters.isEmpty()) {
-            _addSetters(cw, _stringSetters, "stringSetter", STRING_TYPE, ALOAD);
+            _addSetters(cw, _stringSetters, "stringSetter", SPECIAL_SETTERS_STRING,
+                    STRING_TYPE, ALOAD);
         }
         if (!_objectSetters.isEmpty()) {
-            _addSetters(cw, _objectSetters, "objectSetter", OBJECT_TYPE, ALOAD);
+            _addSetters(cw, _objectSetters, "objectSetter", SPECIAL_SETTERS_OBJECT,
+                    OBJECT_TYPE, ALOAD);
         }
 
         cw.visitEnd();
@@ -210,18 +289,54 @@ public class PropertyMutatorCollector
     /**********************************************************
      */
 
-    private <T extends OptimizedSettableBeanProperty<T>> void _addSetters(ClassWriter cw, List<T> props,
-            String methodName, Type parameterType, int loadValueCode)
+    private void _addSetters(ClassWriter cw, List<OptimizedSettableBeanProperty<?>> props,
+            String methodName, int specialCount, Type parameterType, int loadValueCode)
     {
+        final boolean mustCast = parameterType.equals(OBJECT_TYPE);
+        final boolean isLong = parameterType.equals(Type.LONG_TYPE);
+
+        // First: create "special" optimized variants, if any:
+        if (specialCount > 0) {
+            int propCount = props.size();
+            if (specialCount > propCount) {
+                specialCount = propCount;
+            }
+            
+            Iterator<OptimizedSettableBeanProperty<?>> it = props.iterator();
+            for (int ix = 0 ; ix < specialCount; ++ix) {
+                OptimizedSettableBeanProperty<?> prop = it.next();
+                String specMethodName = methodName + ix;
+                
+                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, specMethodName,
+                        "(Ljava/lang/Object;"+parameterType+")V", /*generic sig*/null, null);
+                mv.visitCode();
+                // first: cast bean to proper type
+                mv.visitVarInsn(ALOAD, 1);
+                mv.visitTypeInsn(CHECKCAST, beanClassName);
+                // 3 args (0 == this), so 3 is the first local var slot, 4 for long
+                // (one less than later on)
+                int localVarIndex = 3 + (isLong ? 1 : 0);
+                mv.visitVarInsn(ASTORE, localVarIndex);
+
+                _addOptimizedSetter(mv, prop, loadValueCode, localVarIndex, mustCast);         
+                mv.visitMaxs(0, 0);
+                mv.visitEnd();
+            }
+            // was that all?
+            if (propCount <= specialCount) {
+                return;
+            }
+            props = props.subList(specialCount, propCount);
+        }
+
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, methodName, "(Ljava/lang/Object;I"+parameterType+")V", /*generic sig*/null, null);
         mv.visitCode();
         // first: cast bean to proper type
         mv.visitVarInsn(ALOAD, 1);
         mv.visitTypeInsn(CHECKCAST, beanClassName);
-        int localVarIndex = 4 + (parameterType.equals(Type.LONG_TYPE) ? 1 : 0);
+        int localVarIndex = 4 + (isLong ? 1 : 0);
         mv.visitVarInsn(ASTORE, localVarIndex); // 3 args (0 == this), so 4 is the first local var slot, 5 for long
 
-        boolean mustCast = parameterType.equals(OBJECT_TYPE);
         // Ok; minor optimization, 3 or fewer accessors, just do IFs; over that, use switch
         switch (props.size()) {
         case 1:
@@ -246,18 +361,53 @@ public class PropertyMutatorCollector
     /**********************************************************
      */
 
-    private <T extends OptimizedSettableBeanProperty<T>> void _addFields(ClassWriter cw, List<T> props,
-            String methodName, Type parameterType, int loadValueCode)
+    private void _addFields(ClassWriter cw, List<OptimizedSettableBeanProperty<?>> props,
+            String methodName, int specialCount, Type parameterType, int loadValueCode)
     {
+        final boolean mustCast = parameterType.equals(OBJECT_TYPE);
+        final boolean isLong = parameterType.equals(Type.LONG_TYPE);
+
+        // First: create "special" optimized variants, if any:
+        if (specialCount > 0) {
+            int propCount = props.size();
+            if (specialCount > propCount) {
+                specialCount = propCount;
+            }
+            
+            Iterator<OptimizedSettableBeanProperty<?>> it = props.iterator();
+            for (int ix = 0 ; ix < specialCount; ++ix) {
+                OptimizedSettableBeanProperty<?> prop = it.next();
+                String specMethodName = methodName + ix;
+                
+                MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, specMethodName,
+                        "(Ljava/lang/Object;"+parameterType+")V", /*generic sig*/null, null);
+                mv.visitCode();
+                // first: cast bean to proper type
+                mv.visitVarInsn(ALOAD, 1);
+                mv.visitTypeInsn(CHECKCAST, beanClassName);
+                // 3 args (0 == this), so 3 is the first local var slot, 4 for long
+                // (one less than later on)
+                int localVarIndex = 3 + (isLong ? 1 : 0);
+                mv.visitVarInsn(ASTORE, localVarIndex);
+
+                _addOptimizedField(mv, prop, loadValueCode, localVarIndex, mustCast);         
+                mv.visitMaxs(0, 0); // don't care (real values: 1,1)
+                mv.visitEnd();
+            }
+            // was that all?
+            if (propCount <= specialCount) {
+                return;
+            }
+            props = props.subList(specialCount, propCount);
+        }
         MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, methodName, "(Ljava/lang/Object;I"+parameterType+")V", /*generic sig*/null, null);
         mv.visitCode();
         // first: cast bean to proper type
         mv.visitVarInsn(ALOAD, 1);
         mv.visitTypeInsn(CHECKCAST, beanClassName);
-        int localVarIndex = 4 + (parameterType.equals(Type.LONG_TYPE) ? 1 : 0);
+        int localVarIndex = 4 + (isLong ? 1 : 0);
         mv.visitVarInsn(ASTORE, localVarIndex); // 3 args (0 == this), so 4 is the first local var slot, 5 for long
 
-        boolean mustCast = parameterType.equals(OBJECT_TYPE);
         // Ok; minor optimization, 3 or fewer fields, just do IFs; over that, use switch
         switch (props.size()) {
         case 1:
@@ -275,25 +425,25 @@ public class PropertyMutatorCollector
         mv.visitMaxs(0, 0); // don't care (real values: 1,1)
         mv.visitEnd();
     }
-    
+
     /*
     /**********************************************************
     /* Helper methods, method accessor creation
     /**********************************************************
      */
 
-    private void _addSingleSetter(MethodVisitor mv,
-            OptimizedSettableBeanProperty<?> prop, int loadValueCode, int beanIndex, boolean mustCast)
+    private void _addSingleSetter(MethodVisitor mv, OptimizedSettableBeanProperty<?> prop,
+            int loadValueCode, int localVarOffset, boolean mustCast)
     {
         mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-        mv.visitVarInsn(ALOAD, beanIndex); // load local for cast bean
+        mv.visitVarInsn(ALOAD, localVarOffset); // load local for cast bean
         mv.visitVarInsn(loadValueCode, 3);
         Method method = (Method) (prop.getMember().getMember());
         Type type = Type.getType(method.getParameterTypes()[0]);
         if (mustCast) {
             mv.visitTypeInsn(CHECKCAST, type.getInternalName());
         }
-        // to fix [Issue-5] (don't assume return type is 'void'), we need to:
+        // Don't assume return type is 'void', we need to:
         Type returnType = Type.getType(method.getReturnType());
 
         boolean isInterface = method.getDeclaringClass().isInterface();
@@ -301,9 +451,28 @@ public class PropertyMutatorCollector
                 beanClassName, method.getName(), "("+type+")"+returnType, isInterface);
         mv.visitInsn(RETURN);
     }
-    
-    private <T extends OptimizedSettableBeanProperty<T>> void _addSettersUsingIf(MethodVisitor mv,
-            List<T> props, int loadValueCode, int beanIndex, boolean mustCast)
+
+    private void _addOptimizedSetter(MethodVisitor mv, OptimizedSettableBeanProperty<?> prop,
+            int loadValueCode, int localVarOffset, boolean mustCast)
+    {
+        mv.visitVarInsn(ALOAD, localVarOffset); // load local for pre-cast bean
+        mv.visitVarInsn(loadValueCode, 2);
+        Method method = (Method) (prop.getMember().getMember());
+        Type type = Type.getType(method.getParameterTypes()[0]);
+        if (mustCast) {
+            mv.visitTypeInsn(CHECKCAST, type.getInternalName());
+        }
+        // Don't assume return type is 'void', we need to:
+        Type returnType = Type.getType(method.getReturnType());
+
+        boolean isInterface = method.getDeclaringClass().isInterface();
+        mv.visitMethodInsn(isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
+                beanClassName, method.getName(), "("+type+")"+returnType, isInterface);
+        mv.visitInsn(RETURN);
+    }
+
+    private void _addSettersUsingIf(MethodVisitor mv,
+            List<OptimizedSettableBeanProperty<?>> props, int loadValueCode, int beanIndex, boolean mustCast)
     {
         mv.visitVarInsn(ILOAD, 2); // load second arg (index)
         Label next = new Label();
@@ -352,8 +521,8 @@ public class PropertyMutatorCollector
         }
     }
 
-    private <T extends OptimizedSettableBeanProperty<T>> void _addSettersUsingSwitch(MethodVisitor mv,
-            List<T> props, int loadValueCode, int beanIndex, boolean mustCast)
+    private void _addSettersUsingSwitch(MethodVisitor mv,
+            List<OptimizedSettableBeanProperty<?>> props, int loadValueCode, int beanIndex, boolean mustCast)
     {
         mv.visitVarInsn(ILOAD, 2); // load second arg (index)
 
@@ -390,10 +559,11 @@ public class PropertyMutatorCollector
      */
 
     private void _addSingleField(MethodVisitor mv,
-            OptimizedSettableBeanProperty<?> prop, int loadValueCode, int beanIndex, boolean mustCast)
+            OptimizedSettableBeanProperty<?> prop, int loadValueCode,
+            int localVarOffset, boolean mustCast)
     {
         mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-        mv.visitVarInsn(ALOAD, beanIndex); // load local for cast bean
+        mv.visitVarInsn(ALOAD, localVarOffset); // load local for cast bean
         mv.visitVarInsn(loadValueCode, 3);
         AnnotatedField field = (AnnotatedField) prop.getMember();
         Type type = Type.getType(field.getRawType());
@@ -403,9 +573,25 @@ public class PropertyMutatorCollector
         mv.visitFieldInsn(PUTFIELD, beanClassName, field.getName(), type.getDescriptor());
         mv.visitInsn(RETURN);
     }
+
+    // Same as above, except no index needed or passed
+    private void _addOptimizedField(MethodVisitor mv,
+            OptimizedSettableBeanProperty<?> prop, int loadValueCode,
+            int localVarOffset, boolean mustCast)
+    {
+        mv.visitVarInsn(ALOAD, localVarOffset); // load local for pre-cast bean
+        mv.visitVarInsn(loadValueCode, 2);
+        AnnotatedField field = (AnnotatedField) prop.getMember();
+        Type type = Type.getType(field.getRawType());
+        if (mustCast) {
+            mv.visitTypeInsn(CHECKCAST, type.getInternalName());
+        }
+        mv.visitFieldInsn(PUTFIELD, beanClassName, field.getName(), type.getDescriptor());
+        mv.visitInsn(RETURN);
+    }
     
-    private <T extends OptimizedSettableBeanProperty<T>> void _addFieldsUsingIf(MethodVisitor mv,
-            List<T> props, int loadValueCode, int beanIndex, boolean mustCast)
+    private void _addFieldsUsingIf(MethodVisitor mv,
+            List<OptimizedSettableBeanProperty<?>> props, int loadValueCode, int beanIndex, boolean mustCast)
     {
         mv.visitVarInsn(ILOAD, 2); // load second arg (index)
         Label next = new Label();
@@ -445,8 +631,8 @@ public class PropertyMutatorCollector
         }
     }
 
-    private <T extends OptimizedSettableBeanProperty<T>> void _addFieldsUsingSwitch(MethodVisitor mv,
-            List<T> props, int loadValueCode, int beanIndex, boolean mustCast)
+    private void _addFieldsUsingSwitch(MethodVisitor mv, List<OptimizedSettableBeanProperty<?>> props,
+            int loadValueCode, int beanIndex, boolean mustCast)
     {
         mv.visitVarInsn(ILOAD, 2); // load second arg (index)
 

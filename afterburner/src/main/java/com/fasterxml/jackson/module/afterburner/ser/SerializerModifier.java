@@ -30,7 +30,7 @@ public class SerializerModifier extends BeanSerializerModifier
             BeanDescription beanDesc, List<BeanPropertyWriter> beanProperties)
     {
         final Class<?> beanClass = beanDesc.getBeanClass();
-        // [Issue#21]: Can't force access to sealed packages, or anything within "java."
+        // [#21]: Can't force access to sealed packages, or anything within "java."
         //    namespace. (how about javax.?)
         if (!MyClassLoader.canAddClassInPackageOf(beanClass)) {
             return beanProperties;

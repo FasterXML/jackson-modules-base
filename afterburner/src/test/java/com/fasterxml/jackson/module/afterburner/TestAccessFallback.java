@@ -54,6 +54,9 @@ public class TestAccessFallback extends AfterburnerTestBase
     {
         ObjectMapper abMapper = mapperWithModule();
         assertEquals(BEAN_JSON, abMapper.writeValueAsString(new MyBean("a")));
+
+        // actually try again, to ensure handling works reliably
+        assertEquals(BEAN_JSON, abMapper.writeValueAsString(new MyBean("a")));
     }
 
     public void testDeserializeAccess() throws Exception
@@ -61,5 +64,9 @@ public class TestAccessFallback extends AfterburnerTestBase
         ObjectMapper abMapper = mapperWithModule();
         MyBean bean = abMapper.readValue(BEAN_JSON, MyBean.class);
         assertEquals("a", bean.getE());
+
+        // actually try again, to ensure handling works reliably
+        MyBean bean2 = abMapper.readValue(BEAN_JSON, MyBean.class);
+        assertEquals("a", bean2.getE());
     }
 }

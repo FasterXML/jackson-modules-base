@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
+@SuppressWarnings("serial")
 public class TestStdSerializerOverrides extends AfterburnerTestBase
 {
     static class ClassWithPropOverrides
@@ -23,7 +24,6 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
         public String b = "b";
     }
 
-    @SuppressWarnings("serial")
     static class MyStringSerializer extends StdSerializer<String>
     {
         public MyStringSerializer() { super(String.class); }
@@ -35,18 +35,52 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
         }
     }
 
+    static class MyIntSerializer extends StdSerializer<Integer>
+    {
+        public MyIntSerializer() { super(Integer.class); }
+
+        @Override
+        public void serialize(Integer value0, JsonGenerator gen,
+                SerializerProvider provider) throws IOException {
+            int v = -value0.intValue();
+            gen.writeNumber(v);
+        }
+    }
+
+    static class MyLongSerializer extends StdSerializer<Long>
+    {
+        public MyLongSerializer() { super(Long.class); }
+
+        @Override
+        public void serialize(Long value0, JsonGenerator gen,
+                SerializerProvider provider) throws IOException {
+            long v = -value0.longValue();
+            gen.writeNumber(v);
+        }
+    }
+    
     // for [module-afterburner#59]
-    static class FooBean {
+    static class SimpleStringBean {
         public String field = "value";
     }
 
+    static class SimpleIntBean {
+        public int getValue() { return 42; }
+    }
+
+    static class SimpleLongBean {
+        public long value = 999L;
+    }
+    
     /*
     /**********************************************************************
-    /* Test methods
+    /* Test methods; String overrides
     /**********************************************************************
      */
 
-    public void testFiveMinuteDoc() throws Exception
+    private final ObjectMapper VANILLA_MAPPER = new ObjectMapper();
+    
+    public void testStringSerWith() throws Exception
     {
         ObjectMapper plainMapper = new ObjectMapper();
         ObjectMapper abMapper = mapperWithModule();
@@ -58,23 +92,75 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
     public void testStringSerOverideNoAfterburner() throws Exception
     {
-        final FooBean input = new FooBean();
-        final String EXP = "{\"field\":\"Foo:value\"}";
         String json = new ObjectMapper()
             .registerModule(new SimpleModule("module", Version.unknownVersion())
                 .addSerializer(String.class, new MyStringSerializer()))
-            .writeValueAsString(input);
-        assertEquals(EXP, json);
+            .writeValueAsString(new SimpleStringBean());
+        assertEquals("{\"field\":\"Foo:value\"}", json);
     }
 
     public void testStringSerOverideWithAfterburner() throws Exception
     {
-        final FooBean input = new FooBean();
-        final String EXP = "{\"field\":\"Foo:value\"}";
         String json = mapperWithModule()
             .registerModule(new SimpleModule("module", Version.unknownVersion())
                 .addSerializer(String.class, new MyStringSerializer()))
-            .writeValueAsString(input);
-        assertEquals(EXP, json);
+            .writeValueAsString(new SimpleStringBean());
+        assertEquals("{\"field\":\"Foo:value\"}", json);
+    }
+
+    /*
+    /**********************************************************************
+    /* Test methods; numbers overrides
+    /**********************************************************************
+     */
+
+    public void testIntSerOverideNoAfterburner() throws Exception
+    {
+        // First, baseline, no custom serializer
+        assertEquals(aposToQuotes("{'value':42}"),
+                VANILLA_MAPPER.writeValueAsString(new SimpleIntBean()));
+
+        // and then with custom serializer, but no Afterburner
+        String json = new ObjectMapper()
+            .registerModule(new SimpleModule("module", Version.unknownVersion())
+                    .addSerializer(Integer.class, new MyIntSerializer())
+                    .addSerializer(Integer.TYPE, new MyIntSerializer()))
+            .writeValueAsString(new SimpleIntBean());
+        assertEquals(aposToQuotes("{'value':-42}"), json);
+    }
+
+    public void testIntSerOverideWithAfterburner() throws Exception
+    {
+        String json = mapperWithModule()
+            .registerModule(new SimpleModule("module", Version.unknownVersion())
+                .addSerializer(Integer.class, new MyIntSerializer())
+                .addSerializer(Integer.TYPE, new MyIntSerializer()))
+            .writeValueAsString(new SimpleIntBean());
+        assertEquals(aposToQuotes("{'value':-42}"), json);
+    }
+
+    public void testLongSerOverideNoAfterburner() throws Exception
+    {
+        // First, baseline, no custom serializer
+        assertEquals(aposToQuotes("{'value':999}"),
+                VANILLA_MAPPER.writeValueAsString(new SimpleLongBean()));
+
+        // and then with custom serializer, but no Afterburner
+        String json = new ObjectMapper()
+            .registerModule(new SimpleModule("module", Version.unknownVersion())
+                    .addSerializer(Long.class, new MyLongSerializer())
+                    .addSerializer(Long.TYPE, new MyLongSerializer()))
+            .writeValueAsString(new SimpleLongBean());
+        assertEquals(aposToQuotes("{'value':-999}"), json);
+    }
+
+    public void testLongSerOverideWithAfterburner() throws Exception
+    {
+        String json = mapperWithModule()
+            .registerModule(new SimpleModule("module", Version.unknownVersion())
+                    .addSerializer(Long.class, new MyLongSerializer())
+                    .addSerializer(Long.TYPE, new MyLongSerializer()))
+            .writeValueAsString(new SimpleLongBean());
+        assertEquals(aposToQuotes("{'value':-999}"), json);
     }
 }

@@ -61,9 +61,7 @@ public class DeserializerModifier extends BeanDeserializerModifier
         if (!newProps.isEmpty()) {
             BeanPropertyMutator baseMutator = collector.buildMutator(_classLoader);
             for (OptimizedSettableBeanProperty<?> prop : newProps) {
-                BeanPropertyMutator mut = baseMutator.with(prop.getDelegate(),
-                        prop.getOptimizedIndex());
-                builder.addOrReplaceProperty(prop.withMutator(mut), true);
+                builder.addOrReplaceProperty(prop.withMutator(baseMutator), true);
             }
         }
         // Second thing: see if we could (re)generate Creator(s):

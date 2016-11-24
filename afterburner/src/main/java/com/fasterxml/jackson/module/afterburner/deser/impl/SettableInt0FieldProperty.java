@@ -1,17 +1,20 @@
-package com.fasterxml.jackson.module.afterburner.deser;
+package com.fasterxml.jackson.module.afterburner.deser.impl;
 
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.*;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 
-public final class SettableObjectMethodProperty
-    extends OptimizedSettableBeanProperty<SettableObjectMethodProperty>
+import com.fasterxml.jackson.module.afterburner.deser.*;
+
+public final class SettableInt0FieldProperty
+    extends OptimizedSettableBeanProperty<SettableInt0FieldProperty>
 {
     private static final long serialVersionUID = 1L;
 
-    public SettableObjectMethodProperty(SettableBeanProperty src,
+    public SettableInt0FieldProperty(SettableBeanProperty src,
             BeanPropertyMutator mutator, int index)
     {
         super(src, mutator, index);
@@ -19,12 +22,12 @@ public final class SettableObjectMethodProperty
 
     @Override
     protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
-        return new SettableObjectMethodProperty(del, _propertyMutator, _optimizedIndex);
+        return new SettableInt0FieldProperty(del, _propertyMutator, _optimizedIndex);
     }
 
     @Override
     public SettableBeanProperty withMutator(BeanPropertyMutator mut) {
-        return new SettableObjectMethodProperty(delegate, mut, _optimizedIndex);
+        return new SettableInt0FieldProperty(delegate, mut, _optimizedIndex);
     }
 
     /*
@@ -37,19 +40,20 @@ public final class SettableObjectMethodProperty
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException
     {
-        // inlined `set()`
-        final Object v= deserialize(p, ctxt);
+        int v = p.hasToken(JsonToken.VALUE_NUMBER_INT) ? p.getIntValue() : _deserializeInt(p, ctxt);
         try {
-            _propertyMutator.objectSetter(bean, _optimizedIndex, v);
+            _propertyMutator.intField0(bean, v);
         } catch (Throwable e) {
             _reportProblem(bean, v, e);
         }
     }
 
     @Override
-    public void set(Object bean, Object v) throws IOException {
+    public void set(Object bean, Object value) throws IOException {
+        // not optimal (due to boxing), but better than using reflection:
+        int v = ((Number) value).intValue();
         try {
-            _propertyMutator.objectSetter(bean, _optimizedIndex, v);
+            _propertyMutator.intField0(bean, v);
         } catch (Throwable e) {
             _reportProblem(bean, v, e);
         }
@@ -57,7 +61,10 @@ public final class SettableObjectMethodProperty
 
     @Override
     public Object deserializeSetAndReturn(JsonParser p,
-            DeserializationContext ctxt, Object instance) throws IOException {
-        return setAndReturn(instance, deserialize(p, ctxt));
+            DeserializationContext ctxt, Object instance)
+        throws IOException
+    {
+        int v = p.hasToken(JsonToken.VALUE_NUMBER_INT) ? p.getIntValue() : _deserializeInt(p, ctxt);
+        return setAndReturn(instance, v);
     }    
 }

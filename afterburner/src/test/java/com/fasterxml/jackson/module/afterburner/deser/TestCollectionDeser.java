@@ -42,7 +42,6 @@ public class TestCollectionDeser extends AfterburnerTestBase
         final ObjectMapper mapper = mapperWithModule();
         mapper.enable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS);
 
-        /*
         final Integer intValue = mapper.readValue("[ 1 ]", Integer.class);
         assertEquals(Integer.valueOf(1), intValue);
 
@@ -53,7 +52,6 @@ public class TestCollectionDeser extends AfterburnerTestBase
         IntBean b1 = mapper.readValue(aposToQuotes("[{ 'value' : 123 }]"), IntBean.class);
         assertNotNull(b1);
         assertEquals(123, b1.value);
-*/
 
         // and then array of ints within POJO
         IntBean b2 = mapper.readValue(aposToQuotes("{ 'value' : [ 123 ] }"), IntBean.class);

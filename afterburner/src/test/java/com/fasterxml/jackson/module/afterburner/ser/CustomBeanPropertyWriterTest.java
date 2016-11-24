@@ -49,11 +49,11 @@ public class CustomBeanPropertyWriterTest extends AfterburnerTestBase
 
         @Override
         public void serializeAsField(Object bean, JsonGenerator jgen, SerializerProvider prov) throws Exception {
-          Object val = get(bean);
-          if((val == null || !val.equals(2)) && _nullSerializer == null) {
-            return;
-          }
-          super.serializeAsField(bean, jgen, prov);
+            Object val = get(bean);
+            if((val == null || !val.equals(2)) && _nullSerializer == null) {
+                return;
+            }
+            super.serializeAsField(bean, jgen, prov);
         }
     }
     

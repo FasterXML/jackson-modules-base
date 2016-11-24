@@ -38,12 +38,21 @@ public final class SettableObjectFieldProperty
             Object bean) throws IOException
     {
         // inlined `set()`
-        _propertyMutator.objectField(bean, deserialize(p, ctxt));
+        final Object v = deserialize(p, ctxt);
+        try {
+            _propertyMutator.objectField(bean, _optimizedIndex, v);
+        } catch (Throwable e) {
+            _reportProblem(bean, v, e);
+        }
     }
 
     @Override
-    public void set(Object bean, Object value) throws IOException {
-        _propertyMutator.objectField(bean, value);
+    public void set(Object bean, Object v) throws IOException {
+        try {
+            _propertyMutator.objectField(bean, _optimizedIndex, v);
+        } catch (Throwable e) {
+            _reportProblem(bean, v, e);
+        }
     }
 
     @Override
