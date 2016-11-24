@@ -10,6 +10,9 @@ Modules:
 
 2.9.0 (not yet released)
 
+- (afterburner) Simplified generation of mutators, to remove one level of
+  indirecton (simpler code, potential minor performance improvement)
+
 2.8.5 (14-Nov-2016)
 
 No changes since 2.8.4.
