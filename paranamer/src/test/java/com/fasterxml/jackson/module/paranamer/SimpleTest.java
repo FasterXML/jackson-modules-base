@@ -1,3 +1,8 @@
+/*
+* Copyright (c) FasterXML, LLC.
+* Licensed under the Apache (Software) License, version 2.0.
+*/
+
 package com.fasterxml.jackson.module.paranamer;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

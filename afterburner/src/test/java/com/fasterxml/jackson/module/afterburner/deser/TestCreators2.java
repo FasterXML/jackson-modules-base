@@ -1,3 +1,7 @@
+/*
+* Copyright (c) FasterXML, LLC.
+* Licensed under the Apache (Software) License, version 2.0.
+*/
 
 package com.fasterxml.jackson.module.afterburner.deser;
 
