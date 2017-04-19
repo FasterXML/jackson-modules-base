@@ -66,7 +66,7 @@ public class TestJsonFilter extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = mapperWithModule();
+    private final ObjectMapper MAPPER = newObjectMapper();
     
     public void testSimpleInclusionFilter() throws Exception
     {

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
+import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -113,9 +113,10 @@ public class TestSimpleMaterializedInterfaces
             DeserializationConfig config, Class<?> cls)
     {
         JavaType type = config.constructType(cls);
-        return mat.materializeRawType(config, AnnotatedClass.construct(type, config));
+        return mat.materializeRawType(config,
+                AnnotatedClassResolver.resolve(config, type, config));
     }
-    
+
     /*
     /**********************************************************
     /* Unit tests, higher level

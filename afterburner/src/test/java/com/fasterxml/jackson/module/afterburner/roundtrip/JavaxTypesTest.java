@@ -13,7 +13,7 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
  */
 public class JavaxTypesTest extends AfterburnerTestBase
 {
-    final ObjectMapper MAPPER = mapperWithModule();
+    final ObjectMapper MAPPER = newObjectMapper();
 
     public void testGregorianCalendar() throws Exception
     {

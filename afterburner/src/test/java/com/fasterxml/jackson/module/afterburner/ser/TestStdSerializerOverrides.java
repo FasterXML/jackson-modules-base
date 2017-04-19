@@ -83,7 +83,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
     public void testStringSerWith() throws Exception
     {
         ObjectMapper plainMapper = new ObjectMapper();
-        ObjectMapper abMapper = mapperWithModule();
+        ObjectMapper abMapper = newObjectMapper();
         ClassWithPropOverrides input = new ClassWithPropOverrides();
         String jsonPlain = plainMapper.writeValueAsString(input);
         String jsonAb = abMapper.writeValueAsString(input);
@@ -101,7 +101,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
     public void testStringSerOverideWithAfterburner() throws Exception
     {
-        String json = mapperWithModule()
+        String json = newObjectMapper()
             .registerModule(new SimpleModule("module", Version.unknownVersion())
                 .addSerializer(String.class, new MyStringSerializer()))
             .writeValueAsString(new SimpleStringBean());
@@ -131,7 +131,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
     public void testIntSerOverideWithAfterburner() throws Exception
     {
-        String json = mapperWithModule()
+        String json = newObjectMapper()
             .registerModule(new SimpleModule("module", Version.unknownVersion())
                 .addSerializer(Integer.class, new MyIntSerializer())
                 .addSerializer(Integer.TYPE, new MyIntSerializer()))
@@ -156,7 +156,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
     public void testLongSerOverideWithAfterburner() throws Exception
     {
-        String json = mapperWithModule()
+        String json = newObjectMapper()
             .registerModule(new SimpleModule("module", Version.unknownVersion())
                     .addSerializer(Long.class, new MyLongSerializer())
                     .addSerializer(Long.TYPE, new MyLongSerializer()))

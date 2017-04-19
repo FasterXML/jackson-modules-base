@@ -6,9 +6,40 @@ import java.util.Arrays;
 import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 public abstract class AfterburnerTestBase extends junit.framework.TestCase
 {
+    // // // First some "shared" classes from databind's `BaseMapTest`
+    
+    public enum ABC { A, B, C; }
+
+    // since 2.8
+    public static class Point {
+        public int x, y;
+
+        protected Point() { } // for deser
+        public Point(int x0, int y0) {
+            x = x0;
+            y = y0;
+        }
+    
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Point)) {
+                return false;
+            }
+            Point other = (Point) o;
+            return (other.x == x) && (other.y == y);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("[x=%d, y=%d]", x, y);
+        }
+    }
+
     /**
      * Sample class from Jackson tutorial ("JacksonInFiveMinutes")
      */
@@ -89,16 +120,41 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
     protected AfterburnerTestBase() { }
 
     /*
-    /**********************************************************************
-    /* Helper methods, setup
-    /**********************************************************************
+    /**********************************************************
+    /* Factory methods: note, copied from `BaseMapTest`
+    /**********************************************************
      */
+
+    private static ObjectMapper SHARED_MAPPER;
+
+    protected ObjectMapper objectMapper() {
+        if (SHARED_MAPPER == null) {
+            SHARED_MAPPER = newObjectMapper();
+        }
+        return SHARED_MAPPER;
+    }
+
+    protected ObjectWriter objectWriter() {
+        return objectMapper().writer();
+    }
+
+    protected ObjectReader objectReader() {
+        return objectMapper().reader();
+    }
     
+    protected ObjectReader objectReader(Class<?> cls) {
+        return objectMapper().readerFor(cls);
+    }
+
+    protected static ObjectMapper newObjectMapper() {
+        return new ObjectMapper()
+                .registerModule(new AfterburnerModule());
+    }
+
+    @Deprecated
     protected ObjectMapper mapperWithModule()
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new AfterburnerModule());
-        return mapper;
+        return newObjectMapper();
     }
 
     /*

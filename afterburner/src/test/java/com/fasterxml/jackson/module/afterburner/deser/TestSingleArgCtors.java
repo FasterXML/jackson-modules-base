@@ -26,7 +26,7 @@ public class TestSingleArgCtors extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = mapperWithModule();
+    private final ObjectMapper MAPPER = newObjectMapper();
     
     public void testSingleStringArgCtor() throws Exception
     {

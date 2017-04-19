@@ -41,7 +41,8 @@ public class GuiceAnnotationIntrospector extends NopAnnotationIntrospector
             * inject are the member itself, so, nothing to do here...
             */
             guiceMember = m;
-            guiceAnnotation = this.findBindingAnnotation(m.annotations());
+            AnnotationMap anns = ((AnnotatedMember) m).getAllAnnotations();
+            guiceAnnotation = findBindingAnnotation(anns.annotations());
         }
         else if (m instanceof AnnotatedMethod)
         {
@@ -90,8 +91,7 @@ public class GuiceAnnotationIntrospector extends NopAnnotationIntrospector
      */
     private Annotation findBindingAnnotation(Iterable<Annotation> annotations)
     {
-        for (Annotation annotation : annotations)
-        {
+        for (Annotation annotation : annotations) {
             // Check on guice (BindingAnnotation) & javax (Qualifier) based injections
             if (annotation.annotationType().isAnnotationPresent(BindingAnnotation.class) ||
                 annotation.annotationType().isAnnotationPresent(Qualifier.class))

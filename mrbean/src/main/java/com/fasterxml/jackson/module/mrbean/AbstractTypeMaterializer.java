@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
+import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
 
 /**
  * Nifty class for pulling implementations of classes out of thin air.
@@ -236,8 +237,8 @@ public class AbstractTypeMaterializer
         byte[] code = tb.buildAbstractBase(abstractName);
         Class<?> raw = _classLoader.loadAndResolve(abstractName, code, cls);
         // and only with that intermediate non-generic type, do actual materialization
-        AnnotatedClass ac = AnnotatedClass.construct(config.getTypeFactory().constructType(raw),
-                config);
+        AnnotatedClass ac = AnnotatedClassResolver.resolve(config,
+                config.getTypeFactory().constructType(raw), config);
         return materializeRawType(config, ac);
     }
 

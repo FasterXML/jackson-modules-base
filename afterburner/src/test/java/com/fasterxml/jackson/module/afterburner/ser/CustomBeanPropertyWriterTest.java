@@ -59,7 +59,7 @@ public class CustomBeanPropertyWriterTest extends AfterburnerTestBase
     
     public void testCustomPropertyWriter() throws Exception
     {
-        ObjectMapper objectMapper = mapperWithModule();
+        ObjectMapper objectMapper = newObjectMapper();
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.setSerializerModifier(new Only2BeanSerializerModifier());
         objectMapper.registerModule(simpleModule);

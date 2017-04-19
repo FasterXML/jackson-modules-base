@@ -96,7 +96,7 @@ public class POJOAsArrayTest extends AfterburnerTestBase
     /*****************************************************
      */
 
-    final ObjectMapper MAPPER = mapperWithModule();
+    final ObjectMapper MAPPER = newObjectMapper();
     
     /**
      * Test that verifies that property annotation works
@@ -158,9 +158,9 @@ public class POJOAsArrayTest extends AfterburnerTestBase
      */
     
     public void testSerializeAsArrayWithSingleProperty() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        mapper.enable(SerializationFeature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED);
-        String json = mapper.writeValueAsString(new SingleBean());
+        String json = MAPPER.writer()
+                .with(SerializationFeature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
+                .writeValueAsString(new SingleBean());
         assertEquals("\"foo\"", json);
     }
 }

@@ -18,7 +18,7 @@ public class SerializeWithViewTest extends AfterburnerTestBase
     
     public void testWriterWithView() throws Exception
     {
-        ObjectMapper mapper = mapperWithModule();
+        ObjectMapper mapper = newObjectMapper();
 
         String json = mapper.writeValueAsString(new Bean());
         // by default: both fields serialized

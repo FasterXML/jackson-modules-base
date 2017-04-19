@@ -28,7 +28,7 @@ public class TestCollectionDeser extends AfterburnerTestBase
     // [module-afterburner#36]
     public void testIntMethod() throws Exception
     {
-        ObjectMapper mapper = mapperWithModule();
+        ObjectMapper mapper = newObjectMapper();
         mapper.configure(MapperFeature.USE_GETTERS_AS_SETTERS, true);
         CollectionBean bean = mapper.readValue("{\"stuff\":[\"a\",\"b\"]}",
                 CollectionBean.class);
@@ -39,10 +39,9 @@ public class TestCollectionDeser extends AfterburnerTestBase
     // [module-afterburner#56]
     public void testUnwrapSingleArray() throws Exception
     {
-        final ObjectMapper mapper = mapperWithModule();
+        final ObjectMapper mapper = newObjectMapper();
         mapper.enable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS);
 
-        /*
         final Integer intValue = mapper.readValue("[ 1 ]", Integer.class);
         assertEquals(Integer.valueOf(1), intValue);
 
@@ -53,7 +52,6 @@ public class TestCollectionDeser extends AfterburnerTestBase
         IntBean b1 = mapper.readValue(aposToQuotes("[{ 'value' : 123 }]"), IntBean.class);
         assertNotNull(b1);
         assertEquals(123, b1.value);
-*/
 
         // and then array of ints within POJO
         IntBean b2 = mapper.readValue(aposToQuotes("{ 'value' : [ 123 ] }"), IntBean.class);

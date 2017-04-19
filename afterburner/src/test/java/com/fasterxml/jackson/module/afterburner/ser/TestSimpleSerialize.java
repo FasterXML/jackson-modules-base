@@ -125,36 +125,32 @@ public class TestSimpleSerialize extends AfterburnerTestBase
     /**********************************************************************
      */
 
+    private final ObjectMapper MAPPER = newObjectMapper();
+
     public void testIntMethod() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        assertEquals("{\"x\":123}", mapper.writeValueAsString(new IntBean()));
+        assertEquals("{\"x\":123}", MAPPER.writeValueAsString(new IntBean()));
     }
 
     public void testNonDefaultIntMethod() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        assertEquals("{}", mapper.writeValueAsString(new NonDefaultIntBean()));
-        assertEquals("{\"x\":-181}", mapper.writeValueAsString(new NonDefaultIntBean(-181)));
+        assertEquals("{}", MAPPER.writeValueAsString(new NonDefaultIntBean()));
+        assertEquals("{\"x\":-181}", MAPPER.writeValueAsString(new NonDefaultIntBean(-181)));
     }
 
     public void testLongMethod() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        assertEquals("{\"value\":-99}", mapper.writeValueAsString(new LongBean()));
+        assertEquals("{\"value\":-99}", MAPPER.writeValueAsString(new LongBean()));
     }
 
     public void testNonDefaultLongMethod() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        assertEquals("{}", mapper.writeValueAsString(new NonDefaultLongBean()));
-        assertEquals("{\"value\":45}", mapper.writeValueAsString(new NonDefaultLongBean(45L)));
+        assertEquals("{}", MAPPER.writeValueAsString(new NonDefaultLongBean()));
+        assertEquals("{\"value\":45}", MAPPER.writeValueAsString(new NonDefaultLongBean(45L)));
     }
 
     public void testStringMethod() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        assertEquals("{\"name\":\"abc\"}", mapper.writeValueAsString(new StringBean()));
+        assertEquals("{\"name\":\"abc\"}", MAPPER.writeValueAsString(new StringBean()));
     }
 
     public void testObjectMethod() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        assertEquals("{\"enum\":\"B\"}", mapper.writeValueAsString(new EnumBean()));
+        assertEquals("{\"enum\":\"B\"}", MAPPER.writeValueAsString(new EnumBean()));
     }
     
     /*
@@ -164,46 +160,38 @@ public class TestSimpleSerialize extends AfterburnerTestBase
      */
     
     public void testIntField() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        assertEquals("{\"intF\":17}", mapper.writeValueAsString(new IntFieldBean()));
+        assertEquals("{\"intF\":17}", MAPPER.writeValueAsString(new IntFieldBean()));
     }
 
     public void testNonDefaultIntField() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        assertEquals("{}", mapper.writeValueAsString(new NonDefaultIntFieldBean()));
-        assertEquals("{\"intF\":91}", mapper.writeValueAsString(new NonDefaultIntFieldBean(91)));
+        assertEquals("{}", MAPPER.writeValueAsString(new NonDefaultIntFieldBean()));
+        assertEquals("{\"intF\":91}", MAPPER.writeValueAsString(new NonDefaultIntFieldBean(91)));
     }
 
     public void testLongField() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        assertEquals("{\"long\":-123}", mapper.writeValueAsString(new LongFieldBean()));
+        assertEquals("{\"long\":-123}", MAPPER.writeValueAsString(new LongFieldBean()));
     }
 
     public void testNonDefaultLongField() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        assertEquals("{}", mapper.writeValueAsString(new NonDefaultLongFieldBean()));
-        assertEquals("{\"long\":58}", mapper.writeValueAsString(new NonDefaultLongFieldBean(58L)));
+        assertEquals("{}", MAPPER.writeValueAsString(new NonDefaultLongFieldBean()));
+        assertEquals("{\"long\":58}", MAPPER.writeValueAsString(new NonDefaultLongFieldBean(58L)));
     }
 
     public void testStringField() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        assertEquals("{\"foo\":\"bar\"}", mapper.writeValueAsString(new StringFieldBean()));
+        assertEquals("{\"foo\":\"bar\"}", MAPPER.writeValueAsString(new StringFieldBean()));
     }
 
     public void testStringField2() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        assertEquals("{\"foo\":\"bar\"}", mapper.writeValueAsString(new StringFieldBean()));
+        assertEquals("{\"foo\":\"bar\"}", MAPPER.writeValueAsString(new StringFieldBean()));
     }
     
     public void testObjectField() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
-        assertEquals("{\"a\":null}", mapper.writeValueAsString(new StringsBean()));
+        assertEquals("{\"a\":null}", MAPPER.writeValueAsString(new StringsBean()));
     }
 
     public void testBooleans() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
         assertEquals(aposToQuotes("{'a':true,'b':false}"),
-                mapper.writeValueAsString(new BooleansBean()));
+                MAPPER.writeValueAsString(new BooleansBean()));
     }
     
     /*
@@ -215,7 +203,7 @@ public class TestSimpleSerialize extends AfterburnerTestBase
     public void testFiveMinuteDoc() throws Exception
     {
         ObjectMapper plainMapper = new ObjectMapper();
-        ObjectMapper abMapper = mapperWithModule();
+        ObjectMapper abMapper = MAPPER;
         FiveMinuteUser input = new FiveMinuteUser("First", "Name", true,
                 FiveMinuteUser.Gender.FEMALE, new byte[] { 1 } );
         String jsonPlain = plainMapper.writeValueAsString(input);
@@ -227,7 +215,7 @@ public class TestSimpleSerialize extends AfterburnerTestBase
     public void testGeneratedSerializerName() throws Exception {
         CheckGeneratedSerializerName bean = new CheckGeneratedSerializerName();
         bean.stringField = "bar";
-        ObjectMapper mapper = mapperWithModule();
+        ObjectMapper mapper = newObjectMapper();
         mapper.writeValueAsString(bean);
         ClassLoader cl = getClass().getClassLoader();
         Field declaredField = ClassLoader.class.getDeclaredField("classes");

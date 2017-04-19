@@ -155,7 +155,7 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
     /**********************************************************************
      */
 
-    private final ObjectMapper MAPPER = mapperWithModule();
+    private final ObjectMapper MAPPER = newObjectMapper();
     
     public void testIntMethod() throws Exception {
         IntBean bean = MAPPER.readValue("{\"x\":13}", IntBean.class);
@@ -272,7 +272,7 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
         BeanWithNonVoidPropertySetter bean = MAPPER.readValue(json, BeanWithNonVoidPropertySetter.class);
         assertEquals("zoobar", bean.getStringField());
 
-        ObjectMapper abMapper = mapperWithModule(); // if I don't do this, the module won't be picked up
+        ObjectMapper abMapper = newObjectMapper();
         // current fails with java.lang.NoSuchMethodError
         bean = abMapper.readValue(json, BeanWithNonVoidPropertySetter.class);
         assertEquals("zoobar", bean.getStringField());
@@ -287,7 +287,7 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
         BigBeanWithNonVoidPropertySetter bean = MAPPER.readValue(json, BigBeanWithNonVoidPropertySetter.class);
         assertEquals("zoobar", bean.getStringField());
 
-        ObjectMapper abMapper = mapperWithModule(); // if I don't do this, the module won't be picked up
+        ObjectMapper abMapper = newObjectMapper();
         // current fails with java.lang.NoSuchMethodError
         bean = abMapper.readValue(json, BigBeanWithNonVoidPropertySetter.class);
         assertEquals("zoobar", bean.getStringField());

@@ -29,7 +29,7 @@ public class TestJsonSerializeAnnotationBug
 
     public void testAfterburnerModule() throws Exception
     {
-        ObjectMapper mapper = mapperWithModule();
+        ObjectMapper mapper = newObjectMapper();
 
         String value = mapper.writeValueAsString(new TestObjectWithJsonSerialize(new BigDecimal("870.04")));
         assertNotNull(value);

@@ -61,7 +61,7 @@ public class TestCreatorsDelegating extends AfterburnerTestBase
 
     public void testBooleanDelegate() throws Exception
     {
-        ObjectMapper m = mapperWithModule();
+        ObjectMapper m = newObjectMapper();
         // should obviously work with booleans...
         BooleanBean bb = m.readValue("true", BooleanBean.class);
         assertEquals(Boolean.TRUE, bb.value);
@@ -74,7 +74,7 @@ public class TestCreatorsDelegating extends AfterburnerTestBase
     // As per [JACKSON-711]: should also work with delegate model (single non-annotated arg)
     public void testWithCtorAndDelegate() throws Exception
     {
-        ObjectMapper mapper = mapperWithModule();
+        ObjectMapper mapper = newObjectMapper();
         mapper.setInjectableValues(new InjectableValues.Std()
             .addValue(String.class, "Pooka")
             );
@@ -90,7 +90,7 @@ public class TestCreatorsDelegating extends AfterburnerTestBase
 
     public void testWithFactoryAndDelegate() throws Exception
     {
-        ObjectMapper mapper = mapperWithModule();
+        ObjectMapper mapper = newObjectMapper();
         mapper.setInjectableValues(new InjectableValues.Std()
             .addValue(String.class, "Fygar")
             );

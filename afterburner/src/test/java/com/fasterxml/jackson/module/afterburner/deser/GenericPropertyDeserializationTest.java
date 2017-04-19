@@ -29,7 +29,7 @@ public class GenericPropertyDeserializationTest extends AfterburnerTestBase
     /**********************************************************
      */
 
-    final private ObjectMapper MAPPER = mapperWithModule();
+    final private ObjectMapper MAPPER = newObjectMapper();
 
     public void testGenericIssue4() throws Exception
     {

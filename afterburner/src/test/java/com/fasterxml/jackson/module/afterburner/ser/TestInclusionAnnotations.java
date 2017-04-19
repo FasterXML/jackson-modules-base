@@ -63,7 +63,7 @@ public class TestInclusionAnnotations extends AfterburnerTestBase
     /**********************************************************************
      */
 
-    private final ObjectMapper MAPPER = mapperWithModule();
+    private final ObjectMapper MAPPER = newObjectMapper();
     
     public void testIncludeUsingAnnotation() throws Exception
     {

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
  */
 public class MediaItemRoundtripTest extends AfterburnerTestBase
 {
-    private final ObjectMapper MAPPER = mapperWithModule();
+    private final ObjectMapper MAPPER = newObjectMapper();
 
     public void testSimple() throws Exception
     {

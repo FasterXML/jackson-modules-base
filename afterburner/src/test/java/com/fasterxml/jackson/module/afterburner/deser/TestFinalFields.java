@@ -42,7 +42,7 @@ public class TestFinalFields extends AfterburnerTestBase
 
     public void testFinalFields() throws Exception
     {
-        ObjectMapper mapper = mapperWithModule();
+        ObjectMapper mapper = objectMapper();
         String json = mapper.writeValueAsString(new Organization[] {
                 new Organization(123L, "Corp", new Address(98040, 98021))
         });
@@ -60,7 +60,7 @@ public class TestFinalFields extends AfterburnerTestBase
     {
         JsonAddress address = new JsonAddress(-1L, "line1", "line2", "city", "state", "zip", "locale", "timezone");
         JsonOrganization organization = new JsonOrganization(-1L, "name", address);
-        ObjectMapper mapper = mapperWithModule();
+        ObjectMapper mapper = objectMapper();
         String json = mapper.writeValueAsString(organization);
         assertNotNull(json);
         

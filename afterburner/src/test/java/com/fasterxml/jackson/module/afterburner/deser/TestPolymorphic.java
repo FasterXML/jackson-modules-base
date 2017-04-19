@@ -36,7 +36,7 @@ public class TestPolymorphic extends AfterburnerTestBase
     }
 
     public void testAfterburner() throws Exception {
-        ObjectMapper mapper = mapperWithModule();
+        ObjectMapper mapper = newObjectMapper();
         Envelope envelope = new Envelope(new Payload("test"));
         String json = mapper.writeValueAsString(envelope);
         Envelope result = mapper.readValue(json, Envelope.class);
@@ -51,7 +51,7 @@ public class TestPolymorphic extends AfterburnerTestBase
     {
         final String CLASS = Payload.class.getName();
 
-        ObjectMapper mapper = mapperWithModule();
+        ObjectMapper mapper = newObjectMapper();
 
         // First, case that has been working always
         final String successCase = "{\"payload\":{\"something\":\"test\"},\"class\":\""+CLASS+"\"}";

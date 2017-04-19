@@ -54,7 +54,7 @@ public class GenerateWithMixinsTest extends AfterburnerTestBase
       {
           SampleObject sampleObject = new SampleObject("field1", 2, "field3".getBytes());
 
-          ObjectMapper objectMapper = mapperWithModule();
+          ObjectMapper objectMapper = newObjectMapper();
 
           ObjectMapper objectMapperCopy = objectMapper.copy();
           objectMapperCopy.addMixIn(SampleObject.class, IgnoreField3MixIn.class);

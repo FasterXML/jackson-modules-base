@@ -78,7 +78,7 @@ public class BiggerDataTest extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = mapperWithModule();
+    private final ObjectMapper MAPPER = objectMapper();
 	
 	public void testReading() throws Exception
 	{

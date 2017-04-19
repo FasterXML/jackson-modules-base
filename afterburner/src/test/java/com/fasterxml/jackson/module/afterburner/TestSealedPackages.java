@@ -7,9 +7,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class TestSealedPackages extends AfterburnerTestBase
 {
+    private final ObjectMapper MAPPER = newObjectMapper();
+
     public void testJavaStdDeserialization() throws Exception
     {
-        final ObjectMapper MAPPER = mapperWithModule();
         String json = "{}";
         Exception e = MAPPER.readValue(json, Exception.class);
         assertNotNull(e);
@@ -17,7 +18,6 @@ public class TestSealedPackages extends AfterburnerTestBase
 
     public void testJavaStdSerialization() throws Exception
     {
-        final ObjectMapper MAPPER = mapperWithModule();
         String json = MAPPER.writeValueAsString(Thread.currentThread().getThreadGroup());
         assertNotNull(json);
     }
