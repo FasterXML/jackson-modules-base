@@ -115,6 +115,7 @@ public class PropertyMutatorCollector
         final String tmpClassName = baseName.getSlashedTemplate();
 
         // muchos important: level at least 1.5 to get generics!!!
+        // 19-Apr-2017, tatu: For Jackson 2.9 SHOULD generate Java 7 bytecode...
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER + ACC_FINAL, tmpClassName,
                 null, superClass, null);
         cw.visitSource(baseName.getSourceFilename(), null);

@@ -109,8 +109,7 @@ public class PropertyAccessorCollector
         final String tmpClassName = baseName.getSlashedTemplate();
         
         // muchos important: level at least 1.5 to get generics!!!
-        // also: since we require JDK 1.6 anyway, use that starting with Jackson 2.5
-
+        // 19-Apr-2017, tatu: For Jackson 2.9 SHOUD generate Java 7 bytecode. But...
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER + ACC_FINAL, tmpClassName,
                 null, superClass, null);
         cw.visitSource(baseName.getSourceFilename(), null);

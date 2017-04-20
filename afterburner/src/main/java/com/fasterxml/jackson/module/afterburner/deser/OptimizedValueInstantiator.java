@@ -45,4 +45,17 @@ public abstract class OptimizedValueInstantiator
     @Override
     public abstract Object createUsingDefault(DeserializationContext ctxt)
         throws IOException;
+
+    /**
+     * Helper method needed to allow handling of instantiation exception in
+     * case of optimized no-args creator.
+     *
+     * @since 2.9
+     */
+    protected Object _handleInstantiationProblem(DeserializationContext ctxt, Exception e)
+        throws IOException
+    {
+        return ctxt.handleInstantiationProblem(_valueClass, null,
+                rewrapCtorProblem(ctxt, e));
+    }
 }

@@ -210,6 +210,11 @@ public class ProblemHandlerTest extends AfterburnerTestBase
         public final static BustedCtor INST = new BustedCtor(true);
 
         public BustedCtor() {
+try {
+    throw new Exception();
+} catch (Exception e) {
+    e.printStackTrace();
+}
             throw new RuntimeException("Fail!");
         }
         private BustedCtor(boolean b) { }
@@ -315,16 +320,19 @@ public class ProblemHandlerTest extends AfterburnerTestBase
         }
     }
 
-/*    
     public void testInstantiationExceptionHandling() throws Exception
     {
         ObjectMapper mapper = newObjectMapper()
             .addHandler(new InstantiationProblemHandler(BustedCtor.INST));
-        BustedCtor w = mapper.readValue("{ }",
-                BustedCtor.class);
+        BustedCtor w = null;
+        try {
+            w = mapper.readValue("{ }",
+                    BustedCtor.class);
+        } catch (Exception e) {
+            fail("Should not have passed exception through: "+e);
+        }
         assertNotNull(w);
     }
-    */
 
     public void testMissingInstantiatorHandling() throws Exception
     {

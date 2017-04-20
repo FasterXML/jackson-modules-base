@@ -130,7 +130,6 @@ public class TestInjectables extends AfterburnerTestBase
         assertEquals(Integer.valueOf(13), bean.age);
         assertEquals("Bob", bean.name);
     }
-
 /*
     public void testIssueGH471() throws Exception
     {
@@ -147,7 +146,7 @@ public class TestInjectables extends AfterburnerTestBase
         IssueGH471Bean bean = mapper.readValue("{\"x\":13,\"constructor_value\":\"constructor\",\"method_value\":\"method\",\"field_value\":\"field\"}",
                 IssueGH471Bean.class);
 
-        /. Assert *SAME* instance
+        // Assert *SAME* instance
         assertSame(constructorInjected, bean.constructorInjected);
         assertSame(methodInjected, bean.methodInjected);
         assertSame(fieldInjected, bean.fieldInjected);
@@ -160,7 +159,6 @@ public class TestInjectables extends AfterburnerTestBase
         assertEquals(13, bean.x);
     }
 */
-
     // [databind#77]
     public void testTransientField() throws Exception
     {

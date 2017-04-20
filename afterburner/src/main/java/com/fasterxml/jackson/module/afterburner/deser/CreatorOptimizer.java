@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
 import com.fasterxml.jackson.databind.introspect.AnnotatedWithParams;
 
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
@@ -145,16 +146,43 @@ public class CreatorOptimizer
         mv.visitEnd();
 
         // And then override: public Object createUsingDefault()
-        mv = cw.visitMethod(ACC_PUBLIC, "createUsingDefault", "(" +
-        		Type.getDescriptor(DeserializationContext.class)+")Ljava/lang/Object;", null, null);
+        mv = cw.visitMethod(ACC_PUBLIC, "createUsingDefault",
+                "(" +Type.getDescriptor(DeserializationContext.class)+")Ljava/lang/Object;", null, null);
         mv.visitCode();
 
+        // 19-Apr-2017, tatu: Need to take care to of try catch block...
+        Label startTryBlock = new Label();
+        Label endTryBlock = new Label();
+        Label startCatchBlock = new Label();
+
+        // Initiale try-catch block
+        mv.visitTryCatchBlock(startTryBlock, endTryBlock, startCatchBlock, "java/lang/Exception");
+        mv.visitLabel(startTryBlock);
+
+        // Then new/static-factory call
         if (ctor != null) {
             addCreator(mv, ctor);
         } else {
             addCreator(mv, factory);
         }
         mv.visitInsn(ARETURN);
+
+        mv.visitLabel(endTryBlock); 
+        // and then do catch block
+        mv.visitLabel(startCatchBlock);
+        mv.visitVarInsn(ASTORE, 2); // push Exception e
+        mv.visitVarInsn(ALOAD, 0); // this
+        mv.visitVarInsn(ALOAD, 1); // Arg #1 ("ctxt")
+        mv.visitVarInsn(ALOAD, 2); // caught exception
+        mv.visitMethodInsn(INVOKEVIRTUAL,
+                optimizedValueInstDesc, "_handleInstantiationProblem",
+                String.format("(%s%s)Ljava/lang/Object;", 
+                        Type.getDescriptor(DeserializationContext.class),
+                        "Ljava/lang/Exception;"),
+                false);
+        mv.visitInsn(ARETURN);
+        
+        // and call it all done
         mv.visitMaxs(0, 0);
         mv.visitEnd();
 
