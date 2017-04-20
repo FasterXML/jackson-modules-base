@@ -37,20 +37,18 @@ public final class SettableStringFieldProperty
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException
     {
-        String text = p.getValueAsString();
-        if (text == null) {
-            text = _deserializeString(p, ctxt);
+        String text;
+        if (p.hasToken(JsonToken.VALUE_NULL)) {
+            if (_skipNulls) {
+                return;
+            }
+            text = (String) _nullProvider.getNullValue(ctxt);
+        } else {
+             text = p.getValueAsString();
+            if (text == null) {
+                text = _deserializeString(p, ctxt);
+            }
         }
-        try {
-            _propertyMutator.stringField(bean, _optimizedIndex, text);
-        } catch (Throwable e) {
-            _reportProblem(bean, text, e);
-        }
-    }
-
-    @Override
-    public void set(Object bean, Object value) throws IOException {
-        final String text = (String) value;
         try {
             _propertyMutator.stringField(bean, _optimizedIndex, text);
         } catch (Throwable e) {
@@ -62,10 +60,28 @@ public final class SettableStringFieldProperty
     public Object deserializeSetAndReturn(JsonParser p, DeserializationContext ctxt, Object instance)
         throws IOException
     {
-        String text = p.getValueAsString();
-        if (text == null) {
-            text = _deserializeString(p, ctxt);
+        String text;
+        if (p.hasToken(JsonToken.VALUE_NULL)) {
+            if (_skipNulls) {
+                return instance;
+            }
+            text = (String) _nullProvider.getNullValue(ctxt);
+        } else {
+             text = p.getValueAsString();
+            if (text == null) {
+                text = _deserializeString(p, ctxt);
+            }
         }
         return setAndReturn(instance, text);
+    }
+
+    @Override
+    public void set(Object bean, Object value) throws IOException {
+        final String text = (String) value;
+        try {
+            _propertyMutator.stringField(bean, _optimizedIndex, text);
+        } catch (Throwable e) {
+            _reportProblem(bean, text, e);
+        }
     }
 }

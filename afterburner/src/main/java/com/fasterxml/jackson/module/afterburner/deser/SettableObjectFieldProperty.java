@@ -37,17 +37,15 @@ public final class SettableObjectFieldProperty
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException
     {
-        // inlined `set()`
-        final Object v = deserialize(p, ctxt);
-        try {
-            _propertyMutator.objectField(bean, _optimizedIndex, v);
-        } catch (Throwable e) {
-            _reportProblem(bean, v, e);
+        final Object v;
+        if (p.hasToken(JsonToken.VALUE_NULL)) {
+            if (_skipNulls) {
+                return;
+            }
+            v = _nullProvider.getNullValue(ctxt);
+        } else {
+            v = deserialize(p, ctxt);
         }
-    }
-
-    @Override
-    public void set(Object bean, Object v) throws IOException {
         try {
             _propertyMutator.objectField(bean, _optimizedIndex, v);
         } catch (Throwable e) {
@@ -59,6 +57,24 @@ public final class SettableObjectFieldProperty
     public Object deserializeSetAndReturn(JsonParser p,
             DeserializationContext ctxt, Object instance) throws IOException
     {
-        return setAndReturn(instance, deserialize(p, ctxt));
-    }    
+        final Object v;
+        if (p.hasToken(JsonToken.VALUE_NULL)) {
+            if (_skipNulls) {
+                return instance;
+            }
+            v = _nullProvider.getNullValue(ctxt);
+        } else {
+            v = deserialize(p, ctxt);
+        }
+        return setAndReturn(instance, v);
+    }
+
+    @Override
+    public void set(Object bean, Object v) throws IOException {
+        try {
+            _propertyMutator.objectField(bean, _optimizedIndex, v);
+        } catch (Throwable e) {
+            _reportProblem(bean, v, e);
+        }
+    }
 }

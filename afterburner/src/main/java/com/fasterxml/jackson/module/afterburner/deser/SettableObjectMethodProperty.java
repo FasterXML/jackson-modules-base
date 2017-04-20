@@ -37,13 +37,36 @@ public final class SettableObjectMethodProperty
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException
     {
-        // inlined `set()`
-        final Object v= deserialize(p, ctxt);
+        final Object v;
+        if (p.hasToken(JsonToken.VALUE_NULL)) {
+            if (_skipNulls) {
+                return;
+            }
+            v = _nullProvider.getNullValue(ctxt);
+        } else {
+            v = deserialize(p, ctxt);
+        }
         try {
             _propertyMutator.objectSetter(bean, _optimizedIndex, v);
         } catch (Throwable e) {
             _reportProblem(bean, v, e);
         }
+    }
+
+    @Override
+    public Object deserializeSetAndReturn(JsonParser p,
+            DeserializationContext ctxt, Object instance) throws IOException
+    {
+        final Object v;
+        if (p.hasToken(JsonToken.VALUE_NULL)) {
+            if (_skipNulls) {
+                return instance;
+            }
+            v = _nullProvider.getNullValue(ctxt);
+        } else {
+            v = deserialize(p, ctxt);
+        }
+        return setAndReturn(instance, v);
     }
 
     @Override
@@ -54,10 +77,4 @@ public final class SettableObjectMethodProperty
             _reportProblem(bean, v, e);
         }
     }
-
-    @Override
-    public Object deserializeSetAndReturn(JsonParser p,
-            DeserializationContext ctxt, Object instance) throws IOException {
-        return setAndReturn(instance, deserialize(p, ctxt));
-    }    
 }

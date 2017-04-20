@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.io.NumberInput;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.*;
+import com.fasterxml.jackson.databind.deser.impl.NullsConstantProvider;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 
 /**
@@ -23,6 +24,11 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     protected BeanPropertyMutator _propertyMutator;
 
     protected final int _optimizedIndex;
+
+    /**
+     * @since 2.9
+     */
+    final protected boolean _skipNulls;
 
     /**
      * Marker that we set if mutator turns out to be broken in a systemic
@@ -42,6 +48,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         super(src);
         _propertyMutator = mutator;
         _optimizedIndex = index;
+        _skipNulls = NullsConstantProvider.isSkipper(_nullProvider);
     }
 
     // Base impl of `withName()` fine as-is:

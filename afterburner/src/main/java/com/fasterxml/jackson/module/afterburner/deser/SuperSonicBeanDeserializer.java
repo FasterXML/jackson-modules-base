@@ -187,7 +187,7 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
             if (!p.nextFieldName(_orderedPropertyNames[0])) {
                 return super.deserialize(p,  ctxt, bean);
             }
-        } else if (!p.hasTokenId(JsonTokenId.ID_FIELD_NAME)
+        } else if (!p.hasToken(JsonToken.FIELD_NAME)
                 || !prop.getName().equals(p.getCurrentName())) {
             // no, something funky, use base impl for special cases
             return super.deserialize(p,  ctxt, bean);
@@ -201,7 +201,7 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
         // then rest of properties
         for (int i = 1, len = _orderedProperties.length; i < len; ++i) {
             if (!p.nextFieldName(_orderedPropertyNames[i])) { // miss...
-                if (p.hasTokenId(JsonTokenId.ID_END_OBJECT)) {
+                if (p.hasToken(JsonToken.END_OBJECT)) {
                     return bean;
                 }
                 // we likely point to FIELD_NAME, so can just call parent impl
@@ -253,7 +253,7 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
             if (!p.nextFieldName(_orderedPropertyNames[0])) {
                 return super.deserialize(p,  ctxt, bean);
             }
-        } else if (!p.hasTokenId(JsonTokenId.ID_FIELD_NAME)
+        } else if (!p.hasToken(JsonToken.FIELD_NAME)
                 || !prop.getName().equals(p.getCurrentName())) {
             return super.deserialize(p,  ctxt, bean);
         }
@@ -269,7 +269,7 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
         for (int i = 1, len = _orderedProperties.length; i < len; ++i) {
             prop = _orderedProperties[i];
             if (!p.nextFieldName(_orderedPropertyNames[i])) { // miss...
-                if (p.hasTokenId(JsonTokenId.ID_END_OBJECT)) {
+                if (p.hasToken(JsonToken.END_OBJECT)) {
                     return bean;
                 }
                 // we likely point to FIELD_NAME, so can just call parent impl
