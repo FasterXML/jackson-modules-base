@@ -141,4 +141,33 @@ public class TestInjectables extends AfterburnerTestBase
         assertEquals(28, bean.value);
         assertEquals("Injected!", bean.injected);
     }
+
+    public void testIssueGH471() throws Exception
+    {
+        final Object constructorInjected = "constructorInjected";
+        final Object methodInjected = "methodInjected";
+        final Object fieldInjected = "fieldInjected";
+
+        ObjectMapper mapper = newObjectMapper()
+                        .setInjectableValues(new InjectableValues.Std()
+                                .addValue("constructor_injected", constructorInjected)
+                                .addValue("method_injected", methodInjected)
+                                .addValue("field_injected", fieldInjected));
+
+       IssueGH471Bean bean = mapper.readValue(
+"{\"x\":13,\"constructor_value\":\"constructor\",\"method_value\":\"method\",\"field_value\":\"field\"}",
+                IssueGH471Bean.class);
+
+        // Assert *SAME* instance
+        assertSame(constructorInjected, bean.constructorInjected);
+        assertSame(methodInjected, bean.methodInjected);
+        assertSame(fieldInjected, bean.fieldInjected);
+
+        // Check that basic properties still work (better safe than sorry)
+        assertEquals("constructor", bean.constructorValue);
+        assertEquals("method", bean.methodValue);
+        assertEquals("field", bean.fieldValue);
+
+        assertEquals(13, bean.x);
+    }
 }
