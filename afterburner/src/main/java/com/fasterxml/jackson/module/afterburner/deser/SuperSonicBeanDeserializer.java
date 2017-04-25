@@ -95,10 +95,9 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
         
         for (; i < len; ++i) {
             SettableBeanProperty prop = _beanProperties.find(_orderedPropertyNames[i].toString());
-            if (prop == null) {
-                break;
+            if (prop != null) {
+                props.add(prop);
             }
-            props.add(prop);
         }
         // should usually get at least one property; let's for now consider it an error if not
         // (may need to revisit in future)
@@ -128,7 +127,11 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
             if (_externalTypeIdHandler != null) {
                 return deserializeWithExternalTypeId(p, ctxt);
             }
-            return deserializeFromObjectUsingNonDefault(p, ctxt);
+            Object bean = deserializeFromObjectUsingNonDefault(p, ctxt);
+            if (_injectables != null) {
+                injectValues(ctxt, bean);
+            }
+            return bean;
         }
         final Object bean = _valueInstantiator.createUsingDefault(ctxt);
         // [databind#631]: Assign current value, to be accessible by custom serializers
@@ -233,7 +236,11 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
             if (_externalTypeIdHandler != null) {
                 return deserializeWithExternalTypeId(p, ctxt);
             }
-            return deserializeFromObjectUsingNonDefault(p, ctxt);
+            Object bean = deserializeFromObjectUsingNonDefault(p, ctxt);
+            if (_injectables != null) {
+                injectValues(ctxt, bean);
+            }
+            return bean;
         }
         final Object bean = _valueInstantiator.createUsingDefault(ctxt);
         // [databind#631]: Assign current value, to be accessible by custom serializers
