@@ -13,6 +13,9 @@ Modules:
 - (afterburner) Simplified generation of mutators, to remove one level of
   indirecton (simpler code, potential minor performance improvement)
 
+2.8.9 (12-Jun-2017)
+2.8.8 (05-Apr-2017)
+2.8.7 (21-Feb-2017)
 2.8.6 (12-Jan-2017)
 2.8.5 (14-Nov-2016)
 
