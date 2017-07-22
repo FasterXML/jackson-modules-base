@@ -58,7 +58,7 @@ public class NullConversionsGenericTest extends AfterburnerTestBase
                     NoCtorWrapper.class);
             fail("Should not pass");
         } catch (JsonMappingException e) {
-            verifyException(e, "Can not create empty instance");
+            verifyException(e, "Cannot create empty instance");
         }
     }
 

@@ -189,7 +189,7 @@ public class PropertyMergeTest extends AfterburnerTestBase
                 .readValue("\"blob\"");
             fail("Should not pass");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Can not deserialize");
+            verifyException(e, "cannot deserialize");
             verifyException(e, "from non-Array representation");
         }
     }
@@ -222,7 +222,7 @@ public class PropertyMergeTest extends AfterburnerTestBase
             mapper.readValue("{\"value\":3}", CantMergeInts.class);
             fail("Should not pass");
         } catch (InvalidDefinitionException e) {
-            verifyException(e, "can not be merged");
+            verifyException(e, "cannot be merged");
         }
     }
 }
