@@ -1,0 +1,8 @@
+Here are people who have contributed to development Jackson JSON processor
+JAXB annotation support component.
+(version numbers in brackets indicate release in which the problem was fixed)
+
+Ryan Heaton: author, submitted code first version was based on
+Tatu Saloranta, tatu.saloranta@iki.fi: author (all code since initial version)
+
+

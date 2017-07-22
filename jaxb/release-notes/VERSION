@@ -1,0 +1,212 @@
+Project: jackson-module-jaxb-annotations
+
+------------------------------------------------------------------------
+=== Releases ===
+------------------------------------------------------------------------
+
+2.9.0 (not yet released)
+
+- Cleaned handling of names in `JaxbAnnotationIntrospector` to reduce
+  likelihood of accidental inclusion.
+
+2.8.9 (12-Jun-2017)
+2.8.8 (05-Apr-2017)
+2.8.7 (21-Feb-2017)
+2.8.6 (12-Jan-2017)
+2.8.5 (14-Nov-2016)
+2.8.4 (14-Oct-2016)
+
+No changes since 2.8.3
+
+2.8.3 (17-Sep-2016)
+
+#61: Transient fields serialized when @XmlAccessorType(XmlAccessType.FIELD)
+  is present
+ (reported by dsharp1@github)
+
+2.8.2 (30-Aug-2016)
+2.8.1 (20-Jul-2016)
+2.8.0 (04-Jul-2016)
+
+No changes since 2.7
+
+2.7.9 (not yet released)
+
+#63: Error in type resolution of reference type (`Optional`)
+ (reported by adrianriley@github)
+
+2.7.8 (26-Sep-2016)
+2.7.7 (27-Aug-2016)
+2.7.6 (23-Jul-2016)
+2.7.5 (11-Jun-2016)
+2.7.4 (29-Apr-2016)
+
+No changes since 2.7.3
+
+2.7.3 (16-Mar-2016)
+
+- Minor changes to `JaxbAnnotationIntrospector.findEnumValues()` to help
+  with proper merging of explicit name overrides.
+
+2.7.2 (26-Feb-2016)
+
+- Change build to produce JDK6-compatible jar, to allow use on JDK6 runtime
+
+2.7.1 (02-Feb-2016)
+
+No change since 2.7.0.
+
+2.7.0 (09-Jan-2016)
+
+#52: Add a feature in `JaxbAnnotationIntrospector` to define meaning of
+  `nillable=false` as "JsonInclude.NON_EMPTY"
+
+2.6.6 (05-Apr-2016)
+2.6.5 (19-Jan-2016)
+2.6.4 (07-Dec-2015)
+2.6.3 (12-Oct-2015)
+
+No changes since 2.6.2
+
+2.6.2 (15-Sep-2015)
+
+#47: JaxbAnnotationIntrospector does not pick up 'required' property of @XmlAttribute
+ (reported by phantomjinx@github)
+
+2.6.1 (09-Aug-2015)
+2.6.0 (19-Jul-2015)
+
+No changes since 2.5.
+
+2.5.4 (09-Jun-2015)
+
+No changes since 2.5.3
+
+2.5.3 (24-Apr-2015)
+
+#40: XmlElementRef ignored if inside XmlElementWrapper
+ (reported by gkresic@github)
+
+2.5.2 (29-Mar-2015)
+
+No changes since 2.5.1.
+
+2.5.1 (06-Feb-2015)
+
+#39: JaxbAnnotationIntrospector does not honor JsonInclude.Include.NON_EMPTY set on ObjectMapper
+ (reported by jdmichal@github)
+
+2.5.0 (01-Jan-2015)
+
+#31: Add a way to configure name to use for `@XmlValue` annotated properties #31
+
+2.4.4 (24-Nov-2014)
+
+#32: fix deserialization of Collection with @XmlJavaTypeAdapter on method
+ (contributed by Andy C, q3aiml@github)
+#33: Using @XmlEnum to generate an enum of type Integer in json schema
+ (requested by jesse8888@github)
+- Fixes to handling of `@XmlValue` provided name (problem with #30 fix)
+
+2.4.3 (03-Oct-2014)
+
+No changes.
+
+2.4.2 (14-Aug-2014)
+
+#30: Need a way to override name @XmlValue induces when not doing XML
+
+2.4.1 (17-Jun-2014)
+
+No changes since 2.4.0.
+
+2.4.0 (02-Jun-2014)
+
+No functional changes.
+
+2.3.3 (10-Apr-2014)
+2.3.2 (01-Mar-2014)
+2.3.1 (28-Dec-2013)
+
+No functional changes.
+
+2.3.0 (14-Nov-2013)
+
+#25: @XmlElementWrapper() should work wrt USE_WRAPPER_NAME_AS_PROPERTY_NAME,
+  use underlying "default" property name
+
+2.2.3 (23-Aug-2013)
+
+#21: Add LICENSE, NOTICE in jar
+
+2.2.2 (27-May-2013)
+2.2.1 (03-May-2013)
+
+No changes.
+
+2.2.0 (22-Apr-2013)
+
+* Fixed last problems with identity adapters resolved
+* Improved handling of adapters for Map types
+
+2.1.2 (04-Dec-2012)
+
+* [Issue#16]: Problems with XmlAdapters for deserialization contents of
+  Collection types
+ (reported by rcpoison@github)
+* Changed JaxbAnnotationIntrospector to force access if need be (mostly
+  needed for constructing Adapter instances)
+
+2.1.1 (11-Nov-2012)
+
+No functional changes.
+
+2.1.0 (08-Oct-2012)
+
+Improvements:
+
+* [Issue#1]: Support @XmlSeeAlso for specifying subtypes
+* [Issue#10]: (partial) support for "identity" adapters, for property adapters
+ (but not yet for class-annotated)
+* [Issue#11]: Add 'JaxbAnnotationModule.setFirstAsId()' to support alternative
+ Object Id serialization ("always-as-id" instead of "first-as-POJO-then-as-id")
+
+2.0.5 (27-Jul-2012)
+
+Fixes:
+
+* [Issue-9]: Problems with multiple @XmlID, @XmlIDREF properties
+
+2.0.4 (26-Jun-2012)
+
+No fixes or changes, released along with other core components
+
+2.0.3 (15-Jun-2012)
+
+Fixes:
+
+* [Issue-7] Handling of @XmlElementWrapper incorrect wrt @XmlElement
+ (wrong precedence), when used with Jackon XML backend
+* [Issue-8] Incorrect matching of XmlAdapter/@XmlJavaTypeAdapter, Collection
+ types
+ (reported by @stoyarchukav)
+
+2.0.2 (14-May-2012)
+
+No fixes; updated core dependencies to 2.0.2.
+
+2.0.1 (23-Apr-2012)
+
+* Made compilation target 1.5; should now work on JDK 1.5
+
+2.0.0 (25-Mar-2012)
+
+Fixes:
+
+* [JACKSON-722]: Ability to use @XmlJavaTypeAdapter for List/Map values
+
+New features:
+
+* [Issue#2]: Support @XmlID, @XmlIDREF
+
+[entries for versions 1.x and earlier not retained; refer to earlier releases)

@@ -17,6 +17,7 @@ not datatype, data format, or JAX-RS provider modules.
   <modules>
     <module>afterburner</module>
     <module>guice</module>
+    <module>jaxb</module>
     <module>mrbean</module>
     <module>osgi</module>
     <module>paranamer</module>

@@ -10,6 +10,7 @@ Currently included are:
 
 * [Afterburner](afterburner/)
 * [Guice](guice/)
+* [JAXB Annotations](jaxb/)
 * [Mr Bean](mrbean/)
 * [OSGi](osgi/)
 * [Paranamer](paranamer/)

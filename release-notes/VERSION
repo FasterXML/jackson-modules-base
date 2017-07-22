@@ -12,6 +12,7 @@ Modules:
 
 - (afterburner) Simplified generation of mutators, to remove one level of
   indirecton (simpler code, potential minor performance improvement)
+- Add `jackson-module-jaxb-annotations` as one more base module!
 
 2.8.9 (12-Jun-2017)
 2.8.8 (05-Apr-2017)
