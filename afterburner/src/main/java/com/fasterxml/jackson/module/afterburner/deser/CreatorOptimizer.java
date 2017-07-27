@@ -112,6 +112,7 @@ public class CreatorOptimizer
         // (a) default constructor, for creating bogus instance (just calls default instance)
         // (b) copy-constructor which takes StdValueInstantiator instance, passes to superclass
         final String optimizedValueInstDesc = Type.getDescriptor(OptimizedValueInstantiator.class);
+        final String optimizedValueInstName = Type.getInternalName(OptimizedValueInstantiator.class);
         final String stdValueInstDesc = Type.getDescriptor(StdValueInstantiator.class);
 
         // default (no-arg) constructor:
@@ -175,7 +176,7 @@ public class CreatorOptimizer
         mv.visitVarInsn(ALOAD, 1); // Arg #1 ("ctxt")
         mv.visitVarInsn(ALOAD, 2); // caught exception
         mv.visitMethodInsn(INVOKEVIRTUAL,
-                optimizedValueInstDesc, "_handleInstantiationProblem",
+                optimizedValueInstName, "_handleInstantiationProblem",
                 String.format("(%s%s)Ljava/lang/Object;", 
                         Type.getDescriptor(DeserializationContext.class),
                         "Ljava/lang/Exception;"),
