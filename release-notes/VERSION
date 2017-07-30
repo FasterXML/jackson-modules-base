@@ -8,7 +8,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.9.0 (not yet released)
+2.9.0 (30-Jul-2017)
 
 - (afterburner) Simplified generation of mutators, to remove one level of
   indirecton (simpler code, potential minor performance improvement)
