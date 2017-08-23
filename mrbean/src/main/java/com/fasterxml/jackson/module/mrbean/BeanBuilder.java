@@ -1,24 +1,25 @@
 package com.fasterxml.jackson.module.mrbean;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.description.type.TypeDefinition;
+import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.dynamic.scaffold.TypeValidation;
+import net.bytebuddy.implementation.ExceptionMethod;
+import net.bytebuddy.implementation.FieldAccessor;
 
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
-
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import static org.objectweb.asm.Opcodes.*;
+import static com.fasterxml.jackson.module.mrbean.TypeDefinitionUtil.createTypeDefinitionFromJavaType;
 
 /**
  * Heavy lifter of mr Bean package: class that keeps track of logical POJO properties,
@@ -119,41 +120,31 @@ public class BeanBuilder
      */
     public byte[] build(String className)
     {
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        String internalClass = getInternalClassName(className);
-        String implName = getInternalClassName(_type.getRawClass().getName());
-        
-        // muchos important: level at least 1.5 to get generics!!!
-        // Also: abstract class vs interface...
-        String superName;
-        if (_type.isInterface()) {
-            superName = "java/lang/Object";
-            cw.visit(V1_5, ACC_PUBLIC + ACC_SUPER, internalClass, null,
-                    superName, new String[] { implName });
-        } else {
-            superName = implName;
-            cw.visit(V1_5, ACC_PUBLIC + ACC_SUPER, internalClass, null,
-                    implName, null);
-        }
-        cw.visitSource(className + ".java", null);
-        BeanBuilder.generateDefaultConstructor(cw, superName);
+        DynamicType.Builder<?> builder = new ByteBuddy()
+                                                //needed because className can contain Java keywords
+                                                .with(TypeValidation.DISABLED)
+                                                .subclass(_type.getRawClass())
+                                                .name(className);
         for (POJOProperty prop : _beanProperties.values()) {
-            // First: determine type to use; preferably setter (usually more explicit); otherwise getter
-            TypeDescription type = prop.selectType();
-            createField(cw, prop, type);
-            // since some getters and/or setters may be implemented, check:
+            final TypeDefinition typeDefinition = getFieldType(prop);
+            builder = createField(builder, prop, typeDefinition);
             if (!prop.hasConcreteGetter()) {
-                createGetter(cw, internalClass, prop, type);
+                builder = createGetter(builder, prop, typeDefinition);
             }
             if (!prop.hasConcreteSetter()) {
-                createSetter(cw, internalClass, prop, type);
+                builder = createSetter(builder, prop, typeDefinition);
             }
         }
-        for (Method m : _unsupportedMethods.values()) {            
-            createUnimplementedMethod(cw, internalClass, m);
+        for (Method m : _unsupportedMethods.values()) {
+            builder = builder
+                        .defineMethod(m.getName(), m.getReturnType(), Visibility.PUBLIC)
+                        .intercept(
+                            ExceptionMethod.throwing(
+                                UnsupportedOperationException.class,
+                                "Unimplemented method '"+m.getName()+"' (not a setter/getter, could not materialize)")
+                        );
         }
-        cw.visitEnd();
-        return cw.toByteArray();
+        return builder.make().getBytes();
     }
 
     /*
@@ -243,101 +234,40 @@ public class BeanBuilder
     /**********************************************************
      */
 
-    /**
-     * NOTE: only static because it is needed from TypeDetector
-     */
-    protected static void generateDefaultConstructor(ClassWriter cw, String superName)
-    {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
-        mv.visitCode();
-        mv.visitVarInsn(ALOAD, 0);
-        // 26-May-2014, tatu: last 'false' since constructor never owned by interface
-        mv.visitMethodInsn(INVOKESPECIAL, superName, "<init>", "()V", false);
-        mv.visitInsn(RETURN);
-        mv.visitMaxs(0, 0); // don't care (real values: 1,1)
-        mv.visitEnd();
+    private TypeDefinition getFieldType(POJOProperty property) {
+        return createTypeDefinitionFromJavaType(property.selectType());
     }
 
-    protected void createField(ClassWriter cw, POJOProperty prop, TypeDescription type)
-    {
-        String sig = type.hasGenerics() ? type.genericSignature() : null;
-        String desc = type.erasedSignature();
-        /* 15-Mar-2015, tatu: Should not be created public as that can cause problems
-         *   like [mrbean#20]
-         */
-        FieldVisitor fv = cw.visitField(ACC_PROTECTED, prop.getFieldName(), desc, sig, null);
-        fv.visitEnd();
+    private DynamicType.Builder<?> createField(DynamicType.Builder<?> builder,
+                                               POJOProperty property,
+                                               TypeDefinition typeDefinition) {
+        return builder.defineField(
+                property.getName(),
+                typeDefinition,
+                Visibility.PROTECTED
+        );
     }
 
-    protected void createSetter(ClassWriter cw, String internalClassName,
-            POJOProperty prop, TypeDescription propertyType)
+    private DynamicType.Builder<?> createGetter(DynamicType.Builder<?> builder,
+                                                POJOProperty property,
+                                                TypeDefinition typeDefinition)
     {
-        String methodName;
-        String desc;
-        Method setter = prop.getSetter();
-        if (setter != null) { // easy, copy as is
-            desc = Type.getMethodDescriptor(setter);
-            methodName = setter.getName();
-        } else { // otherwise need to explicitly construct from property type (close enough)
-            desc = "("+ propertyType.erasedSignature() + ")V";
-            methodName = buildSetterName(prop.getName());
-        }
-        String sig = propertyType.hasGenerics() ? ("("+propertyType.genericSignature()+")V") : null;
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, methodName, desc, sig, null);
-        mv.visitCode();
-        mv.visitVarInsn(ALOAD, 0); // this
-        mv.visitVarInsn(propertyType.getLoadOpcode(), 1);
-        mv.visitFieldInsn(PUTFIELD, internalClassName, prop.getFieldName(), propertyType.erasedSignature());
-        
-        mv.visitInsn(RETURN);
-        mv.visitMaxs(0, 0); // don't care (real values: 2, 2)
-        mv.visitEnd();
+        final String methodName = property.getGetter() != null
+                ? property.getGetter().getName() //if the getter exists, use it's name because it could be like 'isXXX'
+                : buildGetterName(property.getName());
+        return builder
+                    .defineMethod(methodName, typeDefinition)
+                    .intercept(FieldAccessor.ofBeanProperty());
     }
 
-    protected void createGetter(ClassWriter cw, String internalClassName,
-            POJOProperty prop, TypeDescription propertyType)
+    private DynamicType.Builder<?> createSetter(DynamicType.Builder<?> builder,
+                                                POJOProperty property,
+                                                TypeDefinition typeDefinition)
     {
-        String methodName;
-        String desc;
-        Method getter = prop.getGetter();
-        if (getter != null) { // easy, copy as is
-            desc = Type.getMethodDescriptor(getter);
-            methodName = getter.getName();
-        } else { // otherwise need to explicitly construct from property type (close enough)
-            desc = "()"+propertyType.erasedSignature();
-            methodName = buildGetterName(prop.getName());
-        }
-        
-        String sig = propertyType.hasGenerics() ? ("()"+propertyType.genericSignature()) : null;
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, methodName, desc, sig, null);
-        mv.visitCode();
-        mv.visitVarInsn(ALOAD, 0); // load 'this'
-        mv.visitFieldInsn(GETFIELD, internalClassName, prop.getFieldName(), propertyType.erasedSignature());
-        mv.visitInsn(propertyType.getReturnOpcode());
-        mv.visitMaxs(0, 0); // don't care (real values: 1,1)
-        mv.visitEnd();
-    }
-
-    /**
-     * Builder for methods that just throw an exception, basically "unsupported
-     * operation" implementation.
-     */
-    protected void createUnimplementedMethod(ClassWriter cw, String internalClassName,
-            Method method)
-    {
-        String exceptionName = getInternalClassName(UnsupportedOperationException.class.getName());        
-        String sig = Type.getMethodDescriptor(method);
-        String name = method.getName();
-        // should we try to pass generic information?
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, name, sig, null, null);
-        mv.visitTypeInsn(NEW, exceptionName);
-        mv.visitInsn(DUP);
-        mv.visitLdcInsn("Unimplemented method '"+name+"' (not a setter/getter, could not materialize)");
-        // 26-May-2014, tatu: last 'false' since constructor never owned by interface
-        mv.visitMethodInsn(INVOKESPECIAL, exceptionName, "<init>", "(Ljava/lang/String;)V", false);
-        mv.visitInsn(ATHROW);
-        mv.visitMaxs(0, 0);  // don't care (real values: 3, 1 + method.getParameterTypes().length);
-        mv.visitEnd();
+        return builder
+                .defineMethod(buildSetterName(property.getName()), Void.TYPE, Visibility.PUBLIC)
+                .withParameters(typeDefinition)
+                .intercept(FieldAccessor.ofBeanProperty());
     }
 
     /*
@@ -372,103 +302,5 @@ public class BeanBuilder
     {
         return new TypeResolutionContext.Basic(_typeFactory,
                 ctxtType.getBindings());
-    }
-
-    /*
-    /**********************************************************
-    /* Helper classes
-    /**********************************************************
-     */
-
-    /**
-     * Helper bean used to encapsulate most details of type handling
-     */
-    static class TypeDescription
-    {
-        private final Type _asmType;
-        private JavaType _jacksonType;
-
-        /*
-        /**********************************************************
-        /* Construction
-        /**********************************************************
-         */
-        
-        public TypeDescription(JavaType type)
-        {
-            _jacksonType = type;
-            _asmType = Type.getType(type.getRawClass());
-        }
-
-        /*
-        /**********************************************************
-        /* Accessors
-        /**********************************************************
-         */
-
-        public Class<?> getRawClass() { return _jacksonType.getRawClass(); }
-        
-        public String erasedSignature() {
-            return _jacksonType.getErasedSignature();
-        }
-
-        public String genericSignature() {
-            return _jacksonType.getGenericSignature();
-        }
-
-        /**
-         * @return True if type has direct generic declaration (which may need
-         *   to be copied)
-         */
-        public boolean hasGenerics() {
-            return _jacksonType.hasGenericTypes();
-        }
-        
-        /*
-        public boolean isPrimitive() {
-            return _signature.length() == 1;
-        }
-        */
-
-        /*
-        public int getStoreOpcode() {
-            return _signatureType.getOpcode(ISTORE);
-        }
-        */
-
-        public int getLoadOpcode() {
-            return _asmType.getOpcode(ILOAD);
-        }
-
-        public int getReturnOpcode() {
-            return _asmType.getOpcode(IRETURN);
-        }
-        
-        @Override
-        public String toString() {
-            return _jacksonType.toString();
-        }
-
-        /*
-        /**********************************************************
-        /* Other methods
-        /**********************************************************
-         */
-
-        
-        public static TypeDescription moreSpecificType(TypeDescription desc1, TypeDescription desc2)
-        {
-            Class<?> c1 = desc1.getRawClass();
-            Class<?> c2 = desc2.getRawClass();
-
-            if (c1.isAssignableFrom(c2)) { // c2 more specific than c1
-                return desc2;
-            }
-            if (c2.isAssignableFrom(c1)) { // c1 more specific than c2
-                return desc1;
-            }
-            // not compatible, so:
-            return null;
-        }
     }
 }

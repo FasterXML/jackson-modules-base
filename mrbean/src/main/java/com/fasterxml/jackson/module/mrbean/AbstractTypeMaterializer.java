@@ -12,6 +12,12 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.modifier.TypeManifestation;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.dynamic.scaffold.TypeValidation;
+
+import static com.fasterxml.jackson.module.mrbean.TypeDefinitionUtil.createTypeDefinitionFromJavaType;
 
 /**
  * Nifty class for pulling implementations of classes out of thin air.
@@ -233,13 +239,23 @@ public class AbstractTypeMaterializer
         Class<?> cls = type.getRawClass();
         // Two-phase processing here; first construct concrete intermediate type:
         String abstractName = _defaultPackage+"abstract." +cls.getName()+"_TYPE_RESOLVE";
-        TypeBuilder tb = new TypeBuilder(type);
-        byte[] code = tb.buildAbstractBase(abstractName);
+        byte[] code = buildAbstractBase(type, abstractName);
         Class<?> raw = _classLoader.loadAndResolve(abstractName, code, cls);
         // and only with that intermediate non-generic type, do actual materialization
         AnnotatedClass ac = AnnotatedClassResolver.resolve(config,
                 config.getTypeFactory().constructType(raw), config);
         return materializeRawType(config, ac);
+    }
+
+    private byte[] buildAbstractBase(JavaType javaType, String className) {
+        return new ByteBuddy()
+                //needed because className will contain the 'abstract' Java keyword
+                .with(TypeValidation.DISABLED)
+                .subclass(createTypeDefinitionFromJavaType(javaType))
+                .name(className)
+                .modifiers(Visibility.PUBLIC, TypeManifestation.ABSTRACT)
+                .make()
+                .getBytes();
     }
 
     /**

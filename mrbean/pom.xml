@@ -16,6 +16,7 @@ dynamically ("bean materialization"), integrated with Jackson (although usable e
   <url>https://github.com/FasterXML/jackson-modules-base</url>
 
   <properties>
+    <version.butebuddy>1.7.5</version.butebuddy>
    <!-- Generate PackageVersion.java into this directory. -->
     <packageVersion.dir>com/fasterxml/jackson/module/mrbean</packageVersion.dir>
     <packageVersion.package>${project.groupId}.mrbean</packageVersion.package>
@@ -24,7 +25,7 @@ dynamically ("bean materialization"), integrated with Jackson (although usable e
 ${project.groupId}.mrbean.*;version=${project.version}
     </osgi.export>
     <!-- default import definitions should work fine -->
-    <osgi.private>org.objectweb.asm.*</osgi.private>
+    <osgi.private>net.bytebuddy.*</osgi.private>
   </properties>
 
   <dependencies>
@@ -39,9 +40,9 @@ ${project.groupId}.mrbean.*;version=${project.version}
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-      <version>${version.asm}</version>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy</artifactId>
+        <version>${version.butebuddy}</version>
     </dependency>
   </dependencies>
 
@@ -53,7 +54,7 @@ ${project.groupId}.mrbean.*;version=${project.version}
       </plugin>
 
       <plugin>
-        <!--  We will shade ASM, to simplify deployment, avoid version conflicts -->
+        <!--  We will shade ByteBuddy, to simplify deployment, avoid version conflicts -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
@@ -67,13 +68,13 @@ ${project.groupId}.mrbean.*;version=${project.version}
 <shadedArtifactId>foobar-shaded</shadedArtifactId>
               <artifactSet>
                 <includes>
-                  <include>org.objectweb.asm:asm</include>
+                  <include>net.bytebuddy:byte-buddy</include>
                 </includes>
               </artifactSet>
               <relocations>
                 <relocation>
-                  <pattern>org.objectweb.asm</pattern>
-                  <shadedPattern>com.fasterxml.jackson.module.mrbean.asm</shadedPattern>
+                  <pattern>net.bytebuddy</pattern>
+                  <shadedPattern>com.fasterxml.jackson.module.mrbean.bytebuddy</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
