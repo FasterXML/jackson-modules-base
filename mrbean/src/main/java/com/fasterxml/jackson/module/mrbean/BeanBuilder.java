@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static com.fasterxml.jackson.module.mrbean.ByteBuddyBuilderUtil.createEqualsAndHashCode;
 import static com.fasterxml.jackson.module.mrbean.TypeDefinitionUtil.createTypeDefinitionFromJavaType;
 
 /**
@@ -143,6 +144,9 @@ public class BeanBuilder
                                 UnsupportedOperationException.class,
                                 "Unimplemented method '"+m.getName()+"' (not a setter/getter, could not materialize)")
                         );
+        }
+        if (_type.isInterface()) {
+            builder = createEqualsAndHashCode(builder);
         }
         return builder.make().getBytes();
     }

@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.TypeManifestation;
 import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
 
 import static com.fasterxml.jackson.module.mrbean.TypeDefinitionUtil.createTypeDefinitionFromJavaType;
@@ -248,14 +249,17 @@ public class AbstractTypeMaterializer
     }
 
     private byte[] buildAbstractBase(JavaType javaType, String className) {
-        return new ByteBuddy()
+        DynamicType.Builder<?> builder =
+                new ByteBuddy()
                 //needed because className will contain the 'abstract' Java keyword
                 .with(TypeValidation.DISABLED)
                 .subclass(createTypeDefinitionFromJavaType(javaType))
                 .name(className)
-                .modifiers(Visibility.PUBLIC, TypeManifestation.ABSTRACT)
-                .make()
-                .getBytes();
+                .modifiers(Visibility.PUBLIC, TypeManifestation.ABSTRACT);
+        if (javaType.isInterface()) {
+            builder = ByteBuddyBuilderUtil.createEqualsAndHashCode(builder);
+        }
+        return builder.make().getBytes();
     }
 
     /**
