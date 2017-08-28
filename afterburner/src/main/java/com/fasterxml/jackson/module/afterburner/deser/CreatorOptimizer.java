@@ -1,25 +1,36 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
-import static org.objectweb.asm.Opcodes.*;
+import com.fasterxml.jackson.databind.deser.ValueInstantiator;
+import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
+import com.fasterxml.jackson.databind.introspect.AnnotatedWithParams;
+import com.fasterxml.jackson.module.afterburner.util.ClassName;
+import com.fasterxml.jackson.module.afterburner.util.DynamicPropertyAccessorBase;
+import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
+import com.fasterxml.jackson.module.afterburner.util.bytebuddy.ConstructorCallStackManipulation;
+import com.fasterxml.jackson.module.afterburner.util.bytebuddy.SimpleExceptionHandler;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.ClassFileVersion;
+import net.bytebuddy.description.modifier.TypeManifestation;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.dynamic.scaffold.TypeValidation;
+import net.bytebuddy.implementation.Implementation;
+import net.bytebuddy.implementation.bytecode.ByteCodeAppender;
+import net.bytebuddy.implementation.bytecode.StackManipulation;
+import net.bytebuddy.implementation.bytecode.member.MethodReturn;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.ValueInstantiator;
-import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
-import com.fasterxml.jackson.databind.introspect.AnnotatedWithParams;
-
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
-
-import com.fasterxml.jackson.module.afterburner.util.ClassName;
-import com.fasterxml.jackson.module.afterburner.util.DynamicPropertyAccessorBase;
-import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
+import static net.bytebuddy.description.method.MethodDescription.ForLoadedMethod;
+import static net.bytebuddy.description.method.MethodDescription.InDefinedShape;
+import static net.bytebuddy.description.type.TypeDescription.ForLoadedType;
+import static net.bytebuddy.implementation.bytecode.member.MethodInvocation.invoke;
+import static net.bytebuddy.implementation.bytecode.member.MethodVariableAccess.REFERENCE;
+import static net.bytebuddy.matcher.ElementMatchers.named;
 
 /**
  * Helper class that tries to generate {@link ValueInstantiator} class
@@ -99,115 +110,65 @@ public class CreatorOptimizer
         }
     }
 
-    protected byte[] generateOptimized(ClassName baseName, Constructor<?> ctor, Method factory)
-    {
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        String superClass = internalClassName(OptimizedValueInstantiator.class.getName());
+    protected byte[] generateOptimized(ClassName baseName, Constructor<?> ctor, Method factory) {
         final String tmpClassName = baseName.getSlashedTemplate();
+        final DynamicType.Builder<?> builder =
+                new ByteBuddy(ClassFileVersion.JAVA_V5)
+                        .with(TypeValidation.DISABLED)
+                        .subclass(OptimizedValueInstantiator.class) //default strategy ensures that all constructors are created
+                        .name(tmpClassName)
+                        .modifiers(Visibility.PUBLIC, TypeManifestation.FINAL)
+                        .method(named("with"))
+                        .intercept(
+                                //call the constructor of this method that takes a single StdValueInstantiator arg
+                                //the required arg is in the position 1 of the method's local variables
+                                new Implementation.Simple(
+                                        new ByteCodeAppender.Simple(
+                                                new ConstructorCallStackManipulation.OfInstrumentedType.OneArg(
+                                                        REFERENCE.loadFrom(1)
+                                                ),
+                                                MethodReturn.REFERENCE
+                                        )
+                                )
 
-        cw.visit(V1_5, ACC_PUBLIC + ACC_SUPER + ACC_FINAL, tmpClassName, null, superClass, null);
-        cw.visitSource(baseName.getSourceFilename(), null);
+                        )
+                        .method(named("createUsingDefault"))
+                        .intercept(
+                                new SimpleExceptionHandler(
+                                        creatorInvokerStackManipulation(ctor, factory),
+                                        creatorExceptionHandlerStackManipulation(),
+                                        Exception.class,
+                                        1 //we added a new local variable in the catch block
+                                )
+                        );
 
-        // First: must define 2 constructors:
-        // (a) default constructor, for creating bogus instance (just calls default instance)
-        // (b) copy-constructor which takes StdValueInstantiator instance, passes to superclass
-        final String optimizedValueInstDesc = Type.getDescriptor(OptimizedValueInstantiator.class);
-        final String stdValueInstDesc = Type.getDescriptor(StdValueInstantiator.class);
 
-        // default (no-arg) constructor:
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
-        mv.visitCode();
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitMethodInsn(INVOKESPECIAL, superClass, "<init>", "()V", false);
-        mv.visitInsn(RETURN);
-        mv.visitMaxs(0, 0);
-        mv.visitEnd();
-        // then single-arg constructor
-        mv = cw.visitMethod(ACC_PUBLIC, "<init>", "("+stdValueInstDesc+")V", null, null);
-        mv.visitCode();
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitMethodInsn(INVOKESPECIAL, superClass, "<init>", "("+stdValueInstDesc+")V", false);
-        mv.visitInsn(RETURN);
-        mv.visitMaxs(0, 0);
-        mv.visitEnd();
-
-        // and then non-static factory method to use second constructor (implements base-class method)
-        // protected abstract OptimizedValueInstantiator with(StdValueInstantiator src);
-        mv = cw.visitMethod(ACC_PUBLIC, "with", "("
-                +stdValueInstDesc+")"+optimizedValueInstDesc, null, null);
-        mv.visitCode();
-        mv.visitTypeInsn(NEW, tmpClassName);
-        mv.visitInsn(DUP);
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitMethodInsn(INVOKESPECIAL, tmpClassName, "<init>", "("+stdValueInstDesc+")V", false);
-        mv.visitInsn(ARETURN);
-        mv.visitMaxs(0, 0);
-        mv.visitEnd();
-
-        // And then override: public Object createUsingDefault()
-        mv = cw.visitMethod(ACC_PUBLIC, "createUsingDefault",
-                "(" +Type.getDescriptor(DeserializationContext.class)+")Ljava/lang/Object;", null, null);
-        mv.visitCode();
-
-        // 19-Apr-2017, tatu: Need to take care to of try catch block...
-        Label startTryBlock = new Label();
-        Label endTryBlock = new Label();
-        Label startCatchBlock = new Label();
-
-        // Initiale try-catch block
-        mv.visitTryCatchBlock(startTryBlock, endTryBlock, startCatchBlock, "java/lang/Exception");
-        mv.visitLabel(startTryBlock);
-
-        // Then new/static-factory call
-        if (ctor != null) {
-            addCreator(mv, ctor);
-        } else {
-            addCreator(mv, factory);
-        }
-        mv.visitInsn(ARETURN);
-
-        mv.visitLabel(endTryBlock); 
-        // and then do catch block
-        mv.visitLabel(startCatchBlock);
-        mv.visitVarInsn(ASTORE, 2); // push Exception e
-        mv.visitVarInsn(ALOAD, 0); // this
-        mv.visitVarInsn(ALOAD, 1); // Arg #1 ("ctxt")
-        mv.visitVarInsn(ALOAD, 2); // caught exception
-        // 27-Jul-2017, tatu: as per [modules-base#27], need name not desc here. For reasons.
-        final String optimizedValueInstName = Type.getInternalName(OptimizedValueInstantiator.class);
-        mv.visitMethodInsn(INVOKEVIRTUAL,
-                optimizedValueInstName, "_handleInstantiationProblem",
-                String.format("(%s%s)Ljava/lang/Object;", 
-                        Type.getDescriptor(DeserializationContext.class),
-                        "Ljava/lang/Exception;"),
-                false);
-        mv.visitInsn(ARETURN);
-        
-        // and call it all done
-        mv.visitMaxs(0, 0);
-        mv.visitEnd();
-
-        cw.visitEnd();
-        return cw.toByteArray();
+        return builder.make().getBytes();
     }
 
-    protected void addCreator(MethodVisitor mv, Constructor<?> ctor)
-    {
-        Class<?> owner = ctor.getDeclaringClass();
-        String valueClassInternal = Type.getInternalName(owner);
-        mv.visitTypeInsn(NEW, valueClassInternal);
-        mv.visitInsn(DUP);
-        mv.visitMethodInsn(INVOKESPECIAL, valueClassInternal, "<init>", "()V",
-                owner.isInterface());
+    private StackManipulation creatorInvokerStackManipulation(Constructor<?> ctor, Method factory) {
+        final StackManipulation invokeManipulation =
+                null == ctor ?
+                    invoke(new ForLoadedMethod(factory)) :
+                    new ConstructorCallStackManipulation.KnownConstructorOfExistingType(ctor);
+        return new StackManipulation.Compound(
+                invokeManipulation,
+                MethodReturn.REFERENCE
+        );
     }
 
-    protected void addCreator(MethodVisitor mv, Method factory)
-    {
-        Class<?> owner = factory.getDeclaringClass();
-        Class<?> valueClass = factory.getReturnType();
-        mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(owner),
-                factory.getName(), "()"+Type.getDescriptor(valueClass),
-                owner.isInterface());
+    private StackManipulation creatorExceptionHandlerStackManipulation() {
+        final TypeDescription typeDescription = new ForLoadedType(OptimizedValueInstantiator.class);
+        final InDefinedShape methodDescription =
+                typeDescription.getDeclaredMethods().filter(named("_handleInstantiationProblem")).getOnly();
+
+        return new StackManipulation.Compound(
+                REFERENCE.storeAt(2), //push exception to new local
+                REFERENCE.loadFrom(0), //'this'
+                REFERENCE.loadFrom(1), //Arg #1 ("ctxt")
+                REFERENCE.loadFrom(2), //exception
+                invoke(methodDescription),
+                MethodReturn.REFERENCE
+        );
     }
 }

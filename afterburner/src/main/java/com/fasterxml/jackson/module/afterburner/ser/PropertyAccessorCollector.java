@@ -1,17 +1,36 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
-import java.lang.reflect.Method;
-import java.util.*;
-
-import org.objectweb.asm.*;
-
-import static org.objectweb.asm.Opcodes.*;
-
-import com.fasterxml.jackson.databind.introspect.AnnotatedField;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import com.fasterxml.jackson.module.afterburner.deser.PropertyMutatorCollector;
 import com.fasterxml.jackson.module.afterburner.util.ClassName;
 import com.fasterxml.jackson.module.afterburner.util.DynamicPropertyAccessorBase;
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
+import com.fasterxml.jackson.module.afterburner.util.bytebuddy.*;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.ClassFileVersion;
+import net.bytebuddy.description.field.FieldDescription;
+import net.bytebuddy.description.field.FieldList;
+import net.bytebuddy.description.method.MethodDescription;
+import net.bytebuddy.description.method.MethodList;
+import net.bytebuddy.description.modifier.TypeManifestation;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.description.type.TypeDefinition;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.dynamic.scaffold.TypeValidation;
+import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy;
+import net.bytebuddy.implementation.Implementation;
+import net.bytebuddy.implementation.bytecode.StackManipulation;
+import net.bytebuddy.implementation.bytecode.member.FieldAccess;
+import net.bytebuddy.implementation.bytecode.member.MethodInvocation;
+import net.bytebuddy.implementation.bytecode.member.MethodReturn;
+import net.bytebuddy.implementation.bytecode.member.MethodVariableAccess;
+import net.bytebuddy.jar.asm.MethodVisitor;
+
+import java.util.*;
+
+import static net.bytebuddy.matcher.ElementMatchers.named;
 
 /**
  * Simple collector used to keep track of properties for which code-generated
@@ -20,9 +39,6 @@ import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
 public class PropertyAccessorCollector
     extends DynamicPropertyAccessorBase
 {
-    private static final Type STRING_TYPE = Type.getType(String.class);
-    private static final Type OBJECT_TYPE = Type.getType(Object.class);
-
     private final List<BooleanMethodPropertyWriter> _booleanGetters = new LinkedList<BooleanMethodPropertyWriter>();
     private final List<IntMethodPropertyWriter> _intGetters = new LinkedList<IntMethodPropertyWriter>();
     private final List<LongMethodPropertyWriter> _longGetters = new LinkedList<LongMethodPropertyWriter>();
@@ -36,11 +52,11 @@ public class PropertyAccessorCollector
     private final List<ObjectFieldPropertyWriter> _objectFields = new LinkedList<ObjectFieldPropertyWriter>();
 
     private final Class<?> beanClass;
-    private final String beanClassName;
+    private final TypeDescription beanClassDefinition;
 
     public PropertyAccessorCollector(Class<?> beanClass) {
         this.beanClass = beanClass;
-        this.beanClassName = Type.getInternalName(beanClass);
+        this.beanClassDefinition = new TypeDescription.ForLoadedType(beanClass);
     }
     
     /*
@@ -104,62 +120,49 @@ public class PropertyAccessorCollector
 
     public Class<?> generateAccessorClass(MyClassLoader classLoader, ClassName baseName)
     {
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        String superClass = internalClassName(BeanPropertyAccessor.class.getName());
-        final String tmpClassName = baseName.getSlashedTemplate();
-        
-        // muchos important: level at least 1.5 to get generics!!!
-        // 19-Apr-2017, tatu: For Jackson 2.9 SHOUD generate Java 7 bytecode. But...
-        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER + ACC_FINAL, tmpClassName,
-                null, superClass, null);
-        cw.visitSource(baseName.getSourceFilename(), null);
-
-        // add default (no-arg) constructor:
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
-        mv.visitCode();
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitMethodInsn(INVOKESPECIAL, superClass, "<init>", "()V", false);
-        mv.visitInsn(RETURN);
-        mv.visitMaxs(0, 0); // don't care (real values: 1,1)
-        mv.visitEnd();
+        DynamicType.Builder<?> builder =
+                new ByteBuddy(ClassFileVersion.JAVA_V6)
+                        .with(TypeValidation.DISABLED)
+                        .subclass(BeanPropertyAccessor.class, ConstructorStrategy.Default.DEFAULT_CONSTRUCTOR)
+                        .name(baseName.getSlashedTemplate())
+                        .modifiers(Visibility.PUBLIC, TypeManifestation.FINAL);
 
         // and then add various accessors; first field accessors:
         if (!_intFields.isEmpty()) {
-            _addFields(cw, _intFields, "intField", Type.INT_TYPE, IRETURN);
+            builder = _addFields(builder, _intFields, "intField", MethodReturn.INTEGER);
         }
         if (!_longFields.isEmpty()) {
-            _addFields(cw, _longFields, "longField", Type.LONG_TYPE, LRETURN);
+            builder = _addFields(builder, _longFields, "longField", MethodReturn.LONG);
         }
         if (!_stringFields.isEmpty()) {
-            _addFields(cw, _stringFields, "stringField", STRING_TYPE, ARETURN);
+            builder = _addFields(builder, _stringFields, "stringField", MethodReturn.REFERENCE);
         }
         if (!_objectFields.isEmpty()) {
-            _addFields(cw, _objectFields, "objectField", OBJECT_TYPE, ARETURN);
+            builder = _addFields(builder, _objectFields, "objectField", MethodReturn.REFERENCE);
         }
         if (!_booleanFields.isEmpty()) {
             // booleans treated as ints 0 (false) and 1 (true)
-            _addFields(cw, _booleanFields, "booleanField", Type.BOOLEAN_TYPE, IRETURN);
+            builder = _addFields(builder, _booleanFields, "booleanField", MethodReturn.INTEGER);
         }
 
         // and then method accessors:
         if (!_intGetters.isEmpty()) {
-            _addGetters(cw, _intGetters, "intGetter", Type.INT_TYPE, IRETURN);
+            builder = _addGetters(builder, _intGetters, "intGetter", MethodReturn.INTEGER);
         }
         if (!_longGetters.isEmpty()) {
-            _addGetters(cw, _longGetters, "longGetter", Type.LONG_TYPE, LRETURN);
+            builder = _addGetters(builder, _longGetters, "longGetter", MethodReturn.LONG);
         }
         if (!_stringGetters.isEmpty()) {
-            _addGetters(cw, _stringGetters, "stringGetter", STRING_TYPE, ARETURN);
+            builder = _addGetters(builder, _stringGetters, "stringGetter", MethodReturn.REFERENCE);
         }
         if (!_objectGetters.isEmpty()) {
-            _addGetters(cw, _objectGetters, "objectGetter", OBJECT_TYPE, ARETURN);
+            builder = _addGetters(builder, _objectGetters, "objectGetter", MethodReturn.REFERENCE);
         }
         if (!_booleanGetters.isEmpty()) {
-            _addGetters(cw, _booleanGetters, "booleanGetter", Type.BOOLEAN_TYPE, IRETURN);
+            builder = _addGetters(builder, _booleanGetters, "booleanGetter", MethodReturn.INTEGER);
         }
 
-        cw.visitEnd();
-        byte[] bytecode = cw.toByteArray();
+        byte[] bytecode = builder.make().getBytes();
         baseName.assignChecksum(bytecode);
 
         // Did we already generate this?
@@ -171,37 +174,232 @@ public class PropertyAccessorCollector
     }
 
     /*
+    /****************************************************************************
+    /* Code generation; Byte Buddy common between fields and setters handling
+    /****************************************************************************
+     */
+
+    /**
+     * Implementation specific to {@link PropertyMutatorCollector}
+     * We now that there are three arguments to the methods created in this case
+     */
+    private enum LocalVarIndexCalculator implements AbstractPropertyStackManipulation.LocalVarIndexCalculator {
+
+        INSTANCE;
+
+        //we have 2 arguments (plus arg 0 which is 'this'), so 3 is always the position of the local var
+        @Override
+        public int calculate() {
+            return 3;
+        }
+    }
+
+    private static class CreateLocalVarStackManipulation extends AbstractCreateLocalVarStackManipulation {
+
+        CreateLocalVarStackManipulation(TypeDescription beanClassDescription) {
+            super(beanClassDescription, PropertyAccessorCollector.LocalVarIndexCalculator.INSTANCE);
+        }
+
+        private static Map<TypeDescription, CreateLocalVarStackManipulation> cache
+                = new HashMap<TypeDescription, CreateLocalVarStackManipulation>();
+
+        @SuppressWarnings("unchecked")
+        static CreateLocalVarStackManipulation of(TypeDescription beanClassDescription) {
+
+            CreateLocalVarStackManipulation result = cache.get(beanClassDescription);
+            if (result == null) {
+                result = new CreateLocalVarStackManipulation(beanClassDescription);
+                cache.put(beanClassDescription, result);
+            }
+            return result;
+        }
+    }
+
+    /**
+     * Provides template for a method that returns a single getter or field of the bean
+     */
+    private abstract static class AbstractSinglePropStackManipulation<T extends OptimizedBeanPropertyWriter<T>>
+            extends AbstractPropertyStackManipulation {
+
+        private final TypeDescription beanClassDescription;
+        private final T prop;
+        private final MethodReturn methodReturn;
+
+        AbstractSinglePropStackManipulation(TypeDescription beanClassDescription,
+                                        T prop,
+                                        MethodReturn methodReturn) {
+            super(PropertyAccessorCollector.LocalVarIndexCalculator.INSTANCE);
+            this.methodReturn = methodReturn;
+            this.beanClassDescription = beanClassDescription;
+            this.prop = prop;
+        }
+
+        abstract protected StackManipulation invocationOperation(
+                AnnotatedMember annotatedMember, TypeDefinition beanClassDescription);
+
+        @Override
+        public Size apply(MethodVisitor methodVisitor,
+                          Implementation.Context implementationContext) {
+
+            final List<StackManipulation> operations = new ArrayList<StackManipulation>();
+            operations.add(loadLocalVar()); // load local for cast bean
+
+            final AnnotatedMember member = prop.getMember();
+
+            operations.add(invocationOperation(member, beanClassDescription));
+            operations.add(methodReturn);
+
+            final StackManipulation.Compound compound = new StackManipulation.Compound(operations);
+            return compound.apply(methodVisitor, implementationContext);
+        }
+
+        private StackManipulation loadLocalVar() {
+            return MethodVariableAccess.REFERENCE.loadFrom(localVarIndex());
+        }
+    }
+
+
+    /*
     /**********************************************************
     /* Code generation; method-based getters
     /**********************************************************
      */
 
-    private <T extends OptimizedBeanPropertyWriter<T>> void _addGetters(ClassWriter cw, List<T> props,
-            String methodName, Type returnType, int returnOpcode)
-    {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, methodName, "(Ljava/lang/Object;I)"+returnType, /*generic sig*/null, null);
-        mv.visitCode();
-        // first: cast bean to proper type
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitTypeInsn(CHECKCAST, beanClassName);
-        mv.visitVarInsn(ASTORE, 3);
+    private static class SingleMethodStackManipulation<T extends OptimizedBeanPropertyWriter<T>>
+            extends AbstractSinglePropStackManipulation<T> {
 
-        // Ok; minor optimization, 3 or fewer accessors, just do IFs; over that, use switch
-        switch (props.size()) {
-        case 1:
-            _addSingleGetter(mv, props.get(0), returnOpcode);
-            break;
-        case 2:
-        case 3:
-            _addGettersUsingIf(mv, props, returnOpcode);
-            break;
-        default:
-            _addGettersUsingSwitch(mv, props, returnOpcode);
+        SingleMethodStackManipulation(TypeDescription beanClassDescription,
+                                            T prop,
+                                            MethodReturn methodReturn) {
+            super(beanClassDescription, prop, methodReturn);
         }
-        // and if no match, generate exception:
-        generateException(mv, beanClassName, props.size());
-        mv.visitMaxs(0, 0); // don't care (real values: 1,1)
-        mv.visitEnd();
+
+        @Override
+        protected StackManipulation invocationOperation(
+                AnnotatedMember annotatedMember, TypeDefinition beanClassDescription) {
+
+            final String methodName = annotatedMember.getName();
+            final MethodList<MethodDescription> matchingMethods =
+                    (MethodList<MethodDescription>) beanClassDescription.getDeclaredMethods().filter(named(methodName));
+
+            if (matchingMethods.size() == 1) { //method was declared on class
+                return MethodInvocation.invoke(matchingMethods.getOnly());
+            }
+            if (matchingMethods.isEmpty()) { //method was not found on class, try super class
+                return invocationOperation(annotatedMember, beanClassDescription.getSuperClass());
+            }
+            else { //should never happen
+                throw new IllegalStateException("Could not find definition of method: " + methodName);
+            }
+        }
+    }
+
+    private static class SingleMethodStackManipulationSupplier<T extends OptimizedBeanPropertyWriter<T>> implements
+            SinglePropStackManipulationSupplier<T> {
+
+        private final TypeDescription beanClassDescription;
+        private final MethodReturn methodReturn;
+
+        SingleMethodStackManipulationSupplier(TypeDescription beanClassDescription, MethodReturn methodReturn) {
+            this.beanClassDescription = beanClassDescription;
+            this.methodReturn = methodReturn;
+        }
+
+        private static Map<Integer, SingleMethodStackManipulationSupplier> cache
+                = new HashMap<Integer, SingleMethodStackManipulationSupplier>();
+
+        @SuppressWarnings("unchecked")
+        static <G extends OptimizedBeanPropertyWriter<G>> SingleMethodStackManipulationSupplier<G> of(
+                TypeDescription beanClassDescription, MethodReturn methodReturn) {
+
+            final int key = beanClassDescription.hashCode() + methodReturn.hashCode();
+            SingleMethodStackManipulationSupplier result = cache.get(key);
+            if (result == null) {
+                result = new SingleMethodStackManipulationSupplier(beanClassDescription, methodReturn);
+                cache.put(key, result);
+            }
+            return result;
+        }
+
+        @Override
+        public StackManipulation supply(T prop) {
+            return new SingleMethodStackManipulation<T>(beanClassDescription, prop, methodReturn);
+        }
+    }
+
+    private static class MethodAppender<T extends OptimizedBeanPropertyWriter<T>> extends AbstractDelegatingAppender<T> {
+
+        private final TypeDescription beanClassDescription;
+        private final List<T> props;
+        private final MethodReturn methodReturn;
+
+        MethodAppender(TypeDescription beanClassDescription, List<T> props, MethodReturn methodReturn){
+            super(props);
+            this.beanClassDescription = beanClassDescription;
+            this.props = props;
+            this.methodReturn = methodReturn;
+        }
+
+        @Override
+        protected StackManipulation usingSwitch() {
+
+            return new UsingSwitchStackManipulation<T>(
+                    LocalVarIndexCalculator.INSTANCE,
+                    props,
+                    SingleMethodStackManipulationSupplier.<T>of(beanClassDescription, methodReturn)
+            );
+        }
+
+        @Override
+        protected StackManipulation createLocalVar() {
+            return CreateLocalVarStackManipulation.of(beanClassDescription);
+        }
+
+        @Override
+        protected StackManipulation usingIf() {
+
+            return new UsingIfStackManipulation<>(
+                    LocalVarIndexCalculator.INSTANCE,
+                    props,
+                    SingleMethodStackManipulationSupplier.<T>of(beanClassDescription, methodReturn)
+            );
+        }
+
+        @Override
+        protected StackManipulation single() {
+            return new SingleMethodStackManipulation<T>(beanClassDescription, props.get(0), methodReturn);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            MethodAppender<?> that = (MethodAppender<?>) o;
+
+            if (!beanClassDescription.equals(that.beanClassDescription)) return false;
+            if (!props.equals(that.props)) return false;
+            return methodReturn == that.methodReturn;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = beanClassDescription.hashCode();
+            result = 31 * result + props.hashCode();
+            result = 31 * result + methodReturn.hashCode();
+            return result;
+        }
+    }
+
+    private <T extends OptimizedBeanPropertyWriter<T>> DynamicType.Builder<?> _addGetters(
+            DynamicType.Builder<?> builder, List<T> props, String methodName, MethodReturn methodReturn) {
+
+        return builder.method(named(methodName))
+                      .intercept(
+                              new Implementation.Simple(
+                                      new MethodAppender<T>(beanClassDefinition, props, methodReturn)
+                              )
+                      );
     }
     
     /*
@@ -209,168 +407,141 @@ public class PropertyAccessorCollector
     /* Code generation; field-based getters
     /**********************************************************
      */
-    
-    private <T extends OptimizedBeanPropertyWriter<T>> void _addFields(ClassWriter cw, List<T> props,
-            String methodName, Type returnType, int returnOpcode)
-    {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, methodName, "(Ljava/lang/Object;I)"+returnType, /*generic sig*/null, null);
-        mv.visitCode();
-        // first: cast bean to proper type
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitTypeInsn(CHECKCAST, beanClassName);
-        mv.visitVarInsn(ASTORE, 3);
 
-        // Ok; minor optimization, 3 or fewer fields, just do IFs; over that, use switch
-        switch (props.size()) {
-        case 1:
-            _addSingleField(mv, props.get(0), returnOpcode);
-            break;
-        case 2:
-        case 3:
-            _addFieldsUsingIf(mv, props, returnOpcode);
-            break;
-        default:
-            _addFieldsUsingSwitch(mv, props, returnOpcode);
+    private static class SingleFieldStackManipulation<T extends OptimizedBeanPropertyWriter<T>>
+            extends AbstractSinglePropStackManipulation<T> {
+
+        SingleFieldStackManipulation(TypeDescription beanClassDescription,
+                                             T prop,
+                                             MethodReturn methodReturn) {
+            super(beanClassDescription, prop, methodReturn);
         }
-        // and if no match, generate exception:
-        generateException(mv, beanClassName, props.size());
-        mv.visitMaxs(0, 0); // don't care (real values: 1,1)
-        mv.visitEnd();
-    }
 
-    /*
-    /**********************************************************
-    /* Helper methods, method accessor creation
-    /**********************************************************
-     */
+        @Override
+        protected StackManipulation invocationOperation(
+                AnnotatedMember annotatedMember, TypeDefinition beanClassDescription) {
 
-    private void _addSingleGetter(MethodVisitor mv,
-            OptimizedBeanPropertyWriter<?> prop, int returnOpcode)
-    {
-        mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-        mv.visitVarInsn(ALOAD, 3); // load local for cast bean
-        int invokeInsn = beanClass.isInterface() ? INVOKEINTERFACE : INVOKEVIRTUAL;
-        Method method = (Method) (prop.getMember().getMember());
-        mv.visitMethodInsn(invokeInsn, beanClassName, method.getName(),
-                Type.getMethodDescriptor(method), beanClass.isInterface());
-        mv.visitInsn(returnOpcode);
-    }
-    
-    private <T extends OptimizedBeanPropertyWriter<T>> void _addGettersUsingIf(MethodVisitor mv,
-            List<T> props, int returnOpcode)
-    {
-        mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-        Label next = new Label();
-        // first: check if 'index == 0'
-        mv.visitJumpInsn(IFNE, next); // "if not zero, goto L (skip stuff)"
+            final String fieldName = annotatedMember.getName();
+            final FieldList<FieldDescription> matchingFields =
+                    (FieldList<FieldDescription>) beanClassDescription.getDeclaredFields().filter(named(fieldName));
 
-        // call first getter:
-        mv.visitVarInsn(ALOAD, 3); // load local for cast bean
-        int invokeInsn = beanClass.isInterface() ? INVOKEINTERFACE : INVOKEVIRTUAL;
-        Method method = (Method) (props.get(0).getMember().getMember());
-        mv.visitMethodInsn(invokeInsn, beanClassName, method.getName(),
-                Type.getMethodDescriptor(method), beanClass.isInterface());
-        mv.visitInsn(returnOpcode);
-
-        // And from this point on, loop a bit
-        for (int i = 1, end = props.size()-1; i <= end; ++i) {
-            mv.visitLabel(next);
-            // No need to check index for the last one
-            if (i < end) {
-                next = new Label();
-                mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-                mv.visitInsn(ALL_INT_CONSTS[i]);
-                mv.visitJumpInsn(IF_ICMPNE, next);
+            if (matchingFields.size() == 1) { //method was declared on class
+                return FieldAccess.forField(matchingFields.getOnly()).read();
             }
-            mv.visitVarInsn(ALOAD, 3); // load bean
-            method = (Method) (props.get(i).getMember().getMember());
-            mv.visitMethodInsn(invokeInsn, beanClassName, method.getName(),
-                    Type.getMethodDescriptor(method), beanClass.isInterface());
-            mv.visitInsn(returnOpcode);
-        }
-    }
-
-    private <T extends OptimizedBeanPropertyWriter<T>> void _addGettersUsingSwitch(MethodVisitor mv,
-            List<T> props, int returnOpcode)
-    {
-        mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-
-        Label[] labels = new Label[props.size()];
-        for (int i = 0, len = labels.length; i < len; ++i) {
-            labels[i] = new Label();
-        }
-        Label defaultLabel = new Label();
-        mv.visitTableSwitchInsn(0, labels.length - 1, defaultLabel, labels);
-        int invokeInsn = beanClass.isInterface() ? INVOKEINTERFACE : INVOKEVIRTUAL;
-        for (int i = 0, len = labels.length; i < len; ++i) {
-            mv.visitLabel(labels[i]);
-            mv.visitVarInsn(ALOAD, 3); // load bean
-            Method method = (Method) (props.get(i).getMember().getMember());
-            mv.visitMethodInsn(invokeInsn, beanClassName, method.getName(),
-                    Type.getMethodDescriptor(method), beanClass.isInterface());
-            mv.visitInsn(returnOpcode);
-        }
-        mv.visitLabel(defaultLabel);
-    }
-
-    private void _addSingleField(MethodVisitor mv, OptimizedBeanPropertyWriter<?> prop, int returnOpcode)
-    {
-        mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-        mv.visitVarInsn(ALOAD, 3); // load local for cast bean
-        AnnotatedField field = (AnnotatedField) prop.getMember();
-        mv.visitFieldInsn(GETFIELD, beanClassName, field.getName(), Type.getDescriptor(field.getRawType()));
-        mv.visitInsn(returnOpcode);
-    }
-    
-    private <T extends OptimizedBeanPropertyWriter<T>> void _addFieldsUsingIf(MethodVisitor mv,
-            List<T> props, int returnOpcode)
-    {
-        mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-        Label next = new Label();
-        // first: check if 'index == 0'
-        mv.visitJumpInsn(IFNE, next); // "if not zero, goto L (skip stuff)"
-
-        // first field accessor
-        mv.visitVarInsn(ALOAD, 3); // load local for cast bean
-        AnnotatedField field = (AnnotatedField) props.get(0).getMember();
-        mv.visitFieldInsn(GETFIELD, beanClassName, field.getName(), Type.getDescriptor(field.getRawType()));
-        mv.visitInsn(returnOpcode);
-
-        // And from this point on, loop a bit
-        for (int i = 1, end = props.size()-1; i <= end; ++i) {
-            mv.visitLabel(next);
-            // No need to check index for the last one
-            if (i < end) {
-                next = new Label();
-                mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-                mv.visitInsn(ALL_INT_CONSTS[i]);
-                mv.visitJumpInsn(IF_ICMPNE, next);
+            if (matchingFields.isEmpty()) { //method was not found on class, try super class
+                return invocationOperation(annotatedMember, beanClassDescription.getSuperClass());
             }
-            mv.visitVarInsn(ALOAD, 3); // load bean
-            field = (AnnotatedField) props.get(i).getMember();
-            mv.visitFieldInsn(GETFIELD, beanClassName, field.getName(), Type.getDescriptor(field.getRawType()));
-            mv.visitInsn(returnOpcode);
+            else { //should never happen
+                throw new IllegalStateException("Could not find definition of field: " + fieldName);
+            }
         }
     }
 
-    private <T extends OptimizedBeanPropertyWriter<T>> void _addFieldsUsingSwitch(MethodVisitor mv,
-            List<T> props, int returnOpcode)
-    {
-        mv.visitVarInsn(ILOAD, 2); // load second arg (index)
+    private static class SingleFieldStackManipulationSupplier<T extends OptimizedBeanPropertyWriter<T>> implements
+            SinglePropStackManipulationSupplier<T> {
 
-        Label[] labels = new Label[props.size()];
-        for (int i = 0, len = labels.length; i < len; ++i) {
-            labels[i] = new Label();
+        private final TypeDescription beanClassDescription;
+        private final MethodReturn methodReturn;
+
+        SingleFieldStackManipulationSupplier(TypeDescription beanClassDescription, MethodReturn methodReturn) {
+            this.beanClassDescription = beanClassDescription;
+            this.methodReturn = methodReturn;
         }
-        Label defaultLabel = new Label();
-        mv.visitTableSwitchInsn(0, labels.length - 1, defaultLabel, labels);
-        for (int i = 0, len = labels.length; i < len; ++i) {
-            mv.visitLabel(labels[i]);
-            mv.visitVarInsn(ALOAD, 3); // load bean
-            AnnotatedField field = (AnnotatedField) props.get(i).getMember();
-            mv.visitFieldInsn(GETFIELD, beanClassName, field.getName(), Type.getDescriptor(field.getRawType()));
-            mv.visitInsn(returnOpcode);
+
+        private static Map<Integer, SingleFieldStackManipulationSupplier> cache
+                = new HashMap<Integer, SingleFieldStackManipulationSupplier>();
+
+        @SuppressWarnings("unchecked")
+        static <G extends OptimizedBeanPropertyWriter<G>> SingleFieldStackManipulationSupplier<G> of(
+                TypeDescription beanClassDescription, MethodReturn methodReturn) {
+
+            final int key = beanClassDescription.hashCode() + methodReturn.hashCode();
+            SingleFieldStackManipulationSupplier result = cache.get(key);
+            if (result == null) {
+                result = new SingleFieldStackManipulationSupplier(beanClassDescription, methodReturn);
+                cache.put(key, result);
+            }
+            return result;
         }
-        mv.visitLabel(defaultLabel);
+
+        @Override
+        public StackManipulation supply(T prop) {
+            return new SingleFieldStackManipulation<T>(beanClassDescription, prop, methodReturn);
+        }
+    }
+
+    private static class FieldAppender<T extends OptimizedBeanPropertyWriter<T>> extends AbstractDelegatingAppender<T> {
+
+        private final TypeDescription beanClassDescription;
+        private final List<T> props;
+        private final MethodReturn methodReturn;
+
+        FieldAppender(TypeDescription beanClassDescription, List<T> props, MethodReturn methodReturn){
+            super(props);
+            this.beanClassDescription = beanClassDescription;
+            this.props = props;
+            this.methodReturn = methodReturn;
+        }
+
+        @Override
+        protected StackManipulation usingSwitch() {
+
+            return new UsingSwitchStackManipulation<T>(
+                    LocalVarIndexCalculator.INSTANCE,
+                    props,
+                    SingleFieldStackManipulationSupplier.<T>of(beanClassDescription, methodReturn)
+            );
+        }
+
+        @Override
+        protected StackManipulation createLocalVar() {
+            return CreateLocalVarStackManipulation.of(beanClassDescription);
+        }
+
+        @Override
+        protected StackManipulation usingIf() {
+
+            return new UsingIfStackManipulation<>(
+                    LocalVarIndexCalculator.INSTANCE,
+                    props,
+                    SingleFieldStackManipulationSupplier.<T>of(beanClassDescription, methodReturn)
+            );
+        }
+
+        @Override
+        protected StackManipulation single() {
+            return new SingleFieldStackManipulation<T>(beanClassDescription, props.get(0), methodReturn);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            MethodAppender<?> that = (MethodAppender<?>) o;
+
+            if (!beanClassDescription.equals(that.beanClassDescription)) return false;
+            if (!props.equals(that.props)) return false;
+            return methodReturn == that.methodReturn;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = beanClassDescription.hashCode();
+            result = 31 * result + props.hashCode();
+            result = 31 * result + methodReturn.hashCode();
+            return result;
+        }
+    }
+
+    private <T extends OptimizedBeanPropertyWriter<T>> DynamicType.Builder<?> _addFields(
+            DynamicType.Builder<?> builder, List<T> props, String methodName, MethodReturn methodReturn) {
+
+        return builder.method(named(methodName))
+                .intercept(
+                        new Implementation.Simple(
+                                new FieldAppender<T>(beanClassDefinition, props, methodReturn)
+                        )
+                );
     }
 }
