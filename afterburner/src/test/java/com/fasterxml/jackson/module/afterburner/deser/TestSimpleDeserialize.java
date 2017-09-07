@@ -337,23 +337,22 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
         ClassLoader cl = getClass().getClassLoader();
         Field declaredField = ClassLoader.class.getDeclaredField("classes");
         declaredField.setAccessible(true);
-        Class<?>[] os = new Class[2048];
+        // 06-Sep-2017, tatu: Hmmh. Whatever this code does... is not very robust.
+        //    But has to do for now. OpenJDK 7 had issues with size, increased:
+        Class<?>[] os = new Class[8192];
         ((Vector<Class<?>>) declaredField.get(cl)).copyInto(os);
 
         String expectedClassName = TestSimpleDeserialize.class.getCanonicalName()
                 + "$CheckGeneratedDeserializerName$Access4JacksonDeserializer";
-        boolean found = false;
-        for (int i = 0; i < os.length; i++) {
-            Class<?> clz = os[i];
+        for (Class<?> clz : os) {
             if (clz == null) {
                 break;
             }
             if (clz.getCanonicalName() != null
                     && clz.getCanonicalName().startsWith(expectedClassName)) {
-                found = true;
-                break;
+                return;
             }
         }
-        assertTrue("Expected class not found:" + expectedClassName, found);
+        fail("Expected class not found:" + expectedClassName);
     }
 }
