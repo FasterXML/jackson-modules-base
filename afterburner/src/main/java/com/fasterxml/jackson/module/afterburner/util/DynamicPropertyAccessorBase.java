@@ -1,6 +1,8 @@
 package com.fasterxml.jackson.module.afterburner.util;
 
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 import org.objectweb.asm.MethodVisitor;
@@ -49,6 +51,20 @@ public class DynamicPropertyAccessorBase
     /**********************************************************
      */
 
+    /**
+     * @since 2.9.2
+     */
+    protected static boolean isInterfaceMethod(Method method) {
+        // 15-Sep-2017, tatu: As per [modules-base#30], Java 8 default methods need to be called as
+        //   non-interface methods (since they generate real concrete methods). So further checks
+        //   needed, not just that they are declared in an interface
+
+        // Forward compatible with Java 8 equivalent: method.getDeclaringClass().isInterface() && !method.isDefault()
+        // NOTE: `ABSTRACT` is really the key here: only "pure" interface methods abstract; default ones not.
+        return method.getDeclaringClass().isInterface() &&
+                ((method.getModifiers() & (Modifier.ABSTRACT | Modifier.PUBLIC | Modifier.STATIC)) != Modifier.PUBLIC);
+    }
+
     protected static String internalClassName(String className) {
         return className.replace(".", "/");
     }
@@ -58,5 +74,4 @@ public class DynamicPropertyAccessorBase
         ++_accessorCount;
         return value;
     }
-
 }
