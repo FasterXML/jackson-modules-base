@@ -8,6 +8,12 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.2 (not yet released)
+
+#30: (afterburner) `IncompatibleClassChangeError` deserializing interface
+  methods with default impl
+ (reported by Shawn S)
+
 2.9.1 (07-Sep-2017)
 
 No changes since 2.9.0
@@ -17,12 +23,6 @@ No changes since 2.9.0
 - (afterburner) Simplified generation of mutators, to remove one level of
   indirecton (simpler code, potential minor performance improvement)
 - Add `jackson-module-jaxb-annotations` as one more base module!
-
-2.8.11 (not yet released)
-
-#30: (afterburner) `IncompatibleClassChangeError` deserializing interface
-  methods with default impl
- (reported by Shawn S)
 
 2.8.10 (24-Aug-2017)
 2.8.9 (12-Jun-2017)
