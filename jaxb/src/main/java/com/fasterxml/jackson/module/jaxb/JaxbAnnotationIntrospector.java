@@ -441,13 +441,10 @@ public class JaxbAnnotationIntrospector
         if ((attr != null) && attr.required()) {
             return Boolean.TRUE;
         }
-        // 09-Sep-2015, tatu: Not 100% sure that we should ever return `false`
-        //   here (as it blocks calls to secondary introspector), but since that
-        //   was the existing behavior before 2.6, is retained for now.
         if ((elem != null) || (attr != null)) {
-            return null;
+            return Boolean.FALSE;
         }
-        return Boolean.FALSE;
+        return null;
     }
 
     @Override
