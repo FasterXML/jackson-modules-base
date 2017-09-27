@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.paranamer;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.JsonMappingException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SimpleTest extends ModuleTestBase
@@ -28,17 +28,12 @@ public class SimpleTest extends ModuleTestBase
     public void testSimple() throws Exception
     {
         final String JSON = "{\"name\":\"Bob\", \"age\":40}";
-        // First, try without module
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            mapper.readValue(JSON, CreatorBean.class);
-            fail("should fail");
-        } catch (JsonMappingException e) {
-            verifyException(e, "has no property name annotation");
-        }
 
+        // 26-Sep-2017, tatu: Without module may or may not work -- with Java 8 may
+        //   well work... so do not assume failure
+        
         // then with two available modules:
-        mapper = new ObjectMapper().registerModule(new ParanamerModule());
+        ObjectMapper mapper = new ObjectMapper().registerModule(new ParanamerModule());
         CreatorBean bean = mapper.readValue(JSON, CreatorBean.class);
         assertEquals("Bob", bean.name);
         assertEquals(40, bean.age);

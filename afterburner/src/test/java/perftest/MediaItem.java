@@ -48,7 +48,7 @@ public class MediaItem
                 item._content = Content.deserialize(jp);
             } else throw new IOException("Unknown field");
         }
-        if (jp.getCurrentToken() != JsonToken.END_OBJECT) {
+        if (jp.currentToken() != JsonToken.END_OBJECT) {
             throw new IOException("Need END_OBJECT to complete MediaItem");
         }
         return item;
@@ -63,7 +63,7 @@ public class MediaItem
         while (jp.nextToken() == JsonToken.START_OBJECT) {
             images.add(Photo.deserialize(jp));
         }
-        if (jp.getCurrentToken() != JsonToken.END_ARRAY) {
+        if (jp.currentToken() != JsonToken.END_ARRAY) {
             throw new IOException("Need END_ARRAY to complete List of Photos");
         }
         return images;
@@ -187,7 +187,7 @@ public class MediaItem
               }
               throw new IOException("Unknown field '"+name+"'");
           }
-          if (jp.getCurrentToken() != JsonToken.END_OBJECT) {
+          if (jp.currentToken() != JsonToken.END_OBJECT) {
               throw new IOException("Need END_OBJECT to complete Photo");
           }
 
@@ -342,7 +342,7 @@ public class MediaItem
                 }
                 throw new IOException("Unknown field '"+name+"'");
             }
-            if (jp.getCurrentToken() != JsonToken.END_OBJECT) {
+            if (jp.currentToken() != JsonToken.END_OBJECT) {
                 throw new IOException("Need END_OBJECT to complete Content");
             }
             return content;
@@ -350,14 +350,14 @@ public class MediaItem
 
         private static List<String> deserializePersons(JsonParser jp) throws IOException
         {
-            if (jp.getCurrentToken() != JsonToken.START_ARRAY) {
-                throw new IOException("Need START_ARRAY for List of Persons (got "+jp.getCurrentToken()+")");
+            if (jp.currentToken() != JsonToken.START_ARRAY) {
+                throw new IOException("Need START_ARRAY for List of Persons (got "+jp.currentToken()+")");
             }
             ArrayList<String> persons = new ArrayList<String>(4);
             while (jp.nextToken() == JsonToken.VALUE_STRING) {
                 persons.add(jp.getText());
             }
-            if (jp.getCurrentToken() != JsonToken.END_ARRAY) {
+            if (jp.currentToken() != JsonToken.END_ARRAY) {
                 throw new IOException("Need END_ARRAY to complete List of Persons");
             }
             return persons;

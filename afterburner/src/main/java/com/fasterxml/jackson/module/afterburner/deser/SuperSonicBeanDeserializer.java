@@ -117,7 +117,7 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
         }
         // common case first:
         if (!p.isExpectedStartObjectToken()) {
-            return _deserializeOther(p, ctxt, p.getCurrentToken());
+            return _deserializeOther(p, ctxt, p.currentToken());
         }
         if (_nonStandardCreation) {
             p.nextToken();
@@ -148,7 +148,7 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
         for (int i = 0, len = _orderedProperties.length; i < len; ++i) {
             SettableBeanProperty prop = _orderedProperties[i];
             if (!p.nextFieldName(_orderedPropertyNames[i])) { // miss...
-                if (p.getCurrentToken() == JsonToken.END_OBJECT) {
+                if (p.currentToken() == JsonToken.END_OBJECT) {
                     return bean;
                 }
                 // we likely point to FIELD_NAME, so can just call parent impl

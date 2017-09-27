@@ -307,11 +307,11 @@ public class JaxbAnnotationIntrospector
             switch (m.getParameterCount()) {
             case 0: // getter
                 idPropName = findJaxbPropertyName(m, m.getRawType(),
-                        BeanUtil.okNameForGetter(m, true));
+                        BeanUtil.okNameForGetter(m));
                 break method_loop;
             case 1: // setter
                 idPropName = findJaxbPropertyName(m, m.getRawType(),
-                        BeanUtil.okNameForMutator(m, "set", true));
+                        BeanUtil.okNameForMutator(m, "set"));
                 break method_loop;
             }
         }
@@ -466,9 +466,9 @@ public class JaxbAnnotationIntrospector
                     AnnotatedMethod am = (AnnotatedMethod) ann;
                     String str;
                     if (am.getParameterCount() == 0) {
-                        str = BeanUtil.okNameForGetter(am, true);
+                        str = BeanUtil.okNameForGetter(am);
                     } else {
-                        str = BeanUtil.okNameForMutator(am, "set", true);
+                        str = BeanUtil.okNameForMutator(am, "set");
                     }
                     if (str != null) {
                         return name.withSimpleName(str);
@@ -758,20 +758,6 @@ public class JaxbAnnotationIntrospector
     }
 
     @Override
-    @Deprecated // since 2.7
-    public Class<?> findSerializationType(Annotated a)
-    {
-        Class<?> allegedType = _getTypeFromXmlElement(a);
-        if (allegedType != null){
-            Class<?> rawPropType = _rawSerializationType(a);
-            if (!isContainerType(rawPropType)) {
-                return allegedType;
-            }
-        }
-        return null;
-    }
-
-    @Override // @since 2.7
     public JsonInclude.Value findPropertyInclusion(Annotated a)
     {
         JsonInclude.Include incl = _serializationInclusion(a, null);
@@ -936,7 +922,7 @@ public class JaxbAnnotationIntrospector
         if (a instanceof AnnotatedMethod) {
             AnnotatedMethod am = (AnnotatedMethod) a;
             return isVisible(am)
-                ? findJaxbPropertyName(am, am.getRawType(), BeanUtil.okNameForGetter(am, true))
+                ? findJaxbPropertyName(am, am.getRawType(), BeanUtil.okNameForGetter(am))
                 : null;
         }
         if (a instanceof AnnotatedField) {
@@ -946,13 +932,6 @@ public class JaxbAnnotationIntrospector
                 : null;
         }
         return null;
-    }
-
-    @Deprecated // since 2.9
-    @Override
-    public boolean hasAsValueAnnotation(AnnotatedMethod am) {
-        //since jaxb says @XmlValue can exist with attributes, this won't map as a JSON value.
-        return false;
     }
 
     // As per above, nothing to detect here either...?
@@ -1133,7 +1112,7 @@ public class JaxbAnnotationIntrospector
                 return null;
             }
             Class<?> rawType = am.getRawParameterType(0);
-            return findJaxbPropertyName(am, rawType, BeanUtil.okNameForMutator(am, "set", true));
+            return findJaxbPropertyName(am, rawType, BeanUtil.okNameForMutator(am, "set"));
         }
         if (a instanceof AnnotatedField) {
             AnnotatedField af = (AnnotatedField) a;

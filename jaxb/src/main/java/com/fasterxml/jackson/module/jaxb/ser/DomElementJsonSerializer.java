@@ -1,14 +1,12 @@
 package com.fasterxml.jackson.module.jaxb.ser;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 
 import org.w3c.dom.*;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
@@ -68,7 +66,6 @@ public class DomElementJsonSerializer
         jgen.writeEndObject();
     }
 
-    // Improved in 2.3; was missing from 2.2
     @Override
     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint)
         throws JsonMappingException
@@ -76,13 +73,5 @@ public class DomElementJsonSerializer
         if (visitor != null) {
             visitor.expectStringFormat(typeHint);
         }
-    }
-
-    @Override
-    public JsonNode getSchema(SerializerProvider provider, Type typeHint)
-            throws JsonMappingException
-    {
-        // Since 2.3: should be more like String type really, not structure
-        return createSchemaNode("string", true);
     }
 }

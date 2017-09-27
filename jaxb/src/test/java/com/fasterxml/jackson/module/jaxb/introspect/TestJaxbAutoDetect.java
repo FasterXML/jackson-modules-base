@@ -6,6 +6,8 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.*;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
@@ -114,7 +116,7 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
 
         // But when disabling auto-detection, just one
         mapper = getJaxbMapper();
-        mapper.configure(MapperFeature.AUTO_DETECT_GETTERS, false);
+        mapper.setVisibility(PropertyAccessor.GETTER, Visibility.NONE);
         result = writeAndMap(mapper, bean);
         assertEquals(1, result.size());
         assertNull(result.get("a"));

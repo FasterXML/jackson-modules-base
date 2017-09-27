@@ -3,20 +3,17 @@ package com.fasterxml.jackson.module.jaxb.ser;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
 
 import javax.activation.DataHandler;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class DataHandlerJsonSerializer extends StdSerializer<DataHandler>
 {
@@ -58,14 +55,5 @@ public class DataHandlerJsonSerializer extends StdSerializer<DataHandler>
                 v2.itemsFormat(JsonFormatTypes.STRING);
             }
         }
-    }
-
-    @Override
-    public JsonNode getSchema(SerializerProvider provider, Type typeHint)
-    {
-        ObjectNode o = createSchemaNode("array", true);
-        ObjectNode itemSchema = createSchemaNode("string"); //binary values written as strings?
-        o.set("items", itemSchema);
-        return o;
     }
 }

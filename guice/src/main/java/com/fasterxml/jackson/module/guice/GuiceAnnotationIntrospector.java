@@ -22,12 +22,6 @@ public class GuiceAnnotationIntrospector extends NopAnnotationIntrospector
         return JacksonInject.Value.forId(id);
     }
 
-    @Deprecated // since 2.9
-    @Override
-    public Object findInjectableValueId(AnnotatedMember m) {
-        return _findGuiceInjectId(m);
-    }
-
     private Object _findGuiceInjectId(AnnotatedMember m)
     {
         /*

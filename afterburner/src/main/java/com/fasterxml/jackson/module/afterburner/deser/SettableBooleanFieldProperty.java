@@ -36,7 +36,7 @@ public final class SettableBooleanFieldProperty
     @Override
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt, Object bean) throws IOException {
         boolean b;
-        JsonToken t = p.getCurrentToken();
+        JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_TRUE) {
             b = true;
         } else if (t == JsonToken.VALUE_FALSE) {
@@ -67,7 +67,7 @@ public final class SettableBooleanFieldProperty
             DeserializationContext ctxt, Object instance) throws IOException
     {
         boolean b;
-        JsonToken t = p.getCurrentToken();
+        JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_TRUE) {
             b = true;
         } else if (t == JsonToken.VALUE_FALSE) {

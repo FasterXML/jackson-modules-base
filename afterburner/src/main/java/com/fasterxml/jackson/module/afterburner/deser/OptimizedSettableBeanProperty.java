@@ -175,7 +175,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 
     protected final boolean _deserializeBoolean(JsonParser p, DeserializationContext ctxt) throws IOException
     {
-        JsonToken t = p.getCurrentToken();
+        JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_TRUE) return true;
         if (t == JsonToken.VALUE_FALSE) return false;
         if (t == JsonToken.VALUE_NULL) return false;
@@ -233,7 +233,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         if (p.hasToken(JsonToken.VALUE_NUMBER_INT)) {
             return p.getIntValue();
         }
-        JsonToken t = p.getCurrentToken();
+        JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_STRING) { // let's do implicit re-parse
             String text = p.getText().trim();
             if (_hasTextualNull(text)) {
@@ -282,7 +282,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     protected final long _deserializeLong(JsonParser p, DeserializationContext ctxt)
         throws IOException
     {
-        switch (p.getCurrentTokenId()) {
+        switch (p.currentTokenId()) {
         case JsonTokenId.ID_NUMBER_INT:
             return p.getLongValue();
         case JsonTokenId.ID_NUMBER_FLOAT:
@@ -318,7 +318,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 
     protected final String _deserializeString(JsonParser p, DeserializationContext ctxt) throws IOException
     {
-        switch (p.getCurrentTokenId()) {
+        switch (p.currentTokenId()) {
         case JsonTokenId.ID_STRING:
             return p.getText();
         case JsonTokenId.ID_NULL:

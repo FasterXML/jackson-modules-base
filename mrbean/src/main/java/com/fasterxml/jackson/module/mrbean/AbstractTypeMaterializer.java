@@ -202,32 +202,7 @@ public class AbstractTypeMaterializer
         }
         return config.constructType(materializedType);
     }
-    
-    /**
-     * Older variant of {@link #resolveAbstractType(DeserializationConfig, BeanDescription)},
-     * obsoleted in 2.7. Kept around in 2.7 for backwards compatibility.
-     *<p>
-     * TODO: remove from 2.9
-     */
-    @Override
-    @Deprecated
-    public JavaType resolveAbstractType(DeserializationConfig config, JavaType type)
-    {
-        if (!_suitableType(type)) {
-            return null;
-        }
-        Class<?> materializedType;
-        if (type.hasGenericTypes()) {
-            materializedType = materializeGenericType(config, type);
-        } else {
-            materializedType = materializeRawType(config, AnnotatedClass.construct(type, config));
-        }
-        return config.constructType(materializedType);
-    }
 
-    /**
-     * @since 2.4
-     */
     public Class<?> materializeGenericType(MapperConfig<?> config, JavaType type)
     {
         Class<?> cls = type.getRawClass();
@@ -244,8 +219,6 @@ public class AbstractTypeMaterializer
 
     /**
      * NOTE: should not be called for generic types.
-     * 
-     * @since 2.4
      */
     public Class<?> materializeRawType(MapperConfig<?> config, AnnotatedClass typeDef)
     {
