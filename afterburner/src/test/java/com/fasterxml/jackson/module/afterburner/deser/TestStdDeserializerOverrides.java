@@ -86,7 +86,7 @@ public class TestStdDeserializerOverrides extends AfterburnerTestBase
         final String json = "{\"field\": \"value &amp; value\"}";
         final String EXP = "value & value";
 
-        final Module module = new SimpleModule("module", Version.unknownVersion()) {
+        final SimpleModule module = new SimpleModule("module", Version.unknownVersion()) {
             @Override
             public void setupModule(SetupContext context) {
                 context.addDeserializers(
