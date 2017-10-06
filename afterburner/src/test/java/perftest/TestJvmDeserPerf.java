@@ -2,6 +2,7 @@ package perftest;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.TokenStreamFactory;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -112,7 +113,7 @@ public final class TestJvmDeserPerf
         return item.hashCode(); // just to get some non-optimizable number
     }
 
-    protected int testDeser(JsonFactory jf, byte[] input, int reps)
+    protected int testDeser(TokenStreamFactory jf, byte[] input, int reps)
         throws Exception
     {
         MediaItem item = null;
