@@ -2,7 +2,7 @@ package perftest;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.TokenStreamFactory;
+
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -86,7 +86,7 @@ public final class TestJvmDeserPerf
 
             case 1:
                 msg = "Deserialize/manual, JSON";
-                sum += testDeser(jsonMapper.getFactory(), json, REPS);
+                sum += testDeserStreaming(jsonMapper, json, REPS);
                 break;
 
             default:
@@ -113,12 +113,12 @@ public final class TestJvmDeserPerf
         return item.hashCode(); // just to get some non-optimizable number
     }
 
-    protected int testDeser(TokenStreamFactory jf, byte[] input, int reps)
+    protected int testDeserStreaming(ObjectMapper mapper, byte[] input, int reps)
         throws Exception
     {
         MediaItem item = null;
         for (int i = 0; i < reps; ++i) {
-            JsonParser jp = jf.createParser(input);
+            JsonParser jp = mapper.createParser(input);
             item = MediaItem.deserialize(jp);
             jp.close();
         }

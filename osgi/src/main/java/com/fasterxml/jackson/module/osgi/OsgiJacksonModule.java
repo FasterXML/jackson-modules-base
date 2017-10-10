@@ -36,7 +36,7 @@ public class OsgiJacksonModule extends Module
     @Override
     public void setupModule(SetupContext context)
     {
-        ObjectMapper mapper = context.getOwner();
+        ObjectMapper mapper = (ObjectMapper) context.getOwner();
         mapper.setInjectableValues(new OsgiInjectableValues(bundleContext));
     }
 }

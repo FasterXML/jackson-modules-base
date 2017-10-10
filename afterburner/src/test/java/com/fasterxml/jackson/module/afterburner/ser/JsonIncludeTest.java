@@ -6,13 +6,11 @@ import java.util.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 /**
  * Unit tests for checking that alternative settings for
- * {@link JsonSerialize#include} annotation property work
- * as expected.
+ * serialization-side includesion work as expected.
  *<p>
  * NOTE: copied from `jackson-databind`
  */
