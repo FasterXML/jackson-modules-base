@@ -8,7 +8,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.9.2 (not yet released)
+2.9.2 (14-Oct-2017)
 
 #30: (afterburner) `IncompatibleClassChangeError` deserializing interface
   methods with default impl
