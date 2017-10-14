@@ -34,7 +34,7 @@ public class SimpleTest extends ModuleTestBase
             mapper.readValue(JSON, CreatorBean.class);
             fail("should fail");
         } catch (JsonMappingException e) {
-            verifyException(e, "has no property name annotation");
+            verifyException(e, "has no property name");
         }
 
         // then with two available modules:
