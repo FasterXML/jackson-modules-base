@@ -8,6 +8,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.3 (not yet released)
+
+#32: Fix introspector chaining in `JaxbAnnotationIntrospector.hasRequiredMarker()`
+ (reported by Vojtěch H)
+
 2.9.2 (14-Oct-2017)
 
 #30: (afterburner) `IncompatibleClassChangeError` deserializing interface
