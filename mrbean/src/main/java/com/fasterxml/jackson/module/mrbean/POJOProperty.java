@@ -1,9 +1,9 @@
 package com.fasterxml.jackson.module.mrbean;
 
-import java.lang.reflect.Method;
-
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
-import com.fasterxml.jackson.module.mrbean.BeanBuilder.TypeDescription;
+
+import java.lang.reflect.Method;
 
 /**
  * Bean that contains information about a single logical
@@ -63,15 +63,15 @@ public class POJOProperty
         return (_setter != null) && BeanUtil.isConcrete(_setter);
     }
 
-    private TypeDescription getterType() {
-        return new TypeDescription(_context.resolveType(_getter.getGenericReturnType()));
+    private JavaType getterType() {
+        return _context.resolveType(_getter.getGenericReturnType());
     }
 
-    private TypeDescription setterType() {
-        return new TypeDescription(_context.resolveType((_setter.getGenericParameterTypes()[0])));
+    private JavaType setterType() {
+        return _context.resolveType((_setter.getGenericParameterTypes()[0]));
     }
     
-    public TypeDescription selectType()
+    public JavaType selectType()
     {
         // First: if only know setter, or getter, use that one:
         if (_getter == null) {
@@ -83,9 +83,9 @@ public class POJOProperty
         /* Otherwise must ensure they are compatible, choose more specific
          * (most often setter - type)
          */
-        TypeDescription st = setterType();
-        TypeDescription gt = getterType();
-        TypeDescription specificType = TypeDescription.moreSpecificType(st, gt);
+        final JavaType st = setterType();
+        final JavaType gt = getterType();
+        final JavaType specificType = moreSpecificType(st, gt);
         if (specificType == null) { // incompatible...
             throw new IllegalArgumentException("Invalid property '"+getName()
                     +"': incompatible types for getter/setter ("
@@ -93,5 +93,20 @@ public class POJOProperty
 
         }
         return specificType;
+    }
+
+    private JavaType moreSpecificType(JavaType desc1, JavaType desc2)
+    {
+        Class<?> c1 = desc1.getRawClass();
+        Class<?> c2 = desc2.getRawClass();
+
+        if (c1.isAssignableFrom(c2)) { // c2 more specific than c1
+            return desc2;
+        }
+        if (c2.isAssignableFrom(c1)) { // c1 more specific than c2
+            return desc1;
+        }
+        // not compatible, so:
+        return null;
     }
 }
