@@ -8,6 +8,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+3.0.0 (not yet released)
+
+#28: Use ByteBuddy (instead of "raw" ASM) for Mr Bean
+ (contributed by Georgios A))
+
 2.9.3 (not yet released)
 
 #32: Fix introspector chaining in `JaxbAnnotationIntrospector.hasRequiredMarker()`
