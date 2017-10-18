@@ -151,8 +151,8 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
                 if (p.currentToken() == JsonToken.END_OBJECT) {
                     return bean;
                 }
-                // we likely point to FIELD_NAME, so can just call parent impl
-                return super.deserialize(p, ctxt, bean);
+                // we likely point to FIELD_NAME still; offline
+                return _deserializeDisordered(p, ctxt, bean);
             }
             p.nextToken(); // skip field, returns value token
             try {
@@ -163,15 +163,40 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
         }
         // also, need to ensure we get closing END_OBJECT...
         if (p.nextToken() != JsonToken.END_OBJECT) {
-            return super.deserialize(p, ctxt, bean);
+            return _deserializeDisordered(p, ctxt, bean);
         }
+        return bean;
+    }
+
+    private Object _deserializeDisordered(JsonParser p, DeserializationContext ctxt,
+            Object bean) throws IOException
+    {
+        if (!p.hasToken(JsonToken.FIELD_NAME)) {
+            // 17-Oct-2017, tatu: Should this be worth exception?
+            return bean;
+        }
+        String propName = p.getCurrentName();
+        do {
+            p.nextToken();
+            SettableBeanProperty prop = _beanProperties.find(propName);
+
+            if (prop != null) { // normal case
+                try {
+                    prop.deserializeAndSet(p, ctxt, bean);
+                } catch (Exception e) {
+                    wrapAndThrow(e, bean, propName, ctxt);
+                }
+                continue;
+            }
+            handleUnknownVanilla(p, ctxt, bean, propName);
+        } while ((propName = p.nextFieldName()) != null);
         return bean;
     }
     
     // much of below is cut'n pasted from BeanSerializer
     @Override
-    public final Object deserialize(JsonParser p, DeserializationContext ctxt, Object bean)
-        throws IOException
+    public final Object deserialize(JsonParser p, DeserializationContext ctxt,
+            Object bean) throws IOException
     {
         // [databind#631]: Assign current value, to be accessible by custom serializers
         p.setCurrentValue(bean);
