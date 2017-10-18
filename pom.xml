@@ -37,6 +37,11 @@ not datatype, data format, or JAX-RS provider modules.
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.asm>5.2</version.asm>
+
+    <!-- 17-Oct-2017, tatu: MrBean and Afterburner will use Byte Buddy instead of raw ASM
+          starting with 3.0
+      -->
+    <version.butebuddy>1.7.6</version.butebuddy>
   </properties>
 
   <dependencies>
