@@ -26,7 +26,10 @@ public class SuperSonicDeserializerBuilder extends BeanDeserializerBuilder
                 do {
                     props.add(it.next());
                 } while (it.hasNext());
-                return new SuperSonicBeanDeserializer(beanDeser, props);
+                if (props.size() > 6) {
+                    return new SuperSonicBeanDeserializer(beanDeser, props);
+                }
+                return new SuperSonicUnrolledDeserializer(beanDeser, props);
             }
         }
         return deser;
