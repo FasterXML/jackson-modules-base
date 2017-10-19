@@ -21,7 +21,7 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
     protected final SerializedString[] _orderedPropertyNames;
 
     /**
-     * Properties matching names in {@link #_orderedPropertyNames}, 
+     * Properties matching names in {@link #_orderedPropertyNames},
      * assigned after resolution when property instances are finalized.
      */
     protected SettableBeanProperty[] _orderedProperties;
@@ -77,14 +77,13 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
         throws JsonMappingException
     {
         super.resolve(ctxt);
-        /* Ok, now; need to find actual property instances to go with order
-         * defined based on property names.
-         */
-        /* 20-Sep-2014, tatu: As per [Afterburner#43], use of `JsonTypeInfo.As.EXTERNAL_PROPERTY`
-         *   will "hide" matching property, leading to no match below.
-         *   But since we don't use optimized path if that case, let's just bail out.
-         */
-        if (_externalTypeIdHandler != null || _unwrappedPropertyHandler != null) {
+        // Ok, now; need to find actual property instances to go with order
+        // defined based on property names.
+
+        // 20-Sep-2014, tatu: As per [Afterburner#43], use of `JsonTypeInfo.As.EXTERNAL_PROPERTY`
+        //   will "hide" matching property, leading to no match below.
+        //   But since we don't use optimized path if that case, let's just bail out.
+        if ((_externalTypeIdHandler != null) || (_unwrappedPropertyHandler != null)) {
             // should we assign empty array or... ?
             return;
         }
