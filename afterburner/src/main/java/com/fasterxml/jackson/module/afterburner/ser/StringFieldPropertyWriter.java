@@ -48,7 +48,10 @@ public final class StringFieldPropertyWriter
         }
         // Null (etc) handling; copied from super-class impl
         if (value == null) {
-            if (!_suppressNulls) {
+            if (_nullSerializer != null) {
+                gen.writeFieldName(_fastName);
+                _nullSerializer.serialize(null, gen, prov);
+            } else if (!_suppressNulls) {
                 gen.writeFieldName(_fastName);
                 prov.defaultSerializeNull(gen);
             }
