@@ -6,9 +6,11 @@ import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.cfg.GeneratorSettings;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import com.fasterxml.jackson.databind.ser.SerializerFactory;
+
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 // Copied from [com.fasterxml.jackson.databind.ser.filter]
@@ -31,13 +33,15 @@ public class NullSerializationTest extends AfterburnerTestBase
     static class Bean2 {
         public String type = null;
     }
-
+    
     @SuppressWarnings("serial")
     static class MyNullProvider extends DefaultSerializerProvider
     {
-        public MyNullProvider() { super(); }
-        public MyNullProvider(MyNullProvider base, SerializationConfig config, SerializerFactory jsf) {
-            super(base, config, jsf);
+        public MyNullProvider() { super(new JsonFactory()); }
+        public MyNullProvider(MyNullProvider base, SerializationConfig config, 
+                GeneratorSettings genSettings,
+                SerializerFactory jsf) {
+            super(base, config, genSettings, jsf);
         }
 
         // not really a proper impl, but has to do
@@ -47,8 +51,9 @@ public class NullSerializationTest extends AfterburnerTestBase
         }
         
         @Override
-        public DefaultSerializerProvider createInstance(SerializationConfig config, SerializerFactory jsf) {
-            return new MyNullProvider(this, config, jsf);
+        public DefaultSerializerProvider createInstance(SerializationConfig config,
+                GeneratorSettings genSettings, SerializerFactory jsf) {
+            return new MyNullProvider(this, config, genSettings, jsf);
         }
 
         @Override
@@ -68,13 +73,14 @@ public class NullSerializationTest extends AfterburnerTestBase
         public String a = null;
     }
 
+
     /*
     /**********************************************************
     /* Test methods
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = mapperWithModule();
+    private final ObjectMapper MAPPER = newObjectMapper();
     
     public void testSimple() throws Exception
     {
@@ -83,7 +89,7 @@ public class NullSerializationTest extends AfterburnerTestBase
 
     public void testOverriddenDefaultNulls() throws Exception
     {
-        DefaultSerializerProvider sp = new DefaultSerializerProvider.Impl();
+        DefaultSerializerProvider sp = new DefaultSerializerProvider.Impl(new JsonFactory());
         sp.setNullValueSerializer(new NullSerializer());
         ObjectMapper m = new ObjectMapper();
         m.setSerializerProvider(sp);
