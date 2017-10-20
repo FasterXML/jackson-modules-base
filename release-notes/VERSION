@@ -18,6 +18,7 @@ Modules:
 #30: (afterburner) `IncompatibleClassChangeError` deserializing interface
   methods with default impl
  (reported by Shawn S)
+#33: (afterburner) `@JsonSerialize` with `nullUsing` option not working for `String` properties
 
 2.9.1 (07-Sep-2017)
 
