@@ -73,7 +73,6 @@ public class NullSerializationTest extends AfterburnerTestBase
         public String a = null;
     }
 
-
     /*
     /**********************************************************
     /* Test methods
@@ -81,7 +80,7 @@ public class NullSerializationTest extends AfterburnerTestBase
      */
 
     private final ObjectMapper MAPPER = newObjectMapper();
-    
+
     public void testSimple() throws Exception
     {
         assertEquals("null", MAPPER.writeValueAsString(null));

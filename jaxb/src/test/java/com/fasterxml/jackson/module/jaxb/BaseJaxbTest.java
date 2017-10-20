@@ -20,6 +20,12 @@ public abstract class BaseJaxbTest
     /**********************************************************************
      */
 
+    // @since 2.9
+    protected ObjectMapper newObjectMapper()
+    {
+        return getJaxbAndJacksonMapper();
+    }
+
     protected ObjectMapper getJaxbMapper()
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -76,5 +82,19 @@ public abstract class BaseJaxbTest
         throws IOException
     {
         return serializeAsString(new ObjectMapper(), value);
+    }
+
+    /*
+    /**********************************************************
+    /* Helper methods, other
+    /**********************************************************
+     */
+
+    public String quote(String str) {
+        return '"'+str+'"';
+    }
+
+    protected static String aposToQuotes(String json) {
+        return json.replace("'", "\"");
     }
 }

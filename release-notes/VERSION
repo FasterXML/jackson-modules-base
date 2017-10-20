@@ -15,6 +15,9 @@ Modules:
 
 2.9.3 (not yet released)
 
+#31: (jaxb) `@JsonAppend` causes 'IllegalStateException` `Unsupported annotated member'
+  with `JaxbAnnotationModule`
+ (reported by asodja@github)
 #32: (jaxb) Fix introspector chaining in `JaxbAnnotationIntrospector.hasRequiredMarker()`
  (reported by Vojtěch H)
 #33: (afterburner) `@JsonSerialize` with `nullUsing` option not working for `String` properties
