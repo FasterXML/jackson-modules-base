@@ -74,8 +74,8 @@ public class NullSerializationTest extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = mapperWithModule();
-    
+    private final ObjectMapper MAPPER = newObjectMapper();
+
     public void testSimple() throws Exception
     {
         assertEquals("null", MAPPER.writeValueAsString(null));
