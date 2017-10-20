@@ -10,8 +10,9 @@ Modules:
 
 2.9.3 (not yet released)
 
-#32: Fix introspector chaining in `JaxbAnnotationIntrospector.hasRequiredMarker()`
+#32: (jaxb) Fix introspector chaining in `JaxbAnnotationIntrospector.hasRequiredMarker()`
  (reported by Vojtěch H)
+#33: (afterburner) `@JsonSerialize` with `nullUsing` option not working for `String` properties
 
 2.9.2 (14-Oct-2017)
 
