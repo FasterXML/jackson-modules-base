@@ -1265,8 +1265,13 @@ public class JaxbAnnotationIntrospector
                 }
             } else if (annType instanceof Class<?>) {
                 memberClass = (Class<?>) annType;
+
+                // 20-Oct-2017, tatu: as per [modules-base#31] we may get `VirtualAnnotatedMember`, should
+                //     not freak out
+                /*
             } else {
                 throw new IllegalStateException("Unsupported annotated member: " + annotated.getClass().getName());
+*/
             }
         }
         if (memberClass != null) {
