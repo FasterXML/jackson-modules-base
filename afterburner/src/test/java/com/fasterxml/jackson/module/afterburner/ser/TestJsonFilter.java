@@ -105,15 +105,14 @@ public class TestJsonFilter extends AfterburnerTestBase
         String json = mapper.writeValueAsString(new Bean());
         assertEquals("{\"a\":\"a\",\"b\":\"b\"}", json);
     }
-    
-    // defaulting, as per [JACKSON-449]
+
     public void testDefaultFilter() throws Exception
     {
         FilterProvider prov = new SimpleFilterProvider().setDefaultFilter(SimpleBeanPropertyFilter.filterOutAllExcept("b"));
         assertEquals("{\"b\":\"b\"}", MAPPER.writer(prov).writeValueAsString(new Bean()));
     }
     
-    // [Issue#89] combining @JsonIgnore, @JsonProperty
+    // Combining @JsonIgnore, @JsonProperty
     public void testIssue89() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -130,7 +129,6 @@ public class TestJsonFilter extends AfterburnerTestBase
         assertEquals("foo!", pod2.userPassword);
     }
 
-    // Wrt [Issue#306]
     public void testFilterOnProperty() throws Exception
     {
         FilterProvider prov = new SimpleFilterProvider()

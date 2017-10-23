@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
 
-public class DeserializerModifier extends BeanDeserializerModifier
+public class ABDeserializerModifier extends BeanDeserializerModifier
 {
     /**
      * Class loader to use for generated classes; if null, will try to
@@ -23,7 +23,7 @@ public class DeserializerModifier extends BeanDeserializerModifier
     
     protected final boolean _useCustomDeserializer;
 
-    public DeserializerModifier(ClassLoader cl, boolean useCustomDeserializer)
+    public ABDeserializerModifier(ClassLoader cl, boolean useCustomDeserializer)
     {
         // If we were given parent class loader explicitly, use that:
         _classLoader = (cl == null) ? null : new MyClassLoader(cl, false);

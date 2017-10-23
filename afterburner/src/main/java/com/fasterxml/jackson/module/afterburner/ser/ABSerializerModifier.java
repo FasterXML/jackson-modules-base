@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ser.*;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
 
-public class SerializerModifier extends BeanSerializerModifier
+public class ABSerializerModifier extends BeanSerializerModifier
 {
     /**
      * Class loader to use for generated classes; if null, will try to
@@ -19,7 +19,7 @@ public class SerializerModifier extends BeanSerializerModifier
      */
     protected final MyClassLoader _classLoader;
     
-    public SerializerModifier(ClassLoader cl)
+    public ABSerializerModifier(ClassLoader cl)
     {
         // If we were given parent class loader explicitly, use that:
         _classLoader = (cl == null) ? null : new MyClassLoader(cl, false);
@@ -152,6 +152,24 @@ public class SerializerModifier extends BeanSerializerModifier
             }
         }
         return collector;
+    }
+
+    /**
+     * @since 3.0
+     */
+    @Override
+    public JsonSerializer<?> modifySerializer(SerializationConfig config,
+            BeanDescription beanDesc, JsonSerializer<?> serializer)
+    {
+        // 20-Oct-2017, tatu: Could add support for `BeanAsArraySerializer` and
+        //    `UnwrappingBeanSerializer` too, but for now focus on "vanilla" case
+        if (serializer.getClass() == BeanSerializer.class) {
+            BeanSerializer base = (BeanSerializer) serializer;
+            if (base.propertyCount() <= 6) {
+                return new SuperSonicBeanSerializer(base);
+            }
+        }
+        return serializer;
     }
 
     /**
