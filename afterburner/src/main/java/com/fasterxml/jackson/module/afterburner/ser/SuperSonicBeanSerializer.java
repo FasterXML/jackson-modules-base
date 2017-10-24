@@ -154,7 +154,6 @@ public final class SuperSonicBeanSerializer extends BeanSerializerBase
         throws IOException
     {
         gen.writeStartObject(bean);
-        final BeanPropertyWriter[] props = _props;
         BeanPropertyWriter prop = null;
 
         try {
@@ -201,76 +200,58 @@ public final class SuperSonicBeanSerializer extends BeanSerializerBase
         throws IOException
     {
         gen.writeStartObject(bean);
-        int i = 0;
+        BeanPropertyWriter prop = null;
+
         try {
-            for (final int len = props.length; i < len; ++i) {
-                BeanPropertyWriter prop = props[i];
+            // NOTE: slightly less optimal as we do not use local variables, need offset
+            final int offset = props.length-1;
+            switch (_propCount) {
+            default:
+            //case 6:
+                prop = props[offset-5];
+                if (prop != null) { // can have nulls in filtered list
+                    prop.serializeAsField(bean, gen, provider);
+                }
+                // fall through
+            case 5:
+                prop = props[offset-4];
+                if (prop != null) { // can have nulls in filtered list
+                    prop.serializeAsField(bean, gen, provider);
+                }
+            case 4:
+                prop = props[offset-3];
+                if (prop != null) { // can have nulls in filtered list
+                    prop.serializeAsField(bean, gen, provider);
+                }
+            case 3:
+                prop = props[offset-2];
+                if (prop != null) { // can have nulls in filtered list
+                    prop.serializeAsField(bean, gen, provider);
+                }
+            case 2:
+                prop = props[offset-1];
+                if (prop != null) { // can have nulls in filtered list
+                    prop.serializeAsField(bean, gen, provider);
+                }
+            case 1:
+                prop = props[offset];
                 if (prop != null) { // can have nulls in filtered list
                     prop.serializeAsField(bean, gen, provider);
                 }
             }
+            prop = null;
             if (_anyGetterWriter != null) {
                 _anyGetterWriter.getAndSerialize(bean, gen, provider);
             }
         } catch (Exception e) {
-            String name = (i == props.length) ? "[anySetter]" : props[i].getName();
+            String name = (prop == null) ? "[anySetter]" : prop.getName();
             wrapAndThrow(provider, e, bean, name);
         } catch (StackOverflowError e) {
-            // 04-Sep-2009, tatu: Dealing with this is tricky, since we don't have many
-            //   stack frames to spare... just one or two; can't make many calls.
-
-            // 10-Dec-2015, tatu: and due to above, avoid "from" method, call ctor directly:
-            //JsonMappingException mapE = JsonMappingException.from(gen, "Infinite recursion (StackOverflowError)", e);
             JsonMappingException mapE = new JsonMappingException(gen, "Infinite recursion (StackOverflowError)", e);
-
-             String name = (i == props.length) ? "[anySetter]" : props[i].getName();
+            String name = (prop == null) ? "[anySetter]" : prop.getName();
             mapE.prependPath(new JsonMappingException.Reference(bean, name));
             throw mapE;
         }
         gen.writeEndObject();
     }
-    
-    /*
-        protected void serializeFieldsFiltered(Object bean, JsonGenerator gen,
-                SerializerProvider provider)
-            throws IOException, JsonGenerationException
-        {
-            // note: almost verbatim copy of "serializeFields"; copied (instead of merged)
-            // so that old method need not add check for existence of filter.
-            final BeanPropertyWriter[] props;
-            if (_filteredProps != null && provider.getActiveView() != null) {
-                props = _filteredProps;
-            } else {
-                props = _props;
-            }
-            final PropertyFilter filter = findPropertyFilter(provider, _propertyFilterId, bean);
-            // better also allow missing filter actually..
-            if (filter == null) {
-                serializeFields(bean, gen, provider);
-                return;
-            }
-            int i = 0;
-            try {
-                for (final int len = props.length; i < len; ++i) {
-                    BeanPropertyWriter prop = props[i];
-                    if (prop != null) { // can have nulls in filtered list
-                        filter.serializeAsField(bean, gen, provider, prop);
-                    }
-                }
-                if (_anyGetterWriter != null) {
-                    _anyGetterWriter.getAndFilter(bean, gen, provider, filter);
-                }
-            } catch (Exception e) {
-                String name = (i == props.length) ? "[anySetter]" : props[i].getName();
-                wrapAndThrow(provider, e, bean, name);
-            } catch (StackOverflowError e) {
-                // Minimize call depth since we are close to fail:
-                //JsonMappingException mapE = JsonMappingException.from(gen, "Infinite recursion (StackOverflowError)", e);
-                JsonMappingException mapE = new JsonMappingException(gen, "Infinite recursion (StackOverflowError)", e);
-                String name = (i == props.length) ? "[anySetter]" : props[i].getName();
-                mapE.prependPath(new JsonMappingException.Reference(bean, name));
-                throw mapE;
-            }
-        }
-*/
 }

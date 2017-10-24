@@ -135,10 +135,10 @@ public class JsonIncludeTest
 
         public NonEmptyDouble(double v) { value = v; }
     }
-    
+
     /*
     /**********************************************************
-    /* Unit tests
+    /* Test methods
     /**********************************************************
      */
 

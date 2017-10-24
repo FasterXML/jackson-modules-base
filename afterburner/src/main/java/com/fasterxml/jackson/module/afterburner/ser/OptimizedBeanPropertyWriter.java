@@ -25,8 +25,6 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
      * Locally stored version of efficiently serializable name.
      * Used to work around earlier problems with typing between
      * interface, implementation
-     * 
-     * @since 2.5
      */
     protected final SerializableString _fastName;
     protected final int _propertyIndex;
@@ -56,7 +54,6 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
         return srcIn;
     }
 
-    // Overridden since 2.6.3
     @Override
     public void assignTypeSerializer(TypeSerializer typeSer) {
         super.assignTypeSerializer(typeSer);
@@ -68,7 +65,6 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
         //    basic 'Object' we delegate to deserializer as expected
     }
 
-    // Overridden since 2.6.3
     @Override
     public void assignSerializer(JsonSerializer<Object> ser) {
         super.assignSerializer(ser);
@@ -82,7 +78,7 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
         }
     }
 
-    @Override // since 2.7.6
+    @Override
     public void assignNullSerializer(JsonSerializer<Object> nullSer) {
         super.assignNullSerializer(nullSer);
         if (fallbackWriter != null) {
@@ -97,7 +93,6 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
     @Override
     public abstract void serializeAsField(Object bean, JsonGenerator jgen, SerializerProvider prov) throws Exception;
 
-    // since 2.4.3
     @Override
     public abstract void serializeAsElement(Object bean, JsonGenerator jgen, SerializerProvider prov) throws Exception;
 
