@@ -40,11 +40,35 @@ public class JsonAppendTest extends AfterburnerTestBase
         }
     }
 
+    @JsonAppend(prepend=true, props = @JsonAppend.Prop(name = "virtual", value = MyVirtualPropertyWriter.class))
+    public static class Pojo6WithVirtual extends Pojo6 {
+        public final String name;
+        public Pojo6WithVirtual(String name) {
+            super();
+            this.name = name;
+        }
+    }
+
+    /*
+    /**********************************************************************
+    /* Test methods
+    /**********************************************************************
+     */
+
+    private final ObjectMapper MAPPER = newObjectMapper();
+
     public void testSimpleAppend() throws Exception
     {
-        ObjectMapper mapper = objectMapper();
-//        ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(new Pojo("foo"));
+        String json = MAPPER.writeValueAsString(new Pojo("foo"));
         assertEquals("{\"name\":\"foo\",\"virtual\":\"bar\"}", json);
+    }
+
+    public void testBiggerAppend() throws Exception
+    {
+        String json = MAPPER.writeValueAsString(new Pojo6WithVirtual("Bubba"));
+        assertEquals(aposToQuotes("{'virtual':'bar',"
+                +"'a':13,'b':'foo','c':true,'d':-13117,'e':0.25,'f':[1,2,3],"
+                +"'name':'Bubba'}"),
+                json);
     }
 }

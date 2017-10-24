@@ -3,6 +3,7 @@ package com.fasterxml.jackson.module.afterburner;
 import java.io.IOException;
 import java.util.Arrays;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +41,25 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
         }
     }
 
+    // 24-Oct-2017, tatu: Added to check for glitches in serialization unrolling
+    @JsonPropertyOrder({ "a", "b", "c", "d", "e", "f" })
+    protected static class Pojo6 {
+        private String b = "foo";
+        private double e = 0.25;
+
+        public Pojo6() { }
+
+        public int a = 13;
+        public String getB() { return b; }
+        public boolean c = true;
+        public long d = -13117L;
+        public double getE() { return e; };
+        public int[] f = new int[] { 1, 2, 3 };
+
+        public void setB(String v) { b = v; }
+        public void setE(double v) { e = v; }
+    }
+    
     /**
      * Sample class from Jackson tutorial ("JacksonInFiveMinutes")
      */
