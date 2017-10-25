@@ -46,9 +46,8 @@ public class GuiceAnnotationIntrospector extends NopAnnotationIntrospector
         final Annotation guiceAnnotation;
 
         if ((m instanceof AnnotatedField) || (m instanceof AnnotatedParameter)) {
-           /* On fields and parameters the @Qualifier annotation and type to
-            * inject are the member itself, so, nothing to do here...
-            */
+            // On fields and parameters the @Qualifier annotation and type to
+            // inject are the member itself, so, nothing to do here...
             guiceMember = m;
             AnnotationMap anns = ((AnnotatedMember) m).getAllAnnotations();
             guiceAnnotation = findBindingAnnotation(anns.annotations());

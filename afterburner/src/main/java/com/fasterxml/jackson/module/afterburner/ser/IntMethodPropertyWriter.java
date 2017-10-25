@@ -2,6 +2,7 @@ package com.fasterxml.jackson.module.afterburner.ser;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 
@@ -24,6 +25,17 @@ public final class IntMethodPropertyWriter
             _suppressableInt = 0;
             _suppressableIntSet = false;
         }
+    }
+
+    protected IntMethodPropertyWriter(IntMethodPropertyWriter base, PropertyName name) {
+        super(base, name);
+        _suppressableInt = base._suppressableInt;
+        _suppressableIntSet = base._suppressableIntSet;
+    }
+
+    @Override
+    protected BeanPropertyWriter _new(PropertyName newName) {
+        return new IntMethodPropertyWriter(this, newName);
     }
 
     @Override

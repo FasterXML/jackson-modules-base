@@ -2,6 +2,7 @@ package com.fasterxml.jackson.module.afterburner.ser;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 
@@ -11,7 +12,7 @@ public final class LongFieldPropertyWriter
     private static final long serialVersionUID = 1L;
 
     private final long _suppressableLong;
-    private final boolean _suppressableLongSet;
+    private final boolean _suppressableSet;
 
     public LongFieldPropertyWriter(BeanPropertyWriter src, BeanPropertyAccessor acc, int index,
             JsonSerializer<Object> ser) {
@@ -19,11 +20,22 @@ public final class LongFieldPropertyWriter
 
         if (_suppressableValue instanceof Long) {
             _suppressableLong = (Long)_suppressableValue;
-            _suppressableLongSet = true;
+            _suppressableSet = true;
         } else {
             _suppressableLong = 0L;
-            _suppressableLongSet = false;
+            _suppressableSet = false;
         }
+    }
+
+    protected LongFieldPropertyWriter(LongFieldPropertyWriter base, PropertyName name) {
+        super(base, name);
+        _suppressableSet = base._suppressableSet;
+        _suppressableLong = base._suppressableLong;
+    }
+
+    @Override
+    protected BeanPropertyWriter _new(PropertyName newName) {
+        return new LongFieldPropertyWriter(this, newName);
     }
 
     @Override
@@ -57,7 +69,7 @@ public final class LongFieldPropertyWriter
             _handleProblem(bean, gen, prov, t, false);
             return;
         }
-        if (!_suppressableLongSet || _suppressableLong != value) {
+        if (!_suppressableSet || _suppressableLong != value) {
             gen.writeFieldName(_fastName);
             gen.writeNumber(value);
         }
@@ -77,7 +89,7 @@ public final class LongFieldPropertyWriter
             _handleProblem(bean, gen, prov, t, false);
             return;
         }
-        if (!_suppressableLongSet || _suppressableLong != value) {
+        if (!_suppressableSet || _suppressableLong != value) {
             gen.writeNumber(value);
         } else { // important: MUST output a placeholder
             serializeAsPlaceholder(bean, gen, prov);

@@ -2,6 +2,7 @@ package com.fasterxml.jackson.module.afterburner.ser;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 
@@ -24,6 +25,17 @@ public final class BooleanMethodPropertyWriter
             _suppressableBoolean = false;
             _suppressableSet = false;
         }
+    }
+
+    protected BooleanMethodPropertyWriter(BooleanMethodPropertyWriter base, PropertyName name) {
+        super(base, name);
+        _suppressableSet = base._suppressableSet;
+        _suppressableBoolean = base._suppressableBoolean;
+    }
+
+    @Override
+    protected BeanPropertyWriter _new(PropertyName newName) {
+        return new BooleanMethodPropertyWriter(this, newName);
     }
 
     @Override
