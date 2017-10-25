@@ -46,6 +46,16 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
         _fastName = src.getSerializedName();
     }
 
+    protected OptimizedBeanPropertyWriter(OptimizedBeanPropertyWriter<?> base, PropertyName name) {
+        super(base, name);
+        // 24-Oct-2017, tatu: Should this be changed too?
+        fallbackWriter = base.fallbackWriter;
+        _serializer = base._serializer;
+        _propertyAccessor = base._propertyAccessor;
+        _propertyIndex = base._propertyIndex;
+        _fastName = getSerializedName();
+    }
+
     private BeanPropertyWriter unwrapFallbackWriter(BeanPropertyWriter srcIn)
     {
         while (srcIn instanceof OptimizedBeanPropertyWriter) {
@@ -53,6 +63,10 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
         }
         return srcIn;
     }
+
+    // Ensure it gets defined
+    @Override
+    protected abstract BeanPropertyWriter _new(PropertyName newName);
 
     @Override
     public void assignTypeSerializer(TypeSerializer typeSer) {

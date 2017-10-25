@@ -2,6 +2,7 @@ package com.fasterxml.jackson.module.afterburner.ser;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.impl.PropertySerializerMap;
@@ -14,6 +15,15 @@ public final class ObjectMethodPropertyWriter
     public ObjectMethodPropertyWriter(BeanPropertyWriter src, BeanPropertyAccessor acc, int index,
             JsonSerializer<Object> ser) {
         super(src, acc, index, ser);
+    }
+
+    protected ObjectMethodPropertyWriter(ObjectMethodPropertyWriter base, PropertyName name) {
+        super(base, name);
+    }
+
+    @Override
+    protected BeanPropertyWriter _new(PropertyName newName) {
+        return new ObjectMethodPropertyWriter(this, newName);
     }
 
     @Override

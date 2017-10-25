@@ -2,6 +2,7 @@ package com.fasterxml.jackson.module.afterburner.ser;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 
@@ -11,7 +12,7 @@ public final class IntFieldPropertyWriter
     private static final long serialVersionUID = 1L;
 
     private final int _suppressableInt;
-    private final boolean _suppressableIntSet;
+    private final boolean _suppressableSet;
 
     public IntFieldPropertyWriter(BeanPropertyWriter src, BeanPropertyAccessor acc, int index,
             JsonSerializer<Object> ser) {
@@ -19,11 +20,22 @@ public final class IntFieldPropertyWriter
 
         if (_suppressableValue instanceof Integer) {
             _suppressableInt = ((Integer)_suppressableValue).intValue();
-            _suppressableIntSet = true;
+            _suppressableSet = true;
         } else {
             _suppressableInt = 0;
-            _suppressableIntSet = false;
+            _suppressableSet = false;
         }
+    }
+
+    protected IntFieldPropertyWriter(IntFieldPropertyWriter base, PropertyName name) {
+        super(base, name);
+        _suppressableInt = base._suppressableInt;
+        _suppressableSet = base._suppressableSet;
+    }
+
+    @Override
+    protected BeanPropertyWriter _new(PropertyName newName) {
+        return new IntFieldPropertyWriter(this, newName);
     }
 
     @Override
@@ -57,7 +69,7 @@ public final class IntFieldPropertyWriter
             _handleProblem(bean, gen, prov, t, false);
             return;
         }
-        if (!_suppressableIntSet || _suppressableInt != value) {
+        if (!_suppressableSet || _suppressableInt != value) {
             gen.writeFieldName(_fastName);
             gen.writeNumber(value);
         }
@@ -77,7 +89,7 @@ public final class IntFieldPropertyWriter
             _handleProblem(bean, gen, prov, t, true);
             return;
         }
-        if (!_suppressableIntSet || _suppressableInt != value) {
+        if (!_suppressableSet || (_suppressableInt != value)) {
             gen.writeNumber(value);
         } else { // important: MUST output a placeholder
             serializeAsPlaceholder(bean, gen, prov);
