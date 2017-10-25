@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 
-public class StringMethodPropertyWriter 
+public final class StringMethodPropertyWriter 
     extends OptimizedBeanPropertyWriter<StringMethodPropertyWriter>
 {
     private static final long serialVersionUID = 1L;
