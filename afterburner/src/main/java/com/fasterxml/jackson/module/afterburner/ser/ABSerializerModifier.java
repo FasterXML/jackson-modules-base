@@ -154,9 +154,9 @@ public class ABSerializerModifier extends BeanSerializerModifier
         return collector;
     }
 
-    /**
-     * @since 3.0
-     */
+    // 25-Oct-2017, tatu: Originally prototyped here, but unrolling implementation
+    //    merged in core databind for 3.0, so...
+    /*
     @Override
     public JsonSerializer<?> modifySerializer(SerializationConfig config,
             BeanDescription beanDesc, JsonSerializer<?> serializer)
@@ -171,6 +171,7 @@ public class ABSerializerModifier extends BeanSerializerModifier
         }
         return serializer;
     }
+    */
 
     /**
      * Helper method used to check whether given serializer is the default
