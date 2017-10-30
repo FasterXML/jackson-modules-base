@@ -1,17 +1,38 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
-import java.lang.reflect.Method;
-import java.util.*;
-
-import org.objectweb.asm.*;
-
-import static org.objectweb.asm.Opcodes.*;
-
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
-import com.fasterxml.jackson.databind.introspect.AnnotatedField;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.module.afterburner.util.ClassName;
 import com.fasterxml.jackson.module.afterburner.util.DynamicPropertyAccessorBase;
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
+import com.fasterxml.jackson.module.afterburner.util.bytebuddy.*;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.ClassFileVersion;
+import net.bytebuddy.description.field.FieldDescription;
+import net.bytebuddy.description.field.FieldList;
+import net.bytebuddy.description.method.MethodDescription;
+import net.bytebuddy.description.method.MethodList;
+import net.bytebuddy.description.modifier.TypeManifestation;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.description.type.TypeDefinition;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.dynamic.scaffold.TypeValidation;
+import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy;
+import net.bytebuddy.implementation.Implementation;
+import net.bytebuddy.implementation.bytecode.StackManipulation;
+import net.bytebuddy.implementation.bytecode.assign.TypeCasting;
+import net.bytebuddy.implementation.bytecode.member.FieldAccess;
+import net.bytebuddy.implementation.bytecode.member.MethodInvocation;
+import net.bytebuddy.implementation.bytecode.member.MethodReturn;
+import net.bytebuddy.implementation.bytecode.member.MethodVariableAccess;
+import net.bytebuddy.jar.asm.MethodVisitor;
+
+import java.lang.reflect.Method;
+import java.util.*;
+
+import static net.bytebuddy.description.type.TypeDescription.ForLoadedType;
+import static net.bytebuddy.matcher.ElementMatchers.named;
 
 /**
  * Simple collector used to keep track of properties for which code-generated
@@ -20,9 +41,6 @@ import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
 public class PropertyMutatorCollector
     extends DynamicPropertyAccessorBase
 {
-    private static final Type STRING_TYPE = Type.getType(String.class);
-    private static final Type OBJECT_TYPE = Type.getType(Object.class);
-
     private final List<SettableIntMethodProperty> _intSetters = new LinkedList<SettableIntMethodProperty>();
     private final List<SettableLongMethodProperty> _longSetters = new LinkedList<SettableLongMethodProperty>();
     private final List<SettableBooleanMethodProperty> _booleanSetters = new LinkedList<SettableBooleanMethodProperty>();
@@ -36,11 +54,11 @@ public class PropertyMutatorCollector
     private final List<SettableObjectFieldProperty> _objectFields = new LinkedList<SettableObjectFieldProperty>();
 
     private final Class<?> beanClass;
-    private final String beanClassName;
+    private final TypeDescription beanClassDefinition;
 
     public PropertyMutatorCollector(Class<?> beanClass) {
         this.beanClass = beanClass;
-        this.beanClassName = Type.getInternalName(beanClass);
+        this.beanClassDefinition = new ForLoadedType(beanClass);
     }
     
     /*
@@ -109,66 +127,54 @@ public class PropertyMutatorCollector
 
     public Class<?> generateMutatorClass(MyClassLoader classLoader, ClassName baseName)
     {
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        String superClass = internalClassName(BeanPropertyMutator.class.getName());
+        DynamicType.Builder<?> builder =
+                new ByteBuddy(ClassFileVersion.JAVA_V6)
+                        .with(TypeValidation.DISABLED)
+                        .subclass(BeanPropertyMutator.class, ConstructorStrategy.Default.DEFAULT_CONSTRUCTOR)
+                        .name(baseName.getSlashedTemplate())
+                        .modifiers(Visibility.PUBLIC, TypeManifestation.FINAL);
 
-        final String tmpClassName = baseName.getSlashedTemplate();
-
-        // muchos important: level at least 1.5 to get generics!!!
-        // 19-Apr-2017, tatu: For Jackson 2.9 SHOULD generate Java 7 bytecode...
-        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER + ACC_FINAL, tmpClassName,
-                null, superClass, null);
-        cw.visitSource(baseName.getSourceFilename(), null);
-
-        // add default (no-arg) constructor first
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
-        mv.visitCode();
-        mv.visitVarInsn(ALOAD, 0);
-        mv.visitMethodInsn(INVOKESPECIAL, superClass, "<init>", "()V", false);
-        mv.visitInsn(RETURN);
-        mv.visitMaxs(0, 0); // don't care (real values: 1,1)
-        mv.visitEnd();
 
         // and then add various accessors; first field accessors:
         if (!_intFields.isEmpty()) {
-            _addFields(cw, _intFields, "intField", Type.INT_TYPE, ILOAD);
+            builder = _addFields(builder, _intFields, "intField", MethodVariableAccess.INTEGER);
         }
         if (!_longFields.isEmpty()) {
-            _addFields(cw, _longFields, "longField", Type.LONG_TYPE, LLOAD);
+            builder = _addFields(builder, _longFields, "longField", MethodVariableAccess.LONG);
         }
         if (!_booleanFields.isEmpty()) {
             // booleans are simply ints 0 and 1
-            _addFields(cw, _booleanFields, "booleanField", Type.BOOLEAN_TYPE, ILOAD);
+            builder = _addFields(builder, _booleanFields, "booleanField", MethodVariableAccess.INTEGER);
         }
         if (!_stringFields.isEmpty()) {
-            _addFields(cw, _stringFields, "stringField", STRING_TYPE, ALOAD);
+            builder = _addFields(builder, _stringFields, "stringField", MethodVariableAccess.REFERENCE);
         }
         if (!_objectFields.isEmpty()) {
-            _addFields(cw, _objectFields, "objectField", OBJECT_TYPE, ALOAD);
+            builder = _addFields(builder, _objectFields, "objectField", MethodVariableAccess.REFERENCE);
         }
 
         // and then method accessors:
         if (!_intSetters.isEmpty()) {
-            _addSetters(cw, _intSetters, "intSetter", Type.INT_TYPE, ILOAD);
+            builder = _addSetters(builder, _intSetters, "intSetter", MethodVariableAccess.INTEGER);
         }
         if (!_longSetters.isEmpty()) {
-            _addSetters(cw, _longSetters, "longSetter", Type.LONG_TYPE, LLOAD);
+            builder = _addSetters(builder, _longSetters, "longSetter", MethodVariableAccess.LONG);
         }
         if (!_booleanSetters.isEmpty()) {
             // booleans are simply ints 0 and 1
-            _addSetters(cw, _booleanSetters, "booleanSetter", Type.BOOLEAN_TYPE, ILOAD);
+            builder = _addSetters(builder, _booleanSetters, "booleanSetter", MethodVariableAccess.INTEGER);
         }
         if (!_stringSetters.isEmpty()) {
-            _addSetters(cw, _stringSetters, "stringSetter", STRING_TYPE, ALOAD);
+            builder = _addSetters(builder, _stringSetters, "stringSetter", MethodVariableAccess.REFERENCE);
         }
         if (!_objectSetters.isEmpty()) {
-            _addSetters(cw, _objectSetters, "objectSetter", OBJECT_TYPE, ALOAD);
+            builder = _addSetters(builder, _objectSetters, "objectSetter", MethodVariableAccess.REFERENCE);
         }
 
-        cw.visitEnd();
-        byte[] bytecode = cw.toByteArray();
+        byte[] bytecode = builder.make().getBytes();
         baseName.assignChecksum(bytecode);
         // already defined exactly as-is?
+
         try {
             return classLoader.loadClass(baseName.getDottedName());
         } catch (ClassNotFoundException e) { }
@@ -177,270 +183,412 @@ public class PropertyMutatorCollector
     }
 
     /*
-    /**********************************************************
-    /* Code generation; method-based getters
-    /**********************************************************
+    /****************************************************************************
+    /* Code generation; Byte Buddy common between fields and setters handling
+    /****************************************************************************
      */
 
-    private <T extends OptimizedSettableBeanProperty<T>> void _addSetters(ClassWriter cw, List<T> props,
-            String methodName, Type parameterType, int loadValueCode)
-    {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, methodName, "(Ljava/lang/Object;I"+parameterType+")V", /*generic sig*/null, null);
-        mv.visitCode();
-        // first: cast bean to proper type
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitTypeInsn(CHECKCAST, beanClassName);
-        int localVarIndex = 4 + (parameterType.equals(Type.LONG_TYPE) ? 1 : 0);
-        mv.visitVarInsn(ASTORE, localVarIndex); // 3 args (0 == this), so 4 is the first local var slot, 5 for long
+    /**
+     * Implementation specific to {@link PropertyMutatorCollector}
+     * We now that there are three arguments to the methods created in this case
+     */
+    private static class LocalVarIndexCalculator implements AbstractPropertyStackManipulation.LocalVarIndexCalculator {
 
-        boolean mustCast = parameterType.equals(OBJECT_TYPE);
-        // Ok; minor optimization, 3 or fewer accessors, just do IFs; over that, use switch
-        switch (props.size()) {
-        case 1:
-            _addSingleSetter(mv, props.get(0), loadValueCode, localVarIndex, mustCast);
-            break;
-        case 2:
-        case 3:
-            _addSettersUsingIf(mv, props, loadValueCode, localVarIndex, mustCast);
-            break;
-        default:
-            _addSettersUsingSwitch(mv, props, loadValueCode, localVarIndex, mustCast);
+        private final MethodVariableAccess beanValueAccess;
+
+        LocalVarIndexCalculator(MethodVariableAccess beanValueAccess) {
+            this.beanValueAccess = beanValueAccess;
         }
-        // and if no match, generate exception:
-        generateException(mv, beanClassName, props.size());
-        mv.visitMaxs(0, 0); // don't care (real values: 1,1)
-        mv.visitEnd();
+
+        private static Map<MethodVariableAccess, LocalVarIndexCalculator> cache = new HashMap<>();
+
+        public static LocalVarIndexCalculator of(MethodVariableAccess beanValueAccess) {
+            LocalVarIndexCalculator result = cache.get(beanValueAccess);
+            if (result == null) {
+                result = new LocalVarIndexCalculator(beanValueAccess);
+                cache.put(beanValueAccess, result);
+            }
+            return result;
+        }
+
+        //we have 3 arguments (plus arg 0 which is 'this'), so 4 is the position of the first unless it's a long
+        //this would look a lot nicer if MethodVariableAccess.stackSize were public...
+        @Override
+        public int calculate() {
+            return 3 + (beanValueAccess == MethodVariableAccess.LONG ?  2 : 1);
+        }
+    }
+
+    private static class CreateLocalVarStackManipulation extends AbstractCreateLocalVarStackManipulation {
+
+        CreateLocalVarStackManipulation(TypeDescription beanClassDescription,
+                                                MethodVariableAccess beanValueAccess) {
+            super(beanClassDescription, PropertyMutatorCollector.LocalVarIndexCalculator.of(beanValueAccess));
+        }
+
+        private static Map<Integer, CreateLocalVarStackManipulation> cache
+                = new HashMap<Integer, CreateLocalVarStackManipulation>();
+
+        @SuppressWarnings("unchecked")
+        static CreateLocalVarStackManipulation of(
+                TypeDescription beanClassDescription, MethodVariableAccess beanValueAccess) {
+
+            final int key = beanClassDescription.hashCode() + beanValueAccess.hashCode();
+            CreateLocalVarStackManipulation result = cache.get(key);
+            if (result == null) {
+                result = new CreateLocalVarStackManipulation(beanClassDescription, beanValueAccess);
+                cache.put(key, result);
+            }
+            return result;
+        }
+    }
+
+    /**
+     * Adds bytecode for operation like:
+     * <pre>
+     * {@code
+     * var4.setA(var3);
+     * }
+     * <pre/>
+     */
+    private abstract static class AbstractSinglePropStackManipulation<T extends OptimizedSettableBeanProperty<T>>
+            extends AbstractPropertyStackManipulation {
+        private final TypeDescription beanClassDescription;
+        private final T prop;
+        private final MethodVariableAccess beanValueAccess;
+
+        AbstractSinglePropStackManipulation(TypeDescription beanClassDescription,
+                                            T prop,
+                                            MethodVariableAccess beanValueAccess) {
+            super(PropertyMutatorCollector.LocalVarIndexCalculator.of(beanValueAccess));
+            this.beanValueAccess = beanValueAccess;
+            this.beanClassDescription = beanClassDescription;
+            this.prop = prop;
+        }
+
+        abstract protected Class<?> getClassToCastBeanValueTo(AnnotatedMember annotatedMember);
+        abstract protected StackManipulation invocationOperation(
+                AnnotatedMember annotatedMember, TypeDefinition beanClassDescription);
+
+        @Override
+        public Size apply(MethodVisitor methodVisitor,
+                          Implementation.Context implementationContext) {
+
+            final boolean mustCast = (beanValueAccess == MethodVariableAccess.REFERENCE);
+
+            final List<StackManipulation> operations = new ArrayList<StackManipulation>();
+            operations.add(loadLocalVar()); // load local for cast bean
+            operations.add(loadBeanValueArg());
+
+            final AnnotatedMember member = prop.getMember();
+            if (mustCast) {
+                operations.add(TypeCasting.to(new ForLoadedType(getClassToCastBeanValueTo(member))));
+            }
+
+            operations.add(invocationOperation(member, beanClassDescription));
+            operations.add(MethodReturn.VOID);
+
+            final StackManipulation.Compound compound = new StackManipulation.Compound(operations);
+            return compound.apply(methodVisitor, implementationContext);
+        }
+
+        private StackManipulation loadLocalVar() {
+            return MethodVariableAccess.REFERENCE.loadFrom(localVarIndex());
+        }
+
+        private StackManipulation loadBeanValueArg() {
+            return beanValueAccess.loadFrom(beanValueArgIndex());
+        }
+
+        /**
+         * we know that all methods of created in {@link PropertyMutatorCollector} contain the bean value as the 3rd arg
+         */
+        private int beanValueArgIndex() {
+            return 3;
+        }
     }
 
     /*
     /**********************************************************
-    /* Code generation; field-based getters
+    /* Code generation; field-based
     /**********************************************************
      */
+    private static class SingleFieldStackManipulation<T extends OptimizedSettableBeanProperty<T>>
+            extends AbstractSinglePropStackManipulation<T> {
 
-    private <T extends OptimizedSettableBeanProperty<T>> void _addFields(ClassWriter cw, List<T> props,
-            String methodName, Type parameterType, int loadValueCode)
-    {
-        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC, methodName, "(Ljava/lang/Object;I"+parameterType+")V", /*generic sig*/null, null);
-        mv.visitCode();
-        // first: cast bean to proper type
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitTypeInsn(CHECKCAST, beanClassName);
-        int localVarIndex = 4 + (parameterType.equals(Type.LONG_TYPE) ? 1 : 0);
-        mv.visitVarInsn(ASTORE, localVarIndex); // 3 args (0 == this), so 4 is the first local var slot, 5 for long
-
-        boolean mustCast = parameterType.equals(OBJECT_TYPE);
-        // Ok; minor optimization, 3 or fewer fields, just do IFs; over that, use switch
-        switch (props.size()) {
-        case 1:
-            _addSingleField(mv, props.get(0), loadValueCode, localVarIndex, mustCast);
-            break;
-        case 2:
-        case 3:
-            _addFieldsUsingIf(mv, props, loadValueCode, localVarIndex, mustCast);
-            break;
-        default:
-            _addFieldsUsingSwitch(mv, props, loadValueCode, localVarIndex, mustCast);
+        SingleFieldStackManipulation(TypeDescription beanClassDescription,
+                                            T prop,
+                                            MethodVariableAccess beanValueAccess) {
+            super(beanClassDescription, prop, beanValueAccess);
         }
-        // and if no match, generate exception:
-        generateException(mv, beanClassName, props.size());
-        mv.visitMaxs(0, 0); // don't care (real values: 1,1)
-        mv.visitEnd();
+
+        @Override
+        protected Class<?> getClassToCastBeanValueTo(AnnotatedMember annotatedMember) {
+            return annotatedMember.getRawType();
+        }
+
+        @Override
+        protected StackManipulation invocationOperation(
+                AnnotatedMember annotatedMember, TypeDefinition beanClassDescription) {
+
+            final String fieldName = annotatedMember.getName();
+            final FieldList<FieldDescription> matchingFields =
+                    (FieldList<FieldDescription>) beanClassDescription.getDeclaredFields().filter(named(fieldName));
+
+            if (matchingFields.size() == 1) { //method was declared on class
+                return FieldAccess.forField(matchingFields.getOnly()).write();
+            }
+            if (matchingFields.isEmpty()) { //method was not found on class, try super class
+                return invocationOperation(annotatedMember, beanClassDescription.getSuperClass());
+            }
+            else { //should never happen
+                throw new IllegalStateException("Could not find definition of field: " + fieldName);
+            }
+        }
+    }
+
+    private static class SingleFieldStackManipulationSupplier<T extends OptimizedSettableBeanProperty<T>> implements
+            SinglePropStackManipulationSupplier<T> {
+
+        private final TypeDescription beanClassDescription;
+        private final MethodVariableAccess beanValueAccess;
+
+        SingleFieldStackManipulationSupplier(TypeDescription beanClassDescription,
+                                                   MethodVariableAccess beanValueAccess) {
+            this.beanClassDescription = beanClassDescription;
+            this.beanValueAccess = beanValueAccess;
+        }
+
+        private static Map<Integer, SingleFieldStackManipulationSupplier> cache
+                = new HashMap<Integer, SingleFieldStackManipulationSupplier>();
+
+        @SuppressWarnings("unchecked")
+        static <G extends OptimizedSettableBeanProperty<G>> SingleFieldStackManipulationSupplier<G> of(
+                TypeDescription beanClassDescription, MethodVariableAccess beanValueAccess) {
+
+            final int key = beanClassDescription.hashCode() + beanValueAccess.hashCode();
+            SingleFieldStackManipulationSupplier result = cache.get(key);
+            if (result == null) {
+                result = new SingleFieldStackManipulationSupplier(beanClassDescription, beanValueAccess);
+                cache.put(key, result);
+            }
+            return result;
+        }
+
+        @Override
+        public StackManipulation supply(T prop) {
+            return new SingleFieldStackManipulation<T>(beanClassDescription, prop, beanValueAccess);
+        }
+    }
+
+    private static class FieldAppender<T extends OptimizedSettableBeanProperty<T>> extends AbstractDelegatingAppender<T> {
+
+        private final TypeDescription beanClassDescription;
+        private final List<T> props;
+        private final MethodVariableAccess beanValueAccess;
+
+        FieldAppender(TypeDescription beanClassDescription, List<T> props, MethodVariableAccess beanValueAccess){
+            super(props);
+            this.beanClassDescription = beanClassDescription;
+            this.props = props;
+            this.beanValueAccess = beanValueAccess;
+        }
+
+        @Override
+        protected StackManipulation usingSwitch() {
+
+            return new UsingSwitchStackManipulation<T>(
+                    LocalVarIndexCalculator.of(beanValueAccess),
+                    props,
+                    SingleFieldStackManipulationSupplier.<T>of(beanClassDescription, beanValueAccess)
+            );
+        }
+
+        @Override
+        protected StackManipulation createLocalVar() {
+            return CreateLocalVarStackManipulation.of(beanClassDescription, beanValueAccess);
+        }
+
+        @Override
+        protected StackManipulation usingIf() {
+
+            return new UsingIfStackManipulation<T>(
+                    LocalVarIndexCalculator.of(beanValueAccess),
+                    props,
+                    SingleFieldStackManipulationSupplier.<T>of(beanClassDescription, beanValueAccess)
+            );
+        }
+
+        @Override
+        protected StackManipulation single() {
+            return new SingleFieldStackManipulation<T>(beanClassDescription, props.get(0), beanValueAccess);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            FieldAppender<?> that = (FieldAppender<?>) o;
+
+            if (!beanClassDescription.equals(that.beanClassDescription)) return false;
+            if (!props.equals(that.props)) return false;
+            return beanValueAccess == that.beanValueAccess;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = beanClassDescription.hashCode();
+            result = 31 * result + props.hashCode();
+            result = 31 * result + beanValueAccess.hashCode();
+            return result;
+        }
+    }
+
+    private <T extends OptimizedSettableBeanProperty<T>> DynamicType.Builder<?> _addFields(
+            DynamicType.Builder<?> builder, List<T> props, String methodName, MethodVariableAccess beanValueAccess) {
+
+        return builder.method(named(methodName))
+                      .intercept(
+                              new Implementation.Simple(
+                                      new FieldAppender<T>(beanClassDefinition, props, beanValueAccess)
+                              )
+                      );
     }
     
     /*
     /**********************************************************
-    /* Helper methods, method accessor creation
+    /* Code generation; method-based
     /**********************************************************
      */
 
-    private void _addSingleSetter(MethodVisitor mv,
-            OptimizedSettableBeanProperty<?> prop, int loadValueCode, int beanIndex, boolean mustCast)
-    {
-        mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-        mv.visitVarInsn(ALOAD, beanIndex); // load local for cast bean
-        mv.visitVarInsn(loadValueCode, 3);
-        Method method = (Method) (prop.getMember().getMember());
-        Type type = Type.getType(method.getParameterTypes()[0]);
-        if (mustCast) {
-            mv.visitTypeInsn(CHECKCAST, type.getInternalName());
+    private static class SingleMethodStackManipulationSupplier<T extends OptimizedSettableBeanProperty<T>> implements
+            SinglePropStackManipulationSupplier<T> {
+
+        private final TypeDescription beanClassDescription;
+        private final MethodVariableAccess beanValueAccess;
+
+        SingleMethodStackManipulationSupplier(TypeDescription beanClassDescription,
+                                                    MethodVariableAccess beanValueAccess) {
+            this.beanClassDescription = beanClassDescription;
+            this.beanValueAccess = beanValueAccess;
         }
-        // to fix [Issue-5] (don't assume return type is 'void'), we need to:
-        Type returnType = Type.getType(method.getReturnType());
 
-        boolean isInterface = isInterfaceMethod(method);
-        method.getDeclaringClass().isInterface();
-        mv.visitMethodInsn(isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
-                beanClassName, method.getName(), "("+type+")"+returnType, isInterface);
-        mv.visitInsn(RETURN);
-    }
-    
-    private <T extends OptimizedSettableBeanProperty<T>> void _addSettersUsingIf(MethodVisitor mv,
-            List<T> props, int loadValueCode, int beanIndex, boolean mustCast)
-    {
-        mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-        Label next = new Label();
-        // first: check if 'index == 0'
-        mv.visitJumpInsn(IFNE, next); // "if not zero, goto L (skip stuff)"
-        // call first getter:
-        mv.visitVarInsn(ALOAD, beanIndex); // load local for cast bean
-        mv.visitVarInsn(loadValueCode, 3);
-        Method method = (Method) (props.get(0).getMember().getMember());
-        Type type = Type.getType(method.getParameterTypes()[0]);
-        if (mustCast) {
-            mv.visitTypeInsn(CHECKCAST, type.getInternalName());
+        private static Map<Integer, SingleMethodStackManipulationSupplier> cache
+                = new HashMap<Integer, SingleMethodStackManipulationSupplier>();
+
+        @SuppressWarnings("unchecked")
+        static <G extends OptimizedSettableBeanProperty<G>> SingleMethodStackManipulationSupplier<G> of(
+                TypeDescription beanClassDescription, MethodVariableAccess beanValueAccess) {
+
+            final int key = beanClassDescription.hashCode() + beanValueAccess.hashCode();
+            SingleMethodStackManipulationSupplier result = cache.get(key);
+            if (result == null) {
+                result = new SingleMethodStackManipulationSupplier(beanClassDescription, beanValueAccess);
+                cache.put(key, result);
+            }
+            return result;
         }
-        // to fix [Issue-5] (don't assume return type is 'void'), we need to:
-        Type returnType = Type.getType(method.getReturnType());
 
-        boolean isInterface = method.getDeclaringClass().isInterface();
-        mv.visitMethodInsn(isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
-                beanClassName, method.getName(), "("+type+")"+returnType, isInterface);
-        mv.visitInsn(RETURN);
-
-        // And from this point on, loop a bit
-        for (int i = 1, end = props.size()-1; i <= end; ++i) {
-            mv.visitLabel(next);
-            // No comparison needed for the last entry; assumed to match
-            if (i < end) {
-                next = new Label();
-                mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-                mv.visitInsn(ALL_INT_CONSTS[i]);
-                mv.visitJumpInsn(IF_ICMPNE, next);
-            }
-            mv.visitVarInsn(ALOAD, beanIndex); // load bean
-            mv.visitVarInsn(loadValueCode, 3);
-            method = (Method) (props.get(i).getMember().getMember());
-            type = Type.getType(method.getParameterTypes()[0]);
-
-            returnType = Type.getType(method.getReturnType());
-
-            if (mustCast) {
-                mv.visitTypeInsn(CHECKCAST, type.getInternalName());
-            }
-            isInterface = method.getDeclaringClass().isInterface();
-            mv.visitMethodInsn(isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
-                    beanClassName, method.getName(), "("+type+")"+returnType, isInterface);
-            mv.visitInsn(RETURN);
+        @Override
+        public StackManipulation supply(T prop) {
+            return new SingleMethodStackManipulation<T>(beanClassDescription, prop, beanValueAccess);
         }
     }
 
-    private <T extends OptimizedSettableBeanProperty<T>> void _addSettersUsingSwitch(MethodVisitor mv,
-            List<T> props, int loadValueCode, int beanIndex, boolean mustCast)
-    {
-        mv.visitVarInsn(ILOAD, 2); // load second arg (index)
+    private static class SingleMethodStackManipulation<T extends OptimizedSettableBeanProperty<T>>
+            extends AbstractSinglePropStackManipulation<T> {
 
-        Label[] labels = new Label[props.size()];
-        for (int i = 0, len = labels.length; i < len; ++i) {
-            labels[i] = new Label();
+        SingleMethodStackManipulation(TypeDescription beanClassDescription,
+                                      T prop,
+                                      MethodVariableAccess beanValueAccess) {
+            super(beanClassDescription, prop, beanValueAccess);
         }
-        Label defaultLabel = new Label();
-        mv.visitTableSwitchInsn(0, labels.length - 1, defaultLabel, labels);
-        for (int i = 0, len = labels.length; i < len; ++i) {
-            mv.visitLabel(labels[i]);
-            mv.visitVarInsn(ALOAD, beanIndex); // load bean
-            mv.visitVarInsn(loadValueCode, 3);
-            Method method = (Method) (props.get(i).getMember().getMember());
-            Type type = Type.getType(method.getParameterTypes()[0]);
 
-            Type returnType = Type.getType(method.getReturnType());
+        @Override
+        protected Class<?> getClassToCastBeanValueTo(AnnotatedMember annotatedMember) {
+            final Method method = (Method) (annotatedMember.getMember());
+            return method.getParameterTypes()[0];
+        }
 
-            if (mustCast) {
-                mv.visitTypeInsn(CHECKCAST, type.getInternalName());
+        @Override
+        protected StackManipulation invocationOperation(
+                AnnotatedMember annotatedMember, TypeDefinition beanClassDescription) {
+
+            final String methodName = annotatedMember.getName();
+            final MethodList<MethodDescription> matchingMethods =
+                    (MethodList<MethodDescription>) beanClassDescription.getDeclaredMethods().filter(named(methodName));
+
+            if (matchingMethods.size() == 1) { //method was declared on class
+                return MethodInvocation.invoke(matchingMethods.getOnly());
             }
-            boolean isInterface = method.getDeclaringClass().isInterface();
-            mv.visitMethodInsn(isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
-                    beanClassName, method.getName(), "("+type+")"+returnType, isInterface);
-            mv.visitInsn(RETURN);
+            if (matchingMethods.isEmpty()) { //method was not found on class, try super class
+                return invocationOperation(annotatedMember, beanClassDescription.getSuperClass());
+            }
+            else { //should never happen
+                throw new IllegalStateException("Could not find definition of method: " + methodName);
+            }
+
         }
-        mv.visitLabel(defaultLabel);
+
     }
 
-    /*
-    /**********************************************************
-    /* Helper methods, field accessor creation
-    /**********************************************************
-     */
 
-    private void _addSingleField(MethodVisitor mv,
-            OptimizedSettableBeanProperty<?> prop, int loadValueCode, int beanIndex, boolean mustCast)
-    {
-        mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-        mv.visitVarInsn(ALOAD, beanIndex); // load local for cast bean
-        mv.visitVarInsn(loadValueCode, 3);
-        AnnotatedField field = (AnnotatedField) prop.getMember();
-        Type type = Type.getType(field.getRawType());
-        if (mustCast) {
-            mv.visitTypeInsn(CHECKCAST, type.getInternalName());
+    private static class MethodAppender<T extends OptimizedSettableBeanProperty<T>> extends AbstractDelegatingAppender<T> {
+
+        private final TypeDescription beanClassDescription;
+        private final List<T> props;
+        private final MethodVariableAccess beanValueAccess;
+
+        MethodAppender(TypeDescription beanClassDescription,
+                              List<T> props,
+                              MethodVariableAccess beanValueAccess) {
+            super(props);
+            this.beanClassDescription = beanClassDescription;
+            this.props = props;
+            this.beanValueAccess = beanValueAccess;
         }
-        mv.visitFieldInsn(PUTFIELD, beanClassName, field.getName(), type.getDescriptor());
-        mv.visitInsn(RETURN);
-    }
-    
-    private <T extends OptimizedSettableBeanProperty<T>> void _addFieldsUsingIf(MethodVisitor mv,
-            List<T> props, int loadValueCode, int beanIndex, boolean mustCast)
-    {
-        mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-        Label next = new Label();
-        // first: check if 'index == 0'
-        mv.visitJumpInsn(IFNE, next); // "if not zero, goto L (skip stuff)"
 
-        // first field accessor
-        mv.visitVarInsn(ALOAD, beanIndex); // load local for cast bean
-        mv.visitVarInsn(loadValueCode, 3);
-        AnnotatedField field = (AnnotatedField) props.get(0).getMember();
-        Type type = Type.getType(field.getRawType());
-        if (mustCast) {
-            mv.visitTypeInsn(CHECKCAST, type.getInternalName());
+        @Override
+        protected StackManipulation createLocalVar() {
+            return CreateLocalVarStackManipulation.of(beanClassDescription, beanValueAccess);
         }
-        mv.visitFieldInsn(PUTFIELD, beanClassName, field.getName(), type.getDescriptor());
-        mv.visitInsn(RETURN);
 
-        // And from this point on, loop a bit
-        for (int i = 1, end = props.size()-1; i <= end; ++i) {
-            mv.visitLabel(next);
-            // No comparison needed for the last entry; assumed to match
-            if (i < end) {
-                next = new Label();
-                mv.visitVarInsn(ILOAD, 2); // load second arg (index)
-                mv.visitInsn(ALL_INT_CONSTS[i]);
-                mv.visitJumpInsn(IF_ICMPNE, next);
-            }
-            mv.visitVarInsn(ALOAD, beanIndex); // load bean
-            mv.visitVarInsn(loadValueCode, 3);
-            field = (AnnotatedField) props.get(i).getMember();
-            type = Type.getType(field.getRawType());
-            if (mustCast) {
-                mv.visitTypeInsn(CHECKCAST, type.getInternalName());
-            }
-            mv.visitFieldInsn(PUTFIELD, beanClassName, field.getName(), type.getDescriptor());
-            mv.visitInsn(RETURN);
+        @Override
+        protected StackManipulation usingSwitch() {
+
+            return new UsingSwitchStackManipulation<T>(
+                    LocalVarIndexCalculator.of(beanValueAccess),
+                    props,
+                    SingleMethodStackManipulationSupplier.<T>of(beanClassDescription, beanValueAccess)
+            );
+        }
+
+        @Override
+        protected StackManipulation usingIf() {
+
+            return new UsingIfStackManipulation<T>(
+                    LocalVarIndexCalculator.of(beanValueAccess),
+                    props,
+                    SingleMethodStackManipulationSupplier.<T>of(beanClassDescription, beanValueAccess)
+            );
+        }
+
+        @Override
+        protected StackManipulation single() {
+            return new SingleMethodStackManipulation<T>(beanClassDescription, props.get(0), beanValueAccess);
         }
     }
 
-    private <T extends OptimizedSettableBeanProperty<T>> void _addFieldsUsingSwitch(MethodVisitor mv,
-            List<T> props, int loadValueCode, int beanIndex, boolean mustCast)
-    {
-        mv.visitVarInsn(ILOAD, 2); // load second arg (index)
+    private <T extends OptimizedSettableBeanProperty<T>> DynamicType.Builder<?> _addSetters(
+            DynamicType.Builder<?> builder, List<T> props, String methodName, MethodVariableAccess beanValueAccess) {
 
-        Label[] labels = new Label[props.size()];
-        for (int i = 0, len = labels.length; i < len; ++i) {
-            labels[i] = new Label();
-        }
-        Label defaultLabel = new Label();
-        mv.visitTableSwitchInsn(0, labels.length - 1, defaultLabel, labels);
-        for (int i = 0, len = labels.length; i < len; ++i) {
-            mv.visitLabel(labels[i]);
-            mv.visitVarInsn(ALOAD, beanIndex); // load bean
-            mv.visitVarInsn(loadValueCode, 3); // put 'value' to stack
-            AnnotatedField field = (AnnotatedField) props.get(i).getMember();
-            Type type = Type.getType(field.getRawType());
-            if (mustCast) {
-                mv.visitTypeInsn(CHECKCAST, type.getInternalName());
-            }
-            mv.visitFieldInsn(PUTFIELD, beanClassName, field.getName(), type.getDescriptor());
-            mv.visitInsn(RETURN);
-        }
-        mv.visitLabel(defaultLabel);
+        return builder.method(named(methodName))
+                      .intercept(
+                              new Implementation.Simple(
+                                      new MethodAppender<T>(beanClassDefinition, props, beanValueAccess)
+                              )
+                      );
     }
+
 }

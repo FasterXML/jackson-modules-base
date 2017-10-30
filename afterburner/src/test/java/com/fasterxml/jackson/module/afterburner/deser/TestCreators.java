@@ -1,11 +1,14 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
-import java.util.*;
-
-import com.fasterxml.jackson.annotation.*;
-
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * Unit tests for verifying that it is possible to annotate
@@ -49,7 +52,7 @@ public class TestCreators extends AfterburnerTestBase
             this.b = b;
         }
     }
-    
+
     static class DoubleConstructorBean {
         Double d; // cup?
         @JsonCreator protected DoubleConstructorBean(Double d) {
@@ -163,9 +166,9 @@ public class TestCreators extends AfterburnerTestBase
     static class NoArgFactoryBean {
         public int x;
         public int y;
-        
+
         public NoArgFactoryBean(int value) { x = value; }
-        
+
         @JsonCreator
         public static NoArgFactoryBean create() { return new NoArgFactoryBean(123); }
     }
@@ -211,6 +214,37 @@ public class TestCreators extends AfterburnerTestBase
         public void setC(int value) { arg3 = value; }
     }
 
+    static class FactoryAndPropsBean3
+    {
+        boolean[] arg1;
+        int arg2, arg3, arg4;
+
+        @JsonCreator protected FactoryAndPropsBean3(@JsonProperty("a") boolean[] arg)
+        {
+            arg1 = arg;
+        }
+
+        public void setB(int value) { arg2 = value; }
+        public void setC(int value) { arg3 = value; }
+        public void setD(int value) { arg4 = value; }
+    }
+
+    static class FactoryAndPropsBean4
+    {
+        boolean[] arg1;
+        int arg2, arg3, arg4, arg5;
+
+        @JsonCreator protected FactoryAndPropsBean4(@JsonProperty("a") boolean[] arg)
+        {
+            arg1 = arg;
+        }
+
+        public void setB(int value) { arg2 = value; }
+        public void setC(int value) { arg3 = value; }
+        public void setD(int value) { arg4 = value; }
+        public void setE(int value) { arg5 = value; }
+    }
+
     static class DeferredConstructorAndPropsBean
     {
         final int[] createA;
@@ -253,8 +287,8 @@ public class TestCreators extends AfterburnerTestBase
         MapWithCtor() { this(-1, "default"); }
 
         @JsonCreator
-            public MapWithCtor(@JsonProperty("number") int nr,
-                               @JsonProperty("text") String t)
+        public MapWithCtor(@JsonProperty("number") int nr,
+                           @JsonProperty("text") String t)
         {
             _number = nr;
             _text = t;
@@ -271,7 +305,7 @@ public class TestCreators extends AfterburnerTestBase
         }
 
         @JsonCreator
-            static MapWithFactory createIt(@JsonProperty("b") Boolean b)
+        static MapWithFactory createIt(@JsonProperty("b") Boolean b)
         {
             return new MapWithFactory(b);
         }
@@ -284,7 +318,7 @@ public class TestCreators extends AfterburnerTestBase
      */
 
     private final ObjectMapper MAPPER = newObjectMapper();
-    
+
     public void testSimpleConstructor() throws Exception
     {
         ConstructorBean bean = MAPPER.readValue("{ \"x\" : 42 }", ConstructorBean.class);
@@ -298,7 +332,7 @@ public class TestCreators extends AfterburnerTestBase
         assertEquals(13, value.y);
         assertEquals(123, value.x);
     }
-    
+
     public void testSimpleDoubleConstructor() throws Exception
     {
         Double exp = new Double("0.25");
@@ -338,7 +372,7 @@ public class TestCreators extends AfterburnerTestBase
     public void testConstructorCreator() throws Exception
     {
         CreatorBean bean = MAPPER.readValue
-            ("{ \"a\" : \"xyz\", \"x\" : 12 }", CreatorBean.class);
+                ("{ \"a\" : \"xyz\", \"x\" : 12 }", CreatorBean.class);
         assertEquals(13, bean.x);
         assertEquals("ctor:xyz", bean.a);
     }
@@ -346,7 +380,7 @@ public class TestCreators extends AfterburnerTestBase
     public void testConstructorAndProps() throws Exception
     {
         ConstructorAndPropsBean bean = MAPPER.readValue
-            ("{ \"a\" : \"1\", \"b\": 2, \"c\" : true }", ConstructorAndPropsBean.class);
+                ("{ \"a\" : \"1\", \"b\": 2, \"c\" : true }", ConstructorAndPropsBean.class);
         assertEquals(1, bean.a);
         assertEquals(2, bean.b);
         assertEquals(true, bean.c);
@@ -355,9 +389,40 @@ public class TestCreators extends AfterburnerTestBase
     public void testFactoryAndProps() throws Exception
     {
         FactoryAndPropsBean bean = MAPPER.readValue
-            ("{ \"a\" : [ false, true, false ], \"b\": 2, \"c\" : -1 }", FactoryAndPropsBean.class);
+                ("{ \"a\" : [ false, true, false ], \"b\": 2, \"c\" : -1 }", FactoryAndPropsBean.class);
         assertEquals(2, bean.arg2);
         assertEquals(-1, bean.arg3);
+        boolean[] arg1 = bean.arg1;
+        assertNotNull(arg1);
+        assertEquals(3, arg1.length);
+        assertFalse(arg1[0]);
+        assertTrue(arg1[1]);
+        assertFalse(arg1[2]);
+    }
+
+    public void testFactoryAndProps3() throws Exception
+    {
+        FactoryAndPropsBean3 bean = MAPPER.readValue
+                ("{ \"a\" : [ false, true, false ], \"b\": 2, \"c\" : -1, \"d\" : 1 }", FactoryAndPropsBean3.class);
+        assertEquals(2, bean.arg2);
+        assertEquals(-1, bean.arg3);
+        assertEquals(1, bean.arg4);
+        boolean[] arg1 = bean.arg1;
+        assertNotNull(arg1);
+        assertEquals(3, arg1.length);
+        assertFalse(arg1[0]);
+        assertTrue(arg1[1]);
+        assertFalse(arg1[2]);
+    }
+
+    public void testFactoryAndProps4() throws Exception
+    {
+        FactoryAndPropsBean4 bean = MAPPER.readValue
+                ("{ \"a\" : [ false, true, false ], \"b\": 2, \"c\" : -1, \"d\" : 1, \"e\" : 10 }", FactoryAndPropsBean4.class);
+        assertEquals(2, bean.arg2);
+        assertEquals(-1, bean.arg3);
+        assertEquals(1, bean.arg4);
+        assertEquals(10, bean.arg5);
         boolean[] arg1 = bean.arg1;
         assertNotNull(arg1);
         assertEquals(3, arg1.length);
@@ -389,8 +454,8 @@ public class TestCreators extends AfterburnerTestBase
     public void testDeferredConstructorAndProps() throws Exception
     {
         DeferredConstructorAndPropsBean bean = MAPPER.readValue
-            ("{ \"propB\" : \"...\", \"createA\" : [ 1 ], \"propA\" : null }",
-             DeferredConstructorAndPropsBean.class);
+                ("{ \"propB\" : \"...\", \"createA\" : [ 1 ], \"propA\" : null }",
+                        DeferredConstructorAndPropsBean.class);
 
         assertEquals("...", bean.propB);
         assertNull(bean.propA);
@@ -402,7 +467,7 @@ public class TestCreators extends AfterburnerTestBase
     public void testDeferredFactoryAndProps() throws Exception
     {
         DeferredFactoryAndPropsBean bean = MAPPER.readValue
-            ("{ \"prop\" : \"1\", \"ctor\" : \"2\" }", DeferredFactoryAndPropsBean.class);
+                ("{ \"prop\" : \"1\", \"ctor\" : \"2\" }", DeferredFactoryAndPropsBean.class);
         assertEquals("1", bean.prop);
         assertEquals("2", bean.ctor);
     }
@@ -418,7 +483,7 @@ public class TestCreators extends AfterburnerTestBase
         ObjectMapper m = new ObjectMapper();
         m.addMixIn(CreatorBean.class, MixIn.class);
         CreatorBean bean = m.readValue
-            ("{ \"a\" : \"xyz\", \"x\" : 12 }", CreatorBean.class);
+                ("{ \"a\" : \"xyz\", \"x\" : 12 }", CreatorBean.class);
         assertEquals(11, bean.x);
         assertEquals("factory:xyz", bean.a);
     }
@@ -442,8 +507,8 @@ public class TestCreators extends AfterburnerTestBase
     public void testMapWithConstructor() throws Exception
     {
         MapWithCtor result = MAPPER.readValue
-            ("{\"text\":\"abc\", \"entry\":true, \"number\":123, \"xy\":\"yx\"}",
-             MapWithCtor.class);
+                ("{\"text\":\"abc\", \"entry\":true, \"number\":123, \"xy\":\"yx\"}",
+                        MapWithCtor.class);
         // regular Map entries:
         assertEquals(Boolean.TRUE, result.get("entry"));
         assertEquals("yx", result.get("xy"));
@@ -456,8 +521,8 @@ public class TestCreators extends AfterburnerTestBase
     public void testMapWithFactory() throws Exception
     {
         MapWithFactory result = MAPPER.readValue
-            ("{\"x\":\"...\",\"b\":true  }",
-             MapWithFactory.class);
+                ("{\"x\":\"...\",\"b\":true  }",
+                        MapWithFactory.class);
         assertEquals("...", result.get("x"));
         assertEquals(1, result.size());
         assertEquals(Boolean.TRUE, result._b);

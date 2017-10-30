@@ -15,6 +15,7 @@ field access and method calls
   <url>https://github.com/FasterXML/jackson-modules-base</url>
 
   <properties>
+    <version.butebuddy>1.7.8</version.butebuddy>
     <!-- Generate PackageVersion.java into this directory. -->
     <packageVersion.dir>com/fasterxml/jackson/module/afterburner</packageVersion.dir>
     <packageVersion.package>${project.groupId}.afterburner</packageVersion.package>
@@ -27,7 +28,7 @@ field access and method calls
        Similarly, org.objectweb.asm is shaded... why require?
        (will try to hide via resolution directive)
       -->
-    <osgi.import>org.objectweb.asm;resolution:=optional,
+    <osgi.import>net.bytebuddy;resolution:=optional,
 *
      </osgi.import>
 <!--
@@ -48,9 +49,9 @@ field access and method calls
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-      <version>${version.asm}</version>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy</artifactId>
+        <version>${version.butebuddy}</version>
     </dependency>
     <dependency> <!--  tests use Jackson annoations -->
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -74,7 +75,7 @@ field access and method calls
       </plugin>
 
       <plugin>
-        <!--  We will shade ASM, to simplify deployment, avoid version conflicts -->
+        <!--  We will shade ByteBuddy, to simplify deployment, avoid version conflicts -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
@@ -86,13 +87,13 @@ field access and method calls
             <configuration>
               <artifactSet>
                 <includes>
-                  <include>org.ow2.asm:asm</include>
+                  <include>net.bytebuddy:byte-buddy</include>
                 </includes>
               </artifactSet>
               <relocations>
                 <relocation>
-                  <pattern>org.objectweb.asm</pattern>
-                  <shadedPattern>com.fasterxml.jackson.module.afterburner.asm</shadedPattern>
+                  <pattern>net.bytebuddy</pattern>
+                  <shadedPattern>com.fasterxml.jackson.module.afterburner.bytebuddy</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
