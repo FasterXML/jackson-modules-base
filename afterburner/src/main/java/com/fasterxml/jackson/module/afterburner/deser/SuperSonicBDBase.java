@@ -105,7 +105,7 @@ public abstract class SuperSonicBDBase
         ArrayList<SettableBeanProperty> props = new ArrayList<SettableBeanProperty>(len);
         int i = 0;
         for (; i < len; ++i) {
-            SettableBeanProperty prop = _beanProperties.find(_orderedPropertyNames[i].toString());
+            SettableBeanProperty prop = _beanProperties.findPrimaryDefinition(_orderedPropertyNames[i].toString());
             if (prop != null) {
                 props.add(prop);
             }
