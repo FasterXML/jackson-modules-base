@@ -130,7 +130,7 @@ public abstract class SuperSonicBDBase
             // 17-Oct-2017, tatu: Should this be worth exception?
             return bean;
         }
-        String propName = p.getCurrentName();
+        String propName = p.currentName();
         do {
             p.nextToken();
             SettableBeanProperty prop = _beanProperties.find(propName);

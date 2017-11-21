@@ -246,7 +246,7 @@ public final class SuperSonicUnrolledDeserializer
                 return super.deserialize(p,  ctxt, bean);
             }
         } else if (!p.hasToken(JsonToken.FIELD_NAME)
-                || !prop.getName().equals(p.getCurrentName())) {
+                || !prop.getName().equals(p.currentName())) {
             // no, something funky, use base impl for special cases
             return super.deserialize(p,  ctxt, bean);
         }
@@ -353,7 +353,7 @@ public final class SuperSonicUnrolledDeserializer
                 return _deserializeDisordered(p, ctxt, bean);
             }
         } else if (!p.hasToken(JsonToken.FIELD_NAME)
-                || !prop.getName().equals(p.getCurrentName())) {
+                || !prop.getName().equals(p.currentName())) {
             return _deserializeDisordered(p, ctxt, bean);
         }
         // and deserialize

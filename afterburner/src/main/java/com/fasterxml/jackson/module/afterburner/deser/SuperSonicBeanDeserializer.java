@@ -165,7 +165,7 @@ public final class SuperSonicBeanDeserializer
                         return _deserializeDisordered(p, ctxt, bean);
                     }
                 } else if (!p.hasToken(JsonToken.FIELD_NAME)
-                        || !prop.getName().equals(p.getCurrentName())) {
+                        || !prop.getName().equals(p.currentName())) {
                     return _deserializeDisordered(p, ctxt, bean);
                 }
                 p.nextToken();
@@ -254,7 +254,7 @@ public final class SuperSonicBeanDeserializer
                         return _deserializeDisordered(p, ctxt, bean);
                     }
                 } else if (!p.hasToken(JsonToken.FIELD_NAME)
-                        || !prop.getName().equals(p.getCurrentName())) {
+                        || !prop.getName().equals(p.currentName())) {
                     return _deserializeDisordered(p, ctxt, bean);
                 }
                 p.nextToken();

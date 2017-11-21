@@ -448,17 +448,17 @@ public class PropertyAccessorCollector
             this.methodReturn = methodReturn;
         }
 
-        private static Map<Integer, SingleFieldStackManipulationSupplier> cache
-                = new HashMap<Integer, SingleFieldStackManipulationSupplier>();
+        private static Map<Integer, SingleFieldStackManipulationSupplier<?>> cache
+                = new HashMap<Integer, SingleFieldStackManipulationSupplier<?>>();
 
         @SuppressWarnings("unchecked")
         static <G extends OptimizedBeanPropertyWriter<G>> SingleFieldStackManipulationSupplier<G> of(
                 TypeDescription beanClassDescription, MethodReturn methodReturn) {
 
             final int key = beanClassDescription.hashCode() + methodReturn.hashCode();
-            SingleFieldStackManipulationSupplier result = cache.get(key);
+            SingleFieldStackManipulationSupplier<G> result = (SingleFieldStackManipulationSupplier<G>) cache.get(key);
             if (result == null) {
-                result = new SingleFieldStackManipulationSupplier(beanClassDescription, methodReturn);
+                result = new SingleFieldStackManipulationSupplier<>(beanClassDescription, methodReturn);
                 cache.put(key, result);
             }
             return result;

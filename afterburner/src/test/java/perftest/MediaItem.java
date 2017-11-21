@@ -41,7 +41,7 @@ public class MediaItem
         }
         MediaItem item = new MediaItem();
         while (jp.nextToken() == JsonToken.FIELD_NAME) {
-            String name = jp.getCurrentName();
+            String name = jp.currentName();
             if (name == "images") {
                 item._photos = deserializeImages(jp);
             } else if (name == "content") {
@@ -163,7 +163,7 @@ public class MediaItem
       {
           Photo photo = new Photo();
           while (jp.nextToken() == JsonToken.FIELD_NAME) {
-              String name = jp.getCurrentName();
+              String name = jp.currentName();
               jp.nextToken();
               Integer I = sFields.get(name);
               if (I != null) {
@@ -301,7 +301,7 @@ public class MediaItem
             Content content = new Content();
 
             while (jp.nextToken() == JsonToken.FIELD_NAME) {
-                String name = jp.getCurrentName();
+                String name = jp.currentName();
                 jp.nextToken();
                 Integer I = sFields.get(name);
                 if (I != null) {
