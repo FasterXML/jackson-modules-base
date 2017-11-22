@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.*;
+import com.fasterxml.jackson.databind.deser.impl.BeanPropertyMap;
+import com.fasterxml.jackson.databind.deser.impl.UnwrappedPropertyHandler;
 import com.fasterxml.jackson.databind.util.NameTransformer;
 
 public final class SuperSonicBeanDeserializer
@@ -25,14 +27,31 @@ public final class SuperSonicBeanDeserializer
         super(src, props);
     }
 
-    protected SuperSonicBeanDeserializer(SuperSonicBeanDeserializer src, NameTransformer unwrapper)
+    protected SuperSonicBeanDeserializer(SuperSonicBeanDeserializer src,
+            UnwrappedPropertyHandler unwrapHandler, BeanPropertyMap renamedProperties,
+            boolean ignoreAllUnknown)
     {
-        super(src, unwrapper);
+        super(src, unwrapHandler, renamedProperties, ignoreAllUnknown);
     }
     
     @Override
-    public JsonDeserializer<Object> unwrappingDeserializer(NameTransformer unwrapper) {
-        return new SuperSonicBeanDeserializer(this, unwrapper);
+    public JsonDeserializer<Object> unwrappingDeserializer(DeserializationContext ctxt,
+            NameTransformer transformer)
+    {
+        // NOTE: copied verbatim from `BeanDeserializer`
+
+        if (_currentlyTransforming == transformer) { // from [databind#383]
+            return this;
+        }
+        _currentlyTransforming = transformer;
+        try {
+            UnwrappedPropertyHandler uwHandler = _unwrappedPropertyHandler;
+            if (uwHandler != null) {
+                uwHandler = uwHandler.renameAll(ctxt, transformer);
+            }
+            return new SuperSonicBeanDeserializer(this, uwHandler,
+                    _beanProperties.renameAll(ctxt, transformer), true);
+        } finally { _currentlyTransforming = null; }
     }
 
     // // Others, let's just leave as is; will not be optimized?

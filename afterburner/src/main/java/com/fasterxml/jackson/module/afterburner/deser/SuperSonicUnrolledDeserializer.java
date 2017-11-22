@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.*;
+import com.fasterxml.jackson.databind.deser.impl.BeanPropertyMap;
+import com.fasterxml.jackson.databind.deser.impl.UnwrappedPropertyHandler;
 import com.fasterxml.jackson.databind.util.NameTransformer;
 
 /**
@@ -53,9 +55,11 @@ public final class SuperSonicUnrolledDeserializer
         _propCount = props.size();
     }
 
-    protected SuperSonicUnrolledDeserializer(SuperSonicUnrolledDeserializer src, NameTransformer unwrapper)
+    protected SuperSonicUnrolledDeserializer(SuperSonicUnrolledDeserializer src,
+            UnwrappedPropertyHandler unwrapHandler, BeanPropertyMap renamedProperties,
+            boolean ignoreAllUnknown)
     {
-        super(src, unwrapper);
+        super(src, unwrapHandler, renamedProperties, ignoreAllUnknown);
         _propCount = src._propCount;
 
         _prop1 = src._prop1;
@@ -71,10 +75,25 @@ public final class SuperSonicUnrolledDeserializer
         _prop6 = src._prop6;
         _name6 = src._name6;
     }
-    
+
     @Override
-    public JsonDeserializer<Object> unwrappingDeserializer(NameTransformer unwrapper) {
-        return new SuperSonicUnrolledDeserializer(this, unwrapper);
+    public JsonDeserializer<Object> unwrappingDeserializer(DeserializationContext ctxt,
+            NameTransformer transformer)
+    {
+        // NOTE: copied verbatim from `BeanDeserializer`
+
+        if (_currentlyTransforming == transformer) { // from [databind#383]
+            return this;
+        }
+        _currentlyTransforming = transformer;
+        try {
+            UnwrappedPropertyHandler uwHandler = _unwrappedPropertyHandler;
+            if (uwHandler != null) {
+                uwHandler = uwHandler.renameAll(ctxt, transformer);
+            }
+            return new SuperSonicUnrolledDeserializer(this, uwHandler,
+                    _beanProperties.renameAll(ctxt, transformer), true);
+        } finally { _currentlyTransforming = null; }
     }
 
     @Override

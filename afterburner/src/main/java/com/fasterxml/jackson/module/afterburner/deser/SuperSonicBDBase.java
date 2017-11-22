@@ -5,9 +5,11 @@ import java.util.*;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
+import com.fasterxml.jackson.core.sym.FieldNameMatcher;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.*;
-import com.fasterxml.jackson.databind.util.NameTransformer;
+import com.fasterxml.jackson.databind.deser.impl.BeanPropertyMap;
+import com.fasterxml.jackson.databind.deser.impl.UnwrappedPropertyHandler;
 
 /**
  * Base class for implementations of bean deserializers that Afterburner
@@ -49,9 +51,11 @@ public abstract class SuperSonicBDBase
         // do NOT yet assign properties, they need to be ordered
     }
 
-    protected SuperSonicBDBase(SuperSonicBDBase src, NameTransformer unwrapper)
+    protected SuperSonicBDBase(SuperSonicBDBase src,
+            UnwrappedPropertyHandler unwrapHandler, BeanPropertyMap renamedProperties,
+            boolean ignoreAllUnknown)
     {
-        super(src, unwrapper);
+        super(src, unwrapHandler, renamedProperties, ignoreAllUnknown);
         _orderedPropertyNames = src._orderedPropertyNames;
         _orderedProperties = src._orderedProperties;
     }
@@ -105,7 +109,7 @@ public abstract class SuperSonicBDBase
         ArrayList<SettableBeanProperty> props = new ArrayList<SettableBeanProperty>(len);
         int i = 0;
         for (; i < len; ++i) {
-            SettableBeanProperty prop = _beanProperties.findPrimaryDefinition(_orderedPropertyNames[i].toString());
+            SettableBeanProperty prop = _beanProperties.findDefinition(_orderedPropertyNames[i].toString());
             if (prop != null) {
                 props.add(prop);
             }
@@ -126,25 +130,25 @@ public abstract class SuperSonicBDBase
     protected final Object _deserializeDisordered(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException
     {
-        if (!p.hasToken(JsonToken.FIELD_NAME)) {
-            // 17-Oct-2017, tatu: Should this be worth exception?
-            return bean;
-        }
-        String propName = p.currentName();
-        do {
-            p.nextToken();
-            SettableBeanProperty prop = _beanProperties.find(propName);
-
-            if (prop != null) { // normal case
+        for (int ix = p.currentFieldName(_fieldMatcher); ; ix = p.nextFieldName(_fieldMatcher)) {
+            if (ix >= 0) {
+                p.nextToken();
+                SettableBeanProperty prop = _fieldsByIndex[ix];
                 try {
                     prop.deserializeAndSet(p, ctxt, bean);
                 } catch (Exception e) {
-                    wrapAndThrow(e, bean, propName, ctxt);
+                    wrapAndThrow(e, bean, prop.getName(), ctxt);
                 }
                 continue;
             }
-            handleUnknownVanilla(p, ctxt, bean, propName);
-        } while ((propName = p.nextFieldName()) != null);
-        return bean;
+            if (ix == FieldNameMatcher.MATCH_END_OBJECT) {
+                return bean;
+            }
+            if (ix != FieldNameMatcher.MATCH_UNKNOWN_NAME) {
+                return _handleUnexpectedWithin(p, ctxt, bean);
+            }
+            p.nextToken();
+            handleUnknownVanilla(p, ctxt, bean, p.currentName());
+        }
     }
 }

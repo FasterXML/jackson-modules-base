@@ -229,9 +229,8 @@ public class PropertyMutatorCollector
         private static Map<Integer, CreateLocalVarStackManipulation> cache
                 = new HashMap<Integer, CreateLocalVarStackManipulation>();
 
-        @SuppressWarnings("unchecked")
-        static CreateLocalVarStackManipulation of(
-                TypeDescription beanClassDescription, MethodVariableAccess beanValueAccess) {
+        static CreateLocalVarStackManipulation of(TypeDescription beanClassDescription,
+                MethodVariableAccess beanValueAccess) {
 
             final int key = beanClassDescription.hashCode() + beanValueAccess.hashCode();
             CreateLocalVarStackManipulation result = cache.get(key);
@@ -317,8 +316,7 @@ public class PropertyMutatorCollector
             extends AbstractSinglePropStackManipulation<T> {
 
         SingleFieldStackManipulation(TypeDescription beanClassDescription,
-                                            T prop,
-                                            MethodVariableAccess beanValueAccess) {
+                T prop, MethodVariableAccess beanValueAccess) {
             super(beanClassDescription, prop, beanValueAccess);
         }
 
@@ -327,9 +325,10 @@ public class PropertyMutatorCollector
             return annotatedMember.getRawType();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        protected StackManipulation invocationOperation(
-                AnnotatedMember annotatedMember, TypeDefinition beanClassDescription) {
+        protected StackManipulation invocationOperation(AnnotatedMember annotatedMember,
+                TypeDefinition beanClassDescription) {
 
             final String fieldName = annotatedMember.getName();
             final FieldList<FieldDescription> matchingFields =
@@ -359,17 +358,17 @@ public class PropertyMutatorCollector
             this.beanValueAccess = beanValueAccess;
         }
 
-        private static Map<Integer, SingleFieldStackManipulationSupplier> cache
-                = new HashMap<Integer, SingleFieldStackManipulationSupplier>();
+        private static Map<Integer, SingleFieldStackManipulationSupplier<?>> cache
+                = new HashMap<Integer, SingleFieldStackManipulationSupplier<?>>();
 
         @SuppressWarnings("unchecked")
         static <G extends OptimizedSettableBeanProperty<G>> SingleFieldStackManipulationSupplier<G> of(
                 TypeDescription beanClassDescription, MethodVariableAccess beanValueAccess) {
 
             final int key = beanClassDescription.hashCode() + beanValueAccess.hashCode();
-            SingleFieldStackManipulationSupplier result = cache.get(key);
+            SingleFieldStackManipulationSupplier<G> result = (SingleFieldStackManipulationSupplier<G>) cache.get(key);
             if (result == null) {
-                result = new SingleFieldStackManipulationSupplier(beanClassDescription, beanValueAccess);
+                result = new SingleFieldStackManipulationSupplier<G>(beanClassDescription, beanValueAccess);
                 cache.put(key, result);
             }
             return result;
@@ -474,17 +473,17 @@ public class PropertyMutatorCollector
             this.beanValueAccess = beanValueAccess;
         }
 
-        private static Map<Integer, SingleMethodStackManipulationSupplier> cache
-                = new HashMap<Integer, SingleMethodStackManipulationSupplier>();
+        private static Map<Integer, SingleMethodStackManipulationSupplier<?>> cache
+                = new HashMap<Integer, SingleMethodStackManipulationSupplier<?>>();
 
-        @SuppressWarnings("unchecked")
         static <G extends OptimizedSettableBeanProperty<G>> SingleMethodStackManipulationSupplier<G> of(
                 TypeDescription beanClassDescription, MethodVariableAccess beanValueAccess) {
 
             final int key = beanClassDescription.hashCode() + beanValueAccess.hashCode();
-            SingleMethodStackManipulationSupplier result = cache.get(key);
+            @SuppressWarnings("unchecked")
+            SingleMethodStackManipulationSupplier<G> result = (SingleMethodStackManipulationSupplier<G>) cache.get(key);
             if (result == null) {
-                result = new SingleMethodStackManipulationSupplier(beanClassDescription, beanValueAccess);
+                result = new SingleMethodStackManipulationSupplier<G>(beanClassDescription, beanValueAccess);
                 cache.put(key, result);
             }
             return result;
@@ -512,10 +511,11 @@ public class PropertyMutatorCollector
         }
 
         @Override
-        protected StackManipulation invocationOperation(
-                AnnotatedMember annotatedMember, TypeDefinition beanClassDescription) {
+        protected StackManipulation invocationOperation(AnnotatedMember annotatedMember,
+                TypeDefinition beanClassDescription) {
 
             final String methodName = annotatedMember.getName();
+            @SuppressWarnings("unchecked")
             final MethodList<MethodDescription> matchingMethods =
                     (MethodList<MethodDescription>) beanClassDescription.getDeclaredMethods().filter(named(methodName));
 
