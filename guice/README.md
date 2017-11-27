@@ -5,7 +5,7 @@ jackson-module-guice
 
 [![Build Status](https://travis-ci.org/FasterXML/jackson-module-guice.svg)](https://travis-ci.org/FasterXML/jackson-module-guice)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-guice/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-guice/)
-[![Javadoc](https://javadoc-emblem.rhcloud.com/doc/com.fasterxml.jackson.module/jackson-module-guice/badge.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-guice)
+[![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.module/jackson-module-guice.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-guice)
 
 ## Documentation
 

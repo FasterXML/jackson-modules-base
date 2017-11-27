@@ -8,7 +8,7 @@ Module is licensed under [Apache License 2.0](http://www.apache.org/licenses/LIC
 ## Status
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-osgi/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-osgi/)
-[![Javadoc](https://javadoc-emblem.rhcloud.com/doc/com.fasterxml.jackson.module/jackson-module-osgi/badge.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-osgi)
+[![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.module/jackson-module-osgi.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-osgi)
 
 ## Usage
 

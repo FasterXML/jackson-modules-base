@@ -7,7 +7,7 @@ It is most often used to make it easier to reuse existing data beans that used w
 
 [![Build Status](https://travis-ci.org/FasterXML/jackson-module-jaxb-annotations.svg)](https://travis-ci.org/FasterXML/jackson-module-jaxb-annotations)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-jaxb-annotations/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-jaxb-annotations/)
-[![Javadoc](https://javadoc-emblem.rhcloud.com/doc/com.fasterxml.jackson.module/jackson-module-jaxb-annotations/badge.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-jaxb-annotations)
+[![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.module/jackson-module-jaxb-annotations.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-jaxb-annotations)
 
 
 Module is fully usable, as it is based on earlier "jackson-xc" jar that was part of Jackson distribution in 1.x versions.
