@@ -7,7 +7,7 @@ Afterburner plugs in using standard `Module` interface.
 Module is considered stable and has been used in production environments since version 2.2.
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-afterburner/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-afterburner/)
-[![Javadoc](https://javadoc-emblem.rhcloud.com/doc/com.fasterxml.jackson.module/jackson-module-afterburner/badge.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-afterburner)
+[![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.module/jackson-module-afterburner.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-afterburner)
 
 ## Usage
 

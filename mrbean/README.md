@@ -9,7 +9,7 @@ Module is licensed under [Apache License 2.0](http://www.apache.org/licenses/LIC
 ## Status
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-mrbean/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-mrbean/)
-[![Javadoc](https://javadoc-emblem.rhcloud.com/doc/com.fasterxml.jackson.module/jackson-module-mrbean/badge.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-mrbean)
+[![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.module/jackson-module-mrbean.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-mrbean)
 
 Module is fully usable, and considered stable.
 
