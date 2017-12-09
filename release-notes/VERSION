@@ -13,7 +13,7 @@ Modules:
 #28: Use ByteBuddy (instead of "raw" ASM) for Mr Bean
  (contributed by Georgios A))
 
-2.9.3 (not yet released)
+2.9.3 (09-Dec-2017)
 
 #31: (jaxb) `@JsonAppend` causes 'IllegalStateException` `Unsupported annotated member'
   with `JaxbAnnotationModule`
