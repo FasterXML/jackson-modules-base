@@ -386,7 +386,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     protected void _failNullToPrimitiveCoercion(DeserializationContext ctxt, String type) throws JsonMappingException
     {
         ctxt.reportInputMismatch(getType(),
-                "Cannot coerce `null` into type %s (set DeserializationConfig.DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES to 'false' to allow)",
+                "Cannot map `null` into type %s (set DeserializationConfig.DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES to 'false' to allow)",
                 type);
     }
 
