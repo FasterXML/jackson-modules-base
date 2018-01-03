@@ -178,7 +178,12 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_TRUE) return true;
         if (t == JsonToken.VALUE_FALSE) return false;
-        if (t == JsonToken.VALUE_NULL) return false;
+        if (t == JsonToken.VALUE_NULL) {
+            if (ctxt.isEnabled(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)) {
+                _failNullToPrimitiveCoercion(ctxt, "boolean");
+            }
+            return false;
+        }
 
         if (t == JsonToken.VALUE_NUMBER_INT) {
             // 11-Jan-2012, tatus: May be outside of int...
@@ -264,6 +269,9 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             return p.getValueAsInt();
         }
         if (t == JsonToken.VALUE_NULL) {
+            if (ctxt.isEnabled(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)) {
+                _failNullToPrimitiveCoercion(ctxt, "int");
+            }
             return 0;
         }
         if (t == JsonToken.START_ARRAY && ctxt.isEnabled(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)) {
@@ -300,6 +308,9 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             } catch (IllegalArgumentException iae) { }
             throw ctxt.weirdStringException(text, Long.TYPE, "not a valid long value");
         case JsonTokenId.ID_NULL:
+            if (ctxt.isEnabled(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)) {
+                _failNullToPrimitiveCoercion(ctxt, "long");
+            }
             return 0L;
         case JsonTokenId.ID_START_ARRAY:
             if (ctxt.isEnabled(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)) {
@@ -368,7 +379,14 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     }
 
     // // More helper methods from StdDeserializer
-    
+
+    protected void _failNullToPrimitiveCoercion(DeserializationContext ctxt, String type) throws JsonMappingException
+    {
+        ctxt.reportInputMismatch(getType(),
+                "Cannot map `null` into type %s (set DeserializationConfig.DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES to 'false' to allow)",
+                type);
+    }
+
     protected void _failDoubleToIntCoercion(JsonParser p, DeserializationContext ctxt,
             String type) throws IOException
     {

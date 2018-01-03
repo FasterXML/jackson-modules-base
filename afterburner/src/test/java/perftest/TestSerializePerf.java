@@ -2,7 +2,7 @@ package perftest;
 
 import java.io.*;
 
-import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.json.JsonFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import junit.framework.TestCase;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.json.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 //import static org.junit.Assert.*;
