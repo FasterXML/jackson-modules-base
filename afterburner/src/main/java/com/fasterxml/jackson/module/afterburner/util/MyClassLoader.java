@@ -23,6 +23,15 @@ public class MyClassLoader extends ClassLoader
         _cfgUseParentLoader = tryToUseParent;
     }
 
+    @Override
+    public Class<?> loadClass(String name) throws ClassNotFoundException {
+        try {
+            return super.loadClass(name);
+        } catch (ClassNotFoundException e) {
+            return getClass().getClassLoader().loadClass(name);
+        }
+    }
+
     /**
      * Helper method called to check whether it is acceptable to create a new
      * class in package that given class is part of.
@@ -63,35 +72,35 @@ public class MyClassLoader extends ClassLoader
         if (old != null) {
             return old;
         }
-        
-        Class<?> impl;
 
         // Important: bytecode is generated with a template name (since bytecode itself
         // is used for checksum calculation) -- must be replaced now, however
         replaceName(byteCode, className.getSlashedTemplate(), className.getSlashedName());
         
         // First: let's try calling it directly on parent, to be able to access protected/package-access stuff:
-        if (_cfgUseParentLoader) {
-            ClassLoader cl = getParent();
-            // if we have parent, that is
-            if (cl != null) {
-                try {
-                    Method method = ClassLoader.class.getDeclaredMethod("defineClass",
-                            new Class[] {String.class, byte[].class, int.class,
-                            int.class});
-                    method.setAccessible(true);
-                    return (Class<?>)method.invoke(getParent(),
-                            className.getDottedName(), byteCode, 0, byteCode.length);
-                } catch (Exception e) {
-                    // Should we handle this somehow?
-                }
+        if (_cfgUseParentLoader && getParent() != null) {
+            try {
+                Method method = ClassLoader.class.getDeclaredMethod("defineClass",
+                        new Class[] {String.class, byte[].class, int.class,
+                        int.class});
+                method.setAccessible(true);
+                return (Class<?>)method.invoke(getParent(),
+                        className.getDottedName(), byteCode, 0, byteCode.length);
+            } catch (Exception e) {
+                // Should we handle this somehow?
             }
         }
 
         // but if that doesn't fly, try to do it from our own class loader
-    
+        return resolveFromThisClassLoader(className, byteCode);
+    }
+
+    private Class<?> resolveFromThisClassLoader(ClassName className, byte[] byteCode) {
         try {
-            impl = defineClass(className.getDottedName(), byteCode, 0, byteCode.length);
+            Class<?> impl = defineClass(className.getDottedName(), byteCode, 0, byteCode.length);
+            // important: must also resolve the class...
+            resolveClass(impl);
+            return impl;
         } catch (LinkageError e) {
             Throwable t = e;
             while (t.getCause() != null) {
@@ -99,11 +108,8 @@ public class MyClassLoader extends ClassLoader
             }
             throw new IllegalArgumentException("Failed to load class '"+className+"': "+t.getMessage(), t);
         }
-        // important: must also resolve the class...
-        resolveClass(impl);
-        return impl;
     }
-    
+
     public static int replaceName(byte[] byteCode,
             String from, String to)
     {
