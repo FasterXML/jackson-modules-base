@@ -175,15 +175,14 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 
     protected final boolean _deserializeBoolean(JsonParser p, DeserializationContext ctxt) throws IOException
     {
-        JsonToken t = p.getCurrentToken();
+        JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_TRUE) return true;
         if (t == JsonToken.VALUE_FALSE) return false;
         if (t == JsonToken.VALUE_NULL) {
             if (ctxt.isEnabled(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)) {
                 _failNullToPrimitiveCoercion(ctxt, "boolean");
-            } else {
-                return false;
             }
+            return false;
         }
 
         if (t == JsonToken.VALUE_NUMBER_INT) {
@@ -272,9 +271,8 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         if (t == JsonToken.VALUE_NULL) {
             if (ctxt.isEnabled(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)) {
                 _failNullToPrimitiveCoercion(ctxt, "int");
-            } else {
-                return 0;
             }
+            return 0;
         }
         if (t == JsonToken.START_ARRAY && ctxt.isEnabled(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)) {
             p.nextToken();
@@ -312,9 +310,8 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         case JsonTokenId.ID_NULL:
             if (ctxt.isEnabled(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)) {
                 _failNullToPrimitiveCoercion(ctxt, "long");
-            } else {
-                return 0L;
             }
+            return 0L;
         case JsonTokenId.ID_START_ARRAY:
             if (ctxt.isEnabled(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)) {
                 p.nextToken();

@@ -1,12 +1,19 @@
 Project: jackson-modules-base
 Modules:
   jackson-module-guice
+  jackson-module-jaxb
   jackson-module-mrbean
   jackson-module-osgi
+  jackson-module-paranamer
 
 ------------------------------------------------------------------------
 === Releases ===
 ------------------------------------------------------------------------
+
+2.9.4 (not yet released)
+
+#38: (afterburner) Handle DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES correctly
+ (reported by Qnzvna@github)
 
 2.9.3 (09-Dec-2017)
 
