@@ -10,6 +10,8 @@ Modules:
 
 3.0.0 (not yet released)
 
+#26: Improve handling of parent class loader for generated classes
+ (suggested by hatgaei@github)
 #28: Use ByteBuddy (instead of "raw" ASM) for Mr Bean
  (contributed by Georgios A))
 
