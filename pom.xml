@@ -20,7 +20,9 @@ not datatype, data format, or JAX-RS provider modules.
     <module>jaxb</module>
     <module>mrbean</module>
     <module>osgi</module>
+<!-- 29-Jan-2018, tatu: No need for this, with Java 8
     <module>paranamer</module>
+-->
   </modules>
 
   <url>https://github.com/FasterXML/jackson-modules-base</url>

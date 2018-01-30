@@ -16,6 +16,7 @@ Modules:
  (suggested by hatgaei@github)
 #28: Use ByteBuddy (instead of "raw" ASM) for Mr Bean
  (contributed by Georgios A))
+#40: Remove `jackson-module-paranamer` from Jackson 3.0
 
 2.9.4 (24-Jan-2018)
 
