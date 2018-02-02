@@ -74,9 +74,9 @@ public class TestJsonFilter extends AfterburnerTestBase
                 SimpleBeanPropertyFilter.filterOutAllExcept("a"));
         assertEquals("{\"a\":\"a\"}", MAPPER.writer(prov).writeValueAsString(new Bean()));
 
-        // [JACKSON-504]: also verify it works via mapper
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setFilterProvider(prov);
+        ObjectMapper mapper = ObjectMapper.builder()
+                .filterProvider(prov)
+                .build();
         assertEquals("{\"a\":\"a\"}", mapper.writeValueAsString(new Bean()));
     }
 
@@ -100,8 +100,9 @@ public class TestJsonFilter extends AfterburnerTestBase
         
         // but when changing behavior, should work difference
         SimpleFilterProvider fp = new SimpleFilterProvider().setFailOnUnknownId(false);
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setFilterProvider(fp);
+        ObjectMapper mapper = ObjectMapper.builder()
+                .filterProvider(fp)
+                .build();
         String json = mapper.writeValueAsString(new Bean());
         assertEquals("{\"a\":\"a\",\"b\":\"b\"}", json);
     }
