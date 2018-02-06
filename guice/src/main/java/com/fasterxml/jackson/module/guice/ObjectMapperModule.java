@@ -132,8 +132,14 @@ public class ObjectMapperModule implements com.google.inject.Module
       ObjectMapper mapper = objectMapper;
       if (mapper == null) {
           mapper = new ObjectMapper();
+
+          // 05-Feb-2017, tatu: _Should_ be fine, considering instances are now (3.0) truly immutable.
+          //    But if this turns out to be problematic, may need to consider addition of `copy()`
+          //    back in databind
+          /*
       } else {
           mapper = mapper.copy();
+          */
       }
       mapper.registerModules(modulesToAdd);
       for (Provider<? extends Module> provider : providedModules) {
