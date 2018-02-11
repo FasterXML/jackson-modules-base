@@ -43,8 +43,6 @@ public class JaxbAnnotationModule extends Module
     /**
      * If the introspector is explicitly set or passed, we'll hold on to that
      * until registration.
-     *
-     * @since 2.7
      */
     protected JaxbAnnotationIntrospector _introspector;
 
@@ -52,8 +50,6 @@ public class JaxbAnnotationModule extends Module
      * Value to pass to
      * {@link JaxbAnnotationIntrospector#setNonNillableInclusion}
      * if defined and non-null.
-     *
-     * @since 2.7
      */
     protected JsonInclude.Include _nonNillableInclusion;
 
@@ -65,9 +61,6 @@ public class JaxbAnnotationModule extends Module
 
     public JaxbAnnotationModule() { }
 
-    /**
-     * @since 2.7
-     */
     public JaxbAnnotationModule(JaxbAnnotationIntrospector intr) {
         _introspector = intr;
     }
@@ -123,9 +116,6 @@ public class JaxbAnnotationModule extends Module
     
     public Priority getPriority() { return _priority; }
 
-    /**
-     * @since 2.7
-     */
     public JaxbAnnotationModule setNonNillableInclusion(JsonInclude.Include incl) {
         _nonNillableInclusion = incl;
         if (_introspector != null) {
@@ -134,9 +124,6 @@ public class JaxbAnnotationModule extends Module
         return this;
     }
 
-    /**
-     * @since 2.7
-     */
     public JsonInclude.Include getNonNillableInclusion() {
         return _nonNillableInclusion;
     }

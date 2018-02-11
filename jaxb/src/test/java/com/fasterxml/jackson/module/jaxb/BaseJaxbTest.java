@@ -21,8 +21,7 @@ public abstract class BaseJaxbTest
      */
 
     private final static TypeFactory TYPE_FACTORY = TypeFactory.defaultInstance();
-    
-    // @since 2.9
+
     protected ObjectMapper newObjectMapper()
     {
         return getJaxbAndJacksonMapper();

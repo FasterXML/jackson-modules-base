@@ -77,10 +77,7 @@ public class JaxbAnnotationIntrospector
     
     protected final static String MARKER_FOR_DEFAULT = "##default";
 
-    // @since 2.5
     protected final static JsonFormat.Value FORMAT_STRING = new JsonFormat.Value().withShape(JsonFormat.Shape.STRING);
-
-    // @since 2.5
     protected final static JsonFormat.Value FORMAT_INT = new JsonFormat.Value().withShape(JsonFormat.Shape.NUMBER_INT);
 
     protected final String _jaxbPackageName;
@@ -105,8 +102,6 @@ public class JaxbAnnotationIntrospector
      * <code>null</code>; this is typically changed to either
      * {@link com.fasterxml.jackson.annotation.JsonInclude.Include#NON_NULL}
      * or {@link com.fasterxml.jackson.annotation.JsonInclude.Include#NON_EMPTY}.
-     *
-     * @since 2.7
      */
     protected JsonInclude.Include _nonNillableInclusion = null;
     
@@ -880,26 +875,26 @@ public class JaxbAnnotationIntrospector
     }
     
     @Override
-    public Object findSerializationConverter(Annotated a)
+    public Object findSerializationConverter(MapperConfig<?> config, Annotated a)
     {
         Class<?> serType = _rawSerializationType(a);
         // Can apply to both container and regular type; no difference yet here
         XmlAdapter<?,?> adapter = findAdapter(a, true, serType);
         if (adapter != null) {
-            return _converter(adapter, true);
+            return _converter(config, adapter, true);
         }
         return null;
     }
 
     @Override
-    public Object findSerializationContentConverter(AnnotatedMember a)
+    public Object findSerializationContentConverter(MapperConfig<?> config, AnnotatedMember a)
     {
         // But this one only applies to structured (container) types:
         Class<?> serType = _rawSerializationType(a);
         if (isContainerType(serType)) {
             XmlAdapter<?,?> adapter = _findContentAdapter(a, true);
             if (adapter != null) {
-                return _converter(adapter, true);
+                return _converter(config, adapter, true);
             }
         }
         return null;
@@ -1122,33 +1117,33 @@ public class JaxbAnnotationIntrospector
     }
 
     @Override
-    public Object findDeserializationConverter(Annotated a)
+    public Object findDeserializationConverter(MapperConfig<?> config, Annotated a)
     {
         // One limitation: for structured types this is done later on
         Class<?> deserType = _rawDeserializationType(a);
         if (isContainerType(deserType)) {
             XmlAdapter<?,?> adapter = findAdapter(a, true, deserType);
             if (adapter != null) {
-                return _converter(adapter, false);
+                return _converter(config, adapter, false);
             }
         } else {
             XmlAdapter<?,?> adapter = findAdapter(a, true, deserType);
             if (adapter != null) {
-                return _converter(adapter, false);
+                return _converter(config, adapter, false);
             }
         }
         return null;
     }
 
     @Override
-    public Object findDeserializationContentConverter(AnnotatedMember a)
+    public Object findDeserializationContentConverter(MapperConfig<?> config, AnnotatedMember a)
     {
         // conversely, here we only apply this to container types:
         Class<?> deserType = _rawDeserializationType(a);
         if (isContainerType(deserType)) {
             XmlAdapter<?,?> adapter = _findContentAdapter(a, false);
             if (adapter != null) {
-                return _converter(adapter, false);
+                return _converter(config, adapter, false);
             }
         }
         return null;
@@ -1435,10 +1430,6 @@ public class JaxbAnnotationIntrospector
         return null;
     }
 
-    protected final TypeFactory getTypeFactory() {
-        return _typeFactory;
-    }
-    
     /**
      * Helper method used to distinguish structured types (arrays, Lists, Maps),
      * which with JAXB use different rules for defining content types.
@@ -1447,23 +1438,6 @@ public class JaxbAnnotationIntrospector
     {
         return raw.isArray() || Collection.class.isAssignableFrom(raw)
             || Map.class.isAssignableFrom(raw);
-    }
-
-    private boolean adapterTypeMatches(XmlAdapter<?,?> adapter, Class<?> targetType)
-    {
-        return findAdapterBoundType(adapter).isAssignableFrom(targetType);
-    }
-
-    private Class<?> findAdapterBoundType(XmlAdapter<?,?> adapter)
-    {
-        TypeFactory tf = getTypeFactory();
-        JavaType adapterType = tf.constructType(adapter.getClass());
-        JavaType[] params = tf.findTypeParameters(adapterType, XmlAdapter.class);
-        // should not happen, except if our type resolution has a flaw, but:
-        if (params == null || params.length < 2) {
-            return Object.class;
-        }
-        return params[1].getRawClass();
     }
 
     protected XmlAdapter<?,?> _findContentAdapter(Annotated ann,
@@ -1479,13 +1453,24 @@ public class JaxbAnnotationIntrospector
                 _fullSerializationType(member) : _fullDeserializationType(member);
             Class<?> contentType = fullType.getContentType().getRawClass();
             XmlAdapter<Object,Object> adapter = findAdapter(member, forSerialization, contentType);
-            if (adapter != null && adapterTypeMatches(adapter, contentType)) {
+            if ((adapter != null) && adapterTypeMatches(adapter, contentType)) {
                 return adapter;
             }
         }
         return null;
     }
-    
+
+    private boolean adapterTypeMatches(XmlAdapter<?,?> adapter, Class<?> targetType)
+    {
+        TypeFactory tf = _typeFactory;
+        JavaType adapterType = tf.constructType(adapter.getClass());
+        JavaType[] params = tf.findTypeParameters(adapterType, XmlAdapter.class);
+        // should not happen, except if our type resolution has a flaw, but:
+        Class<?> boundType = (params == null || params.length < 2) ? Object.class
+                : params[1].getRawClass();
+        return boundType.isAssignableFrom(targetType);
+    }
+
     protected String _propertyNameToString(PropertyName n)
     {
         return (n == null) ? null : n.getSimpleName();
@@ -1527,9 +1512,10 @@ public class JaxbAnnotationIntrospector
         return am.getType();
     }
 
-    protected Converter<Object,Object> _converter(XmlAdapter<?,?> adapter, boolean forSerialization)
+    protected Converter<Object,Object> _converter(MapperConfig<?> config,
+            XmlAdapter<?,?> adapter, boolean forSerialization)
     {
-        TypeFactory tf = getTypeFactory();
+        TypeFactory tf = config.getTypeFactory();
         JavaType adapterType = tf.constructType(adapter.getClass());
         JavaType[] pt = tf.findTypeParameters(adapterType, XmlAdapter.class);
         // Order of type parameters for Converter is reverse between serializer, deserializer,
