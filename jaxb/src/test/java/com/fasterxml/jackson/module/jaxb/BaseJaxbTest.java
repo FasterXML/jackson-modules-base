@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 public abstract class BaseJaxbTest
@@ -20,25 +20,26 @@ public abstract class BaseJaxbTest
     /**********************************************************************
      */
 
-    private final static TypeFactory TYPE_FACTORY = TypeFactory.defaultInstance();
-
     protected ObjectMapper newObjectMapper()
     {
         return getJaxbAndJacksonMapper();
     }
 
-    protected ObjectMapper getJaxbMapper()
+    protected ObjectMapper getJaxbMapper() {
+        return getJaxbMapperBuilder().build();
+    }
+
+    protected MapperBuilder<?,?> getJaxbMapperBuilder()
     {
-        AnnotationIntrospector intr = new JaxbAnnotationIntrospector(TYPE_FACTORY);
+        AnnotationIntrospector intr = new JaxbAnnotationIntrospector();
         return ObjectMapper.builder()
-                .annotationIntrospector(intr)
-                .build();
+                .annotationIntrospector(intr);
     }
 
     protected ObjectMapper getJaxbAndJacksonMapper()
     {
         AnnotationIntrospector intr = new AnnotationIntrospectorPair(
-                new JaxbAnnotationIntrospector(TYPE_FACTORY),
+                new JaxbAnnotationIntrospector(),
                 new JacksonAnnotationIntrospector());
         return ObjectMapper.builder()
                 .annotationIntrospector(intr)
@@ -48,7 +49,7 @@ public abstract class BaseJaxbTest
     protected ObjectMapper getJacksonAndJaxbMapper()
     {
         AnnotationIntrospector intr = new AnnotationIntrospectorPair(new JacksonAnnotationIntrospector(),
-                new JaxbAnnotationIntrospector(TYPE_FACTORY) );
+                new JaxbAnnotationIntrospector());
         return ObjectMapper.builder()
                 .annotationIntrospector(intr)
                 .build();

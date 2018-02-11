@@ -24,7 +24,7 @@ public class TestIntrospectorPair
     extends BaseJaxbTest
 {
     final static AnnotationIntrospector _jacksonAI = new JacksonAnnotationIntrospector();
-    final static AnnotationIntrospector _jaxbAI = new JaxbAnnotationIntrospector(TypeFactory.defaultInstance());
+    final static AnnotationIntrospector _jaxbAI = new JaxbAnnotationIntrospector();
     
     /*
     /**********************************************************

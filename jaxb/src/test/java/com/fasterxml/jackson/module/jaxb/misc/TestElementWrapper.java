@@ -77,9 +77,10 @@ public class TestElementWrapper extends BaseJaxbTest
     // [JACKSON-436]
     public void testWrapperWithCollection() throws Exception
     {
-        ObjectMapper mapper = getJaxbMapper();
-        // for fun, force renaming with wrapper annotation, even for JSON
-        mapper.enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME);
+        ObjectMapper mapper = getJaxbMapperBuilder()
+                // for fun, force renaming with wrapper annotation, even for JSON
+                .enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME)
+                .build();
         Collection<IPhone> phones = new HashSet<IPhone>();
         phones.add(new Phone("555-6666"));
         Person p = new Person();
@@ -98,7 +99,6 @@ public class TestElementWrapper extends BaseJaxbTest
         assertEquals("555-6666", result.phone.iterator().next().getNumber());
     }
 
-    // [Issue#13]
     public void testWrapperRenaming() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -108,17 +108,17 @@ public class TestElementWrapper extends BaseJaxbTest
         input.id = 3;
         assertEquals("{\"id\":3}", mapper.writeValueAsString(input));
         // but if we create new instance, configure
-        mapper = getJaxbMapper();
-        mapper.enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME);
+        mapper = getJaxbMapperBuilder()
+                .enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME)
+                .build();
         assertEquals("{\"wrap\":3}", mapper.writeValueAsString(input));
     }
 
-    // [Issue#25]
     public void testWrapperDefaultName() throws Exception
     {
-        ObjectMapper mapper = getJaxbMapper();
-        mapper = getJaxbMapper();
-        mapper.enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME);
+        ObjectMapper mapper = getJaxbMapperBuilder()
+                .enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME)
+                .build();
         Bean25 input = new Bean25(1, 2, 3);
         final String JSON = "{\"values\":[1,2,3]}";
         assertEquals(JSON, mapper.writeValueAsString(input));

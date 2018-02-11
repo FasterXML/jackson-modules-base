@@ -106,8 +106,9 @@ public class TestAccessType
 
      public void testInclusionIssue40() throws Exception
      {
-         ObjectMapper mapper = getJaxbMapper();
-         mapper.enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME);
+         ObjectMapper mapper = getJaxbMapperBuilder()
+                 .enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME)
+                 .build();
          String json = mapper.writeValueAsString(new Bean40());
          @SuppressWarnings("unchecked")
          Map<String,Object> map = mapper.readValue(json, Map.class);

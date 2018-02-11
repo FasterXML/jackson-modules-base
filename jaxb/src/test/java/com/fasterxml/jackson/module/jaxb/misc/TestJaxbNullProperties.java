@@ -88,7 +88,7 @@ public class TestJaxbNullProperties
 
         // but we can change that...
         mapper = ObjectMapper.builder()
-                .annotationIntrospector(new JaxbAnnotationIntrospector(mapper.getTypeFactory())
+                .annotationIntrospector(new JaxbAnnotationIntrospector()
                         .setNonNillableInclusion(JsonInclude.Include.NON_NULL)
                     )
                 .build()

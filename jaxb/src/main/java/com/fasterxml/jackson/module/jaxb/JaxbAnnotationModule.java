@@ -80,7 +80,7 @@ public class JaxbAnnotationModule extends Module
     {
         JaxbAnnotationIntrospector intr = _introspector;
         if (intr == null) {
-            intr = new JaxbAnnotationIntrospector(context.typeFactory());
+            intr = new JaxbAnnotationIntrospector();
             if (_nonNillableInclusion != null) {
                 intr.setNonNillableInclusion(_nonNillableInclusion);
             }

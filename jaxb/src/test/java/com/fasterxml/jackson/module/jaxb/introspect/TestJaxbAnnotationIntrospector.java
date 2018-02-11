@@ -233,11 +233,11 @@ public class TestJaxbAnnotationIntrospector
      */
     public void testSerializeDeserializeWithJaxbAnnotations() throws Exception
     {
-        ObjectMapper mapper = getJaxbMapper();
-        // test expects that wrapper name be used...
-        mapper.enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME);
+        ObjectMapper mapper = getJaxbMapperBuilder()
+                // test expects that wrapper name be used...
+                .enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME)
+                .build();
         
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
         JaxbExample ex = new JaxbExample();
         QName qname = new QName("urn:hi", "hello");
         ex.setQname(qname);
@@ -279,8 +279,8 @@ public class TestJaxbAnnotationIntrospector
 
     public void testRootNameAccess() throws Exception
     {
-        final TypeFactory tf = TypeFactory.defaultInstance();
-        AnnotationIntrospector ai = new JaxbAnnotationIntrospector(tf);
+        final TypeFactory tf = MAPPER.getTypeFactory();
+        AnnotationIntrospector ai = new JaxbAnnotationIntrospector();
         // If no @XmlRootElement, should get null (unless pkg has etc)
         assertNull(ai.findRootName(AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
                 tf.constructType(SimpleBean.class), null)));
@@ -308,13 +308,11 @@ public class TestJaxbAnnotationIntrospector
     /**
      * Additional simple tests to ensure we will retain basic namespace information
      * now that it can be included
-     * 
-     * @since 2.1
      */
     public void testNamespaces() throws Exception
     {
-        final TypeFactory tf = TypeFactory.defaultInstance();
-        JaxbAnnotationIntrospector ai = new JaxbAnnotationIntrospector(TypeFactory.defaultInstance());
+        final TypeFactory tf = MAPPER.getTypeFactory();
+        JaxbAnnotationIntrospector ai = new JaxbAnnotationIntrospector();
         AnnotatedClass ac = AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
                 tf.constructType(NamespaceBean.class), null);
         AnnotatedField af = _findField(ac, "string");

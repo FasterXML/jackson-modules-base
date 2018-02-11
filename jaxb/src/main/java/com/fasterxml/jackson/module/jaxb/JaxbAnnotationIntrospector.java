@@ -84,8 +84,6 @@ public class JaxbAnnotationIntrospector
     protected final JsonSerializer<?> _dataHandlerSerializer;
     protected final JsonDeserializer<?> _dataHandlerDeserializer;
 
-    protected final TypeFactory _typeFactory;
-    
     protected final boolean _ignoreXmlIDREF;
 
     /**
@@ -104,32 +102,18 @@ public class JaxbAnnotationIntrospector
      * or {@link com.fasterxml.jackson.annotation.JsonInclude.Include#NON_EMPTY}.
      */
     protected JsonInclude.Include _nonNillableInclusion = null;
-    
-    /**
-     * @deprecated Since 2.1, use constructor that takes TypeFactory.
-     */
-    @Deprecated
+
     public JaxbAnnotationIntrospector() {
-        this(TypeFactory.defaultInstance());
-    }
-
-    public JaxbAnnotationIntrospector(MapperConfig<?> config) {
-        this(config.getTypeFactory());
-    }
-
-    public JaxbAnnotationIntrospector(TypeFactory typeFactory) {
-        this(typeFactory, DEFAULT_IGNORE_XMLIDREF);
+        this(DEFAULT_IGNORE_XMLIDREF);
     }
 
     /**
-     * @param typeFactory Type factory used for resolving type information
      * @param ignoreXmlIDREF Whether {@link XmlIDREF} annotation should be processed
      *   JAXB style (meaning that references are always serialized using id), or
      *   not (first reference as full POJO, others as ids)
      */
-    public JaxbAnnotationIntrospector(TypeFactory typeFactory, boolean ignoreXmlIDREF)
+    public JaxbAnnotationIntrospector(boolean ignoreXmlIDREF)
     {
-        _typeFactory = (typeFactory == null)? TypeFactory.defaultInstance() : typeFactory;
         _ignoreXmlIDREF = ignoreXmlIDREF;
         _jaxbPackageName = XmlElement.class.getPackage().getName();
 
@@ -879,7 +863,7 @@ public class JaxbAnnotationIntrospector
     {
         Class<?> serType = _rawSerializationType(a);
         // Can apply to both container and regular type; no difference yet here
-        XmlAdapter<?,?> adapter = findAdapter(a, true, serType);
+        XmlAdapter<?,?> adapter = findAdapter(config, a, true, serType);
         if (adapter != null) {
             return _converter(config, adapter, true);
         }
@@ -892,7 +876,7 @@ public class JaxbAnnotationIntrospector
         // But this one only applies to structured (container) types:
         Class<?> serType = _rawSerializationType(a);
         if (isContainerType(serType)) {
-            XmlAdapter<?,?> adapter = _findContentAdapter(a, true);
+            XmlAdapter<?,?> adapter = _findContentAdapter(config, a, true);
             if (adapter != null) {
                 return _converter(config, adapter, true);
             }
@@ -1122,12 +1106,12 @@ public class JaxbAnnotationIntrospector
         // One limitation: for structured types this is done later on
         Class<?> deserType = _rawDeserializationType(a);
         if (isContainerType(deserType)) {
-            XmlAdapter<?,?> adapter = findAdapter(a, true, deserType);
+            XmlAdapter<?,?> adapter = findAdapter(config, a, true, deserType);
             if (adapter != null) {
                 return _converter(config, adapter, false);
             }
         } else {
-            XmlAdapter<?,?> adapter = findAdapter(a, true, deserType);
+            XmlAdapter<?,?> adapter = findAdapter(config, a, true, deserType);
             if (adapter != null) {
                 return _converter(config, adapter, false);
             }
@@ -1141,7 +1125,7 @@ public class JaxbAnnotationIntrospector
         // conversely, here we only apply this to container types:
         Class<?> deserType = _rawDeserializationType(a);
         if (isContainerType(deserType)) {
-            XmlAdapter<?,?> adapter = _findContentAdapter(a, false);
+            XmlAdapter<?,?> adapter = _findContentAdapter(config, a, false);
             if (adapter != null) {
                 return _converter(config, adapter, false);
             }
@@ -1364,8 +1348,8 @@ public class JaxbAnnotationIntrospector
      * 
      * @return The adapter, or null if none.
      */
-    private XmlAdapter<Object,Object> findAdapter(Annotated am, boolean forSerialization,
-            Class<?> type)
+    private XmlAdapter<Object,Object> findAdapter(MapperConfig<?> config, Annotated am,
+            boolean forSerialization, Class<?> type)
     {
         // First of all, are we looking for annotations for class?
         if (am instanceof AnnotatedClass) {
@@ -1374,7 +1358,7 @@ public class JaxbAnnotationIntrospector
         // Otherwise for a member. First, let's figure out type of property
         XmlJavaTypeAdapter adapterInfo = findAnnotation(XmlJavaTypeAdapter.class, am, true, false, false);
         if (adapterInfo != null) {
-            XmlAdapter<Object,Object> adapter = checkAdapter(adapterInfo, type, forSerialization);
+            XmlAdapter<Object,Object> adapter = checkAdapter(config, adapterInfo, type, forSerialization);
             if (adapter != null) {
                 return adapter;
             }
@@ -1382,7 +1366,7 @@ public class JaxbAnnotationIntrospector
         XmlJavaTypeAdapters adapters = findAnnotation(XmlJavaTypeAdapters.class, am, true, false, false);
         if (adapters != null) {
             for (XmlJavaTypeAdapter info : adapters.value()) {
-                XmlAdapter<Object,Object> adapter = checkAdapter(info, type, forSerialization);
+                XmlAdapter<Object,Object> adapter = checkAdapter(config, info, type, forSerialization);
                 if (adapter != null) {
                     return adapter;
                 }
@@ -1392,15 +1376,15 @@ public class JaxbAnnotationIntrospector
     }
     
     @SuppressWarnings("unchecked")
-    private final XmlAdapter<Object,Object> checkAdapter(XmlJavaTypeAdapter adapterInfo, Class<?> typeNeeded,
-            boolean forSerialization)
+    private final XmlAdapter<Object,Object> checkAdapter(MapperConfig<?> config, XmlJavaTypeAdapter adapterInfo,
+            Class<?> typeNeeded, boolean forSerialization)
     {
         // if annotation has no type, it's applicable; if it has, must match
         Class<?> adaptedType = adapterInfo.type();
         
         if (adaptedType == XmlJavaTypeAdapter.DEFAULT.class) {
-            JavaType type = _typeFactory.constructType(adapterInfo.value());
-            JavaType[] params = _typeFactory.findTypeParameters(type, XmlAdapter.class);
+            JavaType type = config.constructType(adapterInfo.value());
+            JavaType[] params = config.getTypeFactory().findTypeParameters(type, XmlAdapter.class);
             adaptedType = params[1].getRawClass();
         }
         if (adaptedType.isAssignableFrom(typeNeeded)) {
@@ -1440,7 +1424,7 @@ public class JaxbAnnotationIntrospector
             || Map.class.isAssignableFrom(raw);
     }
 
-    protected XmlAdapter<?,?> _findContentAdapter(Annotated ann,
+    protected XmlAdapter<?,?> _findContentAdapter(MapperConfig<?> config, Annotated ann,
             boolean forSerialization)
     {
         Class<?> rawType = forSerialization ?
@@ -1452,19 +1436,19 @@ public class JaxbAnnotationIntrospector
             JavaType fullType = forSerialization ?
                 _fullSerializationType(member) : _fullDeserializationType(member);
             Class<?> contentType = fullType.getContentType().getRawClass();
-            XmlAdapter<Object,Object> adapter = findAdapter(member, forSerialization, contentType);
-            if ((adapter != null) && adapterTypeMatches(adapter, contentType)) {
+            XmlAdapter<Object,Object> adapter = findAdapter(config, member, forSerialization, contentType);
+            if ((adapter != null) && adapterTypeMatches(config, adapter, contentType)) {
                 return adapter;
             }
         }
         return null;
     }
 
-    private boolean adapterTypeMatches(XmlAdapter<?,?> adapter, Class<?> targetType)
+    private boolean adapterTypeMatches(MapperConfig<?> config, XmlAdapter<?,?> adapter,
+            Class<?> targetType)
     {
-        TypeFactory tf = _typeFactory;
-        JavaType adapterType = tf.constructType(adapter.getClass());
-        JavaType[] params = tf.findTypeParameters(adapterType, XmlAdapter.class);
+        JavaType adapterType = config.constructType(adapter.getClass());
+        JavaType[] params = config.getTypeFactory().findTypeParameters(adapterType, XmlAdapter.class);
         // should not happen, except if our type resolution has a flaw, but:
         Class<?> boundType = (params == null || params.length < 2) ? Object.class
                 : params[1].getRawClass();

@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
@@ -87,7 +86,7 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
 
         public DualAnnotationObjectMapper() {
             super();
-            AnnotationIntrospector primary = new JaxbAnnotationIntrospector(TypeFactory.defaultInstance());
+            AnnotationIntrospector primary = new JaxbAnnotationIntrospector();
             AnnotationIntrospector secondary = new JacksonAnnotationIntrospector();
 
             // make de/serializer use JAXB annotations first, then jackson ones
