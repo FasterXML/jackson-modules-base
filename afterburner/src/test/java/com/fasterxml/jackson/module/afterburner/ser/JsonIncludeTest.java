@@ -223,7 +223,7 @@ public class JsonIncludeTest
     public void testEmptyInclusionScalars() throws IOException
     {
         ObjectMapper defMapper = MAPPER;
-        ObjectMapper inclMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        ObjectMapper inclMapper = new ObjectMapper().setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
 
         // First, Strings
         StringWrapper str = new StringWrapper("");

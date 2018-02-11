@@ -4,9 +4,11 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -20,9 +22,6 @@ public class ObjectMapperModule implements com.google.inject.Module
   private final List<Key<? extends Module>> modulesToInject = new ArrayList<Key<? extends Module>>();
   private final Key<ObjectMapper> objectMapperKey;
 
-  /**
-   * @since 2.8
-   */
   private ObjectMapper objectMapper;
 
   private Class<? extends Annotation> scope = null;
@@ -80,9 +79,6 @@ public class ObjectMapperModule implements com.google.inject.Module
     return this;
   }
 
-  /**
-   * @since 2.8
-   */
   public ObjectMapperModule withObjectMapper(ObjectMapper m)
   {
     objectMapper = m;
@@ -129,15 +125,20 @@ public class ObjectMapperModule implements com.google.inject.Module
     @Override
     public ObjectMapper get()
     {
-      ObjectMapper mapper = objectMapper;
-      if (mapper == null) {
-          mapper = new ObjectMapper();
+        ObjectMapper mapper = objectMapper;
+        if (mapper == null) {
+            final GuiceAnnotationIntrospector guiceIntrospector = new GuiceAnnotationIntrospector();
+            AnnotationIntrospector defaultAI = new JacksonAnnotationIntrospector();
+            mapper = ObjectMapper.builder()
+                    .injectableValues(new GuiceInjectableValues(injector))
+                    .annotationIntrospector(new AnnotationIntrospectorPair(guiceIntrospector, defaultAI))
+                    .build();
 
-          // 05-Feb-2017, tatu: _Should_ be fine, considering instances are now (3.0) truly immutable.
-          //    But if this turns out to be problematic, may need to consider addition of `copy()`
-          //    back in databind
           /*
       } else {
+            // 05-Feb-2017, tatu: _Should_ be fine, considering instances are now (3.0) truly immutable.
+          //    But if this turns out to be problematic, may need to consider addition of `copy()`
+          //    back in databind
           mapper = mapper.copy();
           */
       }
@@ -145,17 +146,6 @@ public class ObjectMapperModule implements com.google.inject.Module
       for (Provider<? extends Module> provider : providedModules) {
         mapper.registerModule(provider.get());
       }
-
-      final GuiceAnnotationIntrospector guiceIntrospector = new GuiceAnnotationIntrospector();
-      mapper.setInjectableValues(new GuiceInjectableValues(injector));
-      mapper.setAnnotationIntrospectors(
-          new AnnotationIntrospectorPair(
-              guiceIntrospector, mapper.getSerializationConfig().getAnnotationIntrospector()
-          ),
-          new AnnotationIntrospectorPair(
-              guiceIntrospector, mapper.getDeserializationConfig().getAnnotationIntrospector()
-          )
-      );
       return mapper;
     }
   }

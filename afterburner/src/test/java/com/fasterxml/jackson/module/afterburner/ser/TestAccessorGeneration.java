@@ -47,7 +47,7 @@ public class TestAccessorGeneration extends AfterburnerTestBase
 
     // We need MapperConfig to pass, so easiest way is to:
     private final ObjectMapper MAPPER = new ObjectMapper();
-    private final MapperConfig<?> MAPPER_CONFIG = MAPPER.getSerializationConfig();
+    private final MapperConfig<?> MAPPER_CONFIG = MAPPER.serializationConfig();
 
     public void testSingleIntAccessorGeneration() throws Exception
     {

@@ -171,12 +171,6 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
                 .registerModule(new AfterburnerModule());
     }
 
-    @Deprecated
-    protected ObjectMapper mapperWithModule()
-    {
-        return newObjectMapper();
-    }
-
     /*
     /**********************************************************
     /* Helper methods; assertions

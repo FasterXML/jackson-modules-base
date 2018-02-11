@@ -109,7 +109,7 @@ public abstract class ConstructorCallStackManipulation implements StackManipulat
         }
 
         @Override
-        public InDefinedShape determineConstructor(TypeDescription typeDescription) {
+        public InDefinedShape determineConstructor(TypeDescription td) {
             return new ForLoadedConstructor(ctor);
         }
 
@@ -158,7 +158,7 @@ public abstract class ConstructorCallStackManipulation implements StackManipulat
         }
 
         @Override
-        public InDefinedShape determineConstructor(TypeDescription typeDescription) {
+        public InDefinedShape determineConstructor(TypeDescription td) {
             return ctor;
         }
 

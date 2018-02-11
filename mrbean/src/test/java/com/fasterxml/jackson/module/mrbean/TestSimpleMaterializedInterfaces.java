@@ -66,7 +66,7 @@ public class TestSimpleMaterializedInterfaces
     public void testLowLevelMaterializer() throws Exception
     {
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
-        DeserializationConfig config = new ObjectMapper().getDeserializationConfig();
+        DeserializationConfig config = new ObjectMapper().deserializationConfig();
         Class<?> impl = _materializeRawType(mat, config, Bean.class);
         assertNotNull(impl);
         assertTrue(Bean.class.isAssignableFrom(impl));
@@ -86,7 +86,7 @@ public class TestSimpleMaterializedInterfaces
     public void testLowLevelMaterializerFailOnIncompatible() throws Exception
     {
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
-        DeserializationConfig config = new ObjectMapper().getDeserializationConfig();
+        DeserializationConfig config = new ObjectMapper().deserializationConfig();
         try {
             _materializeRawType(mat, config, InvalidBean.class);
             fail("Expected exception for incompatible property types");
@@ -100,7 +100,7 @@ public class TestSimpleMaterializedInterfaces
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
         //  by default early failure is disabled, enable:
         mat.enable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
-        DeserializationConfig config = new ObjectMapper().getDeserializationConfig();
+        DeserializationConfig config = new ObjectMapper().deserializationConfig();
         try {
             _materializeRawType(mat, config, PartialBean.class);
             fail("Expected exception for unrecognized method");

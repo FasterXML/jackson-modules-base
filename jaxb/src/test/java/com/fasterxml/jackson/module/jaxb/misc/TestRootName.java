@@ -30,7 +30,9 @@ public class TestRootName extends BaseJaxbTest
     public void testRootName() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
-        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
-        assertEquals("{\"rooty\":{\"value\":37}}", mapper.writeValueAsString(new MyType()));
+        assertEquals("{\"rooty\":{\"value\":37}}",
+                mapper.writer()
+                    .with(SerializationFeature.WRAP_ROOT_VALUE)
+                    .writeValueAsString(new MyType()));
     }
 }

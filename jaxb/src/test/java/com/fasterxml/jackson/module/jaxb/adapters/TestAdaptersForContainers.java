@@ -7,7 +7,6 @@ import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.introspect.TestJaxbAnnotationIntrospector.KeyValuePair;
 
@@ -152,7 +151,6 @@ public class TestAdaptersForContainers extends BaseJaxbTest
     public void testAdapterForBeanWithMap() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
         ParentJAXBBean parentJaxbBean = new ParentJAXBBean();
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("sampleKey", "sampleValue");

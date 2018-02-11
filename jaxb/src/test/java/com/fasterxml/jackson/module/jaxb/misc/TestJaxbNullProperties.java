@@ -75,7 +75,7 @@ public class TestJaxbNullProperties
     public void testNullProps() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
         assertEquals("{\"x\":\"y\"}", mapper.writeValueAsString(new Bean()));
     }
 
@@ -87,13 +87,13 @@ public class TestJaxbNullProperties
         assertEquals("{\"z\":3}", mapper.writeValueAsString(new NonNillableZ(3)));
 
         // but we can change that...
-        mapper = new ObjectMapper()
-            .registerModule(new JaxbAnnotationModule()
-                .setNonNillableInclusion(JsonInclude.Include.NON_NULL)
+        mapper = ObjectMapper.builder()
+                .annotationIntrospector(new JaxbAnnotationIntrospector(mapper.getTypeFactory())
+                        .setNonNillableInclusion(JsonInclude.Include.NON_NULL)
+                    )
+                .build()
+                .registerModule(new JaxbAnnotationModule().setNonNillableInclusion(JsonInclude.Include.NON_NULL)
                 );
-        mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(mapper.getTypeFactory())
-            .setNonNillableInclusion(JsonInclude.Include.NON_NULL)
-        );
         assertEquals("{}", mapper.writeValueAsString(new NonNillableZ()));
         assertEquals("{\"z\":3}", mapper.writeValueAsString(new NonNillableZ(3)));
     }

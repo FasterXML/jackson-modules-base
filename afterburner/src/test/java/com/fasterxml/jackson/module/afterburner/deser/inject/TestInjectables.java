@@ -3,7 +3,7 @@ package com.fasterxml.jackson.module.afterburner.deser.inject;
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.databind.*;
-
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 public class TestInjectables extends AfterburnerTestBase
@@ -97,12 +97,13 @@ public class TestInjectables extends AfterburnerTestBase
     
     public void testSimple() throws Exception
     {
-        ObjectMapper mapper = newObjectMapper();
-        mapper.setInjectableValues(new InjectableValues.Std()
-            .addValue(String.class, "stuffValue")
-            .addValue("myId", "xyz")
-            .addValue(Long.TYPE, Long.valueOf(37))
-            );
+        ObjectMapper mapper = ObjectMapper.builder()
+                .injectableValues(new InjectableValues.Std()
+                        .addValue(String.class, "stuffValue")
+                        .addValue("myId", "xyz")
+                        .addValue(Long.TYPE, Long.valueOf(37)))
+                .build();
+        mapper.registerModule(new AfterburnerModule());
         InjectedBean bean = mapper.readValue("{\"value\":3}", InjectedBean.class);
         assertEquals(3, bean.value);
         assertEquals("stuffValue", bean.stuff);
@@ -148,11 +149,13 @@ public class TestInjectables extends AfterburnerTestBase
         final Object methodInjected = "methodInjected";
         final Object fieldInjected = "fieldInjected";
 
-        ObjectMapper mapper = newObjectMapper()
-                        .setInjectableValues(new InjectableValues.Std()
-                                .addValue("constructor_injected", constructorInjected)
-                                .addValue("method_injected", methodInjected)
-                                .addValue("field_injected", fieldInjected));
+        ObjectMapper mapper = ObjectMapper.builder()
+                .injectableValues(new InjectableValues.Std()
+                        .addValue("constructor_injected", constructorInjected)
+                        .addValue("method_injected", methodInjected)
+                        .addValue("field_injected", fieldInjected))
+                .build();
+        mapper.registerModule(new AfterburnerModule());
 
        IssueGH471Bean bean = mapper.readValue(
 "{\"x\":13,\"constructor_value\":\"constructor\",\"method_value\":\"method\",\"field_value\":\"field\"}",

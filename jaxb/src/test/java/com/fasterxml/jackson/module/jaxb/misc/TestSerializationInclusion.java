@@ -36,7 +36,7 @@ public class TestSerializationInclusion extends BaseJaxbTest
         
     private void _testInclusion(ObjectMapper mapper) throws Exception
     {
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
         String json = mapper.writeValueAsString(new Data());
         assertEquals("{}", json);
     }

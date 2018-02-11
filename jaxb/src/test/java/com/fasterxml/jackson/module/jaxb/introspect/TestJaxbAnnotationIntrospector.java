@@ -282,17 +282,17 @@ public class TestJaxbAnnotationIntrospector
         final TypeFactory tf = TypeFactory.defaultInstance();
         AnnotationIntrospector ai = new JaxbAnnotationIntrospector(tf);
         // If no @XmlRootElement, should get null (unless pkg has etc)
-        assertNull(ai.findRootName(AnnotatedClassResolver.resolve(MAPPER.getSerializationConfig(),
+        assertNull(ai.findRootName(AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
                 tf.constructType(SimpleBean.class), null)));
         // With @XmlRootElement, but no name, empty String
-        PropertyName rootName = ai.findRootName(AnnotatedClassResolver.resolve(MAPPER.getSerializationConfig(),
+        PropertyName rootName = ai.findRootName(AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
                 tf.constructType(NamespaceBean.class), null));
         assertNotNull(rootName);
         assertEquals("", rootName.getSimpleName());
         assertEquals("urn:class", rootName.getNamespace());
 
         // and otherwise explicit name
-        rootName = ai.findRootName(AnnotatedClassResolver.resolve(MAPPER.getSerializationConfig(),
+        rootName = ai.findRootName(AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
                 tf.constructType(RootNameBean.class), null));
         assertNotNull(rootName);
         assertEquals("test", rootName.getSimpleName());
@@ -315,7 +315,7 @@ public class TestJaxbAnnotationIntrospector
     {
         final TypeFactory tf = TypeFactory.defaultInstance();
         JaxbAnnotationIntrospector ai = new JaxbAnnotationIntrospector(TypeFactory.defaultInstance());
-        AnnotatedClass ac = AnnotatedClassResolver.resolve(MAPPER.getSerializationConfig(),
+        AnnotatedClass ac = AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
                 tf.constructType(NamespaceBean.class), null);
         AnnotatedField af = _findField(ac, "string");
         assertNotNull(af);
