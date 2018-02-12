@@ -685,7 +685,7 @@ public class JaxbAnnotationIntrospector
      */
 
     @Override
-    public JsonSerializer<?> findSerializer(Annotated am)
+    public JsonSerializer<?> findSerializer(MapperConfig<?> config, Annotated am)
     {
         final Class<?> type = _rawSerializationType(am);
 
@@ -730,12 +730,12 @@ public class JaxbAnnotationIntrospector
     }
 
     @Override
-    public Object findContentSerializer(Annotated a) {
+    public Object findContentSerializer(MapperConfig<?> config, Annotated a) {
         return null;
     }
 
     @Override
-    public JsonInclude.Value findPropertyInclusion(Annotated a)
+    public JsonInclude.Value findPropertyInclusion(MapperConfig<?> config, Annotated a)
     {
         JsonInclude.Include incl = _serializationInclusion(a, null);
         if (incl == null) {
@@ -958,7 +958,7 @@ public class JaxbAnnotationIntrospector
      */
     
     @Override
-    public Object findDeserializer(Annotated am)
+    public Object findDeserializer(MapperConfig<?> config, Annotated am)
     {
         final Class<?> type = _rawDeserializationType(am);
 
@@ -988,13 +988,13 @@ public class JaxbAnnotationIntrospector
     }
 
     @Override
-    public Object findKeyDeserializer(Annotated am) {
+    public Object findKeyDeserializer(MapperConfig<?> config, Annotated am) {
         // Is there something like this in JAXB?
         return null;
     }
 
     @Override
-    public Object findContentDeserializer(Annotated a) {
+    public Object findContentDeserializer(MapperConfig<?> config, Annotated a) {
         return null;
     }
 

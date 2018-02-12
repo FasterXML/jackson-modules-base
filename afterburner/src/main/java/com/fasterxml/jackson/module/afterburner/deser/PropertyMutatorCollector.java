@@ -267,7 +267,7 @@ public class PropertyMutatorCollector
 
         abstract protected Class<?> getClassToCastBeanValueTo(AnnotatedMember annotatedMember);
         abstract protected StackManipulation invocationOperation(
-                AnnotatedMember annotatedMember, TypeDefinition beanClassDescription);
+                AnnotatedMember annotatedMember, TypeDefinition beanClassDesc);
 
         @Override
         public Size apply(MethodVisitor methodVisitor,
