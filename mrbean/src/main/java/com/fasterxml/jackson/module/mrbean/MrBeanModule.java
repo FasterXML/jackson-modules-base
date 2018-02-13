@@ -9,7 +9,7 @@ public class MrBeanModule extends Module
     /**
      * Configured materializer instance to register with deserializer factory.
      */
-    protected AbstractTypeMaterializer _materializer;
+    protected final AbstractTypeMaterializer _materializer;
     
     /*
     /**********************************************************

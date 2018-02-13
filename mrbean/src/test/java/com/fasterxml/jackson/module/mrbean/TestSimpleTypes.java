@@ -53,19 +53,20 @@ public class TestSimpleTypes extends BaseTest
     // for [modules-base#42]: ignore `get()` and `set()`
     public void testPlainGetAndSet() throws Exception
     {
-        JustGetAndSet value = MAPPER.readValue("{}", JustGetAndSet.class);
-        // fine to have unimplemented methods, unless...
-        assertNotNull(value);
-
-        AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
-        mat.enable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
-        ObjectMapper mapper = new ObjectMapper()
-                .registerModule(new MrBeanModule(mat));
+        // First, simple attempt fails
         try {
-            mapper.readValue("{}", JustGetAndSet.class);
+            MAPPER.readValue("{}", JustGetAndSet.class);
             fail("Should not pass");
         } catch (JsonMappingException e) {
             verifyException(e, "Unrecognized abstract method");
         }
+
+        // but can make work with config:
+        AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
+        mat.disable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new MrBeanModule(mat));
+        JustGetAndSet value = mapper.readValue("{}", JustGetAndSet.class);
+        assertNotNull(value);
     }
 }

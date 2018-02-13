@@ -42,8 +42,10 @@ public class AbstractTypeMaterializer
          * (non-getter, non-setter) abstract method is encountered: if set to
          * true, will throw an exception during materialization; if false,
          * will materialize method that throws exception only if called.
+         *<p>
+         * NOTE: defaults to `true` since 3.0 (earlier defaulted to `false`)
          */
-        FAIL_ON_UNMATERIALIZED_METHOD(false),
+        FAIL_ON_UNMATERIALIZED_METHOD(true),
         
         /**
          * Feature that determines what happens when attempt is made to
@@ -142,40 +144,44 @@ public class AbstractTypeMaterializer
     /**
      * Method for enabling specified  feature.
      */
-    public void enable(Feature f) {
+    public AbstractTypeMaterializer enable(Feature f) {
         _featureFlags |= f.getMask();
+        return this;
     }
 
     /**
      * Method for disabling specified feature.
      */
-    public void disable(Feature f) {
+    public AbstractTypeMaterializer disable(Feature f) {
         _featureFlags &= ~f.getMask();
+        return this;
     }
 
     /**
      * Method for enabling or disabling specified feature.
      */
-    public void set(Feature f, boolean state)
+    public AbstractTypeMaterializer configure(Feature f, boolean state)
     {
         if (state) {
             enable(f);
         } else {
             disable(f);
         }
+        return this;
     }
 
     /**
      * Method for specifying package to use for generated classes.
      */
-    public void setDefaultPackage(String defPkg)
+    public AbstractTypeMaterializer setDefaultPackage(String defPkg)
     {
         if (!defPkg.endsWith(".")) {
             defPkg = defPkg + ".";
         }
         _defaultPackage = defPkg;
+        return this;
     }
-    
+
     /*
     /**********************************************************
     /* Public API
@@ -186,7 +192,7 @@ public class AbstractTypeMaterializer
      * Entry-point for {@link AbstractTypeResolver} that Jackson calls to materialize
      * an abstract type.
      */
-    @Override // since 2.7
+    @Override
     public JavaType resolveAbstractType(DeserializationConfig config, BeanDescription beanDesc)
     {
         final JavaType type = beanDesc.getType();
