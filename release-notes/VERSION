@@ -10,6 +10,11 @@ Modules:
 
 2.9.0 (not yet released)
 
+2.8.11.1 (not yet released)
+
+#42: NPE from MrBean when `get()` or `set()` is though as property
+ (reported by Tuomas K)
+
 2.8.11 (24-Dec-2017)
 
 #30: (afterburner) `IncompatibleClassChangeError` deserializing interface
