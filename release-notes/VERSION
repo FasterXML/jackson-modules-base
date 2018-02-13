@@ -1,0 +1,19 @@
+Project: jackson-modules-base
+Modules:
+  jackson-module-guice
+  jackson-module-jaxb
+  jackson-module-mrbean
+  jackson-module-osgi
+  jackson-module-paranamer
+
+------------------------------------------------------------------------
+=== Releases ===
+------------------------------------------------------------------------
+
+3.0.0 (not yet released)
+
+#26: Improve handling of parent class loader for generated classes
+ (suggested by hatgaei@github)
+#28: Use ByteBuddy (instead of "raw" ASM) for Mr Bean
+ (contributed by Georgios A))
+#40: Remove `jackson-module-paranamer` from Jackson 3.0

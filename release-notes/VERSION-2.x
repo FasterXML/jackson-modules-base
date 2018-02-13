@@ -10,13 +10,10 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-3.0.0 (not yet released)
+2.9.5 (not yet released)
 
-#26: Improve handling of parent class loader for generated classes
- (suggested by hatgaei@github)
-#28: Use ByteBuddy (instead of "raw" ASM) for Mr Bean
- (contributed by Georgios A))
-#40: Remove `jackson-module-paranamer` from Jackson 3.0
+#42: NPE from MrBean when `get()` or `set()` is though as property
+ (reported by Tuomas K)
 
 2.9.4 (24-Jan-2018)
 

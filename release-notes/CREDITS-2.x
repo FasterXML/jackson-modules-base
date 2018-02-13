@@ -10,7 +10,7 @@ Vojtěch Habarta (vojtechhabarta@gitub)
 * Reported [JAXB#32]: Fix introspector chaining in `JaxbAnnotationIntrospector.hasRequiredMarker()`
  (2.9.3)
 
-Georgios Andrianakis (geoand@github)
+Tuomas Kiviaho (TuomasKiviaho@github)
 
-* Contributed [MrBean#28]: Replace ASM code-gen with ByteBuddy
- (3.0.0)
+* Reported #42: NPE from MrBean when `get()` or `set()` is though as property
+ (2.9.5)

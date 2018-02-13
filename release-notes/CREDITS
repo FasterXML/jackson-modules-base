@@ -1,0 +1,10 @@
+Here are people who have contributed to development Jackson JSON processor
+Base modules, version 3.x
+(version numbers in brackets indicate release in which the problem was fixed)
+
+Tatu Saloranta, tatu.saloranta@iki.fi: author
+
+Georgios Andrianakis (geoand@github)
+
+* Contributed [MrBean#28]: Replace ASM code-gen with ByteBuddy
+ (3.0.0)
