@@ -80,10 +80,6 @@ public class AbstractTypeMaterializer
 
     /**
      * Default package to use for generated classes.
-     *<p>
-     * Note that before 2.6, defaulted to
-     * "org.codehaus.jackson.generated.", changed as
-     * per [mrbean#21]
      */
     public final static String DEFAULT_PACKAGE_FOR_GENERATED = "com.fasterxml.jackson.module.mrbean.generated.";
     

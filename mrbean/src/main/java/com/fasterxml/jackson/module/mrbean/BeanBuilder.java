@@ -85,13 +85,24 @@ public class BeanBuilder
                 String methodName = m.getName();
                 int argCount = m.getParameterTypes().length;
                 if (argCount == 0) { // getter?
-                    if (methodName.startsWith("get") || methodName.startsWith("is") && returnsBoolean(m)) {
-                        addGetter(ctxt, m);
+                    if (methodName.startsWith("get")) {
+                        if (methodName.length() > 3) { // ignore plain "get()"
+                            addGetter(ctxt, m);
+                            continue;
+                        }
+                    } else if (methodName.startsWith("is")) {
+                        if (methodName.length() > 2) { // ignore plain "is()"
+                            if (returnsBoolean(m)) {
+                                addGetter(ctxt, m);
+                                continue;
+                            }
+                        }
+                    }
+                } else if ((argCount == 1) && methodName.startsWith("set")) { // ignore "set()"
+                    if (methodName.length() > 3) {
+                        addSetter(ctxt, m);
                         continue;
                     }
-                } else if (argCount == 1 && methodName.startsWith("set")) {
-                    addSetter(ctxt, m);
-                    continue;
                 }
                 // Otherwise, if concrete, or already handled, skip:
                 if (BeanUtil.isConcrete(m) || _unsupportedMethods.containsKey(methodName)) {

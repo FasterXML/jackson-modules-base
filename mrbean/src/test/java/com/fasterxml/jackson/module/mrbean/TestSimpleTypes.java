@@ -3,6 +3,7 @@ package com.fasterxml.jackson.module.mrbean;
 import java.util.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TestSimpleTypes extends BaseTest
@@ -19,6 +20,15 @@ public class TestSimpleTypes extends BaseTest
         public Integer getId() { return id; }
         public void setId(final Integer pId) { id = pId; }
     }    
+
+    // for [modules-base#42]: ignore `get()` and `set()`
+    public static interface JustGetAndSet {
+        public int get();
+
+        public void set(int x);
+
+        public int foobar();
+    }
 
     /*
     /**********************************************************
@@ -38,5 +48,24 @@ public class TestSimpleTypes extends BaseTest
 
         final Map<String, Object> data = MAPPER.readValue(json, typeMap);
         assertEquals(Integer.valueOf(60), data.get("id"));        
+    }
+
+    // for [modules-base#42]: ignore `get()` and `set()`
+    public void testPlainGetAndSet() throws Exception
+    {
+        JustGetAndSet value = MAPPER.readValue("{}", JustGetAndSet.class);
+        // fine to have unimplemented methods, unless...
+        assertNotNull(value);
+
+        AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
+        mat.enable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new MrBeanModule(mat));
+        try {
+            mapper.readValue("{}", JustGetAndSet.class);
+            fail("Should not pass");
+        } catch (JsonMappingException e) {
+            verifyException(e, "Unrecognized abstract method");
+        }
     }
 }
