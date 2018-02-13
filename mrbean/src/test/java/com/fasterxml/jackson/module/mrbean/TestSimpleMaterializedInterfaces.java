@@ -36,7 +36,7 @@ public class TestSimpleMaterializedInterfaces
     public interface BeanHolder {
         public Bean getBean();
     }
-    
+
     // then invalid one; conflicting setter/getter types
     public interface InvalidBean {
         public int getX();
@@ -185,11 +185,11 @@ public class TestSimpleMaterializedInterfaces
      */
     public void testPartialBean() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
         // ensure that we will only get deferred error methods
         mat.disable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
-        mapper.registerModule(new MrBeanModule(mat));
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new MrBeanModule(mat));
         PartialBean bean = mapper.readValue("{\"ok\":true}", PartialBean.class);
         assertNotNull(bean);
         assertTrue(bean.isOk());

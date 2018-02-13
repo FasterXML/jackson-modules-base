@@ -10,6 +10,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.5 (not yet released)
+
+#42: NPE from MrBean when `get()` or `set()` is though as property
+ (reported by Tuomas K)
+
 2.9.4 (24-Jan-2018)
 
 #38: (afterburner) Handle DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES correctly
