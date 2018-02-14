@@ -222,8 +222,9 @@ public class JDKScalarsTest
         assertNotNull(wrapper);
         assertNull(wrapper.getV());
         
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
+        ObjectMapper mapper = ObjectMapper.builder()
+                .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                .build();
         try {
             mapper.readValue("{\"v\":null}", CharacterBean.class);
             fail("Attempting to deserialize a 'null' JSON reference into a 'char' property did not throw an exception");
@@ -268,8 +269,9 @@ public class JDKScalarsTest
         assertEquals(0, array[0]);
         
         // [databind#381]
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.disable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS);
+        ObjectMapper mapper = ObjectMapper.builder()
+                .disable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)
+                .build();
         try {
             mapper.readValue("{\"v\":[3]}", IntBean.class);
             fail("Did not throw exception when reading a value from a single value array with the UNWRAP_SINGLE_VALUE_ARRAYS feature disabled");
@@ -331,8 +333,9 @@ public class JDKScalarsTest
         assertEquals(0, array[0]);
         
         // [databind#381]
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.disable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS);
+        ObjectMapper mapper = ObjectMapper.builder()
+                .disable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)
+                .build();
         try {
             mapper.readValue("{\"v\":[3]}", LongBean.class);
             fail("Did not throw exception when reading a value from a single value array with the UNWRAP_SINGLE_VALUE_ARRAYS feature disabled");
@@ -340,9 +343,11 @@ public class JDKScalarsTest
             //Correctly threw exception
         }
         
-        mapper.enable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS);
-        
-        result = mapper.readValue("{\"v\":[3]}", LongBean.class);
+        mapper = ObjectMapper.builder()
+                .enable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)
+                .build();
+        result = mapper
+                .readValue("{\"v\":[3]}", LongBean.class);
         assertEquals(3, result._v);
         
         result = mapper.readValue("[{\"v\":[3]}]", LongBean.class);
@@ -452,8 +457,9 @@ public class JDKScalarsTest
 
     public void testDoubleAsArray() throws Exception
     {
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.disable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS);
+        ObjectMapper mapper = ObjectMapper.builder()
+                .disable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)
+                .build();
         final double value = 0.016;
         try {
             mapper.readValue("{\"v\":[" + value + "]}", DoubleBean.class);

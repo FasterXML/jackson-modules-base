@@ -114,8 +114,10 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
         assertEquals("b", result.get("b"));
 
         // But when disabling auto-detection, just one
-        mapper = getJaxbMapper();
-        mapper.setVisibility(PropertyAccessor.GETTER, Visibility.NONE);
+        mapper = getJaxbMapperBuilder()
+                .changeDefaultVisibility(vc ->
+                    vc.withVisibility(PropertyAccessor.GETTER, Visibility.NONE))
+                .build();
         result = writeAndMap(mapper, bean);
         assertEquals(1, result.size());
         assertNull(result.get("a"));
