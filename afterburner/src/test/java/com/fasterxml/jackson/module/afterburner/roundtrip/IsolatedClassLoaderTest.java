@@ -46,6 +46,7 @@ public class IsolatedClassLoaderTest extends TestCase {
         try {
             URL[] resourcesDir = {getClass().getResource("")};
             // Parent classloader is null so Afterburner is inaccessible.
+            @SuppressWarnings("resource")
             ClassLoader isolated = new URLClassLoader(resourcesDir, null);
             Class<?> beanClz = isolated.loadClass("Bean");
             return beanClz.newInstance();

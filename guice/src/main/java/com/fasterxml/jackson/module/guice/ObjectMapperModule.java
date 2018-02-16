@@ -7,6 +7,7 @@ import java.util.List;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.google.inject.Binder;
@@ -129,10 +130,14 @@ public class ObjectMapperModule implements com.google.inject.Module
         if (mapper == null) {
             final GuiceAnnotationIntrospector guiceIntrospector = new GuiceAnnotationIntrospector();
             AnnotationIntrospector defaultAI = new JacksonAnnotationIntrospector();
-            mapper = ObjectMapper.builder()
+            MapperBuilder<?,?> builder = ObjectMapper.builder()
                     .injectableValues(new GuiceInjectableValues(injector))
                     .annotationIntrospector(new AnnotationIntrospectorPair(guiceIntrospector, defaultAI))
-                    .build();
+                    .addModules(modulesToAdd);
+            for (Provider<? extends Module> provider : providedModules) {
+                builder = builder.addModule(provider.get());
+            }
+            mapper = builder.build();
 
           /*
       } else {
@@ -141,10 +146,6 @@ public class ObjectMapperModule implements com.google.inject.Module
           //    back in databind
           mapper = mapper.copy();
           */
-      }
-      mapper.registerModules(modulesToAdd);
-      for (Provider<? extends Module> provider : providedModules) {
-        mapper.registerModule(provider.get());
       }
       return mapper;
     }

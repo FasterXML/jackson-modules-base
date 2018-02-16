@@ -131,10 +131,11 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
     public void testIntSerOverideWithAfterburner() throws Exception
     {
-        String json = newObjectMapper()
-            .registerModule(new SimpleModule("module", Version.unknownVersion())
+        String json = objectMapperBuilder()
+            .addModule(new SimpleModule("module", Version.unknownVersion())
                 .addSerializer(Integer.class, new MyIntSerializer())
                 .addSerializer(Integer.TYPE, new MyIntSerializer()))
+            .build()
             .writeValueAsString(new SimpleIntBean());
         assertEquals(aposToQuotes("{'value':-42}"), json);
     }
@@ -156,10 +157,11 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
     public void testLongSerOverideWithAfterburner() throws Exception
     {
-        String json = newObjectMapper()
-            .registerModule(new SimpleModule("module", Version.unknownVersion())
+        String json = objectMapperBuilder()
+            .addModule(new SimpleModule("module", Version.unknownVersion())
                     .addSerializer(Long.class, new MyLongSerializer())
                     .addSerializer(Long.TYPE, new MyLongSerializer()))
+            .build()
             .writeValueAsString(new SimpleLongBean());
         assertEquals(aposToQuotes("{'value':-999}"), json);
     }

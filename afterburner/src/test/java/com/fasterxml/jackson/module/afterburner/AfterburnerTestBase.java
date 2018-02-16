@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 
 public abstract class AfterburnerTestBase extends junit.framework.TestCase
 {
@@ -149,7 +150,7 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
 
     protected ObjectMapper objectMapper() {
         if (SHARED_MAPPER == null) {
-            SHARED_MAPPER = newObjectMapper();
+            SHARED_MAPPER = objectMapperBuilder().build();
         }
         return SHARED_MAPPER;
     }
@@ -167,8 +168,12 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
     }
 
     protected static ObjectMapper newObjectMapper() {
-        return new ObjectMapper()
-                .registerModule(new AfterburnerModule());
+        return objectMapperBuilder().build();
+    }
+
+    protected static MapperBuilder<?,?> objectMapperBuilder() {
+        return ObjectMapper.builder()
+                .addModule(new AfterburnerModule());
     }
 
     /*

@@ -25,10 +25,10 @@ public class MapMergeTest extends AfterburnerTestBase
     /********************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper()
+    private final ObjectMapper MAPPER = objectMapperBuilder()
             // 26-Oct-2016, tatu: Make sure we'll report merge problems by default
             .disable(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE)
-    ;
+            .build();
 
     public void testMapMerging() throws Exception
     {
@@ -37,5 +37,4 @@ public class MapMergeTest extends AfterburnerTestBase
         assertEquals("y", v.values.get("c"));
         assertEquals("x", v.values.get("a"));
     }
-
 }

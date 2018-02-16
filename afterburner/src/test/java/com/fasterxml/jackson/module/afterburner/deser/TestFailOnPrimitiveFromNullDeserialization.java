@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
-public class TestFailOnPrimitiveFromNullDeserialization extends AfterburnerTestBase
+public class TestFailOnPrimitiveFromNullDeserialization
+    extends AfterburnerTestBase
 {
     static class LongBean
     {
@@ -30,8 +31,9 @@ public class TestFailOnPrimitiveFromNullDeserialization extends AfterburnerTestB
     private final static String BEAN_WITH_NULL_VALUE = "{\"value\": null}";
 
     private final ObjectMapper MAPPER = newObjectMapper();
-    private final ObjectMapper FAIL_ON_NULL_MAPPER = newObjectMapper()
-        .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
+    private final ObjectMapper FAIL_ON_NULL_MAPPER = objectMapperBuilder()
+        .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+        .build();
 
     public void testPassPrimitiveFromNull() throws Exception
     {

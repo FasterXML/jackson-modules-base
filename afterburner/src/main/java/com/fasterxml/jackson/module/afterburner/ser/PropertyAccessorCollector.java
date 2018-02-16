@@ -203,9 +203,7 @@ public class PropertyAccessorCollector
         private static Map<TypeDescription, CreateLocalVarStackManipulation> cache
                 = new HashMap<TypeDescription, CreateLocalVarStackManipulation>();
 
-        @SuppressWarnings("unchecked")
         static CreateLocalVarStackManipulation of(TypeDescription beanClassDescription) {
-
             CreateLocalVarStackManipulation result = cache.get(beanClassDescription);
             if (result == null) {
                 result = new CreateLocalVarStackManipulation(beanClassDescription);
@@ -235,7 +233,7 @@ public class PropertyAccessorCollector
         }
 
         abstract protected StackManipulation invocationOperation(
-                AnnotatedMember annotatedMember, TypeDefinition beanClassDescription);
+                AnnotatedMember annotatedMember, TypeDefinition def);
 
         @Override
         public Size apply(MethodVisitor methodVisitor,
@@ -279,6 +277,7 @@ public class PropertyAccessorCollector
                 AnnotatedMember annotatedMember, TypeDefinition beanClassDescription) {
 
             final String methodName = annotatedMember.getName();
+            @SuppressWarnings("unchecked")
             final MethodList<MethodDescription> matchingMethods =
                     (MethodList<MethodDescription>) beanClassDescription.getDeclaredMethods().filter(named(methodName));
 
@@ -422,6 +421,7 @@ public class PropertyAccessorCollector
                 AnnotatedMember annotatedMember, TypeDefinition beanClassDescription) {
 
             final String fieldName = annotatedMember.getName();
+            @SuppressWarnings("unchecked")
             final FieldList<FieldDescription> matchingFields =
                     (FieldList<FieldDescription>) beanClassDescription.getDeclaredFields().filter(named(fieldName));
 
