@@ -81,20 +81,6 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
         }
     }
 
-    @SuppressWarnings("serial")
-    public static class DualAnnotationObjectMapper extends ObjectMapper {
-
-        public DualAnnotationObjectMapper() {
-            super();
-            AnnotationIntrospector primary = new JaxbAnnotationIntrospector();
-            AnnotationIntrospector secondary = new JacksonAnnotationIntrospector();
-
-            // make de/serializer use JAXB annotations first, then jackson ones
-            AnnotationIntrospector pair = new AnnotationIntrospectorPair(primary, secondary);
-            setAnnotationIntrospector(pair);
-        }
-    }
-
     /*
     /**********************************************************
     /* Unit tests
@@ -134,8 +120,15 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
     // [JACKSON-556]
     public void testJaxbAnnotatedObject() throws Exception
     {
+        AnnotationIntrospector primary = new JaxbAnnotationIntrospector();
+        AnnotationIntrospector secondary = new JacksonAnnotationIntrospector();
+        AnnotationIntrospector pair = new AnnotationIntrospectorPair(primary, secondary);
+        ObjectMapper mapper = ObjectMapper.builder()
+                .annotationIntrospector(pair)
+                .build();
+
         JaxbAnnotatedObject original = new JaxbAnnotatedObject("123");
-        ObjectMapper mapper = new DualAnnotationObjectMapper();
+        
         String json = mapper.writeValueAsString(original);
         assertFalse("numberString field in JSON", json.contains("numberString")); // kinda hack-y :)
         JaxbAnnotatedObject result = mapper.readValue(json, JaxbAnnotatedObject.class);
