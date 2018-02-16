@@ -51,9 +51,10 @@ public class IgnorePropertyOnDeser1217Test extends AfterburnerTestBase
 
     public void testIgnoreViaConfigOverride() throws Exception
     {
-        ObjectMapper mapper = newObjectMapper();
-        mapper.configOverride(Point.class)
-            .setIgnorals(JsonIgnoreProperties.Value.forIgnoredProperties("y"));
+        ObjectMapper mapper = objectMapperBuilder()
+                .withConfigOverride(Point.class,
+                        o -> o.setIgnorals(JsonIgnoreProperties.Value.forIgnoredProperties("y")))
+                .build();
         Point p = mapper.readValue(aposToQuotes("{'x':1,'y':2}"), Point.class);
         // bind 'x', but ignore 'y'
         assertEquals(1, p.x);

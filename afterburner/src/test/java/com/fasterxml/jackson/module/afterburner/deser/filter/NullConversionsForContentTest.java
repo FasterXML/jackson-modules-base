@@ -67,9 +67,10 @@ public class NullConversionsForContentTest extends AfterburnerTestBase
         }
 
         // or configured for type:
-        mapper = newObjectMapper();
-        mapper.configOverride(List.class)
-                .setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.FAIL));
+        mapper = objectMapperBuilder()
+                .withConfigOverride(List.class,
+                        o -> o.setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.FAIL)))
+                .build();
         try {
             mapper.readValue(JSON, listType);
             fail("Should not pass");
@@ -217,9 +218,10 @@ public class NullConversionsForContentTest extends AfterburnerTestBase
         assertEquals(Integer.valueOf(0), result.values.get(0));
 
         // or configured for type:
-        mapper = newObjectMapper();
-        mapper.configOverride(List.class)
-                .setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.AS_EMPTY));
+        mapper = objectMapperBuilder()
+                .withConfigOverride(List.class,
+                        o -> o.setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.AS_EMPTY)))
+                .build();
         result = mapper.readValue(JSON, listType);
         assertEquals(1, result.values.size());
         assertEquals(Integer.valueOf(0), result.values.get(0));
@@ -308,9 +310,10 @@ public class NullConversionsForContentTest extends AfterburnerTestBase
         assertEquals(0, result.values.size());
 
         // or configured for type:
-        mapper = newObjectMapper();
-        mapper.configOverride(List.class)
-                .setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.SKIP));
+        mapper = objectMapperBuilder()
+                .withConfigOverride(List.class,
+                        o -> o.setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.SKIP)))
+                .build();
         result = mapper.readValue(JSON, listType);
         assertEquals(0, result.values.size());
     }        
@@ -328,9 +331,10 @@ public class NullConversionsForContentTest extends AfterburnerTestBase
         assertEquals(0, result.values.size());
 
         // ditto for per-type defaults
-        mapper = newObjectMapper();
-        mapper.configOverride(List.class)
-                .setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.FAIL));
+        mapper = objectMapperBuilder()
+                .withConfigOverride(List.class,
+                        o -> o.setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.FAIL)))
+                .build();
         result = mapper.readValue(JSON, listType);
         assertEquals(0, result.values.size());
     }        

@@ -72,9 +72,10 @@ public class NullConversionsPojoTest extends AfterburnerTestBase
         NullsForString def = MAPPER.readValue(json, NullsForString.class);
         assertNull(def.getName());
         
-        ObjectMapper mapper = newObjectMapper();
-        mapper.configOverride(String.class)
-            .setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.FAIL));
+        ObjectMapper mapper = objectMapperBuilder()
+                .withConfigOverride(String.class,
+                        o -> o.setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.FAIL)))
+                .build();
         try {
             mapper.readValue(json, NullsForString.class);
             fail("Should not pass");
@@ -100,9 +101,10 @@ public class NullConversionsPojoTest extends AfterburnerTestBase
         NullsForString def = MAPPER.readValue(json, NullsForString.class);
         assertNull(def.getName());
 
-        ObjectMapper mapper = newObjectMapper();
-        mapper.configOverride(String.class)
-            .setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
+        ObjectMapper mapper = objectMapperBuilder()
+                .withConfigOverride(String.class,
+                        o -> o.setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY)))
+                .build();
         NullsForString named = mapper.readValue(json, NullsForString.class);
         assertEquals("", named.getName());
     }

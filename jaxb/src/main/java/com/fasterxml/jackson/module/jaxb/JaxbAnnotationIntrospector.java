@@ -495,17 +495,15 @@ public class JaxbAnnotationIntrospector
      */
     
     @Override
-    public VisibilityChecker<?> findAutoDetectVisibility(AnnotatedClass ac,
-        VisibilityChecker<?> checker)
+    public VisibilityChecker findAutoDetectVisibility(AnnotatedClass ac,
+        VisibilityChecker checker)
     {
         XmlAccessType at = findAccessType(ac);
         if (at == null) {
-            /* JAXB default is "PUBLIC_MEMBER"; however, here we should not
-             * override settings if there is no annotation -- that would mess
-             * up global baseline. Fortunately Jackson defaults are very close
-             * to JAXB 'PUBLIC_MEMBER' settings (considering that setters and
-             * getters must come in pairs)
-             */
+            // JAXB default is "PUBLIC_MEMBER"; however, here we should not override
+            // settings if there is no annotation -- that would mess up global
+            // baseline. Fortunately Jackson defaults are very close to JAXB 'PUBLIC_MEMBER'
+            // settings (considering that setters and getters must come in pairs)
             return checker;
         }
         
