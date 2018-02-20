@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
+import com.fasterxml.jackson.databind.util.ClassUtil;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -71,7 +72,7 @@ public class TestSimpleMaterializedInterfaces
         assertNotNull(impl);
         assertTrue(Bean.class.isAssignableFrom(impl));
         // also, let's instantiate to make sure:
-        Object ob = impl.newInstance();
+        Object ob = ClassUtil.createInstance(impl, false);
         // and just for good measure do actual cast
         Bean bean = (Bean) ob;
         // call something to ensure generation worked...
