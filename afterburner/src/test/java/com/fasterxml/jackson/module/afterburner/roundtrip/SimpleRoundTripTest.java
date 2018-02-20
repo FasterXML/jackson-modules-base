@@ -13,7 +13,7 @@ public class SimpleRoundTripTest extends AfterburnerTestBase
     /**********************************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
 
     // Test that would fail with problems wrt "ultra-optimized" bean serializer/deserializer
     // (with max 6 properties limit)

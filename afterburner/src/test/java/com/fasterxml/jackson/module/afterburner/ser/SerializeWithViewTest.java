@@ -41,7 +41,7 @@ public class SerializeWithViewTest extends AfterburnerTestBase
     /**********************************************************
      */
 
-    final private ObjectMapper MAPPER = newObjectMapper();
+    final private ObjectMapper MAPPER = newAfterburnerMapper();
 
     public void testWriterWithView() throws Exception
     {

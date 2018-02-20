@@ -47,13 +47,13 @@ public class BooleanFormatTest extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final static ObjectMapper MAPPER = newObjectMapper();
+    private final static ObjectMapper MAPPER = newAfterburnerMapper();
 
     public void testShapeViaDefaults() throws Exception
     {
         assertEquals(aposToQuotes("{'b':true}"),
                 MAPPER.writeValueAsString(new BooleanWrapper(true)));
-        ObjectMapper m = objectMapperBuilder()
+        ObjectMapper m = afterburnerMapperBuilder()
                 .withConfigOverride(Boolean.class,
                         o -> o.setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.NUMBER)))
                 .build();

@@ -41,7 +41,7 @@ public class ColletionFormatShapeTest extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final static ObjectMapper MAPPER = newObjectMapper();    
+    private final static ObjectMapper MAPPER = newAfterburnerMapper();    
 
     public void testListAsObjectRoundtrip() throws Exception
     {

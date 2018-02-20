@@ -12,7 +12,7 @@ public class TestInterfaceSerialize extends AfterburnerTestBase
 
     public void testInterfaceSerialize() throws Exception
     {
-        ObjectMapper mapper = newObjectMapper();
+        ObjectMapper mapper = newAfterburnerMapper();
 
         Wat wat = new Wat() {
             @Override

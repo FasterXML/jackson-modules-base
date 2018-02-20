@@ -37,7 +37,7 @@ public class TestUnwrapped extends AfterburnerTestBase
     public void testSimpleSerialize() throws Exception
     {
         final ObjectMapper VANILLA = new ObjectMapper();
-        final ObjectMapper BURNER = newObjectMapper();
+        final ObjectMapper BURNER = newAfterburnerMapper();
         Wrapper input = new Wrapper(1, 3);
         String json = VANILLA.writeValueAsString(input);
         assertEquals(json, BURNER.writeValueAsString(input));
@@ -46,7 +46,7 @@ public class TestUnwrapped extends AfterburnerTestBase
     public void testUnwrappedDeserialize() throws Exception
     {
         final ObjectMapper VANILLA = new ObjectMapper();
-        final ObjectMapper BURNER = newObjectMapper();
+        final ObjectMapper BURNER = newAfterburnerMapper();
         String json = VANILLA.writeValueAsString(new Wrapper(2, 9));
         Wrapper out = BURNER.readValue(json, Wrapper.class);
         assertEquals(2, out.a);

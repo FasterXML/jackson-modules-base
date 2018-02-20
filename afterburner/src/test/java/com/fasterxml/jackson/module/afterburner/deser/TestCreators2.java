@@ -192,7 +192,7 @@ public class TestCreators2 extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
     
     // for [JACKSON-547]
     public void testExceptionFromConstructor() throws Exception

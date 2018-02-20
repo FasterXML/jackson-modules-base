@@ -37,7 +37,7 @@ public class UpdateValueTest extends AfterburnerTestBase
         }
     }
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
     
     // [databind#318] (and Scala module issue #83]
     public void testValueUpdateWithCreator() throws Exception

@@ -65,10 +65,11 @@ public class InjectOsgiServiceTest
         when(bundleContext.getServiceReferences(eq(Service.class.getName()), anyString())).thenReturn(new ServiceReference[]{mock(ServiceReference.class)});
         when(bundleContext.getService(any(ServiceReference.class))).thenReturn(mock(Service.class));
         
-        mapper = new ObjectMapper();
-        mapper.registerModule(new OsgiJacksonModule(bundleContext));
+        mapper = ObjectMapper.builder()
+                .addModule(new OsgiJacksonModule(bundleContext))
+                .build();
     }
-    
+
     @Test
     public void testServiceIsInjected() throws Exception
     {

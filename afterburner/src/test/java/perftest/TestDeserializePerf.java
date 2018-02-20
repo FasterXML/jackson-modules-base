@@ -47,12 +47,13 @@ public class TestDeserializePerf
 //        JsonFactory f = new org.codehaus.jackson.smile.SmileFactory();
         JsonFactory f = new JsonFactory();
         ObjectMapper mapperSlow = new ObjectMapper(f);
-        ObjectMapper mapperFast = new ObjectMapper(f);
         
         // !!! TEST -- to get profile info, comment out:
 //        mapperSlow.registerModule(new AfterburnerModule());
 
-        mapperFast.registerModule(new AfterburnerModule());
+        ObjectMapper mapperFast = ObjectMapper.builder(f)
+                .addModule(new AfterburnerModule())
+                .build();
         new TestDeserializePerf().testWith(mapperSlow, mapperFast);
     }
 

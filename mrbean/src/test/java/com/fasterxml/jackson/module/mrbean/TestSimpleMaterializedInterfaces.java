@@ -128,8 +128,7 @@ public class TestSimpleMaterializedInterfaces
      */
     public void testSimpleInteface() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         Bean bean = mapper.readValue("{\"a\":\"value\",\"x\":123 }", Bean.class);
         assertNotNull(bean);
         assertEquals("value", bean.getA());
@@ -141,8 +140,7 @@ public class TestSimpleMaterializedInterfaces
      */
     public void testBeanHolder() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         BeanHolder holder = mapper.readValue("{\"bean\":{\"a\":\"b\",\"x\":-4 }}", BeanHolder.class);
         assertNotNull(holder);
         Bean bean = holder.getBean();
@@ -153,8 +151,7 @@ public class TestSimpleMaterializedInterfaces
     
     public void testArrayInterface() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         ArrayBean bean = mapper.readValue("{\"values\":[1,2,3], \"words\": [ \"cool\", \"beans\" ] }",
                 ArrayBean.class);
         assertNotNull(bean);
@@ -164,8 +161,7 @@ public class TestSimpleMaterializedInterfaces
 
     public void testSubInterface() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         BeanWithY bean = mapper.readValue("{\"a\":\"b\",\"x\":1, \"y\":2 }", BeanWithY.class);
         assertNotNull(bean);
         assertEquals("b", bean.getA());
@@ -188,8 +184,9 @@ public class TestSimpleMaterializedInterfaces
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
         // ensure that we will only get deferred error methods
         mat.disable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
-        ObjectMapper mapper = new ObjectMapper()
-                .registerModule(new MrBeanModule(mat));
+        ObjectMapper mapper = ObjectMapper.builder()
+                .addModule(new MrBeanModule(mat))
+                .build();
         PartialBean bean = mapper.readValue("{\"ok\":true}", PartialBean.class);
         assertNotNull(bean);
         assertTrue(bean.isOk());
@@ -201,11 +198,10 @@ public class TestSimpleMaterializedInterfaces
         }
     }
 
-    // As per [JACKSON-683]: fail gracefully if super type not public
+    // fail gracefully if super type not public
     public void testNonPublic() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         try {
             mapper.readValue("{\"x\":3}", NonPublicBean.class);
             fail("Should have thrown an exception");

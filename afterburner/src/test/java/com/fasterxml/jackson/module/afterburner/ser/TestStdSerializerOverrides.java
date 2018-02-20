@@ -83,7 +83,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
     public void testStringSerWith() throws Exception
     {
         ObjectMapper plainMapper = new ObjectMapper();
-        ObjectMapper abMapper = newObjectMapper();
+        ObjectMapper abMapper = newAfterburnerMapper();
         ClassWithPropOverrides input = new ClassWithPropOverrides();
         String jsonPlain = plainMapper.writeValueAsString(input);
         String jsonAb = abMapper.writeValueAsString(input);
@@ -92,18 +92,20 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
     public void testStringSerOverideNoAfterburner() throws Exception
     {
-        String json = new ObjectMapper()
-            .registerModule(new SimpleModule("module", Version.unknownVersion())
-                .addSerializer(String.class, new MyStringSerializer()))
-            .writeValueAsString(new SimpleStringBean());
+        String json = ObjectMapper.builder()
+                .addModule(new SimpleModule("module", Version.unknownVersion())
+                        .addSerializer(String.class, new MyStringSerializer()))
+                .build()
+                .writeValueAsString(new SimpleStringBean());
         assertEquals("{\"field\":\"Foo:value\"}", json);
     }
 
     public void testStringSerOverideWithAfterburner() throws Exception
     {
-        String json = newObjectMapper()
-            .registerModule(new SimpleModule("module", Version.unknownVersion())
+        String json = afterburnerMapperBuilder()
+            .addModule(new SimpleModule("module", Version.unknownVersion())
                 .addSerializer(String.class, new MyStringSerializer()))
+            .build()
             .writeValueAsString(new SimpleStringBean());
         assertEquals("{\"field\":\"Foo:value\"}", json);
     }
@@ -121,17 +123,18 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
                 VANILLA_MAPPER.writeValueAsString(new SimpleIntBean()));
 
         // and then with custom serializer, but no Afterburner
-        String json = new ObjectMapper()
-            .registerModule(new SimpleModule("module", Version.unknownVersion())
+        String json = ObjectMapper.builder()
+                .addModule(new SimpleModule("module", Version.unknownVersion())
                     .addSerializer(Integer.class, new MyIntSerializer())
                     .addSerializer(Integer.TYPE, new MyIntSerializer()))
-            .writeValueAsString(new SimpleIntBean());
+                .build()
+                .writeValueAsString(new SimpleIntBean());
         assertEquals(aposToQuotes("{'value':-42}"), json);
     }
 
     public void testIntSerOverideWithAfterburner() throws Exception
     {
-        String json = objectMapperBuilder()
+        String json = afterburnerMapperBuilder()
             .addModule(new SimpleModule("module", Version.unknownVersion())
                 .addSerializer(Integer.class, new MyIntSerializer())
                 .addSerializer(Integer.TYPE, new MyIntSerializer()))
@@ -147,17 +150,18 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
                 VANILLA_MAPPER.writeValueAsString(new SimpleLongBean()));
 
         // and then with custom serializer, but no Afterburner
-        String json = new ObjectMapper()
-            .registerModule(new SimpleModule("module", Version.unknownVersion())
+        String json = ObjectMapper.builder()
+                .addModule(new SimpleModule("module", Version.unknownVersion())
                     .addSerializer(Long.class, new MyLongSerializer())
                     .addSerializer(Long.TYPE, new MyLongSerializer()))
-            .writeValueAsString(new SimpleLongBean());
+                .build()
+                .writeValueAsString(new SimpleLongBean());
         assertEquals(aposToQuotes("{'value':-999}"), json);
     }
 
     public void testLongSerOverideWithAfterburner() throws Exception
     {
-        String json = objectMapperBuilder()
+        String json = afterburnerMapperBuilder()
             .addModule(new SimpleModule("module", Version.unknownVersion())
                     .addSerializer(Long.class, new MyLongSerializer())
                     .addSerializer(Long.TYPE, new MyLongSerializer()))

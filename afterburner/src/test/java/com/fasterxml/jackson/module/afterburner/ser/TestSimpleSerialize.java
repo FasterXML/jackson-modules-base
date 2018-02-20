@@ -147,7 +147,7 @@ public class TestSimpleSerialize extends AfterburnerTestBase
     /**********************************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
 
     public void testIntMethod() throws Exception {
         assertEquals("{\"x\":123}", MAPPER.writeValueAsString(new IntBean()));
@@ -257,7 +257,7 @@ public class TestSimpleSerialize extends AfterburnerTestBase
     public void testGeneratedSerializerName() throws Exception {
         CheckGeneratedSerializerName bean = new CheckGeneratedSerializerName();
         bean.stringField = "bar";
-        ObjectMapper mapper = newObjectMapper();
+        ObjectMapper mapper = newAfterburnerMapper();
         mapper.writeValueAsString(bean);
         ClassLoader cl = getClass().getClassLoader();
         Field declaredField = ClassLoader.class.getDeclaredField("classes");

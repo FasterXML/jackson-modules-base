@@ -64,10 +64,10 @@ public final class TestJvmSerPerf
         ;
 //        ((SmileFactory) jsonF).configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, false);
             
-        final ObjectMapper jsonMapper = new ObjectMapper(jsonF);
-        jsonMapper.registerModule(new AfterburnerModule());
-
-//      jsonMapper.configure(SerializationConfig.Feature.USE_STATIC_TYPING, true);
+        final ObjectMapper jsonMapper = ObjectMapper.builder(jsonF)
+                .addModule(new AfterburnerModule())
+//      .configure(SerializationConfig.Feature.USE_STATIC_TYPING, true)
+                .build();
 
         /*
         final SmileFactory smileFactory = new SmileFactory();

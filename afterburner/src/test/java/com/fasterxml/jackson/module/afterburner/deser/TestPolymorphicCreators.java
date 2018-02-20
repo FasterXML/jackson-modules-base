@@ -90,7 +90,7 @@ public class TestPolymorphicCreators extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
     
     /**
      * Simple test to verify that it is possible to implement polymorphic

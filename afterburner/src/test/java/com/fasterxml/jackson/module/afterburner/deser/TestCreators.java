@@ -317,7 +317,7 @@ public class TestCreators extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
 
     public void testSimpleConstructor() throws Exception
     {
@@ -480,8 +480,9 @@ public class TestCreators extends AfterburnerTestBase
 
     public void testFactoryCreatorWithMixin() throws Exception
     {
-        ObjectMapper m = new ObjectMapper();
-        m.addMixIn(CreatorBean.class, MixIn.class);
+        ObjectMapper m = afterburnerMapperBuilder()
+                .addMixIn(CreatorBean.class, MixIn.class)
+                .build();
         CreatorBean bean = m.readValue
                 ("{ \"a\" : \"xyz\", \"x\" : 12 }", CreatorBean.class);
         assertEquals(11, bean.x);
@@ -490,8 +491,9 @@ public class TestCreators extends AfterburnerTestBase
 
     public void testFactoryCreatorWithRenamingMixin() throws Exception
     {
-        ObjectMapper m = new ObjectMapper();
-        m.addMixIn(FactoryBean.class, FactoryBeanMixIn.class);
+        ObjectMapper m = afterburnerMapperBuilder()
+                .addMixIn(FactoryBean.class, FactoryBeanMixIn.class)
+                .build();
         // override changes property name from "f" to "mixed"
         FactoryBean bean = m.readValue("{ \"mixed\" :  20.5 }", FactoryBean.class);
         assertEquals(20.5, bean.d);

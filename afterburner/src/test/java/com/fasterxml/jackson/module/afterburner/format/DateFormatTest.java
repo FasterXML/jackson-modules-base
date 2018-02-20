@@ -19,7 +19,7 @@ public class DateFormatTest extends AfterburnerTestBase
 
     public void testTypeDefaults() throws Exception
     {
-        ObjectMapper mapper = objectMapperBuilder()
+        ObjectMapper mapper = afterburnerMapperBuilder()
                 .withConfigOverride(Date.class,
                         o -> o.setFormat(JsonFormat.Value.forPattern("yyyy.dd.MM")))
                 .build();

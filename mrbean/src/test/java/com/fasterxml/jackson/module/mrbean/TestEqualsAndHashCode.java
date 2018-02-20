@@ -43,7 +43,7 @@ public class TestEqualsAndHashCode extends BaseTest {
 
 
     public void testReadOnlyBeanSameNonNullInput() throws IOException {
-        final ObjectMapper mapper = new ObjectMapper().registerModule(new MrBeanModule());
+        final ObjectMapper mapper = newMrBeanMapper();
         
         final String input = "{\"field\":\"testing\"}";
 
@@ -54,7 +54,7 @@ public class TestEqualsAndHashCode extends BaseTest {
     }
 
     public void testReadOnlyBeanSameNullInput() throws IOException {
-        final ObjectMapper mapper = new ObjectMapper().registerModule(new MrBeanModule());
+        final ObjectMapper mapper = newMrBeanMapper();
 
         final String input = "{\"field\":null}";
 
@@ -65,7 +65,7 @@ public class TestEqualsAndHashCode extends BaseTest {
     }
 
     public void testReadOnlyBeanDifferentInput() throws IOException {
-        final ObjectMapper mapper = new ObjectMapper().registerModule(new MrBeanModule());
+        final ObjectMapper mapper = newMrBeanMapper();
 
         final String input1 = "{\"field\":\"testing\"}";
         final ReadOnlyBean bean1 = mapper.readValue(input1, ReadOnlyBean.class);
@@ -77,7 +77,7 @@ public class TestEqualsAndHashCode extends BaseTest {
     }
 
     public void testGenericBeanSameInput() throws IOException {
-        final ObjectMapper mapper = new ObjectMapper().registerModule(new MrBeanModule());
+        final ObjectMapper mapper = newMrBeanMapper();
 
         final String input = "{\"someData\":[{\"leaves\":[{\"value\":\"foo\"}] },{\"leaves\":[{\"value\":\"foo\"}] }]}";
 
@@ -88,7 +88,7 @@ public class TestEqualsAndHashCode extends BaseTest {
     }
 
     public void testGenericBeanDifferentInput() throws IOException {
-        final ObjectMapper mapper = new ObjectMapper().registerModule(new MrBeanModule());
+        final ObjectMapper mapper = newMrBeanMapper();
 
         final String input1 = "{\"someData\":[{\"leaves\":[{\"value\":\"foo\"}] },{\"leaves\":[{\"value\":\"foo\"}] }]}";
         final GenericBean<ListBean> bean1 = mapper.readValue(input1, new TypeReference<GenericBean<ListBean>>(){});

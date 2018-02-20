@@ -87,13 +87,12 @@ public class TestJaxbNullProperties
         assertEquals("{\"z\":3}", mapper.writeValueAsString(new NonNillableZ(3)));
 
         // but we can change that...
-        mapper = ObjectMapper.builder()
+        mapper = getJaxbMapperBuilder()
                 .annotationIntrospector(new JaxbAnnotationIntrospector()
                         .setNonNillableInclusion(JsonInclude.Include.NON_NULL)
                     )
-                .build()
-                .registerModule(new JaxbAnnotationModule().setNonNillableInclusion(JsonInclude.Include.NON_NULL)
-                );
+                .addModule(new JaxbAnnotationModule().setNonNillableInclusion(JsonInclude.Include.NON_NULL))
+                .build();
         assertEquals("{}", mapper.writeValueAsString(new NonNillableZ()));
         assertEquals("{\"z\":3}", mapper.writeValueAsString(new NonNillableZ(3)));
     }

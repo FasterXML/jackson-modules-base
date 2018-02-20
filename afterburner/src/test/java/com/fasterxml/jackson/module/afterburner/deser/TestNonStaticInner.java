@@ -31,7 +31,7 @@ public class TestNonStaticInner extends AfterburnerTestBase
     }
 
     public void testInnerClass() throws  Exception {
-        final ObjectMapper MAPPER = newObjectMapper();
+        final ObjectMapper MAPPER = newAfterburnerMapper();
 //        final ObjectMapper MAPPER = new ObjectMapper();
 
         Parent parent = MAPPER.readValue("{\"child\":{\"value\":true}}", Parent.class);

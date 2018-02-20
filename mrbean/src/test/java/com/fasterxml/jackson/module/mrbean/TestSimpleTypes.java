@@ -64,8 +64,9 @@ public class TestSimpleTypes extends BaseTest
         // but can make work with config:
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
         mat.disable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
-        ObjectMapper mapper = new ObjectMapper()
-                .registerModule(new MrBeanModule(mat));
+        ObjectMapper mapper = ObjectMapper.builder()
+                .addModule(new MrBeanModule(mat))
+                .build();
         JustGetAndSet value = mapper.readValue("{}", JustGetAndSet.class);
         assertNotNull(value);
     }

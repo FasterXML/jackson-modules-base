@@ -56,7 +56,7 @@ public class TestStdDeserializerOverrides extends AfterburnerTestBase
     public void testFiveMinuteDoc() throws Exception
     {
         ObjectMapper plainMapper = new ObjectMapper();
-        ObjectMapper abMapper = newObjectMapper();
+        ObjectMapper abMapper = newAfterburnerMapper();
         final String JSON = "{\"a\":\"a\",\"b\":\"b\"}";
         
         ClassWithPropOverrides vanilla = plainMapper.readValue(JSON, ClassWithPropOverrides.class);
@@ -73,10 +73,11 @@ public class TestStdDeserializerOverrides extends AfterburnerTestBase
     {
         final String json = "{\"field\": \"value &amp; value\"}";
         final String EXP = "value & value";
-        Issue59Bean resultVanilla = new ObjectMapper()
-            .registerModule(new SimpleModule("module", Version.unknownVersion())
-                .addDeserializer(String.class, new DeAmpDeserializer()))
-            .readValue(json, Issue59Bean.class);
+        Issue59Bean resultVanilla = ObjectMapper.builder()
+                .addModule(new SimpleModule("module", Version.unknownVersion())
+                        .addDeserializer(String.class, new DeAmpDeserializer()))
+                .build()
+                .readValue(json, Issue59Bean.class);
         assertEquals(EXP, resultVanilla.field);
     }
 
@@ -107,9 +108,10 @@ public class TestStdDeserializerOverrides extends AfterburnerTestBase
         };
         
         // but then fails with Afterburner
-        Issue59Bean resultAB = newObjectMapper()
-            .registerModule(module)
-            .readValue(json, Issue59Bean.class);
+        Issue59Bean resultAB = afterburnerMapperBuilder()
+                .addModule(module)
+                .build()
+                .readValue(json, Issue59Bean.class);
         assertEquals(EXP, resultAB.field);
     }
 }

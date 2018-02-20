@@ -153,8 +153,9 @@ round = 1;
             System.exit(1);
         }
         ObjectMapper vanilla = new ObjectMapper();
-        ObjectMapper burnt = new ObjectMapper();
-        burnt.registerModule(new AfterburnerModule());
+        ObjectMapper burnt = ObjectMapper.builder()
+                .addModule(new AfterburnerModule())
+                .build();
 
         /*
         TestPojo input = new TestPojo(1245, -99, "Billy-Bob",

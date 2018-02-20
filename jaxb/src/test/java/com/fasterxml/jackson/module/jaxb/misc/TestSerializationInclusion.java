@@ -7,7 +7,6 @@ import javax.xml.bind.annotation.XmlElement;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
 public class TestSerializationInclusion extends BaseJaxbTest
 {
@@ -27,13 +26,8 @@ public class TestSerializationInclusion extends BaseJaxbTest
         // and then combination ones
         _testInclusion(getJaxbAndJacksonMapper());
         _testInclusion(getJacksonAndJaxbMapper());
-
-        // finally: verify using actual module
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JaxbAnnotationModule());
-        _testInclusion(mapper);
     }
-        
+
     private void _testInclusion(ObjectMapper mapper) throws Exception
     {
         mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);

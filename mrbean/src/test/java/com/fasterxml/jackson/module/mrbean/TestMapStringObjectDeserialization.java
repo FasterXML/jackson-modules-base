@@ -18,9 +18,7 @@ public class TestMapStringObjectDeserialization
      */
     public void testMapWithMrbean() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
-
+        ObjectMapper mapper = newMrBeanMapper();
         runTest(mapper);
     }
 
@@ -30,7 +28,6 @@ public class TestMapStringObjectDeserialization
     public void testMapWithoutMrbean() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
-
         runTest(mapper);
     }
 

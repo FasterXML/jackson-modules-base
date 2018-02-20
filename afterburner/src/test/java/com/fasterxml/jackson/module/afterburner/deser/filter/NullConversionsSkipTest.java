@@ -44,7 +44,7 @@ public class NullConversionsSkipTest extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
 
     public void testSkipNullField() throws Exception
     {
@@ -86,7 +86,7 @@ public class NullConversionsSkipTest extends AfterburnerTestBase
         StringValue result = MAPPER.readValue(json, StringValue.class);
         assertNull(result.value);
 
-        ObjectMapper mapper = objectMapperBuilder()
+        ObjectMapper mapper = afterburnerMapperBuilder()
                 .withConfigOverride(String.class,
                          o -> o.setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SKIP)))
                 .build();

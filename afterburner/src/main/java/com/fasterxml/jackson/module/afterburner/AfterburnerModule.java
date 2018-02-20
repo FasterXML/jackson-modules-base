@@ -50,9 +50,9 @@ public class AfterburnerModule extends Module
     public void setupModule(SetupContext context)
     {
         ClassLoader cl = _cfgUseValueClassLoader ? null : getClass().getClassLoader();
-        context.addBeanDeserializerModifier(new ABDeserializerModifier(cl,
+        context.addDeserializerModifier(new ABDeserializerModifier(cl,
                 _cfgUseOptimizedBeanDeserializer));
-        context.addBeanSerializerModifier(new ABSerializerModifier(cl));
+        context.addSerializerModifier(new ABSerializerModifier(cl));
     }
 
     @Override

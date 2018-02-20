@@ -26,7 +26,7 @@ public class IgnorePropertyOnDeser1217Test extends AfterburnerTestBase
     /****************************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
 
     public void testIgnoreOnProperty() throws Exception
     {
@@ -51,7 +51,7 @@ public class IgnorePropertyOnDeser1217Test extends AfterburnerTestBase
 
     public void testIgnoreViaConfigOverride() throws Exception
     {
-        ObjectMapper mapper = objectMapperBuilder()
+        ObjectMapper mapper = afterburnerMapperBuilder()
                 .withConfigOverride(Point.class,
                         o -> o.setIgnorals(JsonIgnoreProperties.Value.forIgnoredProperties("y")))
                 .build();

@@ -150,7 +150,7 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
 
     protected ObjectMapper objectMapper() {
         if (SHARED_MAPPER == null) {
-            SHARED_MAPPER = objectMapperBuilder().build();
+            SHARED_MAPPER = afterburnerMapperBuilder().build();
         }
         return SHARED_MAPPER;
     }
@@ -167,11 +167,11 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
         return objectMapper().readerFor(cls);
     }
 
-    protected static ObjectMapper newObjectMapper() {
-        return objectMapperBuilder().build();
+    protected static ObjectMapper newAfterburnerMapper() {
+        return afterburnerMapperBuilder().build();
     }
 
-    protected static MapperBuilder<?,?> objectMapperBuilder() {
+    protected static MapperBuilder<?,?> afterburnerMapperBuilder() {
         return ObjectMapper.builder()
                 .addModule(new AfterburnerModule());
     }

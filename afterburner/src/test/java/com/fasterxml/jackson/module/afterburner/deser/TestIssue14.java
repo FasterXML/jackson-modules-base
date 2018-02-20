@@ -38,8 +38,9 @@ public class TestIssue14 extends AfterburnerTestBase
         order.updatedAt = now;
 
         ObjectMapper vanillaMapper = new ObjectMapper();
-        ObjectMapper abMapper = new ObjectMapper();
-        abMapper.registerModule(new AfterburnerModule());
+        ObjectMapper abMapper = ObjectMapper.builder()
+                .addModule(new AfterburnerModule())
+                .build();
 
         // First: ensure that serialization produces identical output
         

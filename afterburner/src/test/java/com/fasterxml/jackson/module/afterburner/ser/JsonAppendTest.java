@@ -55,7 +55,7 @@ public class JsonAppendTest extends AfterburnerTestBase
     /**********************************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
 
     public void testSimpleAppend() throws Exception
     {

@@ -222,7 +222,7 @@ public class JDKScalarsTest
         assertNotNull(wrapper);
         assertNull(wrapper.getV());
         
-        ObjectMapper mapper = objectMapperBuilder()
+        ObjectMapper mapper = afterburnerMapperBuilder()
                 .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
                 .build();
         try {
@@ -270,7 +270,7 @@ public class JDKScalarsTest
         assertEquals(0, array[0]);
         
         // [databind#381]
-        final ObjectMapper mapper = objectMapperBuilder()
+        final ObjectMapper mapper = afterburnerMapperBuilder()
                 .disable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)
                 .build();
         try {
@@ -334,7 +334,7 @@ public class JDKScalarsTest
         assertEquals(0, array[0]);
         
         // [databind#381]
-        final ObjectMapper mapper = objectMapperBuilder()
+        final ObjectMapper mapper = afterburnerMapperBuilder()
                 .disable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)
                 .build();
         try {
@@ -456,7 +456,7 @@ public class JDKScalarsTest
 
     public void testDoubleAsArray() throws Exception
     {
-        final ObjectMapper mapper = objectMapperBuilder()
+        final ObjectMapper mapper = afterburnerMapperBuilder()
             .disable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)
             .build();
         final double value = 0.016;

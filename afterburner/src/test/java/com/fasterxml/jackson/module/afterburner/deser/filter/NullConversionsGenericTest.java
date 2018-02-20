@@ -41,7 +41,7 @@ public class NullConversionsGenericTest extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
 
     public void testNullsToEmptyPojo() throws Exception
     {

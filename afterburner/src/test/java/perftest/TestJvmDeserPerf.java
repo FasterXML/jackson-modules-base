@@ -60,8 +60,9 @@ public final class TestJvmDeserPerf
             new JsonFactory()
         ;
         
-        final ObjectMapper jsonMapper = new ObjectMapper(jsonF);
-        jsonMapper.registerModule(new com.fasterxml.jackson.module.afterburner.AfterburnerModule());
+        final ObjectMapper jsonMapper = ObjectMapper.builder(jsonF)
+                .addModule(new com.fasterxml.jackson.module.afterburner.AfterburnerModule())
+                .build();
 
         byte[] json = jsonMapper.writeValueAsBytes(item);
         System.out.println("Warmed up: data size is "+json.length+" bytes; "+REPS+" reps -> "

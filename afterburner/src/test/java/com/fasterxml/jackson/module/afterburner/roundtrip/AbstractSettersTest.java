@@ -43,7 +43,7 @@ public class AbstractSettersTest extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
     
     public void testSimpleConstructor() throws Exception
     {

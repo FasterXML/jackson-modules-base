@@ -25,14 +25,14 @@ public class RecursiveIgnorePropertiesTest extends AfterburnerTestBase
               + "    'person_z': { 'name': 'admin' }"
                 + "}");
 
-        ObjectMapper mapper = newObjectMapper();
+        ObjectMapper mapper = newAfterburnerMapper();
         Person result = mapper.readValue(st, Person.class);
         assertEquals("admin", result.name);
     }
 
     public void testRecursiveForSer() throws Exception
     {
-        ObjectMapper mapper = newObjectMapper();
+        ObjectMapper mapper = newAfterburnerMapper();
         Person input = new Person();
         input.name = "Bob";
         Person p2 = new Person();

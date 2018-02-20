@@ -36,7 +36,7 @@ public class TestBuilders extends AfterburnerTestBase
     /**********************************************************
      */
     
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
     
     public void testSimpleBuilder() throws Exception
     {

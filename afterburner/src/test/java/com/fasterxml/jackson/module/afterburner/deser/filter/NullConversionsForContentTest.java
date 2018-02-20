@@ -42,7 +42,7 @@ public class NullConversionsForContentTest extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
 
     // Tests to verify that we can set default settings for failure
     public void testFailOnNullFromDefaults() throws Exception
@@ -57,7 +57,7 @@ public class NullConversionsForContentTest extends AfterburnerTestBase
         assertNull(result.values.get(0));
 
         // but not when overridden globally:
-        ObjectMapper mapper = newObjectMapper();
+        ObjectMapper mapper = newAfterburnerMapper();
         mapper.setDefaultSetterInfo(JsonSetter.Value.forContentNulls(Nulls.FAIL));
         try {
             mapper.readValue(JSON, listType);
@@ -67,7 +67,7 @@ public class NullConversionsForContentTest extends AfterburnerTestBase
         }
 
         // or configured for type:
-        mapper = objectMapperBuilder()
+        mapper = afterburnerMapperBuilder()
                 .withConfigOverride(List.class,
                         o -> o.setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.FAIL)))
                 .build();
@@ -211,14 +211,14 @@ public class NullConversionsForContentTest extends AfterburnerTestBase
         TypeReference<?> listType = new TypeReference<NullContentUndefined<List<Integer>>>() { };
 
         // Let's see defaulting in action
-        ObjectMapper mapper = newObjectMapper();
+        ObjectMapper mapper = newAfterburnerMapper();
         mapper.setDefaultSetterInfo(JsonSetter.Value.forContentNulls(Nulls.AS_EMPTY));
         NullContentUndefined<List<Integer>> result = mapper.readValue(JSON, listType);
         assertEquals(1, result.values.size());
         assertEquals(Integer.valueOf(0), result.values.get(0));
 
         // or configured for type:
-        mapper = objectMapperBuilder()
+        mapper = afterburnerMapperBuilder()
                 .withConfigOverride(List.class,
                         o -> o.setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.AS_EMPTY)))
                 .build();
@@ -304,13 +304,13 @@ public class NullConversionsForContentTest extends AfterburnerTestBase
         TypeReference<?> listType = new TypeReference<NullContentUndefined<List<Long>>>() { };
 
         // Let's see defaulting in action
-        ObjectMapper mapper = newObjectMapper();
+        ObjectMapper mapper = newAfterburnerMapper();
         mapper.setDefaultSetterInfo(JsonSetter.Value.forContentNulls(Nulls.SKIP));
         NullContentUndefined<List<Long>> result = mapper.readValue(JSON, listType);
         assertEquals(0, result.values.size());
 
         // or configured for type:
-        mapper = objectMapperBuilder()
+        mapper = afterburnerMapperBuilder()
                 .withConfigOverride(List.class,
                         o -> o.setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.SKIP)))
                 .build();
@@ -324,14 +324,14 @@ public class NullConversionsForContentTest extends AfterburnerTestBase
         final String JSON = aposToQuotes("{'values':[null]}");
         TypeReference<?> listType = new TypeReference<NullContentSkip<List<Long>>>() { };
 
-        ObjectMapper mapper = newObjectMapper();
+        ObjectMapper mapper = newAfterburnerMapper();
         // defaults call for fail; but POJO specifies "skip"; latter should win
         mapper.setDefaultSetterInfo(JsonSetter.Value.forContentNulls(Nulls.FAIL));
         NullContentSkip<List<Long>> result = mapper.readValue(JSON, listType);
         assertEquals(0, result.values.size());
 
         // ditto for per-type defaults
-        mapper = objectMapperBuilder()
+        mapper = afterburnerMapperBuilder()
                 .withConfigOverride(List.class,
                         o -> o.setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.FAIL)))
                 .build();

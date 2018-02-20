@@ -3,7 +3,6 @@ package com.fasterxml.jackson.module.afterburner.failing;
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 public class TestInjectables extends AfterburnerTestBase
@@ -51,14 +50,12 @@ public class TestInjectables extends AfterburnerTestBase
         final Object methodInjected = "methodInjected";
         final Object fieldInjected = "fieldInjected";
 
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = afterburnerMapperBuilder()
                 .injectableValues(new InjectableValues.Std()
                         .addValue("constructor_injected", constructorInjected)
                         .addValue("method_injected", methodInjected)
                         .addValue("field_injected", fieldInjected))
                 .build();
-        mapper.registerModule(new AfterburnerModule());
-
         IssueGH471Bean bean = mapper.readValue("{\"x\":13,\"constructor_value\":\"constructor\",\"method_value\":\"method\",\"field_value\":\"field\"}",
                 IssueGH471Bean.class);
 

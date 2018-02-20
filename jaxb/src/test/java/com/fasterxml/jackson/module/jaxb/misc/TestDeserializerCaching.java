@@ -28,7 +28,7 @@ public class TestDeserializerCaching extends BaseJaxbTest
         }
 
         @Override public void setupModule(SetupContext context) {
-            context.addBeanDeserializerModifier(new MyBeanDeserializerModifier());
+            context.addDeserializerModifier(new MyBeanDeserializerModifier());
         }
     }
 
@@ -78,8 +78,9 @@ public class TestDeserializerCaching extends BaseJaxbTest
             +"\"value2\" : {\"name\" : \"color\", \"value\" : \"red\"},\n"
             +"\"value3\" : {\"name\" : \"size\", \"value\" : \"small\"}}"
             ;
-        ObjectMapper mapper = getJaxbMapper();
-        mapper.registerModule(new MyBeanModule());
+        ObjectMapper mapper = getJaxbMapperBuilder()
+            .addModule(new MyBeanModule())
+            .build();
         mapper.readValue(JSON, MyBean.class);
         assertEquals(1, MyBeanDeserializerModifier.count);
     }

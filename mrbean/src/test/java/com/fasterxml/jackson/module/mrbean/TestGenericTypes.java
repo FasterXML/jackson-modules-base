@@ -39,7 +39,7 @@ public class TestGenericTypes
      */
     public void testSimpleInterface() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper().registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         ListBean bean = mapper.readValue("{\"leaves\":[{\"value\":\"foo\"}] }", ListBean.class);
         assertNotNull(bean);
         List<LeafBean> leaves = bean.getLeaves();
@@ -52,8 +52,7 @@ public class TestGenericTypes
 
     public void testGenericInterface() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
 
         GenericBean<ListBean> bean = mapper.readValue("{\"someData\":[{\"leaves\":[{\"value\":\"foo\"}] },{\"leaves\":[{\"value\":\"foo\"}] }] }", new TypeReference<GenericBean<ListBean>>(){});
         assertNotNull(bean);
@@ -70,8 +69,7 @@ public class TestGenericTypes
 
     public void testGenericClass() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper()
-            .registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
 
         GenericClass<ListBean> bean = mapper.readValue("{\"someData\":[{\"leaves\":[{\"value\":\"foo\"}] },{\"leaves\":[{\"value\":\"foo\"}] }] }", new TypeReference<GenericClass<ListBean>>(){});
         assertNotNull(bean);
@@ -89,8 +87,7 @@ public class TestGenericTypes
     // for [mrbean#8]
     public void testWithGenericReferenceType() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper()
-            .registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         final String json = "{\"optionalString\":\"anotherValue\"}";
 
         InterfaceWithReference8 value = mapper.readValue(json, InterfaceWithReference8.class);

@@ -8,7 +8,6 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
-import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 /**
@@ -127,7 +126,7 @@ public class TestUnknownPropertyDeserialization
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
 
     /**
      * By default we should just get an exception if an unknown property
@@ -148,8 +147,9 @@ public class TestUnknownPropertyDeserialization
      */
     public void testUnknownHandlingIgnoreWithHandler() throws Exception
     {
-        ObjectMapper mapper = newObjectMapper();
-        mapper.addHandler(new MyHandler());
+        ObjectMapper mapper = afterburnerMapperBuilder()
+                .addHandler(new MyHandler())
+                .build();
         TestBean result = mapper.readValue(new StringReader(JSON_UNKNOWN_FIELD), TestBean.class);
         assertNotNull(result);
         assertEquals(1, result._a);
@@ -163,7 +163,7 @@ public class TestUnknownPropertyDeserialization
      */
     public void testUnknownHandlingIgnoreWithHandlerAndObjectReader() throws Exception
     {
-        ObjectMapper mapper = newObjectMapper();
+        ObjectMapper mapper = newAfterburnerMapper();
         TestBean result = mapper.readerFor(TestBean.class).withHandler(new MyHandler()).readValue(new StringReader(JSON_UNKNOWN_FIELD));
         assertNotNull(result);
         assertEquals(1, result._a);
@@ -177,10 +177,9 @@ public class TestUnknownPropertyDeserialization
      */
     public void testUnknownHandlingIgnoreWithFeature() throws Exception
     {
-        final ObjectMapper mapper = ObjectMapper.builder()
+        final ObjectMapper mapper = afterburnerMapperBuilder()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .build()
-                .registerModule(new AfterburnerModule());
+                .build();
         TestBean result = null;
         try {
             result = mapper.readValue(new StringReader(JSON_UNKNOWN_FIELD), TestBean.class);
@@ -273,14 +272,15 @@ public class TestUnknownPropertyDeserialization
 
     public void testIssue987() throws Exception
     {
-        ObjectMapper jsonMapper = newObjectMapper();
-        jsonMapper.addHandler(new DeserializationProblemHandler() {
-            @Override
-            public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer, Object beanOrClass, String propertyName) throws IOException, JsonProcessingException {
-                p.skipChildren();
-                return true;
-            }
-        });
+        ObjectMapper jsonMapper = afterburnerMapperBuilder()
+                .addHandler(new DeserializationProblemHandler() {
+                @Override
+                public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer, Object beanOrClass, String propertyName) throws IOException, JsonProcessingException {
+                    p.skipChildren();
+                    return true;
+                }
+                })
+                .build();
 
         String input = "[{\"aProperty\":\"x\",\"unknown\":{\"unknown\":{}}}]";
         List<Bean987> deserializedList = jsonMapper.readValue(input,

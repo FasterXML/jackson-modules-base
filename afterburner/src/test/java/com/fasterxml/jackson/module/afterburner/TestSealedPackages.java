@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class TestSealedPackages extends AfterburnerTestBase
 {
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
 
     public void testJavaStdDeserialization() throws Exception
     {

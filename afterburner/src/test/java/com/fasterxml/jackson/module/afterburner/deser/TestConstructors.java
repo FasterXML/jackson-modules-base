@@ -24,7 +24,7 @@ public class TestConstructors extends AfterburnerTestBase
     // For [Issue#34]
     public void testPrivateConstructor() throws Exception
     {
-        ObjectMapper mapper = newObjectMapper();
+        ObjectMapper mapper = newAfterburnerMapper();
         Row row = mapper.readValue("{\"id\":\"x\"}", Row.class);
         assertNotNull(row);
         assertEquals("x", row._id());

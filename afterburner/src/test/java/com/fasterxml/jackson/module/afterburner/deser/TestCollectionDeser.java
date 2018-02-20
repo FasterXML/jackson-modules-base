@@ -31,8 +31,8 @@ public class TestCollectionDeser extends AfterburnerTestBase
     {
         ObjectMapper mapper = ObjectMapper.builder()
                 .configure(MapperFeature.USE_GETTERS_AS_SETTERS, true)
-                .build()
-                .registerModule(new AfterburnerModule());
+                .addModule(new AfterburnerModule())
+                .build();
         CollectionBean bean = mapper.readValue("{\"stuff\":[\"a\",\"b\"]}",
                 CollectionBean.class);
         assertEquals(2, bean.x.size());
@@ -44,8 +44,8 @@ public class TestCollectionDeser extends AfterburnerTestBase
     {
         final ObjectMapper mapper = ObjectMapper.builder()
                 .enable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)
-                .build()
-                .registerModule(new AfterburnerModule());
+                .addModule(new AfterburnerModule())
+                .build();
         final Integer intValue = mapper.readValue("[ 1 ]", Integer.class);
         assertEquals(Integer.valueOf(1), intValue);
 

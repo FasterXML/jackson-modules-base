@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 // for [afterburner#51], where re-generation of classes does not work
@@ -49,23 +49,25 @@ public class GenerateWithMixinsTest extends AfterburnerTestBase
       }
 
       public abstract class IgnoreField3MixIn {
-        @JsonIgnore
-        public abstract byte[] getField3();
+          @JsonIgnore
+          public abstract byte[] getField3();
       }
 
       public void testIssue51() throws Exception
       {
-          _testIssue51(newObjectMapper());
+          _testIssue51(afterburnerMapperBuilder());
 
           // and, importantly, try again
 
-          _testIssue51(newObjectMapper());
+          _testIssue51(afterburnerMapperBuilder());
       }
-          
-      public void _testIssue51(ObjectMapper mapper) throws Exception
+
+      public void _testIssue51(MapperBuilder<?,?> mapperB) throws Exception
       {
           SampleObject sampleObject = new SampleObject("field1", 2, "field3".getBytes());
-          mapper.addMixIn(SampleObject.class, IgnoreField3MixIn.class);
+          ObjectMapper mapper = mapperB
+                  .addMixIn(SampleObject.class, IgnoreField3MixIn.class)
+                  .build();
           String json = mapper.writeValueAsString(sampleObject);
           assertEquals(aposToQuotes("{'field1':'field1','field2':2}"), json);
       }

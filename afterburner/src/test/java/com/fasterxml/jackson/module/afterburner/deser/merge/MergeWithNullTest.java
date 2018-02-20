@@ -68,7 +68,7 @@ public class MergeWithNullTest extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = objectMapperBuilder()
+    private final ObjectMapper MAPPER = afterburnerMapperBuilder()
             // 26-Oct-2016, tatu: Make sure we'll report merge problems by default
             .disable(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE)
             .build();
@@ -85,7 +85,7 @@ public class MergeWithNullTest extends AfterburnerTestBase
 
         // First: via specific type override
         // important! We'll specify for value type to be merged
-        ObjectMapper mapper = objectMapperBuilder()
+        ObjectMapper mapper = afterburnerMapperBuilder()
                 .withConfigOverride(AB.class,
                         o -> o.setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SKIP)))
                 .build();
@@ -96,7 +96,7 @@ public class MergeWithNullTest extends AfterburnerTestBase
         assertEquals(-3, config.loc.b);
 
         // Second: by global defaults
-        mapper = newObjectMapper();
+        mapper = newAfterburnerMapper();
         mapper.setDefaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SKIP));
         config = mapper.readerForUpdating(new ConfigDefault(12, 34))
                 .readValue(aposToQuotes("{'loc':null}"));

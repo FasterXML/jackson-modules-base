@@ -142,7 +142,7 @@ public class JsonIncludeTest
     /**********************************************************
      */
 
-    final private ObjectMapper MAPPER = newObjectMapper();
+    final private ObjectMapper MAPPER = newAfterburnerMapper();
 
     public void testGlobal() throws IOException
     {

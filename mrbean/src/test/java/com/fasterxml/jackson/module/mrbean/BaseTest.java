@@ -21,7 +21,9 @@ public abstract class BaseTest
      */
 
     protected ObjectMapper newMrBeanMapper() {
-        return new ObjectMapper().registerModule(new MrBeanModule());
+        return ObjectMapper.builder()
+                .addModule(new MrBeanModule())
+                .build();
     }
 
     /*

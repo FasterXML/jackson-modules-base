@@ -32,10 +32,9 @@ import java.net.URLClassLoader;
 public class IsolatedClassLoaderTest extends TestCase {
 
     public void testBeanWithSeparateClassLoader() throws IOException {
-
-        AfterburnerModule module = new AfterburnerModule();
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(module);
+        ObjectMapper mapper = ObjectMapper.builder()
+                .addModule(new AfterburnerModule())
+                .build();
 
         Object bean = makeObjectFromIsolatedClassloader();
         String result = mapper.writeValueAsString(bean);

@@ -21,12 +21,6 @@ import com.fasterxml.jackson.module.jaxb.ser.DomElementJsonSerializer;
  */
 public class TestDomElementSerialization extends BaseJaxbTest
 {
-    /*
-    /**********************************************************
-    /* Helper classes
-    /**********************************************************
-     */
-
     @SuppressWarnings("serial")
     private final static class DomModule extends SimpleModule
     {
@@ -69,9 +63,9 @@ public class TestDomElementSerialization extends BaseJaxbTest
     
     public void testBasicDomElementSerializationDeserialization() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new DomModule());
-
+        ObjectMapper mapper = ObjectMapper.builder()
+                .addModule(new DomModule())
+                .build();
         StringBuilder builder = new StringBuilder()
                 .append("<document xmlns=\"urn:hello\" att1=\"value1\" att2=\"value2\">")
                 .append("<childel>howdy</childel>")

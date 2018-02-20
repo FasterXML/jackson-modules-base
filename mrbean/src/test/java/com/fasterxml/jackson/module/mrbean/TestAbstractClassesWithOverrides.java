@@ -42,12 +42,9 @@ public class TestAbstractClassesWithOverrides
 
     public void testOverrides() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
-
+        ObjectMapper mapper = newMrBeanMapper();
         Bean bean = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13 }", CoffeeBean.class);
         verifyBean(bean);
-
         Bean bean2 = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13 }", PeruvianCoffeeBean.class);
         verifyBean(bean2);
     }

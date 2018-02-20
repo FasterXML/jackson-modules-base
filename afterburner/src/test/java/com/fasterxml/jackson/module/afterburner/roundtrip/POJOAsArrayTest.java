@@ -96,7 +96,7 @@ public class POJOAsArrayTest extends AfterburnerTestBase
     /*****************************************************
      */
 
-    final ObjectMapper MAPPER = newObjectMapper();
+    final ObjectMapper MAPPER = newAfterburnerMapper();
     
     /**
      * Test that verifies that property annotation works
