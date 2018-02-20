@@ -119,12 +119,11 @@ public class JaxbAnnotationIntrospector
 
         JsonSerializer<?> dataHandlerSerializer = null;
         JsonDeserializer<?> dataHandlerDeserializer = null;
-        /* Data handlers included dynamically, to try to prevent issues on platforms
-         * with less than complete support for JAXB API
-         */
+        // Data handlers included dynamically, to try to prevent issues on platforms
+        // with less than complete support for JAXB API
         try {
-            dataHandlerSerializer = (JsonSerializer<?>) DataHandlerJsonSerializer.class.newInstance();
-            dataHandlerDeserializer = (JsonDeserializer<?>) DataHandlerJsonDeserializer.class.newInstance();
+            dataHandlerSerializer = ClassUtil.createInstance(DataHandlerJsonSerializer.class, false);
+            dataHandlerDeserializer = ClassUtil.createInstance(DataHandlerJsonDeserializer.class, false);
         } catch (Throwable e) {
             //dataHandlers not supported...
         }
