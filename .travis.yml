@@ -10,8 +10,12 @@ branches:
     - master
     - "3.0"
 
+# Below this line is configuration for deploying to the Sonatype OSS repo
+# https://knowm.org/configure-travis-ci-to-deploy-snapshots/
+before_install: "git clone -b travis `git config --get remote.origin.url` target/travis"
+after_success: "mvn deploy --settings target/travis/settings.xml"
+
 env:
   global:
     - secure: "QNxd7SfYx4lv/q3fJyON9Paefzh1yVMXSR5t+T8QDmASn0A0+KgiMIjBFSF7XZVnlj4fCRR3WxZVL1C2QlS1fis9hMppCVs5E3D6uCEy+9HV8AChPWO/iVciWzfyK6lNC/mq5BbduNmGrif39DWcaZnOiGqz+bC1QPfBSDl3kcjoRdWCKfPVLmsLm27zYIJ+bsk+1hzCKkhnwhYNKkUuO+Qee/2eZAfsxdVNXryaMA03c6kgRa87ZPYegwGm77y7CA6DFxiKDGXkRDkZVSbe/6k1mf44tgrDfhuN+meR+UHnGMvd3UXMh5W2d3fQhRttV4cQ/lD82RbDBJ9p2d14DPDil3xfyP1JBcP2DJ0FkXIMem8xD5/vWh3jb/K7Ot7F8xefkdASK/IOcXnvHlvFb26gZZgYgCHiwF7eqpKxDxoExFFY1Hil62ElNLZYXoxE32xmcxuWcFlrX1Mrm7ueOhAPL9btR0dQhYiCNLXxpriTtNbZX91UfOP+2Xaxepz73yEAuk3xuFhcZcBRC88UE9Y3BNa3zz7CLr9aL5YN/NE62tDpuAtTRB//uG5vWWcp0UP2AjF7Jvflno0wbV114BTbs01FfFOZ4pxXBixdiyfmhz0fGYiEP6tCX8RzFURd76Me7egGj9v7Ei8u4nuKgGr7HC36sB0K2H4W3Ql8gmg="
     - secure: "A3bKHJKmfJDI4omtnrIW6uuBZRuhsWrSXCY9hWUZaIJSIqkrb1nO6pO9mrO+SXOuMVr5fA6BHGZ9HiMBvQJETnS7YOJ0kW6BpzNw6R5JZijzZ5oTlvD7y/GxdJhGcsbljvCzaAfjsODW6O7RkeTfwP00fNaetv+sLrGjeE2hbvvqMQqybpJUEfv2vh126/xk4p810JWvQkW5zzJ9gvjGe9KzRBlW6PtI7COa0D+FfQQQ9CiypwK7LgDC6rixw7bMU2+G2ALLlioJKqhYgrErBZlgW9IECKxz1BBO/ODRkH/lnv+RQC8KnZvYDbS+iAfkTZClK0/O08hOCOqAy5ZLB47Vfh/Ks9SWnzGIxeC18CJTp1d+kgci7no+Mqm8C5BO50PcFbXSv0tyfqgs3X+1QEGLi+NQkflYD93HNkdRbmF816KiLttO/KSlI24mZ4fsQm1e9Og4k1Uiu/CRX0XDPQFNfO6oZOndSCzzms+adDZnlp1BstSlYffeI9txOoxn4hVFXrnUQfGI2bcEWdaeip4rYe30gkS7cP9FYxLWzNydiNJ998Q8WIm8e9dPQEgQ36xr5SiFwLgNPafOOhHb9X8F/Ie1JCEjmM7ipK+eTADeN7jifNzoEyI/BoOtENhccM88WXwKuecHTQYFFdtFOuD1fB5NUse1FQpfjhOQbYQ="
-
