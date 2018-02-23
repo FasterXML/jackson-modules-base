@@ -87,7 +87,7 @@ public class MergeWithNullTest extends AfterburnerTestBase
         // important! We'll specify for value type to be merged
         ObjectMapper mapper = afterburnerMapperBuilder()
                 .withConfigOverride(AB.class,
-                        o -> o.setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SKIP)))
+                        o -> o.setNullHandling(JsonSetter.Value.forValueNulls(Nulls.SKIP)))
                 .build();
         config = mapper.readerForUpdating(new ConfigDefault(137, -3))
                 .readValue(aposToQuotes("{'loc':null}"));
@@ -96,8 +96,9 @@ public class MergeWithNullTest extends AfterburnerTestBase
         assertEquals(-3, config.loc.b);
 
         // Second: by global defaults
-        mapper = newAfterburnerMapper();
-        mapper.setDefaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SKIP));
+        mapper = afterburnerMapperBuilder()
+                .changeDefaultNullHandling(n -> n.withValueNulls(Nulls.SKIP))
+                .build();
         config = mapper.readerForUpdating(new ConfigDefault(12, 34))
                 .readValue(aposToQuotes("{'loc':null}"));
         assertNotNull(config.loc);
