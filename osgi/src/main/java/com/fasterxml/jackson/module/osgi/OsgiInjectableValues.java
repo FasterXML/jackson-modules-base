@@ -23,6 +23,12 @@ public class OsgiInjectableValues extends InjectableValues
     {
         this.bundleContext = bundleContext;
     }
+
+    @Override
+    public InjectableValues snapshot() {
+        // 23-Feb-2018, tatu: Not sure if and how this could work really...
+        return this;
+    }
     
     @Override
     public Object findInjectableValue(Object valueId,

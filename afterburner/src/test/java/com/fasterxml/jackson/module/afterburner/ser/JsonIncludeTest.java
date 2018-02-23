@@ -223,7 +223,9 @@ public class JsonIncludeTest
     public void testEmptyInclusionScalars() throws IOException
     {
         ObjectMapper defMapper = MAPPER;
-        ObjectMapper inclMapper = new ObjectMapper().setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
+        ObjectMapper inclMapper = afterburnerMapperBuilder()
+                .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_EMPTY))
+                .build();
 
         // First, Strings
         StringWrapper str = new StringWrapper("");

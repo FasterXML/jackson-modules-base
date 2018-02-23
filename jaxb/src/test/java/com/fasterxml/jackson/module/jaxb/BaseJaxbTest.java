@@ -25,10 +25,6 @@ public abstract class BaseJaxbTest
         return getJaxbAndJacksonMapper();
     }
 
-    protected ObjectMapper getJaxbMapper() {
-        return getJaxbMapperBuilder().build();
-    }
-
     protected MapperBuilder<?,?> getJaxbMapperBuilder()
     {
         AnnotationIntrospector intr = new JaxbAnnotationIntrospector();
@@ -36,25 +32,32 @@ public abstract class BaseJaxbTest
                 .annotationIntrospector(intr);
     }
 
-    protected ObjectMapper getJaxbAndJacksonMapper()
+    protected MapperBuilder<?,?> getJaxbAndJacksonMapperBuilder()
     {
         AnnotationIntrospector intr = new AnnotationIntrospectorPair(
                 new JaxbAnnotationIntrospector(),
                 new JacksonAnnotationIntrospector());
         return ObjectMapper.builder()
-                .annotationIntrospector(intr)
-                .build();
+                .annotationIntrospector(intr);
     }
 
-    protected ObjectMapper getJacksonAndJaxbMapper()
+    protected MapperBuilder<?,?> getJacksonAndJaxbMapperBuilder()
     {
         AnnotationIntrospector intr = new AnnotationIntrospectorPair(new JacksonAnnotationIntrospector(),
                 new JaxbAnnotationIntrospector());
         return ObjectMapper.builder()
-                .annotationIntrospector(intr)
-                .build();
+                .annotationIntrospector(intr);
     }
 
+    protected ObjectMapper getJaxbMapper() {
+        return getJaxbMapperBuilder().build();
+    }
+
+    protected ObjectMapper getJaxbAndJacksonMapper()
+    {
+        return getJaxbAndJacksonMapperBuilder().build();
+    }
+    
     /*
     /**********************************************************************
     /* Helper methods

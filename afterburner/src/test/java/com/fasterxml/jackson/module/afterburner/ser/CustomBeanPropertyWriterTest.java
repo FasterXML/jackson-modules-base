@@ -59,16 +59,13 @@ public class CustomBeanPropertyWriterTest extends AfterburnerTestBase
     
     public void testCustomPropertyWriter() throws Exception
     {
-        SimpleModule simpleModule = new SimpleModule();
-        simpleModule.setSerializerModifier(new Only2BeanSerializerModifier());
+        SimpleModule simpleModule = new SimpleModule()
+                .setSerializerModifier(new Only2BeanSerializerModifier());
         ObjectMapper objectMapper = afterburnerMapperBuilder()
                 .addModule(simpleModule)
+                .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL))
                 .build();
-        objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
-
-        SampleObject sampleObject = new SampleObject(null, 2, 3);
-        String json = objectMapper.writeValueAsString(sampleObject);
-
-        assertEquals("{\"field2\":2}", json);
+        assertEquals("{\"field2\":2}",
+                objectMapper.writeValueAsString(new SampleObject(null, 2, 3)));
     }
 }
