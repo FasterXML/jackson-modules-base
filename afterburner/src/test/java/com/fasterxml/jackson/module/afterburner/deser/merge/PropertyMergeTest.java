@@ -129,8 +129,9 @@ public class PropertyMergeTest extends AfterburnerTestBase
     public void testBeanMergingViaGlobal() throws Exception
     {
         // but with type-overrides
-        ObjectMapper mapper = newAfterburnerMapper()
-                .setDefaultMergeable(true);
+        ObjectMapper mapper = afterburnerMapperBuilder()
+                .defaultMergeable(true)
+                .build();
         NonMergeConfig config = mapper.readValue(aposToQuotes("{'loc':{'a':3}}"), NonMergeConfig.class);
         assertEquals(3, config.loc.a);
         assertEquals(2, config.loc.b); // original, merged
