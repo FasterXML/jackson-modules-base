@@ -11,13 +11,13 @@ import javax.xml.bind.annotation.adapters.*;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.*;
+
 import com.fasterxml.jackson.core.*;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
-import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.fasterxml.jackson.databind.util.ClassUtil;
@@ -141,9 +141,9 @@ public class JaxbAnnotationIntrospector
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Configuration
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -171,25 +171,20 @@ public class JaxbAnnotationIntrospector
      * Method to call to change inclusion criteria used for property annotated
      * with {@link XmlElement} or {@link XmlElementWrapper}, with <code>nillable</code>
      * set as <code>false</code>.
-     *
-     * @since 2.7
      */
     public JaxbAnnotationIntrospector setNonNillableInclusion(JsonInclude.Include incl) {
         _nonNillableInclusion = incl;
         return this;
     }
 
-    /**
-     * @since 2.7
-     */
     public JsonInclude.Include getNonNillableInclusion() {
         return _nonNillableInclusion;
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Extended API (XmlAnnotationIntrospector)
-    /**********************************************************
+    /**********************************************************************
      */
 
     // From XmlAnnotationIntrospector
@@ -254,9 +249,9 @@ public class JaxbAnnotationIntrospector
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* General annotations (for classes, properties)
-    /**********************************************************
+    /**********************************************************************
      */
     
     @Override
@@ -337,9 +332,9 @@ public class JaxbAnnotationIntrospector
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* General class annotations
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -381,9 +376,9 @@ public class JaxbAnnotationIntrospector
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* General member (field, method/constructor) annotations
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -457,7 +452,6 @@ public class JaxbAnnotationIntrospector
         return null;
     }
 
-    // since 2.4
     @Override
     public String findImplicitPropertyName(AnnotatedMember m) {
         XmlValue valueInfo = m.getAnnotation(XmlValue.class);
@@ -488,9 +482,9 @@ public class JaxbAnnotationIntrospector
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Property auto-detection
-    /**********************************************************
+    /**********************************************************************
      */
     
     @Override
@@ -549,66 +543,42 @@ public class JaxbAnnotationIntrospector
     }
     
     /*
-    /**********************************************************
-    /* Class annotations for PM type handling (1.5+)
-    /**********************************************************
+    /**********************************************************************
+    /* Class annotations for PM type handling
+    /**********************************************************************
      */
-    
-    @Override
-    public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config,
-            AnnotatedClass ac, JavaType baseType)
-    {
-        // no per-class type resolvers, right?
-        return null;
-    }
 
     @Override
-    public TypeResolverBuilder<?> findPropertyTypeResolver(MapperConfig<?> config,
-            AnnotatedMember am, JavaType baseType)
+    public JsonTypeInfo.Value findPolymorphicTypeInfo(MapperConfig<?> config, Annotated ann)
     {
-        /* First: @XmlElements and @XmlElementRefs only applies type for immediate property, if it
-         * is NOT a structured type.
-         */
-        if (baseType.isContainerType()) return null;
-        return _typeResolverFromXmlElements(am);
-    }
+        // If simple type, @XmlElements and @XmlElementRefs are applicable.
+        // Note: @XmlElement and @XmlElementRef are NOT handled here, since they
+        // are handled specifically as non-polymorphic indication
+        // of the actual type
+        XmlElements elems = findAnnotation(XmlElements.class, ann, false, false, false);
 
-    @Override
-    public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config,
-            AnnotatedMember am, JavaType containerType)
-    {
-        /* First: let's ensure property is a container type: caller should have
-         * verified but just to be sure
-         */
-        if (containerType.getContentType() == null) {
-            throw new IllegalArgumentException("Must call method with a container or reference type (got "+containerType+")");
+        if (elems == null) {
+            XmlElementRefs elemRefs = findAnnotation(XmlElementRefs.class, ann, false, false, false);
+            if (elemRefs == null) {
+                return null;
+            }
         }
-        return _typeResolverFromXmlElements(am);
-    }
-
-    protected TypeResolverBuilder<?> _typeResolverFromXmlElements(AnnotatedMember am)
-    {
-        /* If simple type, @XmlElements and @XmlElementRefs are applicable.
-         * Note: @XmlElement and @XmlElementRef are NOT handled here, since they
-         * are handled specifically as non-polymorphic indication
-         * of the actual type
-         */
-        XmlElements elems = findAnnotation(XmlElements.class, am, false, false, false);
-        XmlElementRefs elemRefs = findAnnotation(XmlElementRefs.class, am, false, false, false);
-        if (elems == null && elemRefs == null) {
-            return null;
-        }
-
+        // JAXB always uses type name as id; let's consider WRAPPER_OBJECT to be canonical inclusion method
+        // (TODO: should it be possible to merge such annotations in AnnotationIntrospector pair?)
+        return JsonTypeInfo.Value.construct(JsonTypeInfo.Id.NAME, JsonTypeInfo.As.WRAPPER_OBJECT,
+                "", null, false);
+/*// in 2.0 we had:
         TypeResolverBuilder<?> b = new StdTypeResolverBuilder();
         // JAXB always uses type name as id
         b = b.init(JsonTypeInfo.Id.NAME, null);
         // and let's consider WRAPPER_OBJECT to be canonical inclusion method
         b = b.inclusion(JsonTypeInfo.As.WRAPPER_OBJECT);
-        return b;        
+        return b;
+*/
     }
     
     @Override
-    public List<NamedType> findSubtypes(Annotated a)
+    public List<NamedType> findSubtypes(MapperConfig<?> config, Annotated a)
     {
         // No package/superclass defaulting (only used with fields, methods)
         XmlElements elems = findAnnotation(XmlElements.class, a, false, false, false);
@@ -666,7 +636,7 @@ public class JaxbAnnotationIntrospector
     }
 
     @Override
-    public String findTypeName(AnnotatedClass ac) {
+    public String findTypeName(MapperConfig<?> config, AnnotatedClass ac) {
         XmlType type = findAnnotation(XmlType.class, ac, false, false, false);
         if (type != null) {
             String name = type.name();
@@ -676,34 +646,15 @@ public class JaxbAnnotationIntrospector
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Serialization: general annotations
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
     public JsonSerializer<?> findSerializer(MapperConfig<?> config, Annotated am)
     {
         final Class<?> type = _rawSerializationType(am);
-
-        /*
-        // As per [JACKSON-722], more checks for structured types
-        XmlAdapter<Object,Object> adapter = findAdapter(am, true, type);
-        if (adapter != null) {
-            boolean fromClass = !(am instanceof AnnotatedMember);
-            // Ugh. Must match to see if adapter's bounded type (result to map to) matches property type
-            if (isContainerType(type)) {
-                Class<?> bt = findAdapterBoundType(adapter);
-                if (bt.isAssignableFrom(type)) {
-                    return new XmlAdapterJsonSerializer(adapter, fromClass);
-                }
-                // Note: if used for value type, handled in different place
-            } else {
-                return new XmlAdapterJsonSerializer(adapter, fromClass);
-            }
-        }
-        */
-
         // Add support for additional core XML types needed by JAXB
         if (type != null) {
             if (_dataHandlerSerializer != null && isDataHandler(type)) {
@@ -767,7 +718,7 @@ public class JaxbAnnotationIntrospector
         return defValue;
     }
 
-    @Override // @since 2.7
+    @Override
     public JavaType refineSerializationType(final MapperConfig<?> config,
             final Annotated a, final JavaType baseType) throws JsonMappingException
     {
@@ -825,9 +776,9 @@ public class JaxbAnnotationIntrospector
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Serialization: class annotations
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -882,9 +833,9 @@ public class JaxbAnnotationIntrospector
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Serialization: property annotations
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -915,7 +866,7 @@ public class JaxbAnnotationIntrospector
     }
     */
 
-    @Override // since 2.7
+    @Override
     public String[] findEnumValues(Class<?> enumType, Enum<?>[] enumValues, String[] names) {
         HashMap<String,String> expl = null;
         for (Field f : ClassUtil.getDeclaredFields(enumType)) {
@@ -949,30 +900,15 @@ public class JaxbAnnotationIntrospector
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Deserialization: general annotations
-    /**********************************************************
+    /**********************************************************************
      */
     
     @Override
     public Object findDeserializer(MapperConfig<?> config, Annotated am)
     {
         final Class<?> type = _rawDeserializationType(am);
-
-        /*
-        // As per [JACKSON-722], more checks for structured types
-        XmlAdapter<Object,Object> adapter = findAdapter(am, true, type);
-        if (adapter != null) {
-            // Ugh. Must match to see if adapter's bounded type (result to map to) matches property type
-            if (isContainerType(type)) {
-                if (adapterTypeMatches(adapter, type)) {
-                    return new XmlAdapterJsonDeserializer(adapter);
-                }
-            } else {
-                return new XmlAdapterJsonDeserializer(adapter);
-            }
-        }
-        */
 
         // [JACKSON-150]: add support for additional core XML types needed by JAXB
         if (type != null) {
@@ -997,9 +933,8 @@ public class JaxbAnnotationIntrospector
 
     protected Class<?> _doFindDeserializationType(Annotated a, JavaType baseType)
     {
-        /* @XmlJavaTypeAdapter will complicate handling of type information;
-         * basically we better just ignore type we might find here altogether in that case
-         */
+        // @XmlJavaTypeAdapter will complicate handling of type information;
+        // basically we better just ignore type we might find here altogether in that case
         if (a.hasAnnotation(XmlJavaTypeAdapter.class)) {
             return null;
         }
@@ -1016,7 +951,6 @@ public class JaxbAnnotationIntrospector
         return null;
     }
 
-    // @since 2.7
     @Override
     public JavaType refineDeserializationType(final MapperConfig<?> config,
             final Annotated a, final JavaType baseType) throws JsonMappingException
@@ -1069,9 +1003,9 @@ public class JaxbAnnotationIntrospector
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Deserialization: property annotations
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
@@ -1128,11 +1062,12 @@ public class JaxbAnnotationIntrospector
             }
         }
         return null;
-    }    
+    }
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Helper methods (non-API)
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -1251,9 +1186,9 @@ public class JaxbAnnotationIntrospector
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Helper methods for bean property introspection
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
