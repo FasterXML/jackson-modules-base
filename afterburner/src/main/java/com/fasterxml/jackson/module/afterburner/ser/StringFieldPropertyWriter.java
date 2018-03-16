@@ -63,7 +63,7 @@ public final class StringFieldPropertyWriter
                 _nullSerializer.serialize(null, gen, prov);
             } else if (!_suppressNulls) {
                 gen.writeFieldName(_fastName);
-                prov.defaultSerializeNull(gen);
+                prov.defaultSerializeNullValue(gen);
             }
             return;
         }

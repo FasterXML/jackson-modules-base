@@ -64,7 +64,7 @@ public final class ObjectMethodPropertyWriter
                 _nullSerializer.serialize(null, gen, prov);
             } else if (!_suppressNulls) {
                 gen.writeFieldName(_fastName);
-                prov.defaultSerializeNull(gen);
+                prov.defaultSerializeNullValue(gen);
             }
             return;
         }
@@ -121,7 +121,7 @@ public final class ObjectMethodPropertyWriter
             } else if (_suppressNulls) {
                 serializeAsPlaceholder(bean, gen, prov);
             } else {
-                prov.defaultSerializeNull(gen);
+                prov.defaultSerializeNullValue(gen);
             }
             return;
         }
