@@ -15,9 +15,11 @@ not datatype, data format, or JAX-RS provider modules.
   </description>
 
   <modules>
+    <!-- Start with JAXB annotations just because it is a base dep for XML; others not
+      -->
+    <module>jaxb</module>
     <module>afterburner</module>
     <module>guice</module>
-    <module>jaxb</module>
     <module>mrbean</module>
     <module>osgi</module>
 <!-- 29-Jan-2018, tatu: No need for this, with Java 8
