@@ -255,7 +255,7 @@ public class JaxbAnnotationIntrospector
      */
     
     @Override
-    public ObjectIdInfo findObjectIdInfo(Annotated ann)
+    public ObjectIdInfo findObjectIdInfo(MapperConfig<?> config, Annotated ann)
     {
         /* To work in the way that works with JAXB and Jackson,
          * we need to do things in bit of round-about way, starting
@@ -313,14 +313,13 @@ public class JaxbAnnotationIntrospector
     }
 
     @Override
-    public ObjectIdInfo findObjectReferenceInfo(Annotated ann, ObjectIdInfo base)
+    public ObjectIdInfo findObjectReferenceInfo(MapperConfig<?> config, 
+            Annotated ann, ObjectIdInfo base)
     {
         if (!_ignoreXmlIDREF) {
             XmlIDREF idref = ann.getAnnotation(XmlIDREF.class);
-            /* JAXB makes XmlIDREF mean "always as id", as far as I know.
-             * May need to make it configurable in future, but for not that
-             * is fine...
-             */
+            // JAXB makes XmlIDREF mean "always as id", as far as I know.
+            // May need to make it configurable in future, but for now that is fine...
             if (idref != null) {
                 if (base == null) {
                     base = ObjectIdInfo.empty();
@@ -488,8 +487,8 @@ public class JaxbAnnotationIntrospector
      */
     
     @Override
-    public VisibilityChecker findAutoDetectVisibility(AnnotatedClass ac,
-        VisibilityChecker checker)
+    public VisibilityChecker findAutoDetectVisibility(MapperConfig<?> config,
+            AnnotatedClass ac, VisibilityChecker checker)
     {
         XmlAccessType at = findAccessType(ac);
         if (at == null) {
