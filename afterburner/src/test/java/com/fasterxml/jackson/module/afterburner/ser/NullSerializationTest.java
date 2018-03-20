@@ -86,7 +86,7 @@ public class NullSerializationTest extends AfterburnerTestBase
     {
         ObjectMapper m = ObjectMapper.builder()
                 .addModule(new SimpleModule()
-                        .setDefaultNullKeySerializer(new NullSerializer())
+                        .setDefaultNullValueSerializer(new NullSerializer())
                         )
                 .build();
         assertEquals("\"foobar\"", m.writeValueAsString(null));
