@@ -10,7 +10,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.9.5 (not yet released)
+2.9.5 (26-Mar-2018)
 
 #42: NPE from MrBean when `get()` or `set()` is though as property
  (reported by Tuomas K)
