@@ -8,11 +8,12 @@ import com.fasterxml.jackson.core.json.JsonFactory;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.cfg.GeneratorSettings;
+import com.fasterxml.jackson.databind.cfg.SerializationContexts;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
+import com.fasterxml.jackson.databind.ser.SerializerCache;
 import com.fasterxml.jackson.databind.ser.SerializerFactory;
-
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 // Copied from [com.fasterxml.jackson.databind.ser.filter]
@@ -37,19 +38,35 @@ public class NullSerializationTest extends AfterburnerTestBase
     }
     
     @SuppressWarnings("serial")
-    static class MyNullProvider extends DefaultSerializerProvider
+    static class MyNullSerializerContexts extends SerializationContexts
     {
-        public MyNullProvider() { super(new JsonFactory()); }
-        public MyNullProvider(MyNullProvider base, SerializationConfig config, 
-                GeneratorSettings genSettings,
-                SerializerFactory jsf) {
-            super(base, config, genSettings, jsf);
+        public MyNullSerializerContexts() { super(); }
+        public MyNullSerializerContexts(TokenStreamFactory tsf, SerializerFactory serializerFactory,
+                SerializerCache cache) {
+            super(tsf, serializerFactory, cache);
         }
 
         @Override
-        public DefaultSerializerProvider createInstance(SerializationConfig config,
-                GeneratorSettings genSettings, SerializerFactory jsf) {
-            return new MyNullProvider(this, config, genSettings, jsf);
+        public SerializationContexts forMapper(Object mapper,
+                TokenStreamFactory tsf, SerializerFactory serializerFactory,
+                SerializerCache cache) {
+            return new MyNullSerializerContexts(tsf, serializerFactory, cache);
+        }
+
+        @Override
+        public DefaultSerializerProvider createContext(SerializationConfig config,
+                GeneratorSettings genSettings) {
+            return new MyNullSerializerProvider(_streamFactory, _cache,
+                    config, genSettings, _serializerFactory);
+        }
+    }
+
+    static class MyNullSerializerProvider extends DefaultSerializerProvider
+    {
+        public MyNullSerializerProvider(TokenStreamFactory streamFactory,
+                SerializerCache cache, SerializationConfig config,
+                GeneratorSettings genSettings, SerializerFactory f) {
+            super(streamFactory, config, genSettings, f, cache);
         }
 
         @Override
@@ -84,7 +101,7 @@ public class NullSerializationTest extends AfterburnerTestBase
 
     public void testOverriddenDefaultNulls() throws Exception
     {
-        ObjectMapper m = ObjectMapper.builder()
+        ObjectMapper m = afterburnerMapperBuilder()
                 .addModule(new SimpleModule()
                         .setDefaultNullValueSerializer(new NullSerializer())
                         )
@@ -94,8 +111,8 @@ public class NullSerializationTest extends AfterburnerTestBase
 
     public void testCustomPOJONullsViaProvider() throws Exception
     {
-        ObjectMapper m = ObjectMapper.builder()
-                .serializerProvider(new MyNullProvider())
+        ObjectMapper m = afterburnerMapperBuilder()
+                .serializationContexts(new MyNullSerializerContexts())
                 .build();
         assertEquals("{\"name\":\"foobar\"}", m.writeValueAsString(new Bean1()));
         assertEquals("{\"type\":null}", m.writeValueAsString(new Bean2()));
@@ -110,16 +127,17 @@ public class NullSerializationTest extends AfterburnerTestBase
         assertEquals("{\"a\":null}", MAPPER.writeValueAsString(root));
 
         // but then we can customize it
-        ObjectMapper m = ObjectMapper.builder()
+        ObjectMapper m = afterburnerMapperBuilder()
                 .addModule(new SimpleModule()
                         .setDefaultNullValueSerializer(new NullSerializer()))
-                .serializerProvider(new MyNullProvider())
+                .serializationContexts(new MyNullSerializerContexts())
                 .build();
         assertEquals("{\"a\":\"foobar\"}", m.writeValueAsString(root));
     }
 
     public void testNullSerializeViaPropertyAnnotation() throws Exception
     {
-        assertEquals("{\"a\":\"foobar\"}", MAPPER.writeValueAsString(new BeanWithNullProps()));
+        assertEquals("{\"a\":\"foobar\"}",
+                MAPPER.writeValueAsString(new BeanWithNullProps()));
     }
 }
