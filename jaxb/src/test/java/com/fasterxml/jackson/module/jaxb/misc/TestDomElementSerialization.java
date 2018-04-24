@@ -10,15 +10,12 @@ import java.io.StringWriter;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.Serializers;
+import com.fasterxml.jackson.databind.module.SimpleSerializers;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.deser.DomElementJsonDeserializer;
 import com.fasterxml.jackson.module.jaxb.ser.DomElementJsonSerializer;
 
-/**
- * @author Ryan Heaton
- */
 public class TestDomElementSerialization extends BaseJaxbTest
 {
     @SuppressWarnings("serial")
@@ -28,30 +25,7 @@ public class TestDomElementSerialization extends BaseJaxbTest
         {
             super("DomModule", Version.unknownVersion());
             addDeserializer(Element.class, new DomElementJsonDeserializer());
-            /* 19-Feb-2011, tatu: Note: since SimpleModule does not support "generic"
-             *   serializers, need to add bit more code here.
-             */
-            //testModule.addSerializer(new DomElementJsonSerializer());
-        }
-
-        @Override
-        public void setupModule(SetupContext context)
-        {
-            super.setupModule(context);
-            context.addSerializers(new DomSerializers());
-        }
-    }
-    
-    private final static class DomSerializers extends Serializers.Base
-    {
-        @Override
-        public JsonSerializer<?> findSerializer(SerializationConfig config,
-                JavaType type, BeanDescription beanDesc)
-        {
-            if (Element.class.isAssignableFrom(type.getRawClass())) {
-                return new DomElementJsonSerializer();
-            }
-            return null;
+            addSerializer(Element.class, new DomElementJsonSerializer());            
         }
     }
 
