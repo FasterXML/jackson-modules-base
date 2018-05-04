@@ -37,19 +37,28 @@ public final class SettableObjectMethodProperty
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException
     {
-        final Object v;
+        Object value;
         if (p.hasToken(JsonToken.VALUE_NULL)) {
             if (_skipNulls) {
                 return;
             }
-            v = _nullProvider.getNullValue(ctxt);
+            value = _nullProvider.getNullValue(ctxt);
+        } else if (_valueTypeDeserializer == null) {
+            value = _valueDeserializer.deserialize(p, ctxt);
+            // 04-May-2018, tatu: [databind#2023] Coercion from String (mostly) can give null
+            if (value == null) {
+                if (_skipNulls) {
+                    return;
+                }
+                value = _nullProvider.getNullValue(ctxt);
+            }
         } else {
-            v = deserialize(p, ctxt);
+            value = _valueDeserializer.deserializeWithType(p, ctxt, _valueTypeDeserializer);
         }
         try {
-            _propertyMutator.objectSetter(bean, _optimizedIndex, v);
+            _propertyMutator.objectSetter(bean, _optimizedIndex, value);
         } catch (Throwable e) {
-            _reportProblem(bean, v, e);
+            _reportProblem(bean, value, e);
         }
     }
 
@@ -57,16 +66,25 @@ public final class SettableObjectMethodProperty
     public Object deserializeSetAndReturn(JsonParser p,
             DeserializationContext ctxt, Object instance) throws IOException
     {
-        final Object v;
+        Object value;
         if (p.hasToken(JsonToken.VALUE_NULL)) {
             if (_skipNulls) {
                 return instance;
             }
-            v = _nullProvider.getNullValue(ctxt);
+            value = _nullProvider.getNullValue(ctxt);
+        } else if (_valueTypeDeserializer == null) {
+            value = _valueDeserializer.deserialize(p, ctxt);
+            // 04-May-2018, tatu: [databind#2023] Coercion from String (mostly) can give null
+            if (value == null) {
+                if (_skipNulls) {
+                    return instance;
+                }
+                value = _nullProvider.getNullValue(ctxt);
+            }
         } else {
-            v = deserialize(p, ctxt);
+            value = _valueDeserializer.deserializeWithType(p, ctxt, _valueTypeDeserializer);
         }
-        return setAndReturn(instance, v);
+        return setAndReturn(instance, value);
     }
 
     @Override

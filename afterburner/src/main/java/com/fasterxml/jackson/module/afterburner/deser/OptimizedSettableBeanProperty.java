@@ -400,12 +400,14 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     }
 
     /**
-     * Helper method used to check whether given serializer is the default
-     * serializer implementation: this is necessary to avoid overriding other
-     * kinds of deserializers.
+     * Helper method used to check whether given deserializer is the default
+     * deserializer implementation: this is necessary to avoid overriding custom
+     * deserializers.
      */
     protected boolean _isDefaultDeserializer(JsonDeserializer<?> deser) {
-        return (deser == null) || ClassUtil.isJacksonStdImpl(deser);
+        return (deser == null)
+                || (deser instanceof SuperSonicBeanDeserializer)
+                || ClassUtil.isJacksonStdImpl(deser);
     }
 
     protected void _handleMissingEndArrayForSingle(JsonParser p, DeserializationContext ctxt)

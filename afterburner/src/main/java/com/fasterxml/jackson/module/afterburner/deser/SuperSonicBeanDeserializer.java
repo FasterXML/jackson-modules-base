@@ -111,7 +111,7 @@ public final class SuperSonicBeanDeserializer extends BeanDeserializer
     @Override
     public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
     {
-        if (!_vanillaProcessing || _objectIdReader != null) {
+        if (!_vanillaProcessing || (_objectIdReader != null)) {
             // should we ever get here? Just in case
             return super.deserialize(p, ctxt);
         }
