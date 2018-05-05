@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.afterburner.failing;
+package com.fasterxml.jackson.module.afterburner.deser;
 
 import com.fasterxml.jackson.annotation.*;
 
