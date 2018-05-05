@@ -44,7 +44,7 @@ public final class SettableStringMethodProperty
             }
             text = (String) _nullProvider.getNullValue(ctxt);
         } else {
-             text = p.getValueAsString();
+            text = p.getValueAsString();
             if (text == null) {
                 text = _deserializeString(p, ctxt);
             }

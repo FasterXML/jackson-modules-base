@@ -10,6 +10,10 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.6 (not yet released)
+
+- (afterburner) Cleaning up issues wrt null-skipping/handling (wrt `@JsonSetter(nulls)`
+
 2.9.5 (26-Mar-2018)
 
 #42: NPE from MrBean when `get()` or `set()` is though as property
