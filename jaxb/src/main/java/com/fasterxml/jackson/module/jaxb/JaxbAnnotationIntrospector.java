@@ -38,7 +38,7 @@ import com.fasterxml.jackson.module.jaxb.ser.DataHandlerJsonSerializer;
  *    this may become partially supported as per [JACKSON-253].
  * <li>{@link javax.xml.bind.annotation.XmlInlineBinaryData} since the underlying concepts
  *    (like XOP) do not exist in JSON -- Jackson will always use inline base64 encoding as the method
- * <li>{@link javax.xml.bind.annotation.XmlList} because JSON does have (or necessarily need)
+ * <li>{@link javax.xml.bind.annotation.XmlList} because JSON does not have (or necessarily need)
  *    method of serializing list of values as space-separated Strings
  * <li>{@link javax.xml.bind.annotation.XmlMimeType}
  * <li>{@link javax.xml.bind.annotation.XmlMixed} since JSON has no concept of mixed content
@@ -1352,6 +1352,8 @@ public class JaxbAnnotationIntrospector
         }
         if (!hasAName) {
             hasAName = ae.hasAnnotation(XmlElementWrapper.class)
+                    // [modules-base#44]: should consider this as implicit marker
+                    || ae.hasAnnotation(XmlElements.class)
                     // 09-Aug-2014, tatu: Note: prior to 2.4.2, we used to give explicit name "value"
                     //   if there was "@XmlValue" annotation; since then, only implicit name.
                     || ae.hasAnnotation(XmlValue.class);

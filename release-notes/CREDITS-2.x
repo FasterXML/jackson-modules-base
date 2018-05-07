@@ -14,3 +14,8 @@ Tuomas Kiviaho (TuomasKiviaho@github)
 
 * Reported #42: NPE from MrBean when `get()` or `set()` is though as property
  (2.9.5)
+
+Alexander Onnikov (aonnikov@github)
+
+* Reported #44: (jaxb) `@XmlElements` does not work with `@XmlAccessorType(XmlAccessType.NONE)`
+ (2.9.6)
