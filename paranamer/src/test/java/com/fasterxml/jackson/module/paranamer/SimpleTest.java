@@ -33,14 +33,8 @@ public class SimpleTest extends ModuleTestBase
         //   well work... so do not assume failure
         
         // then with two available modules:
-        ObjectMapper mapper = new ObjectMapper().registerModule(new ParanamerModule());
+        ObjectMapper mapper = newObjectMapper();
         CreatorBean bean = mapper.readValue(JSON, CreatorBean.class);
-        assertEquals("Bob", bean.name);
-        assertEquals(40, bean.age);
-
-        mapper = new ObjectMapper();
-        mapper.setAnnotationIntrospector(new ParanamerOnJacksonAnnotationIntrospector());
-        bean = mapper.readValue(JSON, CreatorBean.class);
         assertEquals("Bob", bean.name);
         assertEquals(40, bean.age);
     }
@@ -49,7 +43,7 @@ public class SimpleTest extends ModuleTestBase
     // trying to access things for JDK types
     public void testWrapper() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper().registerModule(new ParanamerModule());
+        ObjectMapper mapper = newObjectMapper();
         String json = mapper.writeValueAsString(Integer.valueOf(1));
         assertEquals("1", json);
     }

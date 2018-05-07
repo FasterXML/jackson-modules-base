@@ -16,7 +16,7 @@ public class TestJDKSerializability extends ModuleTestBase
 
     public void testMapper() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper().registerModule(new ParanamerModule());
+        ObjectMapper mapper = newObjectMapper();
         // first: serialize as is
         byte[] ser = jdkSerialize(mapper);
         ObjectMapper m2 = jdkDeserialize(ser);

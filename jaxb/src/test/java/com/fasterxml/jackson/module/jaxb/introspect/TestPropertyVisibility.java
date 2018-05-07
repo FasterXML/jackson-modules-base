@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.xml.bind.annotation.*;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.*;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
@@ -47,19 +48,45 @@ public class TestPropertyVisibility
         }
     }
 
+    // for [modules-base#44]
+    static class Foo44 {
+        public String foo = "bar";
+    }
+
+    @XmlAccessorType(XmlAccessType.NONE)
+    @JsonPropertyOrder({ "object", "other" })
+    static class NoneAccessBean
+    {
+        @XmlElements({
+                @XmlElement(type=Foo44.class, name="foo")
+        })
+        public Object object;
+
+        @XmlElement
+        public Object other;
+
+        public NoneAccessBean() { }
+        public NoneAccessBean(Object o) { object = o; }
+        public NoneAccessBean(Object o, Object b) {
+            object = o;
+            other = b;
+        }
+    }
+
     /*
     /**********************************************************
     /* Unit tests
     /**********************************************************
      */
 
+    private final ObjectMapper MAPPER = getJaxbMapper();
+    
     // Verify serialization wrt [JACKSON-354]
     //
     // NOTE: fails currently because we use Bean Introspector which only sees public methods -- need to rewrite
     public void testJackson354Serialization() throws IOException
     {
-        ObjectMapper mapper = getJaxbMapper();
-        assertEquals("{\"name\":\"foo\"}", mapper.writeValueAsString(new Bean354()));
+        assertEquals("{\"name\":\"foo\"}", MAPPER.writeValueAsString(new Bean354()));
     }
 
     // For [JACKSON-539]
@@ -76,10 +103,17 @@ public class TestPropertyVisibility
         
         Jackson539Bean input = new Jackson539Bean();
         input.type = 123;
-        ObjectMapper mapper = getJaxbMapper();
-        String json = mapper.writeValueAsString(input);
-        Jackson539Bean result = mapper.readValue(json, Jackson539Bean.class);
+        String json = MAPPER.writeValueAsString(input);
+        Jackson539Bean result = MAPPER.readValue(json, Jackson539Bean.class);
         assertNotNull(result);
         assertEquals(123, result.type);
+    }
+
+    // for [modules-base#44]
+    public void testNoneAccessWithXmlElements() throws Exception
+    {
+        NoneAccessBean input = new NoneAccessBean(new Foo44());
+        assertEquals(aposToQuotes("{'object':{'foo':{'foo':'bar'}},'other':null}"),
+                MAPPER.writeValueAsString(input));
     }
 }

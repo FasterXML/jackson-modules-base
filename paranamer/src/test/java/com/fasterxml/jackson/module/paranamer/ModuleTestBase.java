@@ -2,6 +2,8 @@ package com.fasterxml.jackson.module.paranamer;
 
 import java.util.Arrays;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import junit.framework.TestCase;
 
 public abstract class ModuleTestBase
@@ -18,6 +20,12 @@ public abstract class ModuleTestBase
             }
         }
         fail("Expected an exception with one of substrings ("+Arrays.asList(matches)+"): got one with message \""+msg+"\"");
+    }
+
+    protected ObjectMapper newObjectMapper() {
+        return ObjectMapper.builder()
+                .addModule(new ParanamerModule())
+                .build();
     }
 
     public String quote(String str) {

@@ -43,9 +43,10 @@ public class TestCreatorWithNamingStrategy
         }
     }
     
-    private final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new ParanamerModule())
-            .setPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE);
+    private final ObjectMapper MAPPER = ObjectMapper.builder()
+            .addModule(new ParanamerModule())
+            .propertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE)
+            .build();
 
     public void testSimpleConstructor() throws Exception
     {
