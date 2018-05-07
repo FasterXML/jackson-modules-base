@@ -174,6 +174,9 @@ public class DeserializerModifier extends BeanDeserializerModifier
      * kinds of deserializers.
      */
     protected boolean isDefaultDeserializer(JsonDeserializer<?> deser) {
-        return ClassUtil.isJacksonStdImpl(deser);
+        return ClassUtil.isJacksonStdImpl(deser)
+                // 07-May-2018, tatu: Probably can't happen but just in case
+                || (deser instanceof SuperSonicBeanDeserializer);
+
     }
 }
