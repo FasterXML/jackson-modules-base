@@ -10,7 +10,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.9.6 (not yet released)
+2.9.6 (12-Jun-2018)
 
 #44: (jaxb) `@XmlElements` does not work with `@XmlAccessorType(XmlAccessType.NONE)`
  (reported by Alexander O)
