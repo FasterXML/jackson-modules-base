@@ -58,8 +58,27 @@ public class MyClassLoader extends ClassLoader
     public Class<?> loadAndResolve(ClassName className, byte[] byteCode)
         throws IllegalArgumentException
     {
-        // First things first: just to be sure; maybe we have already loaded it?
-        Class<?> old = findLoadedClass(className.getDottedName());
+        // First things first: just to be sure; maybe it is already loaded?
+        // First: has the parent already loaded it?
+        Class<?> old = null;
+        if (_cfgUseParentLoader) {
+            ClassLoader cl = getParent();
+            // if we have parent, that is
+            if (cl != null) {
+                try {
+                    Method method = ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
+                    method.setAccessible(true);
+                    old = (Class<?>)method.invoke(cl, className.getDottedName());
+                } catch (Exception e) {
+                    // Should we handle this somehow?
+                }
+            }
+        }
+        if (old != null) {
+            return old;
+        }
+        // Second: have we loaded it ourselves?
+        old = findLoadedClass(className.getDottedName());
         if (old != null) {
             return old;
         }
