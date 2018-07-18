@@ -70,8 +70,7 @@ public class BeanBuilder
         // First: find all supertypes:
         implTypes.add(_type);
         BeanUtil.findSuperTypes(_type, Object.class, implTypes);
-        final boolean hasConcrete = !_type.isInterface();
-        
+
         for (JavaType impl : implTypes) {
             TypeResolutionContext ctxt = buildTypeContext(impl);
 
@@ -109,7 +108,7 @@ public class BeanBuilder
                     continue;
                 }
                 // [module-mrbean#11]: try to support overloaded methods
-                if (hasConcrete && hasConcreteOverride(m, _type)) {
+                if (hasConcreteOverride(m, _type)) {
                     continue;
                 }
                 if (failOnUnrecognized) {
@@ -126,7 +125,7 @@ public class BeanBuilder
     /**
      * Method that generates byte code for class that implements abstract
      * types requested so far.
-     * 
+     *
      * @param className Fully-qualified name of the class to generate
      * @return Byte code Class instance built by this builder
      */
@@ -171,7 +170,7 @@ public class BeanBuilder
     /**
      * Helper method used to detect if an abstract method found in a base class
      * may actually be implemented in a (more) concrete sub-class.
-     * 
+     *
      * @since 2.4
      */
     protected boolean hasConcreteOverride(Method m0, JavaType implementedType)
@@ -191,7 +190,7 @@ public class BeanBuilder
         }
         return false;
     }
-    
+
     protected String getPropertyName(String methodName)
     {
         int prefixLen = methodName.startsWith("is") ? 2 : 3;
@@ -215,7 +214,7 @@ public class BeanBuilder
         POJOProperty prop = findProperty(ctxt, getPropertyName(m.getName()));
         // only set if not yet set; we start with super class:
         if (prop.getGetter() == null) {
-            prop.setGetter(m);        
+            prop.setGetter(m);
         }
     }
 
@@ -236,13 +235,13 @@ public class BeanBuilder
         }
         return prop;
     }
-    
+
     protected final static boolean returnsBoolean(Method m)
     {
         Class<?> rt = m.getReturnType();
         return (rt == Boolean.class || rt == Boolean.TYPE);
     }
-    
+
     /*
     /**********************************************************
     /* Internal methods, bytecode generation
@@ -290,7 +289,7 @@ public class BeanBuilder
     /* Internal methods, other
     /**********************************************************
      */
-    
+
     protected String decap(String name) {
         char c = name.charAt(0);
         if (name.length() > 1
