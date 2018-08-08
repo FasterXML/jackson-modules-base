@@ -1,15 +1,18 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
-import java.io.IOException;
-import java.util.*;
-
-import com.fasterxml.jackson.core.*;
-
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.deser.*;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.JsonTokenId;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.deser.BeanDeserializer;
+import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.deser.impl.BeanPropertyMap;
 import com.fasterxml.jackson.databind.deser.impl.UnwrappedPropertyHandler;
 import com.fasterxml.jackson.databind.util.NameTransformer;
+
+import java.io.IOException;
+import java.util.List;
 
 public final class SuperSonicBeanDeserializer
     extends SuperSonicBDBase
@@ -322,5 +325,17 @@ public final class SuperSonicBeanDeserializer
             return super.deserialize(p, ctxt, bean);
         }
         return bean;
+    }
+
+    @Override
+    protected Object deserializeWithObjectId(JsonParser p, DeserializationContext ctxt) throws IOException {
+
+        if (_objectIdReader != null && _objectIdReader.maySerializeAsObject()) {
+            if (p.hasTokenId(JsonTokenId.ID_FIELD_NAME)
+                    && _objectIdReader.isValidReferencePropertyName(p.currentName(), p)) {
+                return deserializeFromObjectId(p, ctxt);
+            }
+        }
+        return super.deserializeWithObjectId(p, ctxt);
     }
 }
