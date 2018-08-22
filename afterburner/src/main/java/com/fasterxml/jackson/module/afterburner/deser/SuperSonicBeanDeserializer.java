@@ -1,15 +1,18 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
-import java.io.IOException;
-import java.util.*;
-
-import com.fasterxml.jackson.core.*;
-
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.deser.*;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.JsonTokenId;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.deser.BeanDeserializer;
+import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.deser.impl.BeanPropertyMap;
 import com.fasterxml.jackson.databind.deser.impl.UnwrappedPropertyHandler;
 import com.fasterxml.jackson.databind.util.NameTransformer;
+
+import java.io.IOException;
+import java.util.List;
 
 public final class SuperSonicBeanDeserializer
     extends SuperSonicBDBase
@@ -239,6 +242,16 @@ public final class SuperSonicBeanDeserializer
     @Override
     public final Object deserializeFromObject(JsonParser p, DeserializationContext ctxt) throws IOException
     {
+        /* See BeanDeserializer.deserializeFromObject [databind#622]
+         * Allow Object Id references to come in as JSON Objects as well...
+         */
+        if ((_objectIdReader != null) && _objectIdReader.maySerializeAsObject()) {
+            if (p.hasTokenId(JsonTokenId.ID_FIELD_NAME)
+                    && _objectIdReader.isValidReferencePropertyName(p.getCurrentName(), p)) {
+                return deserializeFromObjectId(p, ctxt);
+            }
+        }
+
         if (_nonStandardCreation) {
             if (_unwrappedPropertyHandler != null) {
                 return deserializeWithUnwrapped(p, ctxt);
