@@ -19,3 +19,10 @@ Alexander Onnikov (aonnikov@github)
 
 * Reported #44: (jaxb) `@XmlElements` does not work with `@XmlAccessorType(XmlAccessType.NONE)`
  (2.9.6)
+
+William Headrick (headw01@github)
+
+* Reported 54: Afterburner` SuperSonicBeanDeserializer` does not handle JSON Object
+  valued Object Ids (like json)
+ (2.9.7)
+ 
