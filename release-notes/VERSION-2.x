@@ -10,7 +10,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.9.7 (not yet released)
+2.9.7 (19-Sep-2018)
 
 #54: Afterburner` SuperSonicBeanDeserializer` does not handle JSON Object
   valued Object Ids (like json)
