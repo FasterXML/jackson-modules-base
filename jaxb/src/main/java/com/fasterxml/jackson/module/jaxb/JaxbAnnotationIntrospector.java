@@ -1035,16 +1035,9 @@ public class JaxbAnnotationIntrospector
     {
         // One limitation: for structured types this is done later on
         Class<?> deserType = _rawDeserializationType(a);
-        if (isContainerType(deserType)) {
-            XmlAdapter<?,?> adapter = findAdapter(config, a, true, deserType);
-            if (adapter != null) {
-                return _converter(config, adapter, false);
-            }
-        } else {
-            XmlAdapter<?,?> adapter = findAdapter(config, a, true, deserType);
-            if (adapter != null) {
-                return _converter(config, adapter, false);
-            }
+        XmlAdapter<?,?> adapter = findAdapter(config, a, true, deserType);
+        if (adapter != null) {
+            return _converter(config, adapter, false);
         }
         return null;
     }
