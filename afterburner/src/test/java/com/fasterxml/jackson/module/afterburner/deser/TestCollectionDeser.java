@@ -3,6 +3,7 @@ package com.fasterxml.jackson.module.afterburner.deser;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
@@ -29,7 +30,7 @@ public class TestCollectionDeser extends AfterburnerTestBase
     // [module-afterburner#36]
     public void testIntMethod() throws Exception
     {
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = JsonMapper.builder()
                 .configure(MapperFeature.USE_GETTERS_AS_SETTERS, true)
                 .addModule(new AfterburnerModule())
                 .build();
@@ -42,7 +43,7 @@ public class TestCollectionDeser extends AfterburnerTestBase
     // [module-afterburner#56]
     public void testUnwrapSingleArray() throws Exception
     {
-        final ObjectMapper mapper = ObjectMapper.builder()
+        final ObjectMapper mapper = JsonMapper.builder()
                 .enable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)
                 .addModule(new AfterburnerModule())
                 .build();

@@ -1,6 +1,7 @@
 package perf;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 public class ManualDatabindPerf
@@ -153,7 +154,7 @@ round = 1;
             System.exit(1);
         }
         ObjectMapper vanilla = new ObjectMapper();
-        ObjectMapper burnt = ObjectMapper.builder()
+        ObjectMapper burnt = JsonMapper.builder()
                 .addModule(new AfterburnerModule())
                 .build();
 

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.json.JsonFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 public final class TestJvmSerPerf
@@ -64,7 +64,7 @@ public final class TestJvmSerPerf
         ;
 //        ((SmileFactory) jsonF).configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, false);
             
-        final ObjectMapper jsonMapper = ObjectMapper.builder(jsonF)
+        final ObjectMapper jsonMapper = JsonMapper.builder(jsonF)
                 .addModule(new AfterburnerModule())
 //      .configure(SerializationConfig.Feature.USE_STATIC_TYPING, true)
                 .build();
@@ -73,7 +73,7 @@ public final class TestJvmSerPerf
         final SmileFactory smileFactory = new SmileFactory();
         smileFactory.configure(SmileGenerator.Feature.CHECK_SHARED_NAMES, true);
         smileFactory.configure(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES, false);
-        final ObjectMapper smileMapper = new ObjectMapper(smileFactory);
+        final ObjectMapper smileMapper = new SmileMapper(smileFactory);
         */
         
         while (true) {

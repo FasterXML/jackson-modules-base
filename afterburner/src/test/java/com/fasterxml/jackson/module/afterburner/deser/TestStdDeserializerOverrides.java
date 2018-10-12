@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.Deserializers;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
@@ -73,7 +74,7 @@ public class TestStdDeserializerOverrides extends AfterburnerTestBase
     {
         final String json = "{\"field\": \"value &amp; value\"}";
         final String EXP = "value & value";
-        Issue59Bean resultVanilla = ObjectMapper.builder()
+        Issue59Bean resultVanilla = JsonMapper.builder()
                 .addModule(new SimpleModule("module", Version.unknownVersion())
                         .addDeserializer(String.class, new DeAmpDeserializer()))
                 .build()

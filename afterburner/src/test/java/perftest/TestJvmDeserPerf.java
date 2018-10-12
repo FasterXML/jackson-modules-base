@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.json.JsonFactory;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 /**
@@ -60,7 +61,7 @@ public final class TestJvmDeserPerf
             new JsonFactory()
         ;
         
-        final ObjectMapper jsonMapper = ObjectMapper.builder(jsonF)
+        final ObjectMapper jsonMapper = JsonMapper.builder(jsonF)
                 .addModule(new com.fasterxml.jackson.module.afterburner.AfterburnerModule())
                 .build();
 

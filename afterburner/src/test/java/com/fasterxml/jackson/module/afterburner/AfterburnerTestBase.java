@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 public abstract class AfterburnerTestBase extends junit.framework.TestCase
 {
@@ -172,7 +173,7 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
     }
 
     protected static MapperBuilder<?,?> afterburnerMapperBuilder() {
-        return ObjectMapper.builder()
+        return JsonMapper.builder()
                 .addModule(new AfterburnerModule());
     }
 

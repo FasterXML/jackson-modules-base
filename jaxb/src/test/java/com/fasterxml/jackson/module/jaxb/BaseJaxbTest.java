@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 public abstract class BaseJaxbTest
@@ -25,28 +26,30 @@ public abstract class BaseJaxbTest
         return getJaxbAndJacksonMapper();
     }
 
+    protected MapperBuilder<?,?> objectMapperBuilder()
+    {
+        return JsonMapper.builder();
+    }
+    
     protected MapperBuilder<?,?> getJaxbMapperBuilder()
     {
-        AnnotationIntrospector intr = new JaxbAnnotationIntrospector();
-        return ObjectMapper.builder()
-                .annotationIntrospector(intr);
+        return JsonMapper.builder()
+                .annotationIntrospector(new JaxbAnnotationIntrospector());
     }
 
     protected MapperBuilder<?,?> getJaxbAndJacksonMapperBuilder()
     {
-        AnnotationIntrospector intr = new AnnotationIntrospectorPair(
-                new JaxbAnnotationIntrospector(),
-                new JacksonAnnotationIntrospector());
-        return ObjectMapper.builder()
-                .annotationIntrospector(intr);
+        return JsonMapper.builder()
+                .annotationIntrospector(new AnnotationIntrospectorPair(
+                        new JaxbAnnotationIntrospector(),
+                        new JacksonAnnotationIntrospector()));
     }
 
     protected MapperBuilder<?,?> getJacksonAndJaxbMapperBuilder()
     {
-        AnnotationIntrospector intr = new AnnotationIntrospectorPair(new JacksonAnnotationIntrospector(),
-                new JaxbAnnotationIntrospector());
-        return ObjectMapper.builder()
-                .annotationIntrospector(intr);
+        return JsonMapper.builder()
+                .annotationIntrospector(new AnnotationIntrospectorPair(new JacksonAnnotationIntrospector(),
+                        new JaxbAnnotationIntrospector()));
     }
 
     protected ObjectMapper getJaxbMapper() {

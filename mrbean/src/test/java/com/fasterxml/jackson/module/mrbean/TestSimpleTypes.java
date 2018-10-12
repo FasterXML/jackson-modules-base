@@ -5,6 +5,7 @@ import java.util.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 public class TestSimpleTypes extends BaseTest
 {
@@ -64,7 +65,7 @@ public class TestSimpleTypes extends BaseTest
         // but can make work with config:
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
         mat.disable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = JsonMapper.builder()
                 .addModule(new MrBeanModule(mat))
                 .build();
         JustGetAndSet value = mapper.readValue("{}", JustGetAndSet.class);

@@ -18,7 +18,6 @@ public class TestJsonFilter extends AfterburnerTestBase
         public String b = "b";
     }
 
-    
     // [Issue#89]
     static class Pod
     {
@@ -74,7 +73,7 @@ public class TestJsonFilter extends AfterburnerTestBase
                 SimpleBeanPropertyFilter.filterOutAllExcept("a"));
         assertEquals("{\"a\":\"a\"}", MAPPER.writer(prov).writeValueAsString(new Bean()));
 
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = afterburnerMapperBuilder()
                 .filterProvider(prov)
                 .build();
         assertEquals("{\"a\":\"a\"}", mapper.writeValueAsString(new Bean()));
@@ -100,7 +99,7 @@ public class TestJsonFilter extends AfterburnerTestBase
         
         // but when changing behavior, should work difference
         SimpleFilterProvider fp = new SimpleFilterProvider().setFailOnUnknownId(false);
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = afterburnerMapperBuilder()
                 .filterProvider(fp)
                 .build();
         String json = mapper.writeValueAsString(new Bean());

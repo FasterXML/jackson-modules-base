@@ -9,6 +9,7 @@ import java.io.StringWriter;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
@@ -36,7 +37,7 @@ public class TestDomElementSerialization extends BaseJaxbTest
     
     public void testBasicDomElementSerializationDeserialization() throws Exception
     {
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = JsonMapper.builder()
                 .addModule(new DomModule())
                 .build();
         StringBuilder builder = new StringBuilder()

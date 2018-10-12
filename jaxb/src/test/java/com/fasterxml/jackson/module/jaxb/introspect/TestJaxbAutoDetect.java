@@ -123,7 +123,7 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
         AnnotationIntrospector primary = new JaxbAnnotationIntrospector();
         AnnotationIntrospector secondary = new JacksonAnnotationIntrospector();
         AnnotationIntrospector pair = new AnnotationIntrospectorPair(primary, secondary);
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = objectMapperBuilder()
                 .annotationIntrospector(pair)
                 .build();
 

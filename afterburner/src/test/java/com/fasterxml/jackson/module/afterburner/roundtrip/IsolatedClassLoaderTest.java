@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.roundtrip;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import junit.framework.TestCase;
 
@@ -32,7 +33,7 @@ import java.net.URLClassLoader;
 public class IsolatedClassLoaderTest extends TestCase {
 
     public void testBeanWithSeparateClassLoader() throws IOException {
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = JsonMapper.builder()
                 .addModule(new AfterburnerModule())
                 .build();
 

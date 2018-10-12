@@ -60,7 +60,7 @@ public class TestUnwrapping extends BaseJaxbTest
         AnnotationIntrospector pair = new AnnotationIntrospectorPair(
                 new JacksonAnnotationIntrospector(),
                 new JaxbAnnotationIntrospector());
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = objectMapperBuilder()
                 .annotationIntrospector(pair)
                 .build();
             

@@ -123,7 +123,7 @@ public class TestIntrospectorPair
 
         // first: test with Jackson/Jaxb pair (jackson having precedence)
         pair = new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI);
-        mapper = ObjectMapper.builder()
+        mapper = objectMapperBuilder()
                 .annotationIntrospector(pair)
                 .build();
 
@@ -135,7 +135,7 @@ public class TestIntrospectorPair
         assertEquals("3", result.get("bothJackson"));
 
         pair = new AnnotationIntrospectorPair(_jaxbAI, _jacksonAI);
-        mapper = ObjectMapper.builder()
+        mapper = objectMapperBuilder()
                 .annotationIntrospector(pair)
                 .build();
 
@@ -155,7 +155,7 @@ public class TestIntrospectorPair
 
         // first: test with Jackson/Jaxb pair (jackson having precedence)
         pair = new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI);
-        mapper = ObjectMapper.builder()
+        mapper = objectMapperBuilder()
             .annotationIntrospector(pair)
             .build();
 
@@ -166,13 +166,12 @@ public class TestIntrospectorPair
         assertEquals("abc", result.get("jaxb"));
 
         pair = new AnnotationIntrospectorPair(_jaxbAI, _jacksonAI);
-        mapper = ObjectMapper.builder()
+        mapper = objectMapperBuilder()
                 .annotationIntrospector(pair)
                 .build();
 
         result = writeAndMap(mapper, new NamedBean2());
-        /* Hmmh. Not 100% sure what JAXB would dictate.... thus...
-         */
+        // Hmmh. Not 100% sure what JAXB would dictate.... thus...
         assertEquals(2, result.size());
         assertEquals("abc", result.get("jaxb"));
         //assertEquals("123", result.get("jackson"));
@@ -188,7 +187,7 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
 
         // Then JAXB only
-        mapper = ObjectMapper.builder()
+        mapper = objectMapperBuilder()
                 .annotationIntrospector(_jaxbAI)
                 .build();
 
@@ -199,7 +198,7 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
 
         // then both, Jackson first
-        mapper = ObjectMapper.builder()
+        mapper = objectMapperBuilder()
                 .annotationIntrospector(new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI))
                 .build();
 
@@ -208,7 +207,7 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
 
         // then both, JAXB first
-        mapper = ObjectMapper.builder()
+        mapper = objectMapperBuilder()
                 .annotationIntrospector(new AnnotationIntrospectorPair(_jaxbAI, _jacksonAI))
                 .build();
 
@@ -229,7 +228,7 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
 
         // Then JAXB only
-        mapper = ObjectMapper.builder()
+        mapper = objectMapperBuilder()
                 .annotationIntrospector(_jaxbAI)
                 .build();
 
@@ -240,7 +239,7 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
 
         // then both, Jackson first
-        mapper = ObjectMapper.builder()
+        mapper = objectMapperBuilder()
                 .annotationIntrospector(new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI))
                 .build();
 
@@ -249,7 +248,7 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
 
         // then both, JAXB first
-        mapper = ObjectMapper.builder()
+        mapper = objectMapperBuilder()
                 .annotationIntrospector(new AnnotationIntrospectorPair(_jaxbAI, _jacksonAI))
                 .build();
 
@@ -262,7 +261,7 @@ public class TestIntrospectorPair
     {
         // first: test with Jackson/Jaxb pair (jackson having precedence)
         AnnotationIntrospector pair = new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI);
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = objectMapperBuilder()
             .annotationIntrospector(pair)
             .build();
         TypeFactory tf = mapper.getTypeFactory();
@@ -293,7 +292,7 @@ public class TestIntrospectorPair
      */
     public void testIssue495() throws Exception
     {
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = objectMapperBuilder()
                 .annotationIntrospector(new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI))
                 .build();
         CreatorBean bean = mapper.readValue("{\"name\":\"foo\"}", CreatorBean.class);

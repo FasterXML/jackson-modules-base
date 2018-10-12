@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -185,7 +186,7 @@ public class TestSimpleMaterializedInterfaces
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
         // ensure that we will only get deferred error methods
         mat.disable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = JsonMapper.builder()
                 .addModule(new MrBeanModule(mat))
                 .build();
         PartialBean bean = mapper.readValue("{\"ok\":true}", PartialBean.class);

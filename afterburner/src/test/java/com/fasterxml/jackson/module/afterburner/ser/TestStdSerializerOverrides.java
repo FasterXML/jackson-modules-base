@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
@@ -92,7 +93,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
     public void testStringSerOverideNoAfterburner() throws Exception
     {
-        String json = ObjectMapper.builder()
+        String json = JsonMapper.builder()
                 .addModule(new SimpleModule("module", Version.unknownVersion())
                         .addSerializer(String.class, new MyStringSerializer()))
                 .build()
@@ -123,7 +124,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
                 VANILLA_MAPPER.writeValueAsString(new SimpleIntBean()));
 
         // and then with custom serializer, but no Afterburner
-        String json = ObjectMapper.builder()
+        String json = JsonMapper.builder()
                 .addModule(new SimpleModule("module", Version.unknownVersion())
                     .addSerializer(Integer.class, new MyIntSerializer())
                     .addSerializer(Integer.TYPE, new MyIntSerializer()))
@@ -150,7 +151,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
                 VANILLA_MAPPER.writeValueAsString(new SimpleLongBean()));
 
         // and then with custom serializer, but no Afterburner
-        String json = ObjectMapper.builder()
+        String json = JsonMapper.builder()
                 .addModule(new SimpleModule("module", Version.unknownVersion())
                     .addSerializer(Long.class, new MyLongSerializer())
                     .addSerializer(Long.TYPE, new MyLongSerializer()))

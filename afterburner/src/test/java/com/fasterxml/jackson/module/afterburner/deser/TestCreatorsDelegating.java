@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JacksonInject;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
@@ -75,7 +76,7 @@ public class TestCreatorsDelegating extends AfterburnerTestBase
     // As per [JACKSON-711]: should also work with delegate model (single non-annotated arg)
     public void testWithCtorAndDelegate() throws Exception
     {
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = JsonMapper.builder()
                 .injectableValues(new InjectableValues.Std()
                         .addValue(String.class, "Pooka"))
                 .addModule(new AfterburnerModule())
@@ -92,7 +93,7 @@ public class TestCreatorsDelegating extends AfterburnerTestBase
 
     public void testWithFactoryAndDelegate() throws Exception
     {
-        ObjectMapper mapper = ObjectMapper.builder()
+        ObjectMapper mapper = JsonMapper.builder()
                 .injectableValues(new InjectableValues.Std()
                         .addValue(String.class, "Fygar"))
                 .addModule(new AfterburnerModule())

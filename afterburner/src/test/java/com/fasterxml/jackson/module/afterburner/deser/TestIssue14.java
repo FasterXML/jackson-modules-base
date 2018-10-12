@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 public class TestIssue14 extends AfterburnerTestBase
@@ -38,9 +37,7 @@ public class TestIssue14 extends AfterburnerTestBase
         order.updatedAt = now;
 
         ObjectMapper vanillaMapper = new ObjectMapper();
-        ObjectMapper abMapper = ObjectMapper.builder()
-                .addModule(new AfterburnerModule())
-                .build();
+        ObjectMapper abMapper = newAfterburnerMapper();
 
         // First: ensure that serialization produces identical output
         

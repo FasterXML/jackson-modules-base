@@ -5,7 +5,7 @@ import java.io.*;
 import com.fasterxml.jackson.core.json.JsonFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 public class TestSerializePerf
@@ -27,12 +27,12 @@ public class TestSerializePerf
     {
 //        JsonFactory f = new org.codehaus.jackson.smile.SmileFactory();
         JsonFactory f = new JsonFactory();
-        ObjectMapper mapperSlow = ObjectMapper.builder(f)
+        ObjectMapper mapperSlow = JsonMapper.builder(f)
         // !!! TEST -- to get profile info, comment out:
                 .addModule(new AfterburnerModule())
                 .build();
 
-        ObjectMapper mapperFast = ObjectMapper.builder(f)
+        ObjectMapper mapperFast = JsonMapper.builder(f)
                 .addModule(new AfterburnerModule())
                 .build();
         new TestSerializePerf().testWith(mapperSlow, mapperFast);

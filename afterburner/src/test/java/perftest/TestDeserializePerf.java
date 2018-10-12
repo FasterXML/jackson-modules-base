@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.json.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 public class TestDeserializePerf
@@ -51,7 +51,7 @@ public class TestDeserializePerf
         // !!! TEST -- to get profile info, comment out:
 //        mapperSlow.registerModule(new AfterburnerModule());
 
-        ObjectMapper mapperFast = ObjectMapper.builder(f)
+        ObjectMapper mapperFast = JsonMapper.builder(f)
                 .addModule(new AfterburnerModule())
                 .build();
         new TestDeserializePerf().testWith(mapperSlow, mapperFast);

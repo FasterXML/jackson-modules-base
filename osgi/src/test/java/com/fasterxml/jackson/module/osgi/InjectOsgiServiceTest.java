@@ -30,6 +30,7 @@ import org.osgi.framework.ServiceReference;
 
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.osgi.OsgiJacksonModule;
 
 @RunWith(value = Parameterized.class)
@@ -65,7 +66,7 @@ public class InjectOsgiServiceTest
         when(bundleContext.getServiceReferences(eq(Service.class.getName()), anyString())).thenReturn(new ServiceReference[]{mock(ServiceReference.class)});
         when(bundleContext.getService(any(ServiceReference.class))).thenReturn(mock(Service.class));
         
-        mapper = ObjectMapper.builder()
+        mapper = JsonMapper.builder()
                 .addModule(new OsgiJacksonModule(bundleContext))
                 .build();
     }
