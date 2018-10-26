@@ -4,6 +4,8 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.concurrent.*;
+
 import static org.objectweb.asm.Opcodes.*;
 
 public class MyClassLoaderTest extends AfterburnerTestBase
@@ -15,7 +17,6 @@ public class MyClassLoaderTest extends AfterburnerTestBase
         assertEquals(3, count);
         assertEquals("Something with BAR in it (but not just FO!): BARBAR", new String(input, "UTF-8"));
     }
-
 
     public void testLoadAndResolveTryParentSameClassTwice() {
         ClassName className = ClassName.constructFor(TestClass.class, "_TryParent_Twice");
@@ -62,6 +63,38 @@ public class MyClassLoaderTest extends AfterburnerTestBase
                 clazz1.getClassLoader());
     }
 
+    public void testLoadAndResolveTryParentSameClassTwiceTwoThreads() {
+        Class<?>[] loadedClasses = loadSameClassOnTwoThreads(TestClass.class, "_TryParent_TwoThreads", true);
+
+        assertNotNull("first loaded class should not be null", loadedClasses[0]);
+        assertNotNull("second loaded class should not be null", loadedClasses[1]);
+        assertEquals(
+                "first class should be loaded with parent class loader",
+                getParentClassLoader(),
+                loadedClasses[0].getClassLoader());
+        assertEquals(
+                "second class should be loaded with parent class loader",
+                getParentClassLoader(),
+                loadedClasses[1].getClassLoader());
+        assertEquals("the two loaded class instances should be equal", loadedClasses[0], loadedClasses[1]);
+    }
+
+    public void testLoadAndResolvePrivateSuperclassTryParentSameClassTwiceTwoThreads() {
+        Class<?>[] loadedClasses = loadSameClassOnTwoThreads(PrivateTestClass.class, "_TryParent_TwoThreads", true);
+
+        assertNotNull("first loaded class should not be null", loadedClasses[0]);
+        assertNotNull("second loaded class should not be null", loadedClasses[1]);
+        assertEquals(
+                "first class should be loaded with parent class loader",
+                getParentClassLoader(),
+                loadedClasses[0].getClassLoader());
+        assertEquals(
+                "second class should be loaded with parent class loader",
+                getParentClassLoader(),
+                loadedClasses[1].getClassLoader());
+        assertEquals("the two loaded class instances should be equal", loadedClasses[0], loadedClasses[1]);
+    }
+
     /**
      * Simple public class to use for testing the MyClassLoader.
      */
@@ -102,6 +135,68 @@ public class MyClassLoaderTest extends AfterburnerTestBase
 
         cw.visitEnd();
         return cw.toByteArray();
+    }
+
+    private static ClassLoader getParentClassLoader() {
+        return MyClassLoaderTest.class.getClassLoader();
+    }
+
+    private static Class<?>[] loadSameClassOnTwoThreads(Class<?> superclassOfClassToLoad,
+                                                       String suffix,
+                                                       boolean tryToUseParent) {
+        final ClassName className = ClassName.constructFor(superclassOfClassToLoad, suffix);
+        final byte[] stubTestClassByteCode = generateTestClassByteCode(className, superclassOfClassToLoad);
+        className.assignChecksum(stubTestClassByteCode);
+
+        ClassLoader parentClassLoader = getParentClassLoader();
+
+        // The "normal" MyClassLoader will execute loadAndResolve without any artificial timing
+        final MyClassLoader normalMyClassLoader = new MyClassLoader(parentClassLoader, tryToUseParent);
+
+        // The "slow" MyClassLoader will block in the middle of its invocation of loadAndResolve,
+        // until a permit is made available on the semaphore.
+        final Semaphore semaphore = new Semaphore(0);
+        final MyClassLoader slowMyClassLoader = new MyClassLoaderWithArtificialTiming(
+                parentClassLoader, true, semaphore);
+        ExecutorService exec = new ThreadPoolExecutor(
+                2, 2, 0, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+
+        // First, we will start loading a class via slowMyClassLoader and wait a short while to allow it to
+        // reach the point at which it will block. Then we will attempt the same load via normalMyClassLoader,
+        // and wait another interval to allow it the chance to run to completion.
+        // At that point, a permit will be released into the semaphore allowing the slowMyClassLoader to complete
+        // the second half of its invocation.
+        try {
+            // Start loading via the slow loader on one thread
+            Future<Class<?>> slowFutureClass = exec.submit(new Callable<Class<?>>() {
+                @Override
+                public Class<?> call() {
+                    return slowMyClassLoader.loadAndResolve(className, stubTestClassByteCode);
+                }
+            });
+            // We will wait here for a little while to allow slowMyClassLoader to complete
+            // the first half of loadAndResolve() and reach the point at which it should block.
+            Thread.sleep(500L);
+
+            // Start loading the same class-to-load via the normal loader on a second thread
+            Future<Class<?>> normalFutureClass = exec.submit(new Callable<Class<?>>() {
+                @Override
+                public Class<?> call() {
+                    return normalMyClassLoader.loadAndResolve(className, stubTestClassByteCode);
+                }
+            });
+
+            // Wait another interval to allow normalMyClassLoader a chance to complete
+            Thread.sleep(500L);
+
+            // Release a permit to allow the slowMyClassLoader to proceed from its block
+            semaphore.release(1);
+
+            // Return the result of both loads. This call will block until both loads have completed.
+            return new Class<?>[]{normalFutureClass.get(), slowFutureClass.get()};
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

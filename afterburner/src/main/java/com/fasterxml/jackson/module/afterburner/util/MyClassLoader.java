@@ -65,13 +65,7 @@ public class MyClassLoader extends ClassLoader
             ClassLoader cl = getParent();
             // if we have parent, that is
             if (cl != null) {
-                try {
-                    Method method = ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
-                    method.setAccessible(true);
-                    old = (Class<?>)method.invoke(cl, className.getDottedName());
-                } catch (Exception e) {
-                    // Should we handle this somehow?
-                }
+                old = findLoadedClassOnParent(cl, className.getDottedName());
             }
         }
         if (old != null) {
@@ -94,15 +88,9 @@ public class MyClassLoader extends ClassLoader
             ClassLoader cl = getParent();
             // if we have parent, that is
             if (cl != null) {
-                try {
-                    Method method = ClassLoader.class.getDeclaredMethod("defineClass",
-                            new Class[] {String.class, byte[].class, int.class,
-                            int.class});
-                    method.setAccessible(true);
-                    return (Class<?>)method.invoke(getParent(),
-                            className.getDottedName(), byteCode, 0, byteCode.length);
-                } catch (Exception e) {
-                    // Should we handle this somehow?
+                impl = defineClassOnParent(cl, className.getDottedName(), byteCode, 0, byteCode.length);
+                if (impl != null) {
+                    return impl;
                 }
             }
         }
@@ -121,6 +109,36 @@ public class MyClassLoader extends ClassLoader
         // important: must also resolve the class...
         resolveClass(impl);
         return impl;
+    }
+
+    // visible for testing
+    Class<?> findLoadedClassOnParent(ClassLoader parentClassLoader, String className) {
+        try {
+            Method method = ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
+            method.setAccessible(true);
+            return (Class<?>) method.invoke(parentClassLoader, className);
+        } catch (Exception e) {
+            // Should we handle this somehow?
+            return null;
+        }
+    }
+
+    // visible for testing
+    Class<?> defineClassOnParent(ClassLoader parentClassLoader,
+                                 String className,
+                                 byte[] byteCode,
+                                 int offset,
+                                 int length) {
+        try {
+            Method method = ClassLoader.class.getDeclaredMethod("defineClass",
+                    new Class[]{String.class, byte[].class, int.class, int.class});
+            method.setAccessible(true);
+            return (Class<?>) method.invoke(parentClassLoader,
+                    className, byteCode, offset, length);
+        } catch (Exception e) {
+            // Should we handle this somehow?
+            return null;
+        }
     }
     
     public static int replaceName(byte[] byteCode,
