@@ -123,7 +123,7 @@ public class MyClassLoader extends ClassLoader
             // Second: define a new class instance on the parent classloder using the bytecode
             impl = defineClassOnParent(parentClassLoader, className.getDottedName(), byteCode, 0, byteCode.length);
             // important: must also resolve the newly-created class.
-            resolveClass(impl);
+            resolveClassOnParent(parentClassLoader, impl);
             return impl;
         }
     }
@@ -180,6 +180,18 @@ public class MyClassLoader extends ClassLoader
                     className, parentClassLoader);
             Logger.getLogger(MyClassLoader.class.getName()).log(Level.FINE, msg, e);
             return null;
+        }
+    }
+
+    private void resolveClassOnParent(ClassLoader parentClassLoader, Class<?> clazz) {
+        try {
+            Method method = ClassLoader.class.getDeclaredMethod("resolveClass", Class.class);
+            method.setAccessible(true);
+            method.invoke(parentClassLoader, clazz);
+        } catch (Exception e) {
+            String msg = String.format("Exception trying 'resolveClass(%s)' on parent ClassLoader '%s'",
+                    clazz, parentClassLoader);
+            Logger.getLogger(MyClassLoader.class.getName()).log(Level.FINE, msg, e);
         }
     }
     
