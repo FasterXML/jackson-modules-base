@@ -2,6 +2,8 @@ package com.fasterxml.jackson.module.afterburner.util;
 
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class loader that is needed to load generated classes.
@@ -148,14 +150,15 @@ public class MyClassLoader extends ClassLoader
         }
     }
 
-    // visible for testing
-    Class<?> findLoadedClassOnParent(ClassLoader parentClassLoader, String className) {
+    private Class<?> findLoadedClassOnParent(ClassLoader parentClassLoader, String className) {
         try {
             Method method = ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
             method.setAccessible(true);
             return (Class<?>) method.invoke(parentClassLoader, className);
         } catch (Exception e) {
-            // Should we handle this somehow?
+            String msg = String.format("Exception trying 'findLoadedClass(%s)' on parent ClassLoader '%s'",
+                    className, parentClassLoader);
+            Logger.getLogger(MyClassLoader.class.getName()).log(Level.FINE, msg, e);
             return null;
         }
     }
@@ -173,7 +176,9 @@ public class MyClassLoader extends ClassLoader
             return (Class<?>) method.invoke(parentClassLoader,
                     className, byteCode, offset, length);
         } catch (Exception e) {
-            // Should we handle this somehow?
+            String msg = String.format("Exception trying 'defineClass(%s, <bytecode>)' on parent ClassLoader '%s'",
+                    className, parentClassLoader);
+            Logger.getLogger(MyClassLoader.class.getName()).log(Level.FINE, msg, e);
             return null;
         }
     }
