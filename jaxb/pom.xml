@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion> 
+    <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.fasterxml.jackson.module</groupId>
     <artifactId>jackson-modules-base</artifactId>
@@ -19,6 +19,23 @@ data-binding.
    <!-- Generate PackageVersion.java into this directory. -->
     <packageVersion.dir>com/fasterxml/jackson/module/jaxb</packageVersion.dir>
     <packageVersion.package>${project.groupId}.jaxb</packageVersion.package>
+
+      <!-- With Jackson 2.9 we will require JDK 7 (except for annotations/streaming),
+         and new language features (diamond pattern) may be used.
+         JDK classes are still loaded dynamically since there isn't much downside
+         (small number of types); this allows use on JDK 6 platforms still (including
+         Android)
+      -->
+      <!-- TODO Remove JDK 11 Settings -->
+      <javac.src.version>1.11</javac.src.version>
+      <javac.target.version>1.11</javac.target.version>
+
+      <jdk.version>1.11</jdk.version>
+      <maven.compiler.source>1.11</maven.compiler.source>
+      <maven.compiler.target>1.11</maven.compiler.target>
+      <maven.compiler.release>11</maven.compiler.release>
+
+
   </properties>
   <dependencies>
     <!-- Extends Jackson core and mapper; minor dep on annotations too (JsonInclude) -->
@@ -39,7 +56,7 @@ data-binding.
     <dependency>
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
-      <version>2.2</version>
+        <version>2.3.0</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -52,4 +69,17 @@ data-binding.
       </plugin>
     </plugins>
   </build>
+
+    <profiles>
+        <profile>
+            <id>JPMS</id>
+            <dependencies>
+                <dependency>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>javax.activation-api</artifactId>
+                    <version>1.2.0</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

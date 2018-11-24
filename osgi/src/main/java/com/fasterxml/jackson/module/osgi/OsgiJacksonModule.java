@@ -1,10 +1,9 @@
 package com.fasterxml.jackson.module.osgi;
 
-import org.osgi.framework.BundleContext;
-
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.osgi.framework.BundleContext;
 
 /**
  * A Jackson Module to inject OSGI services in deserialized objects.
@@ -18,12 +17,20 @@ public class OsgiJacksonModule extends Module
 {
     private final BundleContext bundleContext;
 
-    public OsgiJacksonModule(BundleContext bundleContext)
+	/**
+	 * SPI Constructor
+	 */
+	public OsgiJacksonModule()
+	{
+		this(null);
+	}
+
+	public OsgiJacksonModule(BundleContext bundleContext)
     {
         this.bundleContext = bundleContext;
     }
-    
-    @Override
+
+	@Override
     public String getModuleName() {
         return getClass().getSimpleName();
     }

@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion> 
+    <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.fasterxml.jackson</groupId>
     <artifactId>jackson-base</artifactId>
-    <version>2.9.7</version>
+      <version>2.9.8-SNAPSHOT</version>
   </parent>
   <groupId>com.fasterxml.jackson.module</groupId>
   <artifactId>jackson-modules-base</artifactId>
@@ -27,7 +27,7 @@ not datatype, data format, or JAX-RS provider modules.
   <scm>
     <connection>scm:git:git@github.com:FasterXML/jackson-modules-base.git</connection>
     <developerConnection>scm:git:git@github.com:FasterXML/jackson-modules-base.git</developerConnection>
-    <url>http://github.com/FasterXML/jackson-modules-base</url>    
+      <url>http://github.com/FasterXML/jackson-modules-base</url>
     <tag>HEAD</tag>
   </scm>
   <issueManagement>
@@ -36,7 +36,9 @@ not datatype, data format, or JAX-RS provider modules.
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <version.asm>5.2</version.asm>
+      <version.asm>7.0</version.asm>
+
+
   </properties>
 
   <dependencies>
