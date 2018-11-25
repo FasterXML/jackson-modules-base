@@ -13,6 +13,16 @@ Module is considered stable and has been used in production environments since v
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-paranamer/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-paranamer/)
 [![Javadoc](https://javadoc-emblem.rhcloud.com/doc/com.fasterxml.jackson.module/jackson-module-paranamer/badge.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-paranamer)
 
+
+# JPMS Configuration
+This module is strictly defined and the module-info.java is attached with the [moditect](https://github.com/moditect/moditect) plugin
+
+This allows for transitive dependencies, and will not place this library in the Automatic Named Modules.
+
+This modules name is ```com.fasterxml.jackson.datatype.jsr310```
+
+-----
+
 ## Usage
 
 Functionality can be used either by directly overriding `AnnotationIntrospector` that `ObjectMapper` uses

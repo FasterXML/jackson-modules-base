@@ -28,6 +28,17 @@ To use this extension on Maven-based projects, use following dependency:
 
 (or whatever version is most up-to-date at the moment)
 
+# JPMS Configuration
+This module is strictly defined and the module-info.java is attached with the [moditect](https://github.com/moditect/moditect) plugin
+
+This allows for transitive dependencies, and will not place this library in the Automatic Named Modules.
+
+This modules name is ```com.fasterxml.jackson.module.jaxb ```
+
+This module requires JAXB version 2.3 for JPMS
+
+-----
+
 ## Usage
 
 To enable use of JAXB annotations, one must add `JaxbAnnotationIntrospector` provided by this module. There are two ways to do this:

@@ -31,6 +31,15 @@ For non-Maven use cases, you download jars from [Central Maven repository](http:
 
 Module jar is also a functional OSGi bundle, with proper import/export declarations, so it can be use on OSGi container as is.
 
+# JPMS Configuration
+This module is strictly defined and the module-info.java is attached with the [moditect](https://github.com/moditect/moditect) plugin
+
+This allows for transitive dependencies, and will not place this library in the Automatic Named Modules.
+
+This modules name is ```com.fasterxml.jackson.module.afterburner ```
+
+-----
+
 ### Registering module
 
 To use the the Module in Jackson, simply register it with the ObjectMapper instance:

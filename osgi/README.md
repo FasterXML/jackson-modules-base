@@ -10,6 +10,15 @@ Module is licensed under [Apache License 2.0](http://www.apache.org/licenses/LIC
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-osgi/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-osgi/)
 [![Javadoc](https://javadoc-emblem.rhcloud.com/doc/com.fasterxml.jackson.module/jackson-module-osgi/badge.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-osgi)
 
+# JPMS Configuration
+This module is strictly defined and the module-info.java is attached with the [moditect](https://github.com/moditect/moditect) plugin
+
+This allows for transitive dependencies, and will not place this library in the Automatic Named Modules.
+
+This modules name is ```com.fasterxml.jackson.module.osgi ```
+
+-----
+
 ## Usage
 
 For example, imagine a drawing software that persists shapes in JSON documents (on file system, mongodb or orientdb). The _Shape_ object needs a _DrawingService_ that is in charge of drawing shapes.
