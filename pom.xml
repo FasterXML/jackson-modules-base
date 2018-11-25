@@ -86,6 +86,28 @@ not datatype, data format, or JAX-RS provider modules.
             </excludes>
           </configuration>
 	</plugin>
+          <plugin>
+              <groupId>org.moditect</groupId>
+              <artifactId>moditect-maven-plugin</artifactId>
+              <version>1.0.0.Beta1</version>
+              <executions>
+                  <execution>
+                      <id>add-module-infos</id>
+                      <phase>package</phase>
+                      <goals>
+                          <goal>add-module-info</goal>
+                      </goals>
+                      <configuration>
+                          <overwriteExistingFiles>true</overwriteExistingFiles>
+                          <module>
+                              <moduleInfoFile>
+                                  src/moditect/module-info.java
+                              </moduleInfoFile>
+                          </module>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
       </plugins>
     </pluginManagement>
   </build>

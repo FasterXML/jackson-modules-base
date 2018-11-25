@@ -33,21 +33,6 @@ field access and method calls
 <!--
      <osgi.private>com.fasterxml.jackson.module.afterburner.asm</osgi.private>
 -->
-      <!-- With Jackson 2.9 we will require JDK 7 (except for annotations/streaming),
-         and new language features (diamond pattern) may be used.
-         JDK classes are still loaded dynamically since there isn't much downside
-         (small number of types); this allows use on JDK 6 platforms still (including
-         Android)
-      -->
-      <!-- TODO Remove JDK 11 Settings -->
-      <javac.src.version>1.11</javac.src.version>
-      <javac.target.version>1.11</javac.target.version>
-
-      <jdk.version>1.11</jdk.version>
-      <maven.compiler.source>1.11</maven.compiler.source>
-      <maven.compiler.target>1.11</maven.compiler.target>
-      <maven.compiler.release>11</maven.compiler.release>
-
   </properties>
 
   <dependencies>
@@ -87,33 +72,28 @@ field access and method calls
           </execution>
         </executions>
       </plugin>
-
-      <plugin>
-        <!--  We will shade ASM, to simplify deployment, avoid version conflicts -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <artifactSet>
-                <includes>
-                  <include>org.ow2.asm:asm</include>
-                </includes>
-              </artifactSet>
-              <relocations>
-                <relocation>
-                  <pattern>org.objectweb.asm</pattern>
-                  <shadedPattern>com.fasterxml.jackson.module.afterburner.asm</shadedPattern>
-                </relocation>
-              </relocations>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+        <plugin>
+            <groupId>org.moditect</groupId>
+            <artifactId>moditect-maven-plugin</artifactId>
+            <version>1.0.0.Beta1</version>
+            <executions>
+                <execution>
+                    <id>add-module-infos</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>add-module-info</goal>
+                    </goals>
+                    <configuration>
+                        <overwriteExistingFiles>true</overwriteExistingFiles>
+                        <module>
+                            <moduleInfoFile>
+                                src/moditect/module-info.java
+                            </moduleInfoFile>
+                        </module>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
     </plugins>
   </build>
 </project>
