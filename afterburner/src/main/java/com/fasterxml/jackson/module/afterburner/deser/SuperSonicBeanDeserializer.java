@@ -239,6 +239,14 @@ public final class SuperSonicBeanDeserializer
     @Override
     public final Object deserializeFromObject(JsonParser p, DeserializationContext ctxt) throws IOException
     {
+        // See BeanDeserializer.deserializeFromObject [databind#622]
+        // Allow Object Id references to come in as JSON Objects as well...
+        if ((_objectIdReader != null) && _objectIdReader.maySerializeAsObject()) {
+            if (p.hasTokenId(JsonTokenId.ID_FIELD_NAME)
+                    && _objectIdReader.isValidReferencePropertyName(p.getCurrentName(), p)) {
+                return deserializeFromObjectId(p, ctxt);
+            }
+        }
         if (_nonStandardCreation) {
             if (_unwrappedPropertyHandler != null) {
                 return deserializeWithUnwrapped(p, ctxt);
