@@ -187,7 +187,7 @@ public class JSOGDeserialize622Test extends AfterburnerTestBase
     /**********************************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
 
     // Basic for [databind#622]
     public void testStructJSOGRef() throws Exception
