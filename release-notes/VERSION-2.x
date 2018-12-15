@@ -10,6 +10,10 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.8 (15-Dec-2018)
+
+No changes since 2.9.7
+
 2.9.7 (19-Sep-2018)
 
 #54: Afterburner` SuperSonicBeanDeserializer` does not handle JSON Object
