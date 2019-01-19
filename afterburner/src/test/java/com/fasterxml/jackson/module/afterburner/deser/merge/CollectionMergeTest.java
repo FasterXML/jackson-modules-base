@@ -98,5 +98,4 @@ public class CollectionMergeTest extends AfterburnerTestBase
         assertTrue(result.abc.contains(ABC.B)); // original
         assertTrue(result.abc.contains(ABC.A)); // added
     }
-
 }

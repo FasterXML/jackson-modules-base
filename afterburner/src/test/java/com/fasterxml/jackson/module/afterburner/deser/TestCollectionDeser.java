@@ -30,7 +30,7 @@ public class TestCollectionDeser extends AfterburnerTestBase
     // [module-afterburner#36]
     public void testIntMethod() throws Exception
     {
-        ObjectMapper mapper = JsonMapper.builder()
+        final ObjectMapper mapper = JsonMapper.builder()
                 .configure(MapperFeature.USE_GETTERS_AS_SETTERS, true)
                 .addModule(new AfterburnerModule())
                 .build();
