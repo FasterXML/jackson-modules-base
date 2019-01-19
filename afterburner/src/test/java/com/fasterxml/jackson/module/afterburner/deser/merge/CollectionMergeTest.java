@@ -52,10 +52,10 @@ public class CollectionMergeTest extends AfterburnerTestBase
     /********************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper()
+    private final ObjectMapper MAPPER = mapperBuilder()
             // 26-Oct-2016, tatu: Make sure we'll report merge problems by default
             .disable(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE)
-    ;
+            .build();
 
     public void testCollectionMerging() throws Exception
     {
@@ -98,5 +98,4 @@ public class CollectionMergeTest extends AfterburnerTestBase
         assertTrue(result.abc.contains(ABC.B)); // original
         assertTrue(result.abc.contains(ABC.A)); // added
     }
-
 }
