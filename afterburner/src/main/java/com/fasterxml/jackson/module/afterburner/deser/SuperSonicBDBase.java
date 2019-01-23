@@ -120,7 +120,7 @@ public abstract class SuperSonicBDBase
             throw new IllegalStateException("Afterburner internal error: BeanDeserializer for "
                     +_beanType+" has no properties that match expected ordering (should have "+len+") -- can not create optimized deserializer");
         }
-        _orderedProperties = props.toArray(new SettableBeanProperty[props.size()]);
+        _orderedProperties = props.toArray(new SettableBeanProperty[0]);
     }
 
 //    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
