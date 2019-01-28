@@ -186,6 +186,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         }
 
         if (t == JsonToken.VALUE_NUMBER_INT) {
+            _verifyScalarCoercion(ctxt, p, "boolean");
             // 11-Jan-2012, tatus: May be outside of int...
             if (p.getNumberType() == NumberType.INT) {
                 return (p.getIntValue() != 0);
@@ -194,6 +195,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         }
         // And finally, let's allow Strings to be converted too
         if (t == JsonToken.VALUE_STRING) {
+            _verifyScalarCoercion(ctxt, p, "boolean");
             String text = p.getText().trim();
             if ("true".equals(text) || "True".equals(text)) {
                 return true;
@@ -240,6 +242,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         }
         JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_STRING) { // let's do implicit re-parse
+            _verifyScalarCoercion(ctxt, p, "int");
             String text = p.getText().trim();
             if (_hasTextualNull(text)) {
                 return 0;
@@ -299,6 +302,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             }
             return p.getValueAsLong();
         case JsonTokenId.ID_STRING:
+            _verifyScalarCoercion(ctxt, p, "long");
             String text = p.getText().trim();
             if (text.length() == 0 || _hasTextualNull(text)) {
                 return 0L;
@@ -393,6 +397,19 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         ctxt.reportInputMismatch(getType(),
                 "Can not coerce a floating-point value (%s) into %s; enable `DeserializationFeature.ACCEPT_FLOAT_AS_INT` to allow",
                 p.getValueAsString(), type);
+    }
+
+    private void _verifyScalarCoercion(DeserializationContext ctxt, JsonParser parser, String type) throws IOException {
+        MapperFeature feat = MapperFeature.ALLOW_COERCION_OF_SCALARS;
+        if (!ctxt.isEnabled(feat)) {
+            ctxt.reportInputMismatch(getType(),
+                    "Cannot coerce JSON %s value (%s) into %s (enable `%s.%s` to allow)",
+                    parser.currentToken().name(),
+                    parser.readValueAsTree(),
+                    type,
+                    feat.getClass().getSimpleName(),
+                    feat.name());
+        }
     }
 
     protected boolean _hasTextualNull(String value) {
