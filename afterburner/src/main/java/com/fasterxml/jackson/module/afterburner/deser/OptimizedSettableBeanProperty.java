@@ -400,7 +400,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     }
 
     private void _verifyScalarCoercion(DeserializationContext ctxt, JsonParser parser, String type) throws IOException {
-        MapperFeature feat = MapperFeature.ALLOW_COERCION_OF_SCALARS;
+        MapperFeature feat = DeserializationFeature.ALLOW_COERCION_OF_SCALARS;
         if (!ctxt.isEnabled(feat)) {
             ctxt.reportInputMismatch(getType(),
                     "Cannot coerce JSON %s value (%s) into %s (enable `%s.%s` to allow)",

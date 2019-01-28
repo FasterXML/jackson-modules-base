@@ -243,7 +243,7 @@ public final class SuperSonicBeanDeserializer
         // Allow Object Id references to come in as JSON Objects as well...
         if ((_objectIdReader != null) && _objectIdReader.maySerializeAsObject()) {
             if (p.hasTokenId(JsonTokenId.ID_FIELD_NAME)
-                    && _objectIdReader.isValidReferencePropertyName(p.getCurrentName(), p)) {
+                    && _objectIdReader.isValidReferencePropertyName(p.currentName(), p)) {
                 return deserializeFromObjectId(p, ctxt);
             }
         }
