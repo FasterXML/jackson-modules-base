@@ -10,6 +10,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.9 (not yet released)
+
+#69: `ALLOW_COERCION_OF_SCALARS` ignored deserializing scalars with Afterburner
+ (reported, fix contributed by Dan S)
+
 2.9.8 (15-Dec-2018)
 
 No changes since 2.9.7
