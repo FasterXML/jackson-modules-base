@@ -2,6 +2,7 @@ package com.fasterxml.jackson.module.afterburner.util;
 
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,6 +12,11 @@ import java.util.logging.Logger;
 public class MyClassLoader extends ClassLoader
 {
     private final static Charset UTF8 = Charset.forName("UTF-8");
+
+    // Maps parent classloader instance and class name to the corresponding lock object.
+    // N.B. this must be static because multiple instances of MyClassLoader must all use the same lock
+    // when loading classes directly on the same parent.
+    private final static ConcurrentHashMap<String, Object> parentParallelLockMap = new ConcurrentHashMap<>();
 
     /**
      * Flag that determines if we should first try to load new class
@@ -109,6 +115,15 @@ public class MyClassLoader extends ClassLoader
         if (!_cfgUseParentLoader || (parentClassLoader = getParent()) == null) {
             return null;
         }
+        // N.B. The parent-class-loading locks are shared between all instances of MyClassLoader.
+        // We can be confident that no attempt will be made to re-acquire *any* parent-class-loading lock instance
+        // inside the synchronized region (eliminating the risk of deadlock), even if the parent class loader is also
+        // an instance of MyClassLoader, because:
+        //      a) this method is the only place that attempts to acquire a parent class loading lock,
+        //      b) the only non-private method which calls this method and thus acquires this lock is
+        //          MyClassLoader#loadAndResolve,
+        //      c) nothing in the synchronized region can have the effect of calling #loadAndResolve on this
+        //          or any other instance of MyClassLoader.
         synchronized (getParentClassLoadingLock(parentClassLoader, className.getDottedName())) {
             // First: check to see if the parent classloader has loaded it already
             Class<?> impl = findLoadedClassOnParent(parentClassLoader, className.getDottedName());
@@ -129,25 +144,32 @@ public class MyClassLoader extends ClassLoader
     }
 
     /**
-     * Get the class loading lock from the parent class loader for loading the named class.
+     * Get the class loading lock for the parent class loader for loading the named class.
+     *
+     * This is effectively the same implementation as ClassLoader#getClassLoadingLock, but using
+     * our static parentParallelLockMap and keying off of the parent ClassLoader instance as well as
+     * the class name to load.
      *
      * @param parentClassLoader     The parent ClassLoader
      * @param className             The name of the to-be-loaded class
-     * @throws IllegalStateException if there is no parent ClassLoader or the lock object could not be retrieved
      */
-    private Object getParentClassLoadingLock(ClassLoader parentClassLoader, String className)
-            throws IllegalStateException {
-        try {
-            Method method = ClassLoader.class.getDeclaredMethod("getClassLoadingLock", String.class);
-            method.setAccessible(true);
-            return method.invoke(parentClassLoader, className);
-        } catch (Exception e) {
-            throw new IllegalStateException(
-                    String.format(
-                            "Could not retrieve class loading lock from parent ClassLoader '%s'",
-                            parentClassLoader),
-                    e);
+    private Object getParentClassLoadingLock(ClassLoader parentClassLoader, String className) {
+        // N.B. using the canonical name and identity hash code to represent the parent class loader in the key
+        // in case that ClassLoader instance (which could be anything) implements #hashCode or #toString poorly.
+        // In the event of a collision here (same key, different parent class loader), we will end up using the
+        // same lock only to synchronize loads of the same class on two different class loaders,
+        // which shouldn't ever deadlock (see proof in #loadAndResolveUsingParentClassloader);
+        // worst case is unnecessary contention for the lock.
+        String key = String.format("%s:%d:%s",
+                parentClassLoader.getClass().getCanonicalName(),
+                System.identityHashCode(parentClassLoader),
+                className);
+        Object newLock = new Object();
+        Object lock = parentParallelLockMap.putIfAbsent(key, newLock);
+        if (lock == null) {
+            lock = newLock;
         }
+        return lock;
     }
 
     private Class<?> findLoadedClassOnParent(ClassLoader parentClassLoader, String className) {
