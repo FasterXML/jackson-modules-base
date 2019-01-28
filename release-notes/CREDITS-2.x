@@ -25,4 +25,9 @@ William Headrick (headw01@github)
 * Reported 54: Afterburner` SuperSonicBeanDeserializer` does not handle JSON Object
   valued Object Ids (like json)
  (2.9.7)
+
+Dan Sănduleac (dansanduleac@github)
  
+* Reported, contributed fix to #69: `ALLOW_COERCION_OF_SCALARS` ignored deserializing scalars
+   with Afterburner
+ (2.9.9)
