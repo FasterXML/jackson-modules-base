@@ -160,10 +160,9 @@ public class MyClassLoader extends ClassLoader
         // same lock only to synchronize loads of the same class on two different class loaders,
         // which shouldn't ever deadlock (see proof in #loadAndResolveUsingParentClassloader);
         // worst case is unnecessary contention for the lock.
-        String key = String.format("%s:%d:%s",
-                parentClassLoader.getClass().getCanonicalName(),
-                System.identityHashCode(parentClassLoader),
-                className);
+        String key = parentClassLoader.getClass().getCanonicalName()
+                + ":" + System.identityHashCode(parentClassLoader)
+                + ":" + className;
         Object newLock = new Object();
         Object lock = parentParallelLockMap.putIfAbsent(key, newLock);
         if (lock == null) {
