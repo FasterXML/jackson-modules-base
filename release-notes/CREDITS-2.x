@@ -31,3 +31,8 @@ Dan Sănduleac (dansanduleac@github)
 * Reported, contributed fix to #69: `ALLOW_COERCION_OF_SCALARS` ignored deserializing scalars
    with Afterburner
  (2.9.9)
+
+Georg Schmidt-Dumont (georgschmidtdumont@github)
+
+* Reported #74: MrBean module should not materialize `java.io.Serializable`
+ (2.9.9)

@@ -254,7 +254,8 @@ public class AbstractTypeMaterializer
         return _classLoader.loadAndResolve(newName, bytecode, rawType);
     }
 
-    private boolean _suitableType(JavaType type)
+    // private until 2.9.9
+    protected boolean _suitableType(JavaType type)
     {
         // Future plans may include calling of this method for all kinds of abstract types.
         // So as simple precaution, let's limit kinds of types we will try materialize
@@ -268,7 +269,9 @@ public class AbstractTypeMaterializer
                 // 22-Jun-2016, tatu: As per [#12], avoid these too
                 || (cls == Date.class) || (cls == Calendar.class)
                 || (cls == CharSequence.class) || (cls == Iterable.class) || (cls == Iterator.class)
-                ) {
+                // 06-Feb-2019, tatu: [modules-base#74] and:
+                || (cls == java.io.Serializable.class)
+        ) {
             return false;
         }
 
