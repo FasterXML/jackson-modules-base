@@ -161,7 +161,7 @@ public final class SuperSonicBeanDeserializer
 
     // much of below is cut'n pasted from BeanSerializer
     @Override
-    public final Object deserialize(JsonParser p, DeserializationContext ctxt,
+    public Object deserialize(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException
     {
         // [databind#631]: Assign current value, to be accessible by custom serializers
@@ -237,7 +237,7 @@ public final class SuperSonicBeanDeserializer
 
     // much of below is cut'n pasted from BeanSerializer
     @Override
-    public final Object deserializeFromObject(JsonParser p, DeserializationContext ctxt) throws IOException
+    public Object deserializeFromObject(JsonParser p, DeserializationContext ctxt) throws IOException
     {
         // See BeanDeserializer.deserializeFromObject [databind#622]
         // Allow Object Id references to come in as JSON Objects as well...
@@ -327,7 +327,7 @@ public final class SuperSonicBeanDeserializer
         }
         // also, need to ensure we get closing END_OBJECT...
         if (p.nextToken() != JsonToken.END_OBJECT) {
-            return super.deserialize(p, ctxt, bean);
+            return _handleUnexpectedWithin(p, ctxt, bean);
         }
         return bean;
     }

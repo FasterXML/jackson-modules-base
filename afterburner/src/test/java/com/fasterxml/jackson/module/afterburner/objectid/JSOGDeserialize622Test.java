@@ -19,12 +19,6 @@ public class JSOGDeserialize622Test extends AfterburnerTestBase
     public static final String REF_KEY = "@ref";
 
     /**
-     * JSON input
-     */
-    private static final String EXP_EXAMPLE_JSOG =  aposToQuotes(
-            "{'@id':'1','foo':66,'next':{'"+REF_KEY+"':'1'}}");
-
-    /**
      * Custom IdGenerator
      */
     static class JSOGGenerator extends ObjectIdGenerator<JSOGRef>
@@ -192,6 +186,9 @@ public class JSOGDeserialize622Test extends AfterburnerTestBase
     // Basic for [databind#622]
     public void testStructJSOGRef() throws Exception
     {
+        final String EXP_EXAMPLE_JSOG =  aposToQuotes(
+                "{'@id':'1','foo':66,'next':{'"+REF_KEY+"':'1'}}");
+
         IdentifiableExampleJSOG result = MAPPER.readValue(EXP_EXAMPLE_JSOG,
                 IdentifiableExampleJSOG.class);
         assertEquals(66, result.foo);
