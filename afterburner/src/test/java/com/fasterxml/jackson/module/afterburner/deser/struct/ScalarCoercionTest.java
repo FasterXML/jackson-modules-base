@@ -191,7 +191,7 @@ public class ScalarCoercionTest extends AfterburnerTestBase
         } catch (MismatchedInputException e) {
             verifyException(e, "Cannot coerce ");
             verifyException(e, " for type `");
-            verifyException(e, "enable `MapperFeature.ALLOW_COERCION_OF_SCALARS` to allow");
+            verifyException(e, "enable `DeserializationFeature.ALLOW_COERCION_OF_SCALARS` to allow");
         }
     }
 }

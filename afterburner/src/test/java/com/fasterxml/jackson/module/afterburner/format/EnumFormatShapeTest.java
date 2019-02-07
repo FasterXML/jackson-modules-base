@@ -13,7 +13,7 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 public class EnumFormatShapeTest
     extends AfterburnerTestBase
 {
-    @JsonFormat(shape=JsonFormat.Shape.OBJECT)
+    @JsonFormat(shape=JsonFormat.Shape.POJO)
     static enum PoNUM {
         A("a1"), B("b2");
 

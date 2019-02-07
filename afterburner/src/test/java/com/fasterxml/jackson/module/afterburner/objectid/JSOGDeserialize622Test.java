@@ -25,7 +25,7 @@ public class JSOGDeserialize622Test extends AfterburnerTestBase
             "{'@id':'1','foo':66,'next':{'"+REF_KEY+"':'1'}}");
 
     /**
-     * Customer IdGenerator
+     * Custom IdGenerator
      */
     static class JSOGGenerator extends ObjectIdGenerator<JSOGRef>
     {
@@ -88,19 +88,19 @@ public class JSOGDeserialize622Test extends AfterburnerTestBase
      */
     static class JSOGRefDeserializer extends JsonDeserializer<JSOGRef>
     {
-      @Override
-      public JSOGRef deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
-          JsonNode node = p.readValueAsTree();
-          if (node.isTextual()) {
-              return new JSOGRef(node.asInt());
-          }
-          JsonNode n = node.get(REF_KEY);
-          if (n == null) {
-              throw new JsonMappingException(p, "Could not find key '"+REF_KEY
-                      +"' from ("+node.getClass().getName()+"): "+node);
-          }
-          return new JSOGRef(n.asInt());
-      }
+        @Override
+        public JSOGRef deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+            JsonNode node = p.readValueAsTree();
+            if (node.isTextual()) {
+                return new JSOGRef(node.asInt());
+            }
+            JsonNode n = node.get(REF_KEY);
+            if (n == null) {
+                throw new JsonMappingException(p, "Could not find key '"+REF_KEY
+                        +"' from ("+node.getClass().getName()+"): "+node);
+            }
+            return new JSOGRef(n.asInt());
+        }
     }
 
     /**
