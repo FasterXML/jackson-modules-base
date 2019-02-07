@@ -14,6 +14,8 @@ Modules:
 
 #69: `ALLOW_COERCION_OF_SCALARS` ignored deserializing scalars with Afterburner
  (reported, fix contributed by Dan S)
+#74: MrBean module should not materialize `java.io.Serializable`
+ (reported by Georg S-D)
 
 2.9.8 (15-Dec-2018)
 
