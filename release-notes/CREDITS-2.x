@@ -28,7 +28,7 @@ William Headrick (headw01@github)
 
 Jeffrey Bagdis (jbagdis@github)
 
-* Reported, contributed fix to #50: Afterburner `MyClassLoader#loadAndResolve()`
+* Reported, contributed fix to #49: Afterburner `MyClassLoader#loadAndResolve()`
   is not idempotent when `tryToUseParent` is true
  (2.9.9)
 
