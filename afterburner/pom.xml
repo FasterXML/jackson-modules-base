@@ -38,7 +38,7 @@ field access and method calls
 
   <dependencies>
     <!-- Extends Jackson core, mapper,
-         Also needs ASM for bytecode generation
+         Also needs ByteBuddy for bytecode generation (3.0+)
      -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -58,6 +58,17 @@ field access and method calls
       <artifactId>jackson-annotations</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!--  16-Feb-2019, tatu: Test for [modules-base#49] fix requires Asm,
+           should convert but for now:
+      -->
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>5.2</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
