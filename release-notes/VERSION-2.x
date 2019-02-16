@@ -16,6 +16,9 @@ Modules:
  (reported, fix contributed by Dan S)
 #74: MrBean module should not materialize `java.io.Serializable`
  (reported by Georg S-D)
+#49: Afterburner `MyClassLoader#loadAndResolve()` is not idempotent when `tryToUseParent`
+  is true
+ (reported, fix contributed by Jeffrey B)
 
 2.9.8 (15-Dec-2018)
 

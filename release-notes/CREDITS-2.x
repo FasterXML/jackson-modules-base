@@ -28,11 +28,17 @@ William Headrick (headw01@github)
 
 Dan Sănduleac (dansanduleac@github)
  
-* Reported, contributed fix to #69: `ALLOW_COERCION_OF_SCALARS` ignored deserializing scalars
+* Reported, contributed fix for #69: `ALLOW_COERCION_OF_SCALARS` ignored deserializing scalars
    with Afterburner
  (2.9.9)
 
 Georg Schmidt-Dumont (georgschmidtdumont@github)
 
 * Reported #74: MrBean module should not materialize `java.io.Serializable`
+ (2.9.9)
+
+Jeffrey Bagdis (jbagdis@github)
+
+* Reported, contributed fix for #49: Afterburner `MyClassLoader#loadAndResolve()`
+  is not idempotent when `tryToUseParent` is true
  (2.9.9)
