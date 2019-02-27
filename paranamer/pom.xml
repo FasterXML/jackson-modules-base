@@ -63,6 +63,7 @@ to introspect names of constructor (and factory method) parameters.
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+
         <configuration>
           <optimize>true</optimize>
           <debug>true</debug>
@@ -77,6 +78,7 @@ to introspect names of constructor (and factory method) parameters.
         <!--  We will shade Paranamer, to simplify deployment, avoid version conflicts -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
+        <version>${version.maven.shade.plugin}</version>
         <executions>
           <execution>
             <phase>package</phase>

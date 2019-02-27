@@ -77,6 +77,7 @@ field access and method calls
         <!--  We will shade ASM, to simplify deployment, avoid version conflicts -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
+        <version>${version.maven.shade.plugin}</version>
         <executions>
           <execution>
             <phase>package</phase>
