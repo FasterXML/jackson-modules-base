@@ -25,15 +25,11 @@ field access and method calls
 
     <!-- 09-Oct-2011, tatu: should NOT require "com.fasterxml.jackson.databind.deser.impl", but
        Maven Bundle plug-in insists for some reason?!?
-       Similarly, org.objectweb.asm is shaded... why require?
        (will try to hide via resolution directive)
       -->
     <osgi.import>net.bytebuddy;resolution:=optional,
 *
      </osgi.import>
-<!--
-     <osgi.private>com.fasterxml.jackson.module.afterburner.asm</osgi.private>
--->
   </properties>
 
   <dependencies>
