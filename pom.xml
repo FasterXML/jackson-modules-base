@@ -36,8 +36,19 @@ not datatype, data format, or JAX-RS provider modules.
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <version.asm>5.2</version.asm>
+    <!-- 27-Feb-2019, tatu: Upgrade 5.2 -> 7.0 to support Java 11 -->
+    <version.asm>7.0</version.asm>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>${version.asm}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency> <!-- all modules use junit for testing -->

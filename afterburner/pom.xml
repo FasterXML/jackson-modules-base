@@ -50,7 +50,6 @@ field access and method calls
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>${version.asm}</version>
     </dependency>
     <dependency> <!--  tests use Jackson annoations -->
       <groupId>com.fasterxml.jackson.core</groupId>
