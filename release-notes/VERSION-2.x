@@ -10,6 +10,10 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.10.0 (not yet released)
+
+- Update `asm` version 5.2 -> 7.0 for JDK 11 support
+
 2.9.9 (not yet released)
 
 #49: Afterburner `MyClassLoader#loadAndResolve()` is not idempotent when \
