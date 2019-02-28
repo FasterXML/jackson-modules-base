@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.module.mrbean;
 
+import java.io.Serializable;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,5 +53,13 @@ public class TestJDKTypes extends BaseTest
     {
         CharSequence seq = MAPPER.readValue(quote("abc"), CharSequence.class);
         assertEquals("abc", (String) seq);
+    }
+
+    // [modules-base#74]: more types to skip
+    public void testSerializable() throws Exception
+    {
+//        Serializable value = MAPPER.readValue(quote("abc"), Serializable.class);
+        Serializable value = new ObjectMapper().readValue(quote("abc"), Serializable.class);
+        assertEquals("abc", (String) value);
     }
 }
