@@ -7,9 +7,8 @@ module com.fasterxml.jackson.module.afterburner {
     requires com.fasterxml.jackson.databind;
 
     exports com.fasterxml.jackson.module.afterburner;
-// do not expose shaded Asm
-//    exports com.fasterxml.jackson.module.afterburner.asm;
-//    exports com.fasterxml.jackson.module.afterburner.asm.signature;
+// do not expose shaded ByteBuddy
+//    exports com.fasterxml.jackson.module.afterburner.bytebuddy;
     exports com.fasterxml.jackson.module.afterburner.deser;
     exports com.fasterxml.jackson.module.afterburner.ser;
     exports com.fasterxml.jackson.module.afterburner.util;
