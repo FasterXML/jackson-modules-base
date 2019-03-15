@@ -80,6 +80,13 @@ ${project.groupId}.mrbean.*;version=${project.version}
           </execution>
         </executions>
       </plugin>
+      <!--  14-Mar-2019, tatu: Add rudimentary JDK9+ module info. To build with JDK 8
+             will have to use `moduleInfoFile` as anything else requires JDK 9+
+        -->
+      <plugin>
+        <groupId>org.moditect</groupId>
+        <artifactId>moditect-maven-plugin</artifactId>
+      </plugin>
     </plugins>
   </build>
 
