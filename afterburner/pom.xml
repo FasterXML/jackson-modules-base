@@ -15,7 +15,6 @@ field access and method calls
   <url>https://github.com/FasterXML/jackson-modules-base</url>
 
   <properties>
-    <version.butebuddy>1.7.8</version.butebuddy>
     <!-- Generate PackageVersion.java into this directory. -->
     <packageVersion.dir>com/fasterxml/jackson/module/afterburner</packageVersion.dir>
     <packageVersion.package>${project.groupId}.afterburner</packageVersion.package>
@@ -45,11 +44,10 @@ field access and method calls
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
-        <groupId>net.bytebuddy</groupId>
-        <artifactId>byte-buddy</artifactId>
-        <version>${version.butebuddy}</version>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy</artifactId>
     </dependency>
-    <dependency> <!--  tests use Jackson annoations -->
+    <dependency> <!--  tests use Jackson annotations -->
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
       <scope>test</scope>

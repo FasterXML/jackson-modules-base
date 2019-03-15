@@ -44,8 +44,18 @@ not datatype, data format, or JAX-RS provider modules.
     <!-- 17-Oct-2017, tatu: MrBean and Afterburner will use Byte Buddy instead of raw ASM
           starting with 3.0
       -->
-    <version.butebuddy>1.7.6</version.butebuddy>
+    <version.bytebuddy>1.9.10</version.bytebuddy>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy</artifactId>
+        <version>${version.bytebuddy}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency> <!-- all modules use junit for testing -->

@@ -39,9 +39,8 @@ ${project.groupId}.mrbean.*;version=${project.version}
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
-        <groupId>net.bytebuddy</groupId>
-        <artifactId>byte-buddy</artifactId>
-        <version>${version.butebuddy}</version>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy</artifactId>
     </dependency>
   </dependencies>
 

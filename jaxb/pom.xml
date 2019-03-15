@@ -42,6 +42,13 @@ data-binding.
       <version>2.3.0</version>
       <scope>provided</scope>
     </dependency>
+     <!-- 14-Mar-2019, tatu: Looks like this is needed for JDK11 and later
+       -->
+     <dependency>
+       <groupId>javax.activation</groupId>
+       <artifactId>javax.activation-api</artifactId>
+       <version>1.2.0</version>
+     </dependency>
   </dependencies>
 
   <build>
