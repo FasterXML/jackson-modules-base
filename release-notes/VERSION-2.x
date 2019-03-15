@@ -13,6 +13,8 @@ Modules:
 2.10.0 (not yet released)
 
 - Update `asm` version 5.2 -> 7.0 for JDK 11 support
+- Remove SPI metadata for OSGi module as there is no 0-arg constructor, does
+  not work
 
 2.9.9 (not yet released)
 
