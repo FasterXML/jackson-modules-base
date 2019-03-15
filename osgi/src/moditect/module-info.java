@@ -6,5 +6,5 @@ module com.fasterxml.jackson.module.osgi {
 
     exports com.fasterxml.jackson.module.osgi;
 
-    # NOTE! Does NOT expose Module via SPI as it can not provide 0-args constructor
+    // NOTE! Does NOT expose Module via SPI as it can not provide 0-args constructor
 }
