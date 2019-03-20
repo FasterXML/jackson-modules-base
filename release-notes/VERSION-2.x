@@ -12,6 +12,7 @@ Modules:
 
 2.10.0 (not yet released)
 
+#79: Add simple module-info for JDK9+, using Moditect
 - Update `asm` version 5.2 -> 7.0 for JDK 11 support
 - Remove SPI metadata for OSGi module as there is no 0-arg constructor, does
   not work
