@@ -9,9 +9,11 @@ module com.fasterxml.jackson.module.afterburner {
     exports com.fasterxml.jackson.module.afterburner;
 // do not expose shaded ByteBuddy
 //    exports com.fasterxml.jackson.module.afterburner.bytebuddy;
-    exports com.fasterxml.jackson.module.afterburner.deser;
-    exports com.fasterxml.jackson.module.afterburner.ser;
-    exports com.fasterxml.jackson.module.afterburner.util;
+
+// nor internal implementations of sub-packages
+//    exports com.fasterxml.jackson.module.afterburner.deser;
+//    exports com.fasterxml.jackson.module.afterburner.ser;
+//    exports com.fasterxml.jackson.module.afterburner.util;
 
     provides com.fasterxml.jackson.databind.Module with
         com.fasterxml.jackson.module.afterburner.AfterburnerModule;
