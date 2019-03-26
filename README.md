@@ -15,6 +15,10 @@ Currently included are:
 * [OSGi](osgi/)
 * [Paranamer](paranamer/)
 
+Somewhat more experimental:
+
+* [Blackbird](blackbird/) - Afterburner alternative: boost performance using lambdas
+
 ## License
 
 All modules are licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
