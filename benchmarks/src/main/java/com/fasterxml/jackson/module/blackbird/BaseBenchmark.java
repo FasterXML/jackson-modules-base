@@ -1,10 +1,13 @@
 package com.fasterxml.jackson.module.blackbird;
 
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -22,13 +25,14 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.Throughput)
-@Measurement(time = 5)
-@Warmup(time = 2)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Measurement(time = 20)
+@Warmup(time = 10)
+@OutputTimeUnit(TimeUnit.SECONDS)
 @Fork(1)
 public abstract class BaseBenchmark {
+    static Random random = new Random(1337);
     ObjectMapper mapper;
-    SomeBean bean;
+    SomeBean[] beans;
     byte[] bytes;
 
     public static void main(String[] args) throws RunnerException {
@@ -44,30 +48,26 @@ public abstract class BaseBenchmark {
     @Setup
     public void setup() throws Exception {
         mapper = createObjectMapper();
-        bean = new SomeBean();
+        beans = IntStream.range(0, 1000)
+                .mapToObj(i -> SomeBean.random())
+                .toArray(SomeBean[]::new);
 
-        bean.setPropA(42);
-        bean.setPropB("This is a moderately long string");
-        bean.setPropC(Long.MIN_VALUE);
-        bean.setPropD("This is an even better string for testing moderately long data sizes");
-        bean.setPropE(SomeBean.SomeEnum.EC);
-
-        bytes = mapper.writeValueAsBytes(bean);
+        bytes = mapper.writeValueAsBytes(beans);
     }
 
     @Benchmark
     public byte[] beanSer() throws Exception {
-        return mapper.writeValueAsBytes(bean);
+        return mapper.writeValueAsBytes(beans);
     }
 
     @Benchmark
-    public SomeBean beanDeser() throws Exception {
-        return mapper.readValue(bytes, SomeBean.class);
+    public SomeBean[] beanDeser() throws Exception {
+        return mapper.readValue(bytes, SomeBean[].class);
     }
 
     @Benchmark
-    public SomeBean constructorDeser() throws Exception {
-        return mapper.readValue(bytes, BeanWithPropertyConstructor.class);
+    public BeanWithPropertyConstructor[] constructorDeser() throws Exception {
+        return mapper.readValue(bytes, BeanWithPropertyConstructor[].class);
     }
 
     public static class SomeBean {
@@ -95,11 +95,11 @@ public abstract class BaseBenchmark {
             this.propC = propC;
         }
 
-        public String getPropD() {
+        public SomeBean getPropD() {
             return propD;
         }
 
-        public void setPropD(String propD) {
+        public void setPropD(SomeBean propD) {
             this.propD = propD;
         }
 
@@ -114,11 +114,23 @@ public abstract class BaseBenchmark {
         private int propA;
         private String propB;
         private long propC;
-        private String propD;
+        private SomeBean propD;
         private SomeEnum propE;
 
         public enum SomeEnum {
             EA, EB, EC, ED
+        }
+
+        static SomeBean random() {
+            final SomeBean result = new SomeBean();
+            result.setPropA(random.nextInt());
+            result.setPropB(RandomStringUtils.randomAscii(random.nextInt(32)));
+            result.setPropC(random.nextLong());
+            if (random.nextInt(5) == 0) {
+                result.setPropD(random());
+            }
+            result.setPropE(SomeEnum.values()[random.nextInt(SomeEnum.values().length)]);
+            return result;
         }
     }
 
@@ -132,7 +144,7 @@ public abstract class BaseBenchmark {
                 @JsonProperty("propA") int propA,
                 @JsonProperty("propB") String propB,
                 @JsonProperty("propC") long propC,
-                @JsonProperty("propD") String propD,
+                @JsonProperty("propD") SomeBean propD,
                 @JsonProperty("propE") SomeEnum propE)
         {
             setPropA(propA);
