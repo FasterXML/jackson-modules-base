@@ -1,9 +1,5 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
-import com.fasterxml.jackson.databind.deser.ValueInstantiator;
-import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
-import com.fasterxml.jackson.databind.introspect.AnnotatedWithParams;
-
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -15,6 +11,10 @@ import java.lang.reflect.Modifier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+
+import com.fasterxml.jackson.databind.deser.ValueInstantiator;
+import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
+import com.fasterxml.jackson.databind.introspect.AnnotatedWithParams;
 
 /**
  * Helper class that tries to generate {@link ValueInstantiator} class
@@ -148,7 +148,7 @@ public class CreatorOptimizer
     // for methods with arbitrary parameter lists.  So we have to use a spread invoker instead,
     // which is not a valid target for the metafactory.  Instead, we wrap it in a trampoline to
     // avoid creating megamorphic code paths and hope that code inlining covers up our reflective sins.
-    static Object invokeTrampoline(MethodHandle delegate, Object[] args) throws Throwable {
+    public static Object invokeTrampoline(MethodHandle delegate, Object[] args) throws Throwable {
         return delegate.invokeExact(args);
     }
 }

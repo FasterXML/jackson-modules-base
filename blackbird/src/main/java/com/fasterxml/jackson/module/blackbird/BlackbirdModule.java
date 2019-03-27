@@ -9,11 +9,14 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.module.blackbird.deser.BBDeserializerModifier;
 import com.fasterxml.jackson.module.blackbird.ser.BBSerializerModifier;
-import com.fasterxml.jackson.module.afterburner.PackageVersion;
 
 public class BlackbirdModule extends Module
 {
     private Function<Class<?>, Lookup> _lookups;
+
+    public BlackbirdModule() {
+        this(MethodHandles::lookup);
+    }
 
     public BlackbirdModule(Function<Class<?>, MethodHandles.Lookup> lookups) {
         _lookups = lookups;

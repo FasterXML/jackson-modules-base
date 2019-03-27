@@ -16,7 +16,6 @@ not datatype, data format, or JAX-RS provider modules.
 
   <modules>
     <module>afterburner</module>
-    <module>blackbird</module>
     <module>guice</module>
     <module>jaxb</module>
     <module>mrbean</module>

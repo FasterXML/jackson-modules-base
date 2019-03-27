@@ -5,7 +5,6 @@ import java.lang.invoke.MethodHandles;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.Versioned;
-import com.fasterxml.jackson.module.afterburner.PackageVersion;
 
 /**
  * Tests to verify that version information is properly accessible
