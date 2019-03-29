@@ -53,6 +53,10 @@ public class CreatorOptimizer
         AnnotatedWithParams argsCreator = _originalInstantiator.getWithArgsCreator();
         Function<Object[], Object> optimizedArgsCreator = null;
         if (argsCreator != null) {
+            // The LambdaMetafactory requires a specifying interface, which is not possible to provide
+            // for methods with arbitrary parameter lists.  So we have to use a spread invoker instead,
+            // which is not a valid target for the metafactory.  Instead, we wrap it in a trampoline to
+            // avoid creating megamorphic code paths and hope that code inlining covers up our reflective sins.
             MethodHandle argsCreatorHandle = directHandle(argsCreator.getAnnotated());
             if (argsCreatorHandle != null) {
                     optimizedArgsCreator = Unchecked.supplier(() ->
@@ -128,10 +132,6 @@ public class CreatorOptimizer
         .findFirst().orElse(null);
     }
 
-    // The LambdaMetafactory requires a specifying interface, which is not possible to provide
-    // for methods with arbitrary parameter lists.  So we have to use a spread invoker instead,
-    // which is not a valid target for the metafactory.  Instead, we wrap it in a trampoline to
-    // avoid creating megamorphic code paths and hope that code inlining covers up our reflective sins.
     public static Object invokeTrampoline(MethodHandle delegate, Object[] args) throws Throwable {
         return delegate.invokeExact(args);
     }

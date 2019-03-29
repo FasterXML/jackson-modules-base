@@ -1,4 +1,4 @@
-package perftest;
+package com.fasterxml.jackson.module.blackbird;
 
 import java.util.*;
 
@@ -7,6 +7,7 @@ import java.util.*;
  */
 public class MediaItem
 {
+    public static final MediaItem SAMPLE;
     private List<Photo> _photos;
     private Content _content;
 
@@ -15,6 +16,30 @@ public class MediaItem
     public MediaItem(Content c)
     {
         _content = c;
+    }
+
+    static
+    {
+        MediaItem.Content content = new MediaItem.Content();
+        content.setPlayer(MediaItem.Content.Player.JAVA);
+        content.setUri("http://javaone.com/keynote.mpg");
+        content.setTitle("Javaone Keynote");
+        content.setWidth(640);
+        content.setHeight(480);
+        content.setFormat("video/mpeg4");
+        content.setDuration(18000000L);
+        content.setSize(58982400L);
+        content.setBitrate(262144);
+        content.setCopyright("None");
+        content.addPerson("Bill Gates");
+        content.addPerson("Steve Jobs");
+
+        MediaItem item = new MediaItem(content);
+
+        item.addPhoto(new MediaItem.Photo("http://javaone.com/keynote_large.jpg", "Javaone Keynote", 1024, 768, MediaItem.Photo.Size.LARGE));
+        item.addPhoto(new MediaItem.Photo("http://javaone.com/keynote_small.jpg", "Javaone Keynote", 320, 240, MediaItem.Photo.Size.SMALL));
+
+        SAMPLE = item;
     }
 
     public void addPhoto(Photo p) {

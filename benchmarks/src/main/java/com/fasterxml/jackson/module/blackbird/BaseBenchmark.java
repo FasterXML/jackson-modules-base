@@ -7,6 +7,8 @@ import java.util.stream.IntStream;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -18,27 +20,43 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-@State(Scope.Benchmark)
 @BenchmarkMode(Mode.Throughput)
-@Measurement(time = 20)
-@Warmup(time = 10)
+@Measurement(time = 30, iterations = 10)
+@Warmup(time = 10, iterations = 10)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Fork(1)
 public abstract class BaseBenchmark {
-    static Random random = new Random(1337);
-    ObjectMapper mapper;
-    SomeBean[] beans;
-    byte[] bytes;
+    @State(Scope.Thread)
+    public static class NewBeanState {
+        Random random = new Random(1337);
+        ObjectMapper mapper;
+        SomeBean[] beans;
+        byte[] beansBytes;
+    }
+    @State(Scope.Thread)
+    public static class MediaItemState {
+        byte[] mediaItemJson;
+        ObjectWriter mediaItemWriter;
+        ObjectReader mediaItemReader;
+    }
+
+    @State(Scope.Thread)
+    public static class ClassicBeanState {
+        ClassicBean classicBean;
+        byte[] classicBeanJson;
+        ObjectWriter classicBeanWriter;
+        ObjectReader classicBeanReader;
+    }
 
     public static void main(String[] args) throws RunnerException {
         Options options = new OptionsBuilder()
             .include(BaseBenchmark.class.getSimpleName())
-            .forks(1)
             .build();
         new Runner(options).run();
     }
@@ -46,28 +64,58 @@ public abstract class BaseBenchmark {
     protected abstract ObjectMapper createObjectMapper();
 
     @Setup
-    public void setup() throws Exception {
-        mapper = createObjectMapper();
-        beans = IntStream.range(0, 1000)
-                .mapToObj(i -> SomeBean.random())
+    public void setup(NewBeanState nbs, MediaItemState mis, ClassicBeanState cbs) throws Exception {
+        nbs.mapper = createObjectMapper();
+        nbs.beans = IntStream.range(0, 1000)
+                .mapToObj(i -> SomeBean.random(nbs.random))
                 .toArray(SomeBean[]::new);
 
-        bytes = mapper.writeValueAsBytes(beans);
+        nbs.beansBytes = nbs.mapper.writeValueAsBytes(nbs.beans);
+        mis.mediaItemReader = nbs.mapper.readerFor(MediaItem.class);
+        mis.mediaItemWriter = nbs.mapper.writerFor(MediaItem.class);
+        mis.mediaItemJson = mis.mediaItemWriter.writeValueAsBytes(MediaItem.SAMPLE);
+
+        cbs.classicBeanReader = nbs.mapper.readerFor(ClassicBean.class);
+        cbs.classicBeanWriter = nbs.mapper.writerFor(ClassicBean.class);
+        cbs.classicBean = new ClassicBean();
+        cbs.classicBean.setUp();
+        cbs.classicBeanJson = cbs.classicBeanWriter.writeValueAsBytes(cbs.classicBean);
     }
 
     @Benchmark
-    public byte[] beanSer() throws Exception {
-        return mapper.writeValueAsBytes(beans);
+    public byte[] beanArraySer(NewBeanState nbs) throws Exception {
+        return nbs.mapper.writeValueAsBytes(nbs.beans);
     }
 
     @Benchmark
-    public SomeBean[] beanDeser() throws Exception {
-        return mapper.readValue(bytes, SomeBean[].class);
+    public SomeBean[] beanArrayDeser(NewBeanState nbs) throws Exception {
+        return nbs.mapper.readValue(nbs.beansBytes, SomeBean[].class);
     }
 
     @Benchmark
-    public BeanWithPropertyConstructor[] constructorDeser() throws Exception {
-        return mapper.readValue(bytes, BeanWithPropertyConstructor[].class);
+    public BeanWithPropertyConstructor[] constructorArrayDeser(NewBeanState nbs) throws Exception {
+        return nbs.mapper.readValue(nbs.beansBytes, BeanWithPropertyConstructor[].class);
+    }
+
+    @Benchmark
+    public void classicMediaItemSer(MediaItemState mis, Blackhole bh) throws Exception {
+        mis.mediaItemWriter.writeValue(new NopOutputStream(bh), MediaItem.SAMPLE);
+    }
+
+    @Benchmark
+    public MediaItem classicMediaItemDeser(MediaItemState mis) throws Exception {
+        return mis.mediaItemReader.readValue(mis.mediaItemJson);
+    }
+
+
+    @Benchmark
+    public void classicBeanItemSer(ClassicBeanState cbs, Blackhole bh) throws Exception {
+        cbs.classicBeanWriter.writeValue(new NopOutputStream(bh), cbs.classicBean);
+    }
+
+    @Benchmark
+    public MediaItem classicBeanItemDeser(ClassicBeanState cbs) throws Exception {
+        return cbs.classicBeanReader.readValue(cbs.classicBeanJson);
     }
 
     public static class SomeBean {
@@ -121,13 +169,13 @@ public abstract class BaseBenchmark {
             EA, EB, EC, ED
         }
 
-        static SomeBean random() {
+        static SomeBean random(Random random) {
             final SomeBean result = new SomeBean();
             result.setPropA(random.nextInt());
             result.setPropB(RandomStringUtils.randomAscii(random.nextInt(32)));
             result.setPropC(random.nextLong());
             if (random.nextInt(5) == 0) {
-                result.setPropD(random());
+                result.setPropD(random(random));
             }
             result.setPropE(SomeEnum.values()[random.nextInt(SomeEnum.values().length)]);
             return result;
@@ -153,5 +201,43 @@ public abstract class BaseBenchmark {
             setPropD(propD);
             setPropE(propE);
         }
+    }
+
+    public final static class ClassicBean
+    {
+
+        public int a, b, c123, d;
+        public int e, foobar, g, habitus;
+
+        public ClassicBean setUp() {
+            a = 1;
+            b = 999;
+            c123 = -1000;
+            d = 13;
+            e = 6;
+            foobar = -33;
+            g = 0;
+            habitus = 123456789;
+            return this;
+        }
+
+        public void setA(int v) { a = v; }
+        public void setB(int v) { b = v; }
+        public void setC(int v) { c123 = v; }
+        public void setD(int v) { d = v; }
+
+        public void setE(int v) { e = v; }
+        public void setF(int v) { foobar = v; }
+        public void setG(int v) { g = v; }
+        public void setH(int v) { habitus = v; }
+
+        public int getA() { return a; }
+        public int getB() { return b; }
+        public int getC() { return c123; }
+        public int getD() { return d; }
+        public int getE() { return e; }
+        public int getF() { return foobar; }
+        public int getG() { return g; }
+        public int getH() { return habitus; }
     }
 }
