@@ -26,33 +26,25 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+@State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @Measurement(time = 30, iterations = 10)
 @Warmup(time = 10, iterations = 10)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Fork(1)
 public abstract class BaseBenchmark {
-    @State(Scope.Thread)
-    public static class NewBeanState {
-        Random random = new Random(1337);
-        ObjectMapper mapper;
-        SomeBean[] beans;
-        byte[] beansBytes;
-    }
-    @State(Scope.Thread)
-    public static class MediaItemState {
-        byte[] mediaItemJson;
-        ObjectWriter mediaItemWriter;
-        ObjectReader mediaItemReader;
-    }
 
-    @State(Scope.Thread)
-    public static class ClassicBeanState {
-        ClassicBean classicBean;
-        byte[] classicBeanJson;
-        ObjectWriter classicBeanWriter;
-        ObjectReader classicBeanReader;
-    }
+    Random random = new Random(1337);
+    ObjectMapper mapper;
+    SomeBean[] beans;
+    byte[] beansBytes;
+    byte[] mediaItemJson;
+    ObjectWriter mediaItemWriter;
+    ObjectReader mediaItemReader;
+    ClassicBean classicBean;
+    byte[] classicBeanJson;
+    ObjectWriter classicBeanWriter;
+    ObjectReader classicBeanReader;
 
     public static void main(String[] args) throws RunnerException {
         Options options = new OptionsBuilder()
@@ -64,58 +56,58 @@ public abstract class BaseBenchmark {
     protected abstract ObjectMapper createObjectMapper();
 
     @Setup
-    public void setup(NewBeanState nbs, MediaItemState mis, ClassicBeanState cbs) throws Exception {
-        nbs.mapper = createObjectMapper();
-        nbs.beans = IntStream.range(0, 1000)
-                .mapToObj(i -> SomeBean.random(nbs.random))
+    public void setup() throws Exception {
+        mapper = createObjectMapper();
+        beans = IntStream.range(0, 1000)
+                .mapToObj(i -> SomeBean.random(random))
                 .toArray(SomeBean[]::new);
 
-        nbs.beansBytes = nbs.mapper.writeValueAsBytes(nbs.beans);
-        mis.mediaItemReader = nbs.mapper.readerFor(MediaItem.class);
-        mis.mediaItemWriter = nbs.mapper.writerFor(MediaItem.class);
-        mis.mediaItemJson = mis.mediaItemWriter.writeValueAsBytes(MediaItem.SAMPLE);
+        beansBytes = mapper.writeValueAsBytes(beans);
+        mediaItemReader = mapper.readerFor(MediaItem.class);
+        mediaItemWriter = mapper.writerFor(MediaItem.class);
+        mediaItemJson = mediaItemWriter.writeValueAsBytes(MediaItem.SAMPLE);
 
-        cbs.classicBeanReader = nbs.mapper.readerFor(ClassicBean.class);
-        cbs.classicBeanWriter = nbs.mapper.writerFor(ClassicBean.class);
-        cbs.classicBean = new ClassicBean();
-        cbs.classicBean.setUp();
-        cbs.classicBeanJson = cbs.classicBeanWriter.writeValueAsBytes(cbs.classicBean);
+        classicBeanReader = mapper.readerFor(ClassicBean.class);
+        classicBeanWriter = mapper.writerFor(ClassicBean.class);
+        classicBean = new ClassicBean();
+        classicBean.setUp();
+        classicBeanJson = classicBeanWriter.writeValueAsBytes(classicBean);
     }
 
     @Benchmark
-    public byte[] beanArraySer(NewBeanState nbs) throws Exception {
-        return nbs.mapper.writeValueAsBytes(nbs.beans);
+    public byte[] beanArraySer() throws Exception {
+        return mapper.writeValueAsBytes(beans);
     }
 
     @Benchmark
-    public SomeBean[] beanArrayDeser(NewBeanState nbs) throws Exception {
-        return nbs.mapper.readValue(nbs.beansBytes, SomeBean[].class);
+    public SomeBean[] beanArrayDeser() throws Exception {
+        return mapper.readValue(beansBytes, SomeBean[].class);
     }
 
     @Benchmark
-    public BeanWithPropertyConstructor[] constructorArrayDeser(NewBeanState nbs) throws Exception {
-        return nbs.mapper.readValue(nbs.beansBytes, BeanWithPropertyConstructor[].class);
+    public BeanWithPropertyConstructor[] constructorArrayDeser() throws Exception {
+        return mapper.readValue(beansBytes, BeanWithPropertyConstructor[].class);
     }
 
     @Benchmark
-    public void classicMediaItemSer(MediaItemState mis, Blackhole bh) throws Exception {
-        mis.mediaItemWriter.writeValue(new NopOutputStream(bh), MediaItem.SAMPLE);
+    public void classicMediaItemSer(Blackhole bh) throws Exception {
+        mediaItemWriter.writeValue(new NopOutputStream(bh), MediaItem.SAMPLE);
     }
 
     @Benchmark
-    public MediaItem classicMediaItemDeser(MediaItemState mis) throws Exception {
-        return mis.mediaItemReader.readValue(mis.mediaItemJson);
+    public MediaItem classicMediaItemDeser() throws Exception {
+        return mediaItemReader.readValue(mediaItemJson);
     }
 
 
     @Benchmark
-    public void classicBeanItemSer(ClassicBeanState cbs, Blackhole bh) throws Exception {
-        cbs.classicBeanWriter.writeValue(new NopOutputStream(bh), cbs.classicBean);
+    public void classicBeanItemSer(Blackhole bh) throws Exception {
+        classicBeanWriter.writeValue(new NopOutputStream(bh), classicBean);
     }
 
     @Benchmark
-    public MediaItem classicBeanItemDeser(ClassicBeanState cbs) throws Exception {
-        return cbs.classicBeanReader.readValue(cbs.classicBeanJson);
+    public MediaItem classicBeanItemDeser() throws Exception {
+        return classicBeanReader.readValue(classicBeanJson);
     }
 
     public static class SomeBean {
