@@ -106,7 +106,7 @@ public abstract class BaseBenchmark {
     }
 
     @Benchmark
-    public MediaItem classicBeanItemDeser() throws Exception {
+    public ClassicBean classicBeanItemDeser() throws Exception {
         return classicBeanReader.readValue(classicBeanJson);
     }
 
