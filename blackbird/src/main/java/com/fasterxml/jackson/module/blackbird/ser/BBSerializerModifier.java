@@ -4,7 +4,6 @@ import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -19,6 +18,9 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.ser.*;
 import com.fasterxml.jackson.databind.util.ClassUtil;
+import com.fasterxml.jackson.module.blackbird.util.Unchecked;
+
+import static java.lang.invoke.MethodType.*;
 
 public class BBSerializerModifier extends BeanSerializerModifier
 {
@@ -57,17 +59,9 @@ public class BBSerializerModifier extends BeanSerializerModifier
 
         ListIterator<BeanPropertyWriter> it = beanProperties.listIterator();
         while (it.hasNext()) {
-            try {
-                createProperty(it, MethodHandles.privateLookupIn(beanClass, lookup), config);
-            } catch (Throwable e) {
-                if (e instanceof Error) {
-                    throw (Error) e;
-                }
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException) e;
-                }
-                throw new RuntimeException(e);
-            }
+            Unchecked.runnable(() ->
+                    createProperty(it, MethodHandles.privateLookupIn(beanClass, lookup), config))
+                .run();
         }
     }
 
@@ -87,10 +81,8 @@ public class BBSerializerModifier extends BeanSerializerModifier
         // (although, interestingly enough, can seem to access private classes...)
 
         // 30-Jul-2012, tatu: [#6]: Needs to skip custom serializers, if any.
-        if (bpw.hasSerializer()) {
-            if (!isDefaultSerializer(config, bpw.getSerializer())) {
-                return;
-            }
+        if (bpw.hasSerializer() && !ClassUtil.isJacksonStdImpl(bpw.getSerializer())) {
+            return;
         }
         // [#9]: also skip unwrapping stuff...
         if (bpw.isUnwrapping()) {
@@ -106,6 +98,7 @@ public class BBSerializerModifier extends BeanSerializerModifier
         if (member instanceof AnnotatedMethod) {
             getter = lookup.unreflect((Method) member.getMember());
         } else {
+            // TODO: currently VarHandles aren't considered direct MH
             return;
             //getter = lookup.unreflectGetter((Field) member.getMember());
         }
@@ -115,8 +108,8 @@ public class BBSerializerModifier extends BeanSerializerModifier
                 ToIntFunction<Object> accessor = (ToIntFunction<Object>) LambdaMetafactory.metafactory(
                         lookup,
                         "applyAsInt",
-                        MethodType.methodType(ToIntFunction.class),
-                        MethodType.methodType(int.class, Object.class),
+                        methodType(ToIntFunction.class),
+                        methodType(int.class, Object.class),
                         getter,
                         getter.type())
                     .getTarget().invokeExact();
@@ -125,8 +118,8 @@ public class BBSerializerModifier extends BeanSerializerModifier
                 ToLongFunction<Object> accessor = (ToLongFunction<Object>) LambdaMetafactory.metafactory(
                         lookup,
                         "applyAsLong",
-                        MethodType.methodType(ToLongFunction.class),
-                        MethodType.methodType(long.class, Object.class),
+                        methodType(ToLongFunction.class),
+                        methodType(long.class, Object.class),
                         getter,
                         getter.type())
                     .getTarget().invokeExact();
@@ -135,8 +128,8 @@ public class BBSerializerModifier extends BeanSerializerModifier
                 ToBooleanFunction accessor = (ToBooleanFunction) LambdaMetafactory.metafactory(
                         lookup,
                         "applyAsBoolean",
-                        MethodType.methodType(ToBooleanFunction.class),
-                        MethodType.methodType(boolean.class, Object.class),
+                        methodType(ToBooleanFunction.class),
+                        methodType(boolean.class, Object.class),
                         getter,
                         getter.type())
                     .getTarget().invokeExact();
@@ -147,34 +140,23 @@ public class BBSerializerModifier extends BeanSerializerModifier
                 Function<Object, String> accessor = (Function<Object, String>) LambdaMetafactory.metafactory(
                         lookup,
                         "apply",
-                        MethodType.methodType(Function.class),
-                        MethodType.methodType(Object.class, Object.class),
+                        methodType(Function.class),
+                        methodType(Object.class, Object.class),
                         getter,
                         getter.type())
                     .getTarget().invokeExact();
                 it.set(new StringPropertyWriter(bpw, accessor, null));
-            } else { // any other Object types; we can at least call accessor
+            } else {
                 Function<Object, Object> accessor = (Function<Object, Object>) LambdaMetafactory.metafactory(
                         lookup,
                         "apply",
-                        MethodType.methodType(Function.class),
-                        MethodType.methodType(Object.class, Object.class),
+                        methodType(Function.class),
+                        methodType(Object.class, Object.class),
                         getter,
                         getter.type())
                     .getTarget().invokeExact();
                 it.set(new ObjectPropertyWriter(bpw, accessor, null));
             }
         }
-    }
-
-    /**
-     * Helper method used to check whether given serializer is the default
-     * serializer implementation: this is necessary to avoid overriding other
-     * kinds of serializers.
-     */
-    protected boolean isDefaultSerializer(SerializationConfig config,
-            JsonSerializer<?> ser)
-    {
-        return ClassUtil.isJacksonStdImpl(ser);
     }
 }

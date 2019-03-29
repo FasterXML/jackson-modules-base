@@ -33,7 +33,11 @@ class OptimizedValueInstantiator extends StdValueInstantiator
     @Override
     public Object createUsingDefault(DeserializationContext ctxt) throws IOException {
         if (_optimizedDefaultCreator != null) {
-            return _optimizedDefaultCreator.get();
+            try {
+                return _optimizedDefaultCreator.get();
+            } catch (Exception e) {
+                return ctxt.handleInstantiationProblem(_valueClass, null, e);
+            }
         }
         return super.createUsingDefault(ctxt);
     }
@@ -41,7 +45,11 @@ class OptimizedValueInstantiator extends StdValueInstantiator
     @Override
     public Object createFromObjectWith(DeserializationContext ctxt, Object[] args) throws IOException {
         if (_optimizedArgsCreator != null) {
-            return _optimizedArgsCreator.apply(args);
+            try {
+                return _optimizedArgsCreator.apply(args);
+            } catch (Exception e) {
+                return ctxt.handleInstantiationProblem(_valueClass, args, e);
+            }
         }
         return super.createFromObjectWith(ctxt, args);
     }

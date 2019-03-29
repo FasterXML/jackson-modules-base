@@ -3,7 +3,6 @@ package com.fasterxml.jackson.module.blackbird.deser;
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -15,6 +14,10 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.databind.deser.ValueInstantiator;
 import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
 import com.fasterxml.jackson.databind.introspect.AnnotatedWithParams;
+import com.fasterxml.jackson.module.blackbird.util.Unchecked;
+
+import static java.lang.invoke.MethodHandles.lookup;
+import static java.lang.invoke.MethodType.methodType;
 
 /**
  * Helper class that tries to generate {@link ValueInstantiator} class
@@ -52,33 +55,23 @@ public class CreatorOptimizer
         if (argsCreator != null) {
             MethodHandle argsCreatorHandle = directHandle(argsCreator.getAnnotated());
             if (argsCreatorHandle != null) {
-                try {
-                    optimizedArgsCreator = (Function<Object[], Object>)
-                        LambdaMetafactory.metafactory(
+                    optimizedArgsCreator = Unchecked.supplier(() ->
+                        (Function<Object[], Object>) LambdaMetafactory.metafactory(
                             _lookup,
                             "apply",
-                            MethodType.methodType(Function.class, MethodHandle.class),
-                            MethodType.methodType(Object.class, Object.class),
-                            MethodHandles.lookup().findStatic(
+                            methodType(Function.class, MethodHandle.class),
+                            methodType(Object.class, Object.class),
+                            lookup().findStatic(
                                 CreatorOptimizer.class,
                                 "invokeTrampoline",
-                                MethodType.methodType(Object.class, MethodHandle.class, Object[].class)),
-                            MethodType.methodType(Object.class, Object[].class))
+                                methodType(Object.class, MethodHandle.class, Object[].class)),
+                            methodType(Object.class, Object[].class))
                         .getTarget().invokeExact(
                             argsCreatorHandle.asSpreader(
                                     Object[].class,
                                     argsCreatorHandle.type().parameterCount())
-                                .asType(
-                                    MethodType.methodType(Object.class, Object[].class)));
-                } catch (Throwable e) {
-                    if (e instanceof Error) {
-                        throw (Error) e;
-                    }
-                    if (e instanceof RuntimeException) {
-                        throw (RuntimeException) e;
-                    }
-                    throw new RuntimeException(e);
-                }
+                                .asType(methodType(Object.class, Object[].class))))
+                        .get();
             }
         }
 
@@ -87,25 +80,16 @@ public class CreatorOptimizer
         if (defaultCreator != null) {
             MethodHandle defaultCreatorHandle = directHandle(defaultCreator.getAnnotated());
             if (defaultCreatorHandle != null) {
-                try {
-                    optimizedFactory = (Supplier<?>)
-                        LambdaMetafactory.metafactory(
+                optimizedFactory = Unchecked.supplier(() ->
+                    (Supplier<?>) LambdaMetafactory.metafactory(
                             _lookup,
                             "get",
-                            MethodType.methodType(Supplier.class),
-                            MethodType.methodType(Object.class),
+                            methodType(Supplier.class),
+                            methodType(Object.class),
                             defaultCreatorHandle,
                             defaultCreatorHandle.type())
-                        .getTarget().invokeExact();
-                } catch (Throwable e) {
-                    if (e instanceof Error) {
-                        throw (Error) e;
-                    }
-                    if (e instanceof RuntimeException) {
-                        throw (RuntimeException) e;
-                    }
-                    throw new RuntimeException(e);
-                }
+                        .getTarget().invokeExact())
+                    .get();
             }
         }
         if (optimizedArgsCreator != null || optimizedFactory != null) {

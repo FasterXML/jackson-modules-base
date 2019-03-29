@@ -123,7 +123,7 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
     protected void _reportProblem(Object bean, Throwable e)
     {
         broken = true;
-        String msg = String.format("Disabling Afterburner serialization for %s (field %s; mutator %s), due to access error (type %s, message=%s)%n",
+        String msg = String.format("Disabling Blackbird serialization for %s (field %s; mutator %s), due to access error (type %s, message=%s)%n",
                 bean.getClass(), _name, getClass().getName(),
                 e.getClass().getName(), e.getMessage());
         Logger.getLogger(OptimizedBeanPropertyWriter.class.getName()).log(Level.WARNING, msg, e);
