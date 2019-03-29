@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 
 public abstract class BlackbirdTestBase extends junit.framework.TestCase
 {
@@ -148,13 +147,8 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
         return objectMapper().readerFor(cls);
     }
 
-    protected static JsonMapper newObjectMapper() {
-        return mapperBuilder().build();
-    }
-
-    protected static JsonMapper.Builder mapperBuilder() {
-        return JsonMapper.builder()
-                .addModule(new BlackbirdModule(MethodHandles::lookup));
+    protected static ObjectMapper newObjectMapper() {
+        return new ObjectMapper().registerModule(new BlackbirdModule(MethodHandles::lookup));
     }
 
     @Deprecated

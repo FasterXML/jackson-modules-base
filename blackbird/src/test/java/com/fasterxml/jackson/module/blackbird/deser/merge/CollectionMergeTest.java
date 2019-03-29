@@ -52,10 +52,9 @@ public class CollectionMergeTest extends BlackbirdTestBase
     /********************************************************
      */
 
-    private final ObjectMapper MAPPER = mapperBuilder()
+    private final ObjectMapper MAPPER = newObjectMapper()
             // 26-Oct-2016, tatu: Make sure we'll report merge problems by default
-            .disable(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE)
-            .build();
+            .disable(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE);
 
     public void testCollectionMerging() throws Exception
     {

@@ -20,17 +20,16 @@ public class ArrayMergeTest extends BlackbirdTestBase
         public MergedX(T v) { value = v; }
         protected MergedX() { }
     }
-    
+
     /*
     /********************************************************
     /* Test methods
     /********************************************************
      */
 
-    private final ObjectMapper MAPPER = mapperBuilder()
+    private final ObjectMapper MAPPER = newObjectMapper()
             // 26-Oct-2016, tatu: Make sure we'll report merge problems by default
-            .disable(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE)
-            .build();
+            .disable(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE);
     ;
 
     public void testObjectArrayMerging() throws Exception
@@ -127,7 +126,7 @@ public class ArrayMergeTest extends BlackbirdTestBase
         assertSame(input, result);
         Assert.assertArrayEquals(new char[] { 'c' }, result.value);
     }
-    
+
     public void testIntArrayMerging() throws Exception
     {
         MergedX<int[]> input = new MergedX<int[]>(new int[] { 1, 2 });
