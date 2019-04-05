@@ -48,3 +48,8 @@ Jeffrey Bagdis (jbagdis@github)
 * Reported, contributed fix for #49: Afterburner `MyClassLoader#loadAndResolve()`
   is not idempotent when `tryToUseParent` is true
  (2.9.9)
+
+Harrison Houghton (hrhino@github)
+
+* Suggested, contributed impl for #52: Interfaces may have non-abstract methods (since java8)
+ (2.10.0)

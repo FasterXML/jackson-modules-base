@@ -2,9 +2,9 @@ language: java
 
 jdk:
   - openjdk8
-  - oraclejdk9
+  - openjdk11
 
-# whitelist
+# allow-list to prevent build of all branches
 branches:
   only:
     - master
