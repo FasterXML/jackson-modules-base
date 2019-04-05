@@ -4,7 +4,8 @@ import java.util.concurrent.Semaphore;
 
 /**
  * An extension of MyClassLoader with controllable blocking behavior of the
- * {@link #defineClassOnParent(ClassLoader, String, byte[], int, int)} method, allowing the interleaving of threads
+ * {@code defineClassOnParent(ClassLoader, String, byte[], int, int)} method,
+ * allowing the interleaving of threads
  * through {@link #loadAndResolve(ClassName, byte[])} to be controlled by an external test harness.
  */
 public class MyClassLoaderWithArtificialTiming extends MyClassLoader {
