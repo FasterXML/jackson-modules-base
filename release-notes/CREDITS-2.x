@@ -42,3 +42,8 @@ Georg Schmidt-Dumont (georgschmidtdumont@github)
 
 * Reported #74: MrBean module should not materialize `java.io.Serializable`
  (2.9.9)
+
+Harrison Houghton (hrhino@github)
+
+* Suggested, contributed impl for #52: Interfaces may have non-abstract methods (since java8)
+ (2.10.0)
