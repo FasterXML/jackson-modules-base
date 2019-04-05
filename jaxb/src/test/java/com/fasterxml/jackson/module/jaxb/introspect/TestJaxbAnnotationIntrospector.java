@@ -233,9 +233,10 @@ public class TestJaxbAnnotationIntrospector
      */
     public void testSerializeDeserializeWithJaxbAnnotations() throws Exception
     {
-        ObjectMapper mapper = getJaxbMapper();
-        // test expects that wrapper name be used...
-        mapper.enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME);
+        ObjectMapper mapper = getJaxbMapperBuilder()
+                // test expects that wrapper name be used...
+                .enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME)
+                .build();
         
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         JaxbExample ex = new JaxbExample();

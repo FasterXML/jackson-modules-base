@@ -113,8 +113,9 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
         assertEquals("b", result.get("b"));
 
         // But when disabling auto-detection, just one
-        mapper = getJaxbMapper();
-        mapper.configure(MapperFeature.AUTO_DETECT_GETTERS, false);
+        mapper = getJaxbMapperBuilder()
+              .configure(MapperFeature.AUTO_DETECT_GETTERS, false)
+              .build();
         result = writeAndMap(mapper, bean);
         assertEquals(1, result.size());
         assertNull(result.get("a"));
