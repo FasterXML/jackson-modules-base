@@ -7,8 +7,6 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
-import com.fasterxml.jackson.module.blackbird.BaseBenchmark.SomeBean;
-import com.fasterxml.jackson.module.blackbird.BaseBenchmark.SomeBean.SomeEnum;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -53,7 +51,7 @@ public class StartupTimeBenchmark {
         final Random random = new Random();
         return mapper.writeValueAsBytes(List.of(
                 SomeBean.random(random),
-                new BaseBenchmark.ClassicBean().setUp(),
-                new BaseBenchmark.BeanWithPropertyConstructor(42, "foo", 8675309, SomeBean.random(random), SomeEnum.EB)));
+                new ClassicBean().setUp(),
+                new BeanWithPropertyConstructor(42, "foo", 8675309, SomeBean.random(random), SomeEnum.EB)));
     }
 }
