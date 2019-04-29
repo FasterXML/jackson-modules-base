@@ -88,4 +88,43 @@ not datatype, data format, or JAX-RS provider modules.
     </pluginManagement>
   </build>
 
+    <profiles>
+        <profile>
+            <id>java9</id>
+            <activation>
+                <jdk>[9,)</jdk>
+            </activation>
+            <properties>
+                <jdk.version>1.12</jdk.version>
+                <maven.compiler.source>1.12</maven.compiler.source>
+                <maven.compiler.target>1.12</maven.compiler.target>
+                <maven.compiler.release>12</maven.compiler.release>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>add-source</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/main/java</source>
+                                        <!--<source>src/jre10/java</source>-->
+                                        <source>src/java9</source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

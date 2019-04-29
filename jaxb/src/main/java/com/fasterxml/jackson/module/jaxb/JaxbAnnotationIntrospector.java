@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.adapters.*;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.json.PackageVersion;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.*;
@@ -1346,6 +1347,7 @@ public class JaxbAnnotationIntrospector
                         return _combineNames(name, rootElement.namespace(), defaultName);
                     }
                     // Is there a namespace there to use? Probably not?
+	                // @TODO Introspector removal - jdk.desktop module
                     return new PropertyName(Introspector.decapitalize(aeType.getSimpleName()));
                 }
             }

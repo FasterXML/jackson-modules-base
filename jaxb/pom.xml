@@ -39,9 +39,25 @@ data-binding.
     <dependency>
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
-      <version>2.2</version>
+      <version>2.3.1</version>
       <scope>provided</scope>
+        <exclusions>
+            <exclusion>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+            </exclusion>
+            <exclusion>
+                <artifactId>javax.activation-api</artifactId>
+                <groupId>javax.activation</groupId>
+            </exclusion>
+        </exclusions>
     </dependency>
+      <dependency>
+          <groupId>com.jwebmp.thirdparty</groupId>
+          <artifactId>javax.activation</artifactId>
+          <version>0.67.0.5</version>
+          <scope>provided</scope>
+      </dependency>
   </dependencies>
 
   <build>
@@ -52,4 +68,45 @@ data-binding.
       </plugin>
     </plugins>
   </build>
+
+    <profiles>
+        <profile>
+            <id>moditect</id>
+            <build>
+                <plugins>
+
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>java8</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.moditect</groupId>
+                        <artifactId>moditect-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>add-module-infos</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>add-module-info</goal>
+                                </goals>
+                                <configuration>
+                                    <overwriteExistingFiles>true</overwriteExistingFiles>
+                                    <module>
+                                        <moduleInfoFile>
+                                            src/java9/module-info.java
+                                        </moduleInfoFile>
+                                    </module>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+
 </project>
