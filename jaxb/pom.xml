@@ -43,12 +43,8 @@ data-binding.
       <scope>provided</scope>
         <exclusions>
             <exclusion>
-                <groupId>javax.annotation</groupId>
-                <artifactId>javax.annotation-api</artifactId>
-            </exclusion>
-            <exclusion>
-                <artifactId>javax.activation-api</artifactId>
                 <groupId>javax.activation</groupId>
+                <artifactId>javax.activation-api</artifactId>
             </exclusion>
         </exclusions>
     </dependency>
@@ -71,15 +67,10 @@ data-binding.
 
     <profiles>
         <profile>
-            <id>moditect</id>
-            <build>
-                <plugins>
-
-                </plugins>
-            </build>
-        </profile>
-        <profile>
             <id>java8</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <build>
                 <plugins>
                     <plugin>
