@@ -2,7 +2,6 @@ package com.fasterxml.jackson.module.jaxb;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.Module;
 
 /**
  * Module that can be registered to add support for JAXB annotations.
@@ -15,7 +14,7 @@ import com.fasterxml.jackson.databind.Module;
  * (by default, JAXB annotations are used as {@link Priority#PRIMARY}
  * annotations).
  */
-public class JaxbAnnotationModule extends Module
+public class JaxbAnnotationModule extends com.fasterxml.jackson.databind.Module
 {
     /**
      * Enumeration that defines how we use JAXB Annotations: either
