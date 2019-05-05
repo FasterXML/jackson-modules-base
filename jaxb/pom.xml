@@ -49,7 +49,7 @@ data-binding.
         <exclusion>
           <groupId>javax.activation</groupId>
           <artifactId>javax.activation-api</artifactId>
-        OB</exclusion>
+        </exclusion>
       </exclusions>
     </dependency>
     <!-- 14-Mar-2019, tatu: Looks like this is needed for JDK11 and later
