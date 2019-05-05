@@ -48,12 +48,23 @@ data-binding.
     </dependency>
     <!-- 14-Mar-2019, tatu: Looks like this is needed for JDK11 and later
       -->
+    <!-- 05-May-2019, tatu: Apparently this isn't as good as alternative
     <dependency>
       <groupId>javax.activation</groupId>
       <artifactId>javax.activation-api</artifactId>
       <version>1.2.0</version>
       <scope>provided</scope>
     </dependency>
+    -->
+
+      <!-- ... and this is the real mccoy? -->
+      <dependency>
+          <groupId>com.jwebmp.thirdparty</groupId>
+          <artifactId>javax.activation</artifactId>
+          <version>0.67.0.5</version>
+          <scope>provided</scope>
+      </dependency>
+
   </dependencies>
 
   <build>
