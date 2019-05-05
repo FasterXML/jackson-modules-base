@@ -65,7 +65,7 @@ public class ObjectMapperModuleTest
 
         final ObjectMapper mapper = injector.getInstance(ObjectMapper.class);
 
-        Assert.assertEquals(mapper.writeValueAsString(new Integer(10)), "\"A\"");
+        Assert.assertEquals(mapper.writeValueAsString(Integer.valueOf(10)), "\"A\"");
     }
 
     @Test
@@ -77,7 +77,7 @@ public class ObjectMapperModuleTest
 
         final ObjectMapper mapper = injector.getInstance(ObjectMapper.class);
 
-        Assert.assertEquals(mapper.writeValueAsString(new Integer(10)), "\"A\"");
+        Assert.assertEquals(mapper.writeValueAsString(Integer.valueOf(10)), "\"A\"");
     }
 
     @Test
@@ -97,7 +97,7 @@ public class ObjectMapperModuleTest
 
         final ObjectMapper mapper = injector.getInstance(ObjectMapper.class);
 
-        Assert.assertEquals(mapper.writeValueAsString(new Integer(10)), "\"A\"");
+        Assert.assertEquals(mapper.writeValueAsString(Integer.valueOf(10)), "\"A\"");
     }
 
     @Test
@@ -119,7 +119,7 @@ public class ObjectMapperModuleTest
 
         final ObjectMapper mapper = injector.getInstance(ObjectMapper.class);
 
-        Assert.assertEquals(mapper.writeValueAsString(new Integer(10)), "\"A\"");
+        Assert.assertEquals(mapper.writeValueAsString(Integer.valueOf(10)), "\"A\"");
     }
 
     @Test
@@ -131,7 +131,7 @@ public class ObjectMapperModuleTest
 
         final ObjectMapper mapper = injector.getInstance(ObjectMapper.class);
 
-        Assert.assertEquals(mapper.writeValueAsString(new Integer(10)), "\"A\"");
+        Assert.assertEquals(mapper.writeValueAsString(Integer.valueOf(10)), "\"A\"");
     }
 
     private static class SomeBean

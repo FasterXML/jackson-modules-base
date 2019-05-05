@@ -45,15 +45,22 @@ data-binding.
       <artifactId>jaxb-api</artifactId>
       <version>2.3.1</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.activation</groupId>
+          <artifactId>javax.activation-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
-     <!-- 14-Mar-2019, tatu: Looks like this is needed for JDK11 and later
-       -->
-     <dependency>
-       <groupId>javax.activation</groupId>
-       <artifactId>javax.activation-api</artifactId>
-       <version>1.2.0</version>
+    <!-- 05-May-2019, tatu: As per #111, looks like we actually need this
+         flavor of activation API...
+      -->
+    <dependency>
+      <groupId>com.jwebmp.thirdparty</groupId>
+      <artifactId>javax.activation</artifactId>
+      <version>0.67.0.5</version>
       <scope>provided</scope>
-     </dependency>
+    </dependency>
   </dependencies>
 
   <build>

@@ -7,7 +7,10 @@ import javax.xml.bind.annotation.*;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 
 /**
@@ -44,9 +47,8 @@ public class TestJaxbTypes
     }
 
     static class ListBean {
-        /* Note: here we rely on implicit linking between the field
-         * and accessors. 
-         */
+        // Note: here we rely on implicit linking between the field
+        // and accessors. 
         @XmlElement(type=BeanImpl.class)
         protected List<AbstractBean> beans;
 
@@ -65,8 +67,7 @@ public class TestJaxbTypes
         public BeanImpl get(int index) { return (BeanImpl) beans.get(index); }
     }
 
-    /* And then mix'n match, to try end-to-end
-     */
+    // And then mix'n match, to try end-to-end
     static class ComboBean
     {
         protected AbstractBean bean;
@@ -102,6 +103,17 @@ public class TestJaxbTypes
     	public String getId() { return id; }
 
     	public void setId(String id) { this.id = id; }
+    }
+
+    // 3.0 requires explicit PolymorphicTypeValidator with Default Typing
+    public final class NoCheckSubTypeValidator
+        extends PolymorphicTypeValidator.Base
+    {
+        private static final long serialVersionUID = 1L;
+        @Override
+        public Validity validateBaseType(DatabindContext ctxt, JavaType baseType) {
+            return Validity.ALLOWED;
+        }
     }
 
     /*
@@ -210,7 +222,7 @@ public class TestJaxbTypes
     {
         Object input = new ListBean(new BeanImpl(1, "a"));
         ObjectMapper mapper = getJaxbMapperBuilder()
-                .enableDefaultTyping()
+                .enableDefaultTyping(new NoCheckSubTypeValidator())
                 .build();
         String str = mapper.writeValueAsString(input);
 

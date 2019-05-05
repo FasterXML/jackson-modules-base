@@ -112,7 +112,7 @@ public class PropertyAccessorCollector
         final ClassName baseName = ClassName.constructFor(beanClass, "$Access4JacksonSerializer");
         Class<?> accessorClass = generateAccessorClass(classLoader, baseName);
         try {
-            return (BeanPropertyAccessor) accessorClass.newInstance();
+            return (BeanPropertyAccessor) accessorClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to generate accessor class '"+accessorClass.getName()+"': "+e.getMessage(), e);
         }
