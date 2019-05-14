@@ -23,6 +23,8 @@ data-binding.
            when ser/deser'ing javax.a.DataHandlers
       -->
     <osgi.import>javax.activation;resolution:=optional,*</osgi.import>
+
+    <version.jaxb.impl>2.3.2</version.jaxb.impl>
   </properties>
   <dependencies>
     <!-- Extends Jackson core and mapper; minor dep on annotations too (JsonInclude) -->
@@ -41,25 +43,25 @@ data-binding.
 
     <!--  and actual JAXB annotations... -->
     <dependency>
-      <groupId>javax.xml.bind</groupId>
-      <artifactId>jaxb-api</artifactId>
-      <version>2.3.1</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.activation</groupId>
-          <artifactId>javax.activation-api</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>${version.jaxb.impl}</version>
     </dependency>
     <!-- 05-May-2019, tatu: As per #111, looks like we actually need this
          flavor of activation API...
       -->
     <dependency>
-      <groupId>com.jwebmp.thirdparty</groupId>
-      <artifactId>javax.activation</artifactId>
-      <version>0.67.0.5</version>
-      <scope>provided</scope>
+      <groupId>jakarta.activation</groupId>
+      <artifactId>jakarta.activation-api</artifactId>
+      <version>1.2.1</version>
+    </dependency>
+
+    <!-- may also need JAXB impl for tests -->
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>${version.jaxb.impl}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
