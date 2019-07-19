@@ -10,7 +10,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.10.0 (not yet released)
+2.10.0.pr1 (19-Jul-2019)
 
 #52: (mrbean) Interfaces may have non-abstract methods (since java8)
  (suggested by Harrison H)
