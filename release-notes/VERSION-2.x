@@ -21,8 +21,8 @@ Modules:
 
 2.9.9 (16-May-2019)
 
-#49: Afterburner `MyClassLoader#loadAndResolve()` is not idempotent when \
- `tryToUseParent` is true
+#49: Afterburner `MyClassLoader#loadAndResolve()` is not idempotent when
+  `tryToUseParent` is true
  (reported, fix contributed by Jeffrey B)
 #69: `ALLOW_COERCION_OF_SCALARS` ignored deserializing scalars with Afterburner
  (reported, fix contributed by Dan S)
