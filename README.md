@@ -28,7 +28,7 @@ whereas 3.0 will use [ByteBuddy](https://github.com/raphw/byte-buddy) (licensed 
 
 ## Status
 
-[![Build Status](https://travis-ci.org/FasterXML/jackson-base-modules.svg)](https://travis-ci.org/FasterXML/jackson-base-modules)
+[![Build Status](https://travis-ci.org/FasterXML/jackson-modules-base.svg)](https://travis-ci.org/FasterXML/jackson-modules-base)
 
 ## More
 
