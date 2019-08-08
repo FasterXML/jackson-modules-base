@@ -8,7 +8,8 @@ commercially by FasterXML.com.
 
 ## Licensing
 
-Jackson core and extension components may licensed under different licenses.
+Jackson core and extension components (as well their dependencies) may be licensed under
+different licenses.
 To find the details that apply to this artifact see the accompanying LICENSE file.
 For more information, including possible other licensing options, contact
 FasterXML.com (http://fasterxml.com).
@@ -18,3 +19,4 @@ FasterXML.com (http://fasterxml.com).
 A list of contributors may be found from CREDITS file, which is included
 in some artifacts (usually source distributions); but is always available
 from the source code management (SCM) system project uses.
+
