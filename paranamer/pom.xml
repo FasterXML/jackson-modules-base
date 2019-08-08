@@ -7,7 +7,6 @@
     <version>2.10.0.pr2-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-module-paranamer</artifactId>
-  <version>2.10.1.pr1-SNAPSHOT</version>
   <name>Jackson module: Paranamer</name>
   <packaging>bundle</packaging>
   <description>AnnotationIntrospectors that use Paranamer (http://paranamer.codehaus.org)
