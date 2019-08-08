@@ -19,6 +19,13 @@ Currently included are:
 
 All modules are licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
 
+Additionally, 2.x versions of `Afterburner` and `Mr Bean` use [ASM](https://gitlab.ow2.org/asm/asm),
+licensed as per:
+
+    https://asm.ow2.io/license.html
+
+whereas 3.0 will use [ByteBuddy](https://github.com/raphw/byte-buddy) (licensed as per https://github.com/raphw/byte-buddy/blob/master/LICENSE)
+
 ## Status
 
 [![Build Status](https://travis-ci.org/FasterXML/jackson-base-modules.svg)](https://travis-ci.org/FasterXML/jackson-base-modules)
