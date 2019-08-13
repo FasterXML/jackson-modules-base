@@ -10,6 +10,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.10.0.pr2
+
+#84: Add expand entity protection and secure processing to DomElementJsonDeserializer
+ (reported by Bartosz B)
+
 2.10.0.pr1 (19-Jul-2019)
 
 #52: (mrbean) Interfaces may have non-abstract methods (since java8)

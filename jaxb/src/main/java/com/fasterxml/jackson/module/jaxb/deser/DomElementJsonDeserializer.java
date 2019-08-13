@@ -3,6 +3,7 @@ package com.fasterxml.jackson.module.jaxb.deser;
 import java.io.IOException;
 import java.util.Iterator;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -20,7 +21,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * @author Ryan Heaton
+ *
+ * @deprecated Since 2.10 not used
  */
+@Deprecated // since 2.10 -- not used anywhere?
 public class DomElementJsonDeserializer
     extends StdDeserializer<Element>
 {
@@ -34,16 +38,23 @@ public class DomElementJsonDeserializer
         try {
             DocumentBuilderFactory bf = DocumentBuilderFactory.newInstance();
             bf.setNamespaceAware(true);
+            // [modules-base#84]: add secure processing settings
+            bf.setExpandEntityReferences(false);
             builder = bf.newDocumentBuilder();
+            try {
+                bf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            } catch(Exception e) {
+                // not necessarily supported by all implementations
+            }
         } catch (ParserConfigurationException e) {
             throw new RuntimeException();
         }
     }
 
-    public DomElementJsonDeserializer(DocumentBuilder builder)
+    public DomElementJsonDeserializer(DocumentBuilder b)
     {
         super(Element.class);
-        this.builder = builder;
+        builder = b;
     }
 
     @Override
