@@ -3,6 +3,7 @@ package com.fasterxml.jackson.module.paranamer;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 public class TestCreatorWithNamingStrategy
     extends ModuleTestBase
@@ -43,7 +44,7 @@ public class TestCreatorWithNamingStrategy
         }
     }
     
-    private final ObjectMapper MAPPER = ObjectMapper.builder()
+    private final ObjectMapper MAPPER = JsonMapper.builder()
             .addModule(new ParanamerModule())
             .propertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE)
             .build();

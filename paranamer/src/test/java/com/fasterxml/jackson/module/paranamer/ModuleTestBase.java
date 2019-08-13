@@ -3,6 +3,7 @@ package com.fasterxml.jackson.module.paranamer;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import junit.framework.TestCase;
 
@@ -23,7 +24,7 @@ public abstract class ModuleTestBase
     }
 
     protected ObjectMapper newObjectMapper() {
-        return ObjectMapper.builder()
+        return JsonMapper.builder()
                 .addModule(new ParanamerModule())
                 .build();
     }
