@@ -47,3 +47,10 @@ Harrison Houghton (hrhino@github)
 
 * Suggested, contributed impl for #52: Interfaces may have non-abstract methods (since java8)
  (2.10.0)
+
+Bartosz Baranowski (baranowb@github)
+
+* Reported #84: Add expand entity protection and secure processing to
+  DomElementJsonDeserializer
+ (2.10.0)
+ 

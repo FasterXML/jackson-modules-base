@@ -13,6 +13,10 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 
+/**
+ * @deprecated Since 2.10 not used
+ */
+@Deprecated // since 2.10 -- not used anywhere?
 public class DomElementJsonSerializer
     extends StdSerializer<Element>
 {
