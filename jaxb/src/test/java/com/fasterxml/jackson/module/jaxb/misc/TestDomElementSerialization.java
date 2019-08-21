@@ -13,12 +13,11 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.Serializers;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
-import com.fasterxml.jackson.module.jaxb.deser.DomElementJsonDeserializer;
-import com.fasterxml.jackson.module.jaxb.ser.DomElementJsonSerializer;
 
 /**
  * @author Ryan Heaton
  */
+@SuppressWarnings("deprecation")
 public class TestDomElementSerialization extends BaseJaxbTest
 {
     /*
@@ -33,7 +32,7 @@ public class TestDomElementSerialization extends BaseJaxbTest
         public DomModule()
         {
             super("DomModule", Version.unknownVersion());
-            addDeserializer(Element.class, new DomElementJsonDeserializer());
+            addDeserializer(Element.class, new com.fasterxml.jackson.module.jaxb.deser.DomElementJsonDeserializer());
             /* 19-Feb-2011, tatu: Note: since SimpleModule does not support "generic"
              *   serializers, need to add bit more code here.
              */
@@ -55,7 +54,7 @@ public class TestDomElementSerialization extends BaseJaxbTest
                 JavaType type, BeanDescription beanDesc)
         {
             if (Element.class.isAssignableFrom(type.getRawClass())) {
-                return new DomElementJsonSerializer();
+                return new com.fasterxml.jackson.module.jaxb.ser.DomElementJsonSerializer();
             }
             return null;
         }

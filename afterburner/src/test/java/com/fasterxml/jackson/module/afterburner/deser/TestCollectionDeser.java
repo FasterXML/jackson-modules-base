@@ -28,8 +28,9 @@ public class TestCollectionDeser extends AfterburnerTestBase
     // [module-afterburner#36]
     public void testIntMethod() throws Exception
     {
-        ObjectMapper mapper = newObjectMapper();
-        mapper.enable(MapperFeature.USE_GETTERS_AS_SETTERS);
+        ObjectMapper mapper = mapperBuilder()
+            .enable(MapperFeature.USE_GETTERS_AS_SETTERS)
+            .build();
         CollectionBean bean = mapper.readValue("{\"stuff\":[\"a\",\"b\"]}",
                 CollectionBean.class);
         assertEquals(2, bean.x.size());
