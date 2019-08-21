@@ -222,7 +222,7 @@ public class TestJaxbTypes
     {
         Object input = new ListBean(new BeanImpl(1, "a"));
         ObjectMapper mapper = getJaxbMapperBuilder()
-                .enableDefaultTyping(new NoCheckSubTypeValidator())
+                .activateDefaultTyping(new NoCheckSubTypeValidator())
                 .build();
         String str = mapper.writeValueAsString(input);
 
