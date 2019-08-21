@@ -31,7 +31,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     final protected boolean _skipNulls;
 
     /**
-     * Marker that we set if mutator turns out to be broken in a systemic
+     * Marker that we set if mutator turns out to be broken in a systematic
      * way that we can handle by redirecting it back to standard one.
      */
     private volatile boolean broken = false;
