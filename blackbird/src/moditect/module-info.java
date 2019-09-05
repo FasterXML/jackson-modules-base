@@ -1,6 +1,6 @@
 // Generated 14-Mar-2019 using Moditect maven plugin
 
-module com.fasterxml.jackson.module.afterburner {
+module com.fasterxml.jackson.module.blackbird {
     requires java.logging;
 
     requires com.fasterxml.jackson.core;

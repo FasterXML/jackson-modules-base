@@ -124,7 +124,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
                 // of multiple logging of same underlying problem. Not guaranteed, just improved.
                 if (!broken) {
                     broken = true;
-                    String msg = String.format("Disabling Afterburner deserialization for %s (field %s; mutator %s), due to access error (type %s, message=%s)%n",
+                    String msg = String.format("Disabling Blackbird deserialization for %s (field %s; mutator %s), due to access error (type %s, message=%s)%n",
                             bean.getClass(), _propName, getClass().getName(),
                             e.getClass().getName(), e.getMessage());
                     Logger.getLogger(getClass().getName()).log(Level.WARNING, msg, e);

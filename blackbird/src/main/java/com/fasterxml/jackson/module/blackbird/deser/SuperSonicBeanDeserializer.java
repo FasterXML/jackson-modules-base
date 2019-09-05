@@ -102,7 +102,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         // should usually get at least one property; let's for now consider it an error if not
         // (may need to revisit in future)
         if (i == 0) {
-            throw new IllegalStateException("Afterburner internal error: BeanDeserializer for "
+            throw new IllegalStateException("Blackbird internal error: BeanDeserializer for "
                     +_beanType+" has no properties that match expected ordering (should have "+len+") -- can not create optimized deserializer");
         }
         _orderedProperties = props.toArray(new SettableBeanProperty[props.size()]);
