@@ -92,7 +92,7 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
          */
         if (inst.getClass() == StdValueInstantiator.class) {
             // also, only override if using default creator (no-arg ctor, no-arg static factory)
-            if (inst.canCreateUsingDefault()) {
+            if (inst.canCreateUsingDefault() || inst.canCreateFromObjectWith()) {
                 inst = new CreatorOptimizer(beanClass, lookup, (StdValueInstantiator) inst).createOptimized();
                 if (inst != null) {
                     builder.setValueInstantiator(inst);
