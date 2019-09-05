@@ -14,7 +14,9 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
   <url>https://github.com/FasterXML/jackson-modules-base</url>
 
   <properties>
-    <!-- Generate PackageVersion.java into this directory. -->
+    <javac.src.version>1.8</javac.src.version>
+    <javac.target.version>1.8</javac.target.version>
+
     <packageVersion.dir>com/fasterxml/jackson/module/blackbird</packageVersion.dir>
     <packageVersion.package>${project.groupId}.blackbird</packageVersion.package>
   </properties>

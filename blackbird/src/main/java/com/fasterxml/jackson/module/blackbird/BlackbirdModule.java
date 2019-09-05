@@ -23,7 +23,7 @@ public class BlackbirdModule extends Module
     }
 
     public BlackbirdModule(Supplier<MethodHandles.Lookup> lookup) {
-        this(c -> c.getPackageName().startsWith("java") ? null : lookup.get());
+        this(c -> c.getName().startsWith("java") ? null : lookup.get());
     }
 
     @Override

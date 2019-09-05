@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.ser.*;
 import com.fasterxml.jackson.databind.util.ClassUtil;
+import com.fasterxml.jackson.module.blackbird.util.ReflectionHack;
 import com.fasterxml.jackson.module.blackbird.util.Unchecked;
 
 import static java.lang.invoke.MethodType.*;
@@ -53,14 +54,14 @@ public class BBSerializerModifier extends BeanSerializerModifier
             SerializationConfig config, List<BeanPropertyWriter> beanProperties)
     {
         MethodHandles.Lookup lookup = _lookups.apply(beanClass);
-        if (lookup == null ) {
+        if (lookup == null) {
             return;
         }
 
         ListIterator<BeanPropertyWriter> it = beanProperties.listIterator();
         while (it.hasNext()) {
             Unchecked.runnable(() ->
-                    createProperty(it, MethodHandles.privateLookupIn(beanClass, lookup), config))
+                    createProperty(it, ReflectionHack.privateLookupIn(beanClass, lookup), config))
                 .run();
         }
     }

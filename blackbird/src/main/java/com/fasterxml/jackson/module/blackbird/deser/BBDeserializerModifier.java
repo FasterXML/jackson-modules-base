@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.deser.impl.MethodProperty;
 import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.util.ClassUtil;
+import com.fasterxml.jackson.module.blackbird.util.ReflectionHack;
 
 public class BBDeserializerModifier extends BeanDeserializerModifier
 {
@@ -64,7 +65,7 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             return builder;
         }
         try {
-            lookup = MethodHandles.privateLookupIn(beanClass, lookup);
+            lookup = ReflectionHack.privateLookupIn(beanClass, lookup);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
