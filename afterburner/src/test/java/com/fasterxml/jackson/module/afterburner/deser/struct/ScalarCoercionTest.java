@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.deser.struct;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
@@ -13,11 +14,11 @@ import java.math.BigInteger;
 public class ScalarCoercionTest extends AfterburnerTestBase
 {
     private final ObjectMapper COERCING_MAPPER = afterburnerMapperBuilder()
-            .enable(DeserializationFeature.ALLOW_COERCION_OF_SCALARS)
+            .enable(MapperFeature.ALLOW_COERCION_OF_SCALARS)
             .build();
 
     private final ObjectMapper NOT_COERCING_MAPPER = afterburnerMapperBuilder()
-            .disable(DeserializationFeature.ALLOW_COERCION_OF_SCALARS)
+            .disable(MapperFeature.ALLOW_COERCION_OF_SCALARS)
             .build();
 
     /*
@@ -191,7 +192,7 @@ public class ScalarCoercionTest extends AfterburnerTestBase
         } catch (MismatchedInputException e) {
             verifyException(e, "Cannot coerce ");
             verifyException(e, " for type `");
-            verifyException(e, "enable `DeserializationFeature.ALLOW_COERCION_OF_SCALARS` to allow");
+            verifyException(e, "enable `MapperFeature.ALLOW_COERCION_OF_SCALARS` to allow");
         }
     }
 }

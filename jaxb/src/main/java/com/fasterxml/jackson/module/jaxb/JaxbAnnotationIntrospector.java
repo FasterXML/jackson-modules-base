@@ -95,9 +95,9 @@ public class JaxbAnnotationIntrospector
 
     /**
      * Inclusion value to return for properties annotated with 
-     * {@link XmlElement} and {@link XmlElementWrapper}, in case <code>nillable</code>
-     * property is left as <code>false</false>. Default setting is
-     * <code>null</code>; this is typically changed to either
+     * {@link XmlElement} and {@link XmlElementWrapper}, in case {@code nillable}
+     * property is left as {@code false}. Default setting is
+     * {@code null}; this is typically changed to either
      * {@link com.fasterxml.jackson.annotation.JsonInclude.Include#NON_NULL}
      * or {@link com.fasterxml.jackson.annotation.JsonInclude.Include#NON_EMPTY}.
      */

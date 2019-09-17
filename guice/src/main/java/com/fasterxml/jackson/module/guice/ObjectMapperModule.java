@@ -81,6 +81,9 @@ public class ObjectMapperModule implements com.google.inject.Module
     return this;
   }
 
+  /**
+   * @param m ObjectMapper to use for newly constructed module
+   */
   public ObjectMapperModule withObjectMapper(ObjectMapper m)
   {
     objectMapper = m;

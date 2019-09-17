@@ -219,7 +219,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             return parsed;            
         }
         // Otherwise, no can do:
-        return (Boolean) ctxt.handleUnexpectedToken(Boolean.TYPE, p);
+        return (Boolean) ctxt.handleUnexpectedToken(getType(), p);
     }
 
     protected final short _deserializeShort(JsonParser jp, DeserializationContext ctxt)
@@ -287,7 +287,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             return parsed;            
         }
         // Otherwise, no can do:
-        return (Integer) ctxt.handleUnexpectedToken(Integer.TYPE, p);
+        return (Integer) ctxt.handleUnexpectedToken(getType(), p);
     }
 
     protected final long _deserializeLong(JsonParser p, DeserializationContext ctxt)
@@ -328,7 +328,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             }
             break;
         }
-        return (Long) ctxt.handleUnexpectedToken(Long.TYPE, p);
+        return (Long) ctxt.handleUnexpectedToken(getType(), p);
     }
 
     protected final String _deserializeString(JsonParser p, DeserializationContext ctxt) throws IOException
@@ -365,7 +365,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
                 return text;
             }
         }
-        return (String) ctxt.handleUnexpectedToken(String.class, p);
+        return (String) ctxt.handleUnexpectedToken(getType(), p);
     }
 
     protected final boolean _deserializeBooleanFromOther(JsonParser p, DeserializationContext ctxt)
@@ -400,7 +400,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     }
 
     private void _verifyScalarCoercion(DeserializationContext ctxt, JsonParser parser, String type) throws IOException {
-        DeserializationFeature feat = DeserializationFeature.ALLOW_COERCION_OF_SCALARS;
+        MapperFeature feat = MapperFeature.ALLOW_COERCION_OF_SCALARS;
         if (!ctxt.isEnabled(feat)) {
             ctxt.reportInputMismatch(getType(),
                     "Cannot coerce JSON %s value (%s) into %s (enable `%s.%s` to allow)",

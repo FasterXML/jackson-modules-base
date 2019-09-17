@@ -130,7 +130,7 @@ public class ProblemHandlerTest extends AfterburnerTestBase
 
         @Override
         public Object handleUnexpectedToken(DeserializationContext ctxt,
-                Class<?> targetType, JsonToken t, JsonParser p,
+                JavaType targetType, JsonToken t, JsonParser p,
                 String failureMsg)
             throws IOException
         {
