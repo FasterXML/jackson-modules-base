@@ -10,6 +10,10 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.10.0.pr3 (17-Sep-2019)
+
+No changes since pr2
+
 2.10.0.pr2 (31-Aug-2019)
 
 #84: Add expand entity protection and secure processing to DomElementJsonDeserializer
