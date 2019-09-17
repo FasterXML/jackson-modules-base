@@ -20,9 +20,7 @@ public class ObjectMapperModule implements com.google.inject.Module
   private final List<Key<? extends Module>> modulesToInject = new ArrayList<Key<? extends Module>>();
   private final Key<ObjectMapper> objectMapperKey;
 
-  /**
-   * @since 2.8
-   */
+  // @since 2.8
   private ObjectMapper objectMapper;
 
   private Class<? extends Annotation> scope = null;
@@ -81,6 +79,8 @@ public class ObjectMapperModule implements com.google.inject.Module
   }
 
   /**
+   * @param m ObjectMapper to use for newly constructed module
+   *
    * @since 2.8
    */
   public ObjectMapperModule withObjectMapper(ObjectMapper m)
