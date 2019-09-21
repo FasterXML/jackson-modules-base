@@ -10,6 +10,10 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.9.10 (21-Sep-2019)
+
+No changes since 2.9.9
+
 2.9.9 (16-May-2019)
 
 #49: Afterburner `MyClassLoader#loadAndResolve()` is not idempotent when
