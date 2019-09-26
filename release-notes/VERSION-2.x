@@ -10,20 +10,13 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.10.0.pr3 (17-Sep-2019)
-
-No changes since pr2
-
-2.10.0.pr2 (31-Aug-2019)
-
-#84: Add expand entity protection and secure processing to DomElementJsonDeserializer
- (reported by Bartosz B)
-
-2.10.0.pr1 (19-Jul-2019)
+2.10.0 (26-Sep-2019)
 
 #52: (mrbean) Interfaces may have non-abstract methods (since java8)
  (suggested by Harrison H)
 #79: (all) Add simple module-info for JDK9+, using Moditect
+#84: Add expand entity protection and secure processing to DomElementJsonDeserializer
+ (reported by Bartosz B)
 - Update `asm` version 5.2 -> 7.0 for JDK 11 support
 - Remove SPI metadata for OSGi module as there is no 0-arg constructor, does
   not work
