@@ -1,8 +1,6 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
-import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Vector;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -144,10 +142,6 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
     static class Issue60Pojo {
         public List<Object> foos;
     }    
-
-    static class CheckGeneratedDeserializerName {
-        public String stringField;
-    }
 
     /*
     /**********************************************************************
@@ -331,6 +325,15 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
         assertEquals(0, pojo.foos.size());
     }
 
+    // 28-Sep-2019, tatu: I do not fully understand what this method tried to do;
+    //   it seemed to be a contribution from July 2016. But I noticed that it breaks
+    //   with JDK 12 and unlikely to be allowed so let's comment it out.
+    /*
+
+    static class CheckGeneratedDeserializerName {
+        public String stringField;
+    }
+    
     @SuppressWarnings("unchecked")
     public void testGeneratedDeserializerName() throws Exception {
         MAPPER.readValue("{\"stringField\":\"foo\"}", CheckGeneratedDeserializerName.class);
@@ -355,4 +358,5 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
         }
         fail("Expected class not found:" + expectedClassName);
     }
+    */
 }
