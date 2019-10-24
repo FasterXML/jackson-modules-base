@@ -282,23 +282,26 @@ public class TestJaxbAnnotationIntrospector
         final TypeFactory tf = MAPPER.getTypeFactory();
         AnnotationIntrospector ai = new JaxbAnnotationIntrospector();
         // If no @XmlRootElement, should get null (unless pkg has etc)
-        assertNull(ai.findRootName(AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
+        assertNull(ai.findRootName(MAPPER.serializationConfig(),
+                AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
                 tf.constructType(SimpleBean.class), null)));
         // With @XmlRootElement, but no name, empty String
-        PropertyName rootName = ai.findRootName(AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
+        PropertyName rootName = ai.findRootName(MAPPER.serializationConfig(),
+                AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
                 tf.constructType(NamespaceBean.class), null));
         assertNotNull(rootName);
         assertEquals("", rootName.getSimpleName());
         assertEquals("urn:class", rootName.getNamespace());
 
         // and otherwise explicit name
-        rootName = ai.findRootName(AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
+        rootName = ai.findRootName(MAPPER.serializationConfig(),
+                AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
                 tf.constructType(RootNameBean.class), null));
         assertNotNull(rootName);
         assertEquals("test", rootName.getSimpleName());
         assertNull(rootName.getNamespace());
     }
-    
+
     // JAXB can specify that properties are to be written in alphabetic order...
     public void testSerializationAlphaOrdering() throws Exception
     {
@@ -317,9 +320,9 @@ public class TestJaxbAnnotationIntrospector
                 tf.constructType(NamespaceBean.class), null);
         AnnotatedField af = _findField(ac, "string");
         assertNotNull(af);
-        PropertyName pn = ai.findNameForDeserialization(af);
+        PropertyName pn = ai.findNameForDeserialization(MAPPER.serializationConfig(), af);
         assertNotNull(pn);
-        
+
         // JAXB seems to assert field name instead of giving "use default"...
         assertEquals("", pn.getSimpleName());
         assertEquals("urn:method", pn.getNamespace());

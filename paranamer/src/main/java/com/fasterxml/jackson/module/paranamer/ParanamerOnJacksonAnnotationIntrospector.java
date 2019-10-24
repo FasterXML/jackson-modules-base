@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.module.paranamer;
 
-import com.thoughtworks.paranamer.Paranamer;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.PropertyName;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.*;
 
 /**
@@ -27,23 +27,12 @@ public class ParanamerOnJacksonAnnotationIntrospector
         this(new SerializableParanamer());
     }
 
-    /**
-     * @since 2.7.6
-     */
     public ParanamerOnJacksonAnnotationIntrospector(SerializableParanamer pn) {
         _paranamer = pn;
     }
 
-    /**
-     * @deprecated since 2.7.6
-     */
-    @Deprecated
-    public ParanamerOnJacksonAnnotationIntrospector(Paranamer pn) {
-        this(new SerializableParanamer(pn));
-    }
-
     @Override
-    public PropertyName findNameForDeserialization(Annotated a)
+    public PropertyName findNameForDeserialization(MapperConfig<?> config, Annotated a)
     {
         /* 14-Apr-2014, tatu: Important -- we should NOT introspect name here,
          *   since we are not using annotations; instead it needs to be done

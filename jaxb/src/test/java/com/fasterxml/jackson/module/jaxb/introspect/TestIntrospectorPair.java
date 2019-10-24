@@ -266,9 +266,11 @@ public class TestIntrospectorPair
             .build();
         TypeFactory tf = mapper.getTypeFactory();
 
-        assertNull(pair.findRootName(AnnotatedClassResolver.resolve(mapper.serializationConfig(),
+        assertNull(pair.findRootName(mapper.serializationConfig(),
+                AnnotatedClassResolver.resolve(mapper.serializationConfig(),
                 tf.constructType(NamedBean.class), null)));
-        PropertyName name = pair.findRootName(AnnotatedClassResolver.resolve(mapper.serializationConfig(),
+        PropertyName name = pair.findRootName(mapper.serializationConfig(),
+                AnnotatedClassResolver.resolve(mapper.serializationConfig(),
                 tf.constructType(NamespaceBean.class), null));
         assertNotNull(name);
         assertEquals("test", name.getSimpleName());
@@ -276,11 +278,13 @@ public class TestIntrospectorPair
 
         // then reverse; should make no difference
         pair = new AnnotationIntrospectorPair(_jaxbAI, _jacksonAI);
-        name = pair.findRootName(AnnotatedClassResolver.resolve(mapper.serializationConfig(),
+        name = pair.findRootName(mapper.serializationConfig(),
+                AnnotatedClassResolver.resolve(mapper.serializationConfig(),
                 tf.constructType(NamedBean.class), null));
         assertNull(name);
         
-        name = pair.findRootName(AnnotatedClassResolver.resolve(mapper.serializationConfig(),
+        name = pair.findRootName(mapper.serializationConfig(),
+                AnnotatedClassResolver.resolve(mapper.serializationConfig(),
                 tf.constructType(NamespaceBean.class), null));
         assertEquals("test", name.getSimpleName());
         assertEquals("urn:whatever", name.getNamespace());

@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
-@SuppressWarnings("serial")
 public class TestStdSerializerOverrides extends AfterburnerTestBase
 {
     static class ClassWithPropOverrides

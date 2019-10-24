@@ -6,18 +6,14 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
-import java.lang.reflect.Field;
-import java.util.Vector;
-
 public class TestSimpleSerialize extends AfterburnerTestBase
 {
     public enum MyEnum {
         A, B, C;
     }
 
-    /* Keep this as package access, since we can't handle private; but
-     * public is pretty much always available.
-     */
+    // Keep this as package access, since we can't handle private; but
+    // public is pretty much always available.
     static class IntBean {
         @JsonProperty("x")
         int getX() { return 123; }

@@ -337,7 +337,7 @@ public class JaxbAnnotationIntrospector
      */
 
     @Override
-    public PropertyName findRootName(AnnotatedClass ac)
+    public PropertyName findRootName(MapperConfig<?> config, AnnotatedClass ac)
     {
         XmlRootElement elem = findRootElementAnnotation(ac);
         if (elem != null) {
@@ -369,7 +369,7 @@ public class JaxbAnnotationIntrospector
     */
 
     @Override
-    public Boolean isIgnorableType(AnnotatedClass ac) {
+    public Boolean isIgnorableType(MapperConfig<?> config, AnnotatedClass ac) {
         // Does JAXB have any such indicators? No?
         return null;
     }
@@ -461,7 +461,7 @@ public class JaxbAnnotationIntrospector
     }
 
     @Override
-    public JsonFormat.Value findFormat(Annotated m) {
+    public JsonFormat.Value findFormat(MapperConfig<?> config, Annotated m) {
         /* [jaxb-annotations#33]: Use @XmlEnum value (Class) to indicate format,
          *   iff it makes sense
          */
@@ -1008,7 +1008,7 @@ public class JaxbAnnotationIntrospector
      */
 
     @Override
-    public PropertyName findNameForDeserialization(Annotated a)
+    public PropertyName findNameForDeserialization(MapperConfig<?> config, Annotated a)
     {
         // 16-Sep-2016, tatu: Prior to 2.9 logic her more complicated, on assumption
         //    that visibility rules may require return of "" if method/fied visible;

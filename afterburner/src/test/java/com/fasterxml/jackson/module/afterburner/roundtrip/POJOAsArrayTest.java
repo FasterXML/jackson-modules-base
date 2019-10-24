@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
@@ -62,7 +63,7 @@ public class POJOAsArrayTest extends AfterburnerTestBase
         private static final long serialVersionUID = 1L;
 
         @Override
-        public JsonFormat.Value findFormat(Annotated a) {
+        public JsonFormat.Value findFormat(MapperConfig<?> config, Annotated a) {
             return new JsonFormat.Value().withShape(JsonFormat.Shape.ARRAY);
         }
     }

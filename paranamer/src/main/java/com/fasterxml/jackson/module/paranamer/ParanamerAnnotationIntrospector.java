@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.module.paranamer;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedParameter;
@@ -40,7 +41,7 @@ public class ParanamerAnnotationIntrospector
     }
 
     @Override
-    public PropertyName findNameForDeserialization(Annotated a)
+    public PropertyName findNameForDeserialization(MapperConfig<?> config, Annotated a)
     {
         /* 14-Apr-2014, tatu: Important -- we should NOT introspect name here,
          *   since we are not using annotations; instead it needs to be done

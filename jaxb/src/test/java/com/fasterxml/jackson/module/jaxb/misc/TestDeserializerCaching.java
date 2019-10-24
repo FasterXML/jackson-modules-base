@@ -7,9 +7,6 @@ import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 
-/**
- * Unit test(s) for [JACKSON-472]
- */
 public class TestDeserializerCaching extends BaseJaxbTest
 {
     /*
@@ -32,7 +29,6 @@ public class TestDeserializerCaching extends BaseJaxbTest
         }
     }
 
-    @SuppressWarnings("serial")
     static class MyBeanDeserializer extends BeanDeserializer {
         public MyBeanDeserializer(BeanDeserializer src) {
             super(src);
