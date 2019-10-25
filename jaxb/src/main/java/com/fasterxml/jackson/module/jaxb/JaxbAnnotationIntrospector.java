@@ -348,7 +348,7 @@ public class JaxbAnnotationIntrospector
     
     /*
     @Override
-    public String[] findPropertiesToIgnore(Annotated a) {
+    public String[] findPropertiesToIgnore(MapperConfig<?> config, Annotated a) {
         // nothing in JAXB for this?
         return null;
     }
@@ -362,10 +362,10 @@ public class JaxbAnnotationIntrospector
      */
     /*
     @Override
-    public Boolean findIgnoreUnknownProperties(AnnotatedClass ac);
+    public Boolean findIgnoreUnknownProperties(MapperConfig<?> config, AnnotatedClass ac);
 
     @Override
-    public JsonIgnoreProperties.Value findPropertyIgnorals(Annotated ac);
+    public JsonIgnoreProperties.Value findPropertyIgnorals(MapperConfig<?> config, Annotated ac);
     */
 
     @Override
@@ -381,7 +381,7 @@ public class JaxbAnnotationIntrospector
      */
 
     @Override
-    public boolean hasIgnoreMarker(AnnotatedMember m) {
+    public boolean hasIgnoreMarker(MapperConfig<?> config, AnnotatedMember m) {
         return m.getAnnotation(XmlTransient.class) != null;
     }
 
@@ -397,14 +397,14 @@ public class JaxbAnnotationIntrospector
     
     /*
     @Override
-    public boolean hasAnySetterAnnotation(AnnotatedMethod am) { }
+    public boolean hasAnySetterAnnotation(MapperConfig<?> config, AnnotatedMethod am) { }
     
     @Override
-    public boolean hasAnySetterAnnotation(AnnotatedMethod am)
+    public boolean hasAnySetterAnnotation(MapperConfig<?> config, AnnotatedMethod am)
     */
 
     @Override
-    public Boolean hasRequiredMarker(AnnotatedMember m) {
+    public Boolean hasRequiredMarker(MapperConfig<?> config, AnnotatedMember m) {
         // 17-Oct-2017, tatu: [modules-base#32]
         //   Before 2.9.3, was handling `true` correctly,
         //   but otherwise used confusing logic (probably in attempt to try to avoid
@@ -421,7 +421,7 @@ public class JaxbAnnotationIntrospector
     }
 
     @Override
-    public PropertyName findWrapperName(Annotated ann)
+    public PropertyName findWrapperName(MapperConfig<?> config, Annotated ann)
     {
         XmlElementWrapper w = findAnnotation(XmlElementWrapper.class, ann, false, false, false);
         if (w != null) {
@@ -452,7 +452,7 @@ public class JaxbAnnotationIntrospector
     }
 
     @Override
-    public String findImplicitPropertyName(AnnotatedMember m) {
+    public String findImplicitPropertyName(MapperConfig<?> config, AnnotatedMember m) {
         XmlValue valueInfo = m.getAnnotation(XmlValue.class);
         if (valueInfo != null) {
             return _xmlValueName;
@@ -781,7 +781,7 @@ public class JaxbAnnotationIntrospector
      */
 
     @Override
-    public String[] findSerializationPropertyOrder(AnnotatedClass ac)
+    public String[] findSerializationPropertyOrder(MapperConfig<?> config, AnnotatedClass ac)
     {
         // @XmlType.propOrder fits the bill here:
         XmlType type = findAnnotation(XmlType.class, ac, true, true, true);
@@ -796,7 +796,7 @@ public class JaxbAnnotationIntrospector
     }
 
     @Override
-    public Boolean findSerializationSortAlphabetically(Annotated ann) {
+    public Boolean findSerializationSortAlphabetically(MapperConfig<?> config, Annotated ann) {
         return _findAlpha(ann);
     }
 
@@ -838,7 +838,7 @@ public class JaxbAnnotationIntrospector
      */
 
     @Override
-    public PropertyName findNameForSerialization(Annotated a)
+    public PropertyName findNameForSerialization(MapperConfig<?> config, Annotated a)
     {
         // 16-Sep-2016, tatu: Prior to 2.9 logic her more complicated, on assumption
         //    that visibility rules may require return of "" if method/fied visible;
@@ -861,12 +861,13 @@ public class JaxbAnnotationIntrospector
     // As per above, nothing to detect here either...?
     /*
     @Override
-    public Boolean findAsValueAnnotation(Annotated a) {
+    public Boolean findAsValueAnnotation(MapperConfig<?> config, Annotated a) {
     }
     */
 
     @Override
-    public String[] findEnumValues(Class<?> enumType, Enum<?>[] enumValues, String[] names) {
+    public String[] findEnumValues(MapperConfig<?> config, 
+            Class<?> enumType, Enum<?>[] enumValues, String[] names) {
         HashMap<String,String> expl = null;
         for (Field f : enumType.getDeclaredFields()) {
             if (!f.isEnumConstant()) {

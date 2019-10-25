@@ -18,8 +18,6 @@ import com.fasterxml.jackson.databind.deser.impl.UnwrappedPropertyHandler;
 public abstract class SuperSonicBDBase
     extends BeanDeserializer
 {
-    private static final long serialVersionUID = 1;
-
     /**
      * Names of properties being deserialized, in ordered they are
      * expected to have been written (as per serialization settings);

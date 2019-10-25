@@ -26,8 +26,9 @@ public class JaxbAnnotationModule extends com.fasterxml.jackson.databind.Module
      * Default choice is <b>PRIMARY</b>
      *<p>
      * Note that if you want to use JAXB annotations as the only annotations,
-     * you must directly set annotation introspector by calling 
-     * {@link com.fasterxml.jackson.databind.ObjectMapper#setAnnotationIntrospector}.
+     * you must directly set annotation introspector by constructing
+     * {@code ObjectMapper} via builder and assign {@link JaxbAnnotationIntrospector}
+     * as the only introspector (instead of inserting or appending).
      */
     public enum Priority {
         PRIMARY, SECONDARY;

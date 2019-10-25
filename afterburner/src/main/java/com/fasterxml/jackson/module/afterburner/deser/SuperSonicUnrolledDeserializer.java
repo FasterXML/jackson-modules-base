@@ -18,8 +18,6 @@ import com.fasterxml.jackson.databind.util.NameTransformer;
 public final class SuperSonicUnrolledDeserializer
     extends SuperSonicBDBase
 {
-    private static final long serialVersionUID = 1;
-
     protected final int _propCount;
 
     // // // We store separate references in form more easily accessed

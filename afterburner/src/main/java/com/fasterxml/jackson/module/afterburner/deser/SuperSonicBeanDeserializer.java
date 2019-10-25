@@ -14,8 +14,6 @@ import com.fasterxml.jackson.databind.util.NameTransformer;
 public final class SuperSonicBeanDeserializer
     extends SuperSonicBDBase
 {
-    private static final long serialVersionUID = 1;
-
     /*
     /**********************************************************
     /* Life-cycle, construction, initialization

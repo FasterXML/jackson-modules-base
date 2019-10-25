@@ -12,8 +12,6 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 public abstract class OptimizedValueInstantiator
     extends StdValueInstantiator
 {
-    private static final long serialVersionUID = 1L;
-
     /**
      * Default constructor which is only used when creating
      * dummy instance to call factory method.

@@ -17,8 +17,6 @@ import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrappe
 
 public class DataHandlerJsonSerializer extends StdSerializer<DataHandler>
 {
-    private static final long serialVersionUID = 1L;
-
     public DataHandlerJsonSerializer() { super(DataHandler.class); }
     
     @Override
