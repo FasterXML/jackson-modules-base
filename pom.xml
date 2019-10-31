@@ -27,6 +27,15 @@ not datatype, data format, or JAX-RS provider modules.
 -->
   </modules>
 
+  <licenses>
+    <license>
+      <name>Apache 2</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
+
   <url>https://github.com/FasterXML/jackson-modules-base</url>
   <scm>
     <connection>scm:git:git@github.com:FasterXML/jackson-modules-base.git</connection>
@@ -72,19 +81,19 @@ not datatype, data format, or JAX-RS provider modules.
   <build>
     <pluginManagement>
       <plugins>
-	<plugin>
-	  <!-- Inherited from oss-base. Generate PackageVersion.java.-->
+    <plugin>
+      <!-- Inherited from oss-base. Generate PackageVersion.java.-->
           <groupId>com.google.code.maven-replacer-plugin</groupId>
           <artifactId>replacer</artifactId>
-	  <executions>
+      <executions>
             <execution>
               <id>process-packageVersion</id>
               <phase>generate-sources</phase>
             </execution>
           </executions>
-	</plugin>
+    </plugin>
 
-	<plugin>
+    <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
@@ -92,7 +101,7 @@ not datatype, data format, or JAX-RS provider modules.
               <exclude>com/fasterxml/jackson/**/failing/*.java</exclude>
             </excludes>
           </configuration>
-	</plugin>
+    </plugin>
       </plugins>
     </pluginManagement>
   </build>
