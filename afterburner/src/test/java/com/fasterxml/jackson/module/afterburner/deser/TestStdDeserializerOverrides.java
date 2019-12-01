@@ -104,6 +104,12 @@ public class TestStdDeserializerOverrides extends AfterburnerTestBase
                                 }
                                 return null;
                             }
+
+                            @Override
+                            public boolean hasDeserializerFor(DeserializationConfig config,
+                                    Class<?> valueType) {
+                                return false;
+                            }
                         });
             }
         };
