@@ -6,11 +6,11 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+
+import com.fasterxml.jackson.module.afterburner.testutil.NoCheckSubTypeValidator;
 
 public abstract class AfterburnerTestBase extends junit.framework.TestCase
 {
@@ -169,7 +169,9 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
     }
 
     protected static ObjectMapper newAfterburnerMapper() {
-        return afterburnerMapperBuilder().build();
+        return afterburnerMapperBuilder()
+                .polymorphicTypeValidator(new NoCheckSubTypeValidator())
+                .build();
     }
 
     protected static MapperBuilder<?,?> afterburnerMapperBuilder() {
