@@ -19,7 +19,7 @@ To use module on Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.module</groupId>
   <artifactId>jackson-module-afterburner</artifactId>
-  <version>2.7.1</version>
+  <version>2.11.0</version>
 </dependency>
 ```
 

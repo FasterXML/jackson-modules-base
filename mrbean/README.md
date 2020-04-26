@@ -6,13 +6,6 @@ Extension plugs in using standard `Module` interface, and requires Jackson 2.0 o
 
 Module is licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 
-## Status
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-mrbean/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-mrbean/)
-[![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.module/jackson-module-mrbean.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-mrbean)
-
-Module is fully usable, and considered stable.
-
 ## Usage
 
 ### Maven dependency
@@ -23,7 +16,7 @@ To use module on Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.module</groupId>
   <artifactId>jackson-module-mrbean</artifactId>
-  <version>2.4.0</version>
+  <version>2.11.0</version>
 </dependency>
 ```
 

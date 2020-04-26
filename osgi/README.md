@@ -5,11 +5,6 @@ Thanks to the _JacksonInject_ annotations, the _OsgiJacksonModule_ will search f
 
 Module is licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
 
-## Status
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-osgi/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-osgi/)
-[![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.module/jackson-module-osgi.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-osgi)
-
 ## Usage
 
 For example, imagine a drawing software that persists shapes in JSON documents (on file system, mongodb or orientdb). The _Shape_ object needs a _DrawingService_ that is in charge of drawing shapes.
