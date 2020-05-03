@@ -18,10 +18,7 @@ Modules:
 
 No changes since 2.10.x
 
-2.10.4 (not yet released)
-
--
-
+2.10.4 (03-May-2020)
 2.10.3 (03-Mar-2020)
 2.10.2 (05-Jan-2020)
 2.10.1 (09-Nov-2019)
