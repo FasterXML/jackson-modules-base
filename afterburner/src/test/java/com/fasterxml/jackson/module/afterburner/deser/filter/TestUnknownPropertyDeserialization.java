@@ -137,7 +137,7 @@ public class TestUnknownPropertyDeserialization
         try {
             MAPPER.readValue(new StringReader(JSON_UNKNOWN_FIELD), TestBean.class);
         } catch (JsonMappingException jex) {
-            verifyException(jex, "Unrecognized field \"foo\"");
+            verifyException(jex, "Unrecognized property \"foo\"");
         }
     }
 
@@ -244,7 +244,7 @@ public class TestUnknownPropertyDeserialization
         try {
             MAPPER.readValue("{\"a\":1,\"b\":2,\"c\":3,\"d\":4 }", ImplicitIgnores.class);            
         } catch (JsonMappingException e) {
-            verifyException(e, "Unrecognized field \"d\"");
+            verifyException(e, "Unrecognized property \"d\"");
         }
     }
 
