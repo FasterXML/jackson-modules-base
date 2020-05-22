@@ -22,7 +22,7 @@ data-binding.
     <!-- 22-Mar-2019, tatu: [modules-base#80]: Presence of JAF on the bundle classpath is only necessary
            when ser/deser'ing javax.a.DataHandlers
       -->
-    <osgi.import>javax.activation;resolution:=optional,*</osgi.import>
+    <osgi.import>jakarta.activation;resolution:=optional,*</osgi.import>
 
     <version.jaxb.api>3.0.0-RC3</version.jaxb.api>
     <version.jaxb.impl>3.0.0-M3</version.jaxb.impl>
