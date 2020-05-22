@@ -2,7 +2,7 @@ package com.fasterxml.jackson.module.jaxb.types;
 
 import java.util.*;
 
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

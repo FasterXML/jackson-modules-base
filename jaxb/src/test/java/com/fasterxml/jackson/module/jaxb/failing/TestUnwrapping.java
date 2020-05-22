@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.module.jaxb.failing;
 
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 

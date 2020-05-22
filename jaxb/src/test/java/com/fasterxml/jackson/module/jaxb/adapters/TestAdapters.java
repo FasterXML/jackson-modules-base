@@ -2,9 +2,9 @@ package com.fasterxml.jackson.module.jaxb.adapters;
 
 import java.util.*;
 
-import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
@@ -77,7 +77,7 @@ public class TestAdapters extends BaseJaxbTest
         
         @Override
         public Calendar unmarshal(String value) {
-            return (javax.xml.bind.DatatypeConverter.parseDateTime(value));
+            return (jakarta.xml.bind.DatatypeConverter.parseDateTime(value));
         }
     
         @Override
@@ -85,7 +85,7 @@ public class TestAdapters extends BaseJaxbTest
             if (value == null) {
                 return null;
             }
-            return (javax.xml.bind.DatatypeConverter.printDateTime(value));
+            return (jakarta.xml.bind.DatatypeConverter.printDateTime(value));
         }
     }
     
@@ -111,7 +111,7 @@ public class TestAdapters extends BaseJaxbTest
     public static class Adapter1 extends XmlAdapter<String, Long> {
         @Override
         public Long unmarshal(String value) {
-            return ((long) javax.xml.bind.DatatypeConverter.parseLong(value));
+            return ((long) jakarta.xml.bind.DatatypeConverter.parseLong(value));
         }
 
         @Override
@@ -119,7 +119,7 @@ public class TestAdapters extends BaseJaxbTest
             if (value == null) {
                 return null;
             }
-            return (javax.xml.bind.DatatypeConverter.printLong((long) (long) value));
+            return (jakarta.xml.bind.DatatypeConverter.printLong((long) (long) value));
         }   
     }    
 

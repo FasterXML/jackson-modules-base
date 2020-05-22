@@ -2,7 +2,7 @@ package com.fasterxml.jackson.module.jaxb.misc;
 
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -3,8 +3,8 @@ package com.fasterxml.jackson.module.jaxb.adapters;
 import java.util.*;
 import java.util.Map.Entry;
 
-import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.*;
+import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.adapters.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;

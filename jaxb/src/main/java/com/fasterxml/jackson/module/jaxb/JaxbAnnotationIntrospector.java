@@ -5,9 +5,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 
-import javax.xml.bind.*;
-import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.*;
+import jakarta.xml.bind.*;
+import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.adapters.*;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.*;
@@ -32,16 +32,16 @@ import com.fasterxml.jackson.module.jaxb.ser.DataHandlerJsonSerializer;
  * <ul>
  * <li>{@link XmlAnyAttribute} not yet used (as of 1.5) but may be in future (as an alias for @JsonAnySetter?)
  * <li>{@link XmlAnyElement} not yet used, may be as per [JACKSON-253]
- * <li>{@link javax.xml.bind.annotation.XmlAttachmentRef}: JSON does not support external attachments
+ * <li>{@link jakarta.xml.bind.annotation.XmlAttachmentRef}: JSON does not support external attachments
  * <li>{@link XmlElementDecl}
  * <li>{@link XmlElementRefs} because Jackson doesn't have any support for 'named' collection items -- however,
  *    this may become partially supported as per [JACKSON-253].
- * <li>{@link javax.xml.bind.annotation.XmlInlineBinaryData} since the underlying concepts
+ * <li>{@link jakarta.xml.bind.annotation.XmlInlineBinaryData} since the underlying concepts
  *    (like XOP) do not exist in JSON -- Jackson will always use inline base64 encoding as the method
- * <li>{@link javax.xml.bind.annotation.XmlList} because JSON does not have (or necessarily need)
+ * <li>{@link jakarta.xml.bind.annotation.XmlList} because JSON does not have (or necessarily need)
  *    method of serializing list of values as space-separated Strings
- * <li>{@link javax.xml.bind.annotation.XmlMimeType}
- * <li>{@link javax.xml.bind.annotation.XmlMixed} since JSON has no concept of mixed content
+ * <li>{@link jakarta.xml.bind.annotation.XmlMimeType}
+ * <li>{@link jakarta.xml.bind.annotation.XmlMixed} since JSON has no concept of mixed content
  * <li>{@link XmlRegistry}
  * <li>{@link XmlSchema} not used, unlikely to be used
  * <li>{@link XmlSchemaType} not used, unlikely to be used
@@ -664,16 +664,16 @@ public class JaxbAnnotationIntrospector
     }
 
     /**
-     * Determines whether the type is assignable to class javax.activation.DataHandler without requiring that class
+     * Determines whether the type is assignable to class jakarta.activation.DataHandler without requiring that class
      * to be on the classpath.
      *
      * @param type The type.
-     * @return Whether the type is assignable to class javax.activation.DataHandler
+     * @return Whether the type is assignable to class jakarta.activation.DataHandler
      */
     private boolean isDataHandler(Class<?> type)
     {
         return type != null && (Object.class != type)
-               && (("javax.activation.DataHandler".equals(type.getName()) || isDataHandler(type.getSuperclass())));
+               && (("jakarta.activation.DataHandler".equals(type.getName()) || isDataHandler(type.getSuperclass())));
     }
 
     @Override

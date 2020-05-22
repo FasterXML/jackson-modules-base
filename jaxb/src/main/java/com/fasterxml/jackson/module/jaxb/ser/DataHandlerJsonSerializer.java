@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.JavaType;

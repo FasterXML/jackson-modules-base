@@ -2,7 +2,7 @@ package com.fasterxml.jackson.module.jaxb.introspect;
 
 import java.io.IOException;
 
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.*;

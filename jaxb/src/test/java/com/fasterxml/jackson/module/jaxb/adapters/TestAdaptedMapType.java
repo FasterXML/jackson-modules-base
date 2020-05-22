@@ -3,8 +3,8 @@ package com.fasterxml.jackson.module.jaxb.adapters;
 import java.io.*;
 import java.util.*;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

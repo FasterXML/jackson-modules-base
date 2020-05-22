@@ -4,7 +4,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
