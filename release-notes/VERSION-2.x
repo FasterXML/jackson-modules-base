@@ -12,7 +12,8 @@ Modules:
 
 2.11.1 (not yet released)
 
--
+#97: (afterburner) (partial fix) Afterburner breaks serialization of ObjectMapper
+ (reported by zman0900@github)
 
 2.11.0 (26-Apr-2020)
 

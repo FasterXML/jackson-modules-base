@@ -6,7 +6,7 @@ import com.fasterxml.jackson.module.afterburner.ser.ABSerializerModifier;
 import com.fasterxml.jackson.module.afterburner.deser.ABDeserializerModifier;
 
 public class AfterburnerModule extends Module
-    implements java.io.Serializable // is this necessary?
+    implements java.io.Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -91,4 +91,3 @@ public class AfterburnerModule extends Module
         return this;
     }
 }
-

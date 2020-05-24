@@ -177,6 +177,5 @@ public class ABDeserializerModifier extends BeanDeserializerModifier
         return ClassUtil.isJacksonStdImpl(deser)
                 // 07-May-2018, tatu: Probably can't happen but just in case
                 || (deser instanceof SuperSonicBeanDeserializer);
-
     }
 }
