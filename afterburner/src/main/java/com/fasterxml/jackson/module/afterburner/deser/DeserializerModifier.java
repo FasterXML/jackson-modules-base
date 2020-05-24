@@ -14,7 +14,10 @@ import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
 
 public class DeserializerModifier extends BeanDeserializerModifier
+    implements java.io.Serializable // since 2.11.1
 {
+    private static final long serialVersionUID = 1L; // since 2.11.1
+
     /**
      * Class loader to use for generated classes; if null, will try to
      * use class loader of the target class.
