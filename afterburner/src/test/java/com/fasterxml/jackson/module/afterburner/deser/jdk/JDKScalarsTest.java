@@ -543,7 +543,7 @@ public class JDKScalarsTest
                 .readValue("\"\"");
             fail("Should not have passed");
         } catch (JsonMappingException e) {
-            verifyException(e, "cannot coerce empty String");
+            verifyException(e, "cannot map `null`");
         }
     }
 
@@ -663,8 +663,8 @@ public class JDKScalarsTest
             reader.readValue(aposToQuotes("{'"+propName+"':''}"));
             fail("Expected failure for boolean + empty String");
         } catch (JsonMappingException e) {
-            verifyException(e, "cannot coerce empty String (\"\")");
-            verifyException(e, "to Null value");
+//            verifyException(e, "cannot coerce empty String (\"\")");
+            verifyException(e, "cannot map `null` into type");
         }
     }
     
@@ -797,7 +797,7 @@ public class JDKScalarsTest
             fail("Should not pass");
         } catch (JsonMappingException e) {
             verifyException(e, "Cannot coerce `null`");
-            verifyException(e, "as content of type "+SIMPLE_NAME);
+            verifyException(e, "to element of "+SIMPLE_NAME);
         }
         
         if (testEmptyString) {
@@ -809,8 +809,9 @@ public class JDKScalarsTest
                 readerNoCoerce.readValue(EMPTY_STRING_JSON);
                 fail("Should not pass");
             } catch (JsonMappingException e) {
-                verifyException(e, "Cannot coerce empty String (\"\")");
-                verifyException(e, "as content of type "+SIMPLE_NAME);
+                // 08-Jun-2020, tatu: During change, may get both of these
+                verifyException(e, "Cannot coerce empty String (\"\")", "Cannot coerce `null` to");
+                verifyException(e, "to Null value as element of", "to element of "+SIMPLE_NAME);
             }
         }
     }
