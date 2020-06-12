@@ -95,6 +95,13 @@ not datatype, data format, or JAX-RS provider modules.
 	</plugin>
       </plugins>
     </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>de.jjohannes</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
   </build>
 
 </project>
