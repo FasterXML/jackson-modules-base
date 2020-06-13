@@ -758,10 +758,10 @@ public class JDKScalarsTest
         // char[] is special, cannot use generalized test here
 //        _testInvalidStringCoercionFail(char[].class);
         _testInvalidStringCoercionFail(short[].class, "short");
-        _testInvalidStringCoercionFail(int[].class, "int[]");
-        _testInvalidStringCoercionFail(long[].class, "long[]");
-        _testInvalidStringCoercionFail(float[].class, "float[]");
-        _testInvalidStringCoercionFail(double[].class, "double[]");
+        _testInvalidStringCoercionFail(int[].class, "int");
+        _testInvalidStringCoercionFail(long[].class, "long");
+        _testInvalidStringCoercionFail(float[].class, "float");
+        _testInvalidStringCoercionFail(double[].class, "double");
     }
 
     private void _testInvalidStringCoercionFail(Class<?> cls) throws IOException
