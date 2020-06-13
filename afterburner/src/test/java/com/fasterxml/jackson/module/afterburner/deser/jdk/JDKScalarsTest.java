@@ -523,30 +523,6 @@ public class JDKScalarsTest
     /**********************************************************
      */
 
-    public void testEmptyToNullCoercionForPrimitives() throws Exception {
-        _testEmptyToNullCoercion(int.class, Integer.valueOf(0));
-        _testEmptyToNullCoercion(long.class, Long.valueOf(0));
-        _testEmptyToNullCoercion(double.class, Double.valueOf(0.0));
-        _testEmptyToNullCoercion(float.class, Float.valueOf(0.0f));
-    }
-
-    private void _testEmptyToNullCoercion(Class<?> primType, Object emptyValue) throws Exception
-    {
-        final String EMPTY = "\"\"";
-
-        // as per [databind#1095] should only allow coercion from empty String,
-        // if `null` is acceptable
-        ObjectReader intR = MAPPER.readerFor(primType);
-        assertEquals(emptyValue, intR.readValue(EMPTY));
-        try {
-            intR.with(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
-                .readValue("\"\"");
-            fail("Should not have passed");
-        } catch (JsonMappingException e) {
-            verifyException(e, "cannot map `null`");
-        }
-    }
-
     public void testBase64Variants() throws Exception
     {
         final byte[] INPUT = "abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890X".getBytes("UTF-8");
@@ -654,33 +630,6 @@ public class JDKScalarsTest
         assertEquals(0.0, bean.doubleValue);
     }
 
-    private void _verifyEmptyStringFailForPrimitives(String propName) throws IOException
-    {
-        final ObjectReader reader = MAPPER
-                .readerFor(PrimitivesBean.class)
-                .with(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
-        try {
-            reader.readValue(aposToQuotes("{'"+propName+"':''}"));
-            fail("Expected failure for boolean + empty String");
-        } catch (JsonMappingException e) {
-//            verifyException(e, "cannot coerce empty String (\"\")");
-            verifyException(e, "cannot map `null` into type");
-        }
-    }
-    
-    // for [databind#403]
-    public void testEmptyStringFailForPrimitives() throws IOException
-    {
-        _verifyEmptyStringFailForPrimitives("booleanValue");
-        _verifyEmptyStringFailForPrimitives("byteValue");
-        _verifyEmptyStringFailForPrimitives("charValue");
-        _verifyEmptyStringFailForPrimitives("shortValue");
-        _verifyEmptyStringFailForPrimitives("intValue");
-        _verifyEmptyStringFailForPrimitives("longValue");
-        _verifyEmptyStringFailForPrimitives("floatValue");
-        _verifyEmptyStringFailForPrimitives("doubleValue");
-    }
-
     /*
     /**********************************************************
     /* Null handling for scalars in POJO
@@ -767,7 +716,7 @@ public class JDKScalarsTest
     {
         _testNullForPrimitiveArrays(boolean[].class, Boolean.FALSE);
         _testNullForPrimitiveArrays(byte[].class, Byte.valueOf((byte) 0));
-        _testNullForPrimitiveArrays(char[].class, Character.valueOf((char) 0), false);
+        _testNullForPrimitiveArrays(char[].class, Character.valueOf((char) 0));
         _testNullForPrimitiveArrays(short[].class, Short.valueOf((short)0));
         _testNullForPrimitiveArrays(int[].class, Integer.valueOf(0));
         _testNullForPrimitiveArrays(long[].class, Long.valueOf(0L));
@@ -775,14 +724,8 @@ public class JDKScalarsTest
         _testNullForPrimitiveArrays(double[].class, Double.valueOf(0d));
     }
 
-    private void _testNullForPrimitiveArrays(Class<?> cls, Object defValue) throws IOException {
-        _testNullForPrimitiveArrays(cls, defValue, true);
-    }
-
-    private void _testNullForPrimitiveArrays(Class<?> cls, Object defValue,
-            boolean testEmptyString) throws IOException
+    private void _testNullForPrimitiveArrays(Class<?> cls, Object defValue) throws IOException
     {
-        final String EMPTY_STRING_JSON = "[ \"\" ]";
         final String JSON_WITH_NULL = "[ null ]";
         final String SIMPLE_NAME = "`"+cls.getSimpleName()+"`";
         final ObjectReader readerCoerceOk = MAPPER.readerFor(cls);
@@ -799,21 +742,6 @@ public class JDKScalarsTest
             verifyException(e, "Cannot coerce `null`");
             verifyException(e, "to element of "+SIMPLE_NAME);
         }
-        
-        if (testEmptyString) {
-            ob = readerCoerceOk.forType(cls).readValue(EMPTY_STRING_JSON);
-            assertEquals(1, Array.getLength(ob));
-            assertEquals(defValue, Array.get(ob, 0));
-
-            try {
-                readerNoCoerce.readValue(EMPTY_STRING_JSON);
-                fail("Should not pass");
-            } catch (JsonMappingException e) {
-                // 08-Jun-2020, tatu: During change, may get both of these
-                verifyException(e, "Cannot coerce empty String (\"\")", "Cannot coerce `null` to");
-                verifyException(e, "to Null value as element of", "to element of "+SIMPLE_NAME);
-            }
-        }
     }
 
     /*
@@ -829,11 +757,11 @@ public class JDKScalarsTest
 
         // char[] is special, cannot use generalized test here
 //        _testInvalidStringCoercionFail(char[].class);
-        _testInvalidStringCoercionFail(short[].class);
-        _testInvalidStringCoercionFail(int[].class);
-        _testInvalidStringCoercionFail(long[].class);
-        _testInvalidStringCoercionFail(float[].class);
-        _testInvalidStringCoercionFail(double[].class);
+        _testInvalidStringCoercionFail(short[].class, "short");
+        _testInvalidStringCoercionFail(int[].class, "int[]");
+        _testInvalidStringCoercionFail(long[].class, "long[]");
+        _testInvalidStringCoercionFail(float[].class, "float[]");
+        _testInvalidStringCoercionFail(double[].class, "double[]");
     }
 
     private void _testInvalidStringCoercionFail(Class<?> cls) throws IOException
