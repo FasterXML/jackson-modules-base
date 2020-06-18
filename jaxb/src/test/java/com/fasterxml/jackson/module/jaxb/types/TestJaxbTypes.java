@@ -209,8 +209,9 @@ public class TestJaxbTypes
     public void testListWithDefaultTyping() throws Exception
     {
         Object input = new ListBean(new BeanImpl(1, "a"));
-        ObjectMapper mapper = getJaxbMapper();
-        mapper.enableDefaultTyping();
+        ObjectMapper mapper = getJaxbMapperBuilder()
+                .activateDefaultTyping(new NoCheckSubTypeValidator())
+                .build();
         String str = mapper.writeValueAsString(input);
 
         ListBean listBean = mapper.readValue(str, ListBean.class);
