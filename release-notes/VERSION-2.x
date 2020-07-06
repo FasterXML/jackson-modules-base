@@ -10,6 +10,10 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.12.0 (not yet released)
+
+- Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
+
 2.11.1 (25-Jun-2020)
 
 #97: (afterburner) (partial fix) Afterburner breaks serialization of ObjectMapper
