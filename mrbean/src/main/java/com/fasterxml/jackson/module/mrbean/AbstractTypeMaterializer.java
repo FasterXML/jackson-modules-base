@@ -232,11 +232,12 @@ public class AbstractTypeMaterializer
         String abstractName = _defaultPackage+"abstract." +cls.getName()+"_TYPE_RESOLVE";
         TypeBuilder tb = new TypeBuilder(type);
         byte[] code = tb.buildAbstractBase(abstractName);
-        Class<?> raw = _classLoader.loadAndResolve(abstractName, code, cls);
+        Class<?> raw = _loadAndResolve(abstractName, code, cls);
         // and only with that intermediate non-generic type, do actual materialization
         AnnotatedClass ac = AnnotatedClassResolver.resolve(config,
                 config.getTypeFactory().constructType(raw), config);
-        return materializeRawType(config, ac);
+        final String implClassName = _defaultPackage + cls.getName();
+        return _materializeRawType(config, ac, implClassName);
     }
 
     /**
@@ -244,16 +245,29 @@ public class AbstractTypeMaterializer
      * 
      * @since 2.4
      */
-    public Class<?> materializeRawType(MapperConfig<?> config, AnnotatedClass typeDef)
+    public Class<?> materializeRawType(MapperConfig<?> config, AnnotatedClass typeDef) {
+        Class<?> rawType = typeDef.getRawType();
+        final String implClassName = _defaultPackage + rawType.getName();
+        return _materializeRawType(config, typeDef, implClassName);
+    }
+
+    // @since 2.12 refactored to allow passing specific name to use; needed to support
+    //   both generic and non-generic cases
+    protected Class<?> _materializeRawType(MapperConfig<?> config, AnnotatedClass typeDef,
+            String nameToUse)
     {
         final JavaType type = typeDef.getType();
         Class<?> rawType = type.getRawClass();
-        String newName = _defaultPackage+rawType.getName();
         BeanBuilder builder = BeanBuilder.construct(config, type, typeDef);
-        byte[] bytecode = builder.implement(isEnabled(Feature.FAIL_ON_UNMATERIALIZED_METHOD)).build(newName);
-        return _classLoader.loadAndResolve(newName, bytecode, rawType);
+        byte[] bytecode = builder.implement(isEnabled(Feature.FAIL_ON_UNMATERIALIZED_METHOD)).build(nameToUse);
+        return _loadAndResolve(nameToUse, bytecode, rawType);
     }
 
+    // @since 2.12
+    protected Class<?> _loadAndResolve(String className, byte[] bytecode, Class<?> rawType) {
+        return _classLoader.loadAndResolve(className, bytecode, rawType);
+    }
+    
     // private until 2.9.9
     protected boolean _suitableType(JavaType type)
     {
