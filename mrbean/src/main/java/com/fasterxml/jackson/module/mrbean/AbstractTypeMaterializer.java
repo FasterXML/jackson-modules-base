@@ -216,7 +216,8 @@ public class AbstractTypeMaterializer
         if (type.hasGenericTypes()) {
             materializedType = materializeGenericType(config, type);
         } else {
-            materializedType = materializeRawType(config, AnnotatedClass.construct(type, config));
+            materializedType = materializeRawType(config,
+                    AnnotatedClassResolver.resolve(config, type, config));
         }
         return config.constructType(materializedType);
     }
@@ -246,7 +247,6 @@ public class AbstractTypeMaterializer
     public Class<?> materializeRawType(MapperConfig<?> config, AnnotatedClass typeDef)
     {
         final JavaType type = typeDef.getType();
-
         Class<?> rawType = type.getRawClass();
         String newName = _defaultPackage+rawType.getName();
         BeanBuilder builder = BeanBuilder.construct(config, type, typeDef);
