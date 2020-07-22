@@ -12,6 +12,7 @@ Modules:
 
 2.12.0 (not yet released)
 
+#100: Prevent "double-prefixing" Mr Bean generated classes
 - Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
 
 2.11.2 (not yet released)
