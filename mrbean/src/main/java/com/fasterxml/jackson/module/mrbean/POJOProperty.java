@@ -29,10 +29,8 @@ public class POJOProperty
     {
         _name = name;
         _context = ctxt;
-        /* 06-Mar-2015, tatu: We used to use '_' prefix, but that leads to issues
-         *   like [#20]; as well as prevents expected use without explicit setter.
-         */
-        // Let's just prefix field name with single underscore for fun...
+        // 06-Mar-2015, tatu: We used to use '_' prefix, but that leads to issues
+        //   like [#20]; as well as prevents expected use without explicit setter.
         _fieldName = name;
     }
 
@@ -68,9 +66,9 @@ public class POJOProperty
     }
 
     private TypeDescription setterType() {
-        return new TypeDescription(_context.resolveType((_setter.getGenericParameterTypes()[0])));
+        return new TypeDescription(_context.resolveType(_setter.getGenericParameterTypes()[0]));
     }
-    
+
     public TypeDescription selectType()
     {
         // First: if only know setter, or getter, use that one:
@@ -80,9 +78,8 @@ public class POJOProperty
         if (_setter == null) {
             return getterType();
         }
-        /* Otherwise must ensure they are compatible, choose more specific
-         * (most often setter - type)
-         */
+        // Otherwise must ensure they are compatible, choose more specific
+        // (most often setter - type)
         TypeDescription st = setterType();
         TypeDescription gt = getterType();
         TypeDescription specificType = TypeDescription.moreSpecificType(st, gt);
