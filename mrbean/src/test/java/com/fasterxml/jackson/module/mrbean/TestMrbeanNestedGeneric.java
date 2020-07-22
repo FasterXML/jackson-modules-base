@@ -10,11 +10,10 @@ import com.fasterxml.jackson.databind.*;
  */
 public class TestMrbeanNestedGeneric extends BaseTest
 {
-    // For [JACKSON-479]
     public interface ResultWrapper<T> {
         T getValue();
     }
-    
+
     public interface Results<T> {
         Long getTotal();
         List<T> getRecords();
@@ -29,8 +28,7 @@ public class TestMrbeanNestedGeneric extends BaseTest
     /* Unit tests
     /**********************************************************
      */
-    
-    // For [JACKSON-479]
+
     public void testTypeReferenceNestedGeneric() throws Exception
     {
         final ObjectMapper mapper = newMrBeanMapper();
@@ -42,7 +40,6 @@ public class TestMrbeanNestedGeneric extends BaseTest
         assertTrue(ob instanceof Dog);
     }
 
-    // For [JACKSON-479]
     public void testTypeReferenceNestedGenericList() throws Exception
     {
         final ObjectMapper mapper = newMrBeanMapper();
@@ -52,7 +49,7 @@ public class TestMrbeanNestedGeneric extends BaseTest
 
         List<?> records = result.getRecords();
         assertEquals(1, records.size());
-        assertTrue(records.get(0) instanceof Dog);
+        Object ob = records.get(0);
+        assertTrue("Actual type: "+ob.getClass(), ob instanceof Dog);
     }
-
 }

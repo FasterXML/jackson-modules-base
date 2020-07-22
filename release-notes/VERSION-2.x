@@ -14,6 +14,10 @@ Modules:
 
 - Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
 
+2.11.2 (not yet released)
+
+- (mrbean / afterburner) Asm version 7.0 -> 7.3.1
+
 2.11.1 (25-Jun-2020)
 
 #97: (afterburner) (partial fix) Afterburner breaks serialization of ObjectMapper
@@ -23,6 +27,7 @@ Modules:
 
 No changes since 2.10.x
 
+2.10.5 (21-Jul-2020)
 2.10.4 (03-May-2020)
 2.10.3 (03-Mar-2020)
 2.10.2 (05-Jan-2020)
