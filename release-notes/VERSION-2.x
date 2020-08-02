@@ -10,7 +10,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.11.2 (not yet released)
+2.11.2 (02-Aug-2020)
 
 - (mrbean / afterburner) Asm version 7.0 -> 7.3.1
 
