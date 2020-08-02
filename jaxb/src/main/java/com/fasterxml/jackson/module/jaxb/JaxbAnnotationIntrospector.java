@@ -373,27 +373,14 @@ public class JaxbAnnotationIntrospector
         }
         return null;
     }
-    
+
+    // 28-Jul-2020, tatu: two parts; by-name ignorals have no counterpart in JAXB;
+    //   although "ignore unknown" could map (by default this is what JAXB does).
+    //   But without annotation changing that, not much we can map here
+
     /*
     @Override
-    public String[] findPropertiesToIgnore(Annotated a) {
-        // nothing in JAXB for this?
-        return null;
-    }
-    */
-
-    /* 08-Nov-2009, tatus: This is bit trickier: by default JAXB
-     * does actually ignore all unknown properties.
-     * But since there is no annotation to
-     * specify or change this, it seems wrong to claim such setting
-     * is in effect. May need to revisit this issue in future
-     */
-    /*
-    @Override
-    public Boolean findIgnoreUnknownProperties(AnnotatedClass ac);
-
-    @Override
-    public JsonIgnoreProperties.Value findPropertyIgnorals(Annotated ac);
+    public JsonIgnoreProperties.Value findPropertyIgnoralByName(MapperConfig<?> config, Annotated ann)
     */
 
     @Override
