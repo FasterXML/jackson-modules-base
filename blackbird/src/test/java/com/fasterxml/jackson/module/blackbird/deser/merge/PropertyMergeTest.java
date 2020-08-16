@@ -92,9 +92,10 @@ public class PropertyMergeTest extends BlackbirdTestBase
     /********************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper()
+    private final ObjectMapper MAPPER = mapperBuilder()
             // 26-Oct-2016, tatu: Make sure we'll report merge problems by default
             .disable(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE)
+            .build()
     ;
 
     public void testBeanMergingViaProp() throws Exception
@@ -215,8 +216,9 @@ public class PropertyMergeTest extends BlackbirdTestBase
 
     public void testInvalidPropertyMerge() throws Exception
     {
-        ObjectMapper mapper = newObjectMapper()
-                .disable(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE);
+        ObjectMapper mapper = mapperBuilder()
+                .disable(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE)
+                .build();
         
         try {
             mapper.readValue("{\"value\":3}", CantMergeInts.class);

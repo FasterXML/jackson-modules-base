@@ -1,15 +1,18 @@
 package com.fasterxml.jackson.module.blackbird.deser.jdk;
 
-import java.io.*;
+import java.io.IOException;
 import java.lang.reflect.Array;
-
-import org.junit.Assert;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.core.Base64Variants;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+import org.junit.Assert;
 
 /**
  * Unit tests for verifying handling of simple basic non-structured
@@ -22,50 +25,50 @@ public class JDKScalarsTest
 
     final static class BooleanBean {
         boolean _v;
-        void setV(boolean v) { _v = v; }
+        void setV(final boolean v) { _v = v; }
     }
 
     static class BooleanWrapper {
         public Boolean wrapper;
         public boolean primitive;
-        
+
         protected Boolean ctor;
-        
+
         @JsonCreator
-        public BooleanWrapper(@JsonProperty("ctor") Boolean foo) {
+        public BooleanWrapper(@JsonProperty("ctor") final Boolean foo) {
             ctor = foo;
         }
     }
 
     static class IntBean {
         int _v;
-        void setV(int v) { _v = v; }
+        void setV(final int v) { _v = v; }
     }
 
     static class LongBean {
         long _v;
-        void setV(long v) { _v = v; }
+        void setV(final long v) { _v = v; }
     }
-    
+
     final static class DoubleBean {
         double _v;
-        void setV(double v) { _v = v; }
+        void setV(final double v) { _v = v; }
     }
 
     final static class FloatBean {
         float _v;
-        void setV(float v) { _v = v; }
+        void setV(final float v) { _v = v; }
     }
-    
+
     final static class CharacterBean {
         char _v;
-        void setV(char v) { _v = v; }
+        void setV(final char v) { _v = v; }
         char getV() { return _v; }
     }
-    
+
     final static class CharacterWrapperBean {
         Character _v;
-        void setV(Character v) { _v = v; }
+        void setV(final Character v) { _v = v; }
         Character getV() { return _v; }
     }
 
@@ -76,7 +79,7 @@ public class JDKScalarsTest
         extends IntBean
     {
         @Override
-        void setV(int v2) { super.setV(v2+1); }
+        void setV(final int v2) { super.setV(v2+1); }
     }
 
     static class PrimitivesBean
@@ -124,7 +127,7 @@ public class JDKScalarsTest
         assertTrue(result._v);
 
         // should work with arrays too..
-        boolean[] array = MAPPER.readValue("[ null, false ]", boolean[].class);
+        final boolean[] array = MAPPER.readValue("[ null, false ]", boolean[].class);
         assertNotNull(array);
         assertEquals(2, array.length);
         assertFalse(array[0]);
@@ -152,7 +155,7 @@ public class JDKScalarsTest
     // Test for verifying that Long values are coerced to boolean correctly as well
     public void testLongToBoolean() throws Exception
     {
-        long value = 1L + Integer.MAX_VALUE;
+        final long value = 1L + Integer.MAX_VALUE;
         BooleanWrapper b = MAPPER.readValue("{\"primitive\" : "+value+", \"wrapper\":"+value+", \"ctor\":"+value+"}",
                 BooleanWrapper.class);
         assertEquals(Boolean.TRUE, b.wrapper);
@@ -166,7 +169,7 @@ public class JDKScalarsTest
         assertFalse(b.primitive);
         assertEquals(Boolean.FALSE, b.ctor);
 
-        boolean[] boo = MAPPER.readValue("[ 0, 15, \"\", \"false\", \"True\" ]",
+        final boolean[] boo = MAPPER.readValue("[ 0, 15, \"\", \"false\", \"True\" ]",
                 boolean[].class);
         assertEquals(5, boo.length);
         assertFalse(boo[0]);
@@ -217,22 +220,22 @@ public class JDKScalarsTest
         // But can also pass in ascii code
         result = MAPPER.readValue(" "+((int) 'X'), Character.class);
         assertEquals(Character.valueOf('X'), result);
-        
+
         final CharacterWrapperBean wrapper = MAPPER.readValue("{\"v\":null}", CharacterWrapperBean.class);
         assertNotNull(wrapper);
         assertNull(wrapper.getV());
-        
+
         final ObjectMapper mapper = new ObjectMapper();
         mapper.enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
         try {
             mapper.readValue("{\"v\":null}", CharacterBean.class);
             fail("Attempting to deserialize a 'null' JSON reference into a 'char' property did not throw an exception");
-        } catch (JsonMappingException e) {
+        } catch (final JsonMappingException e) {
             verifyException(e, "cannot map `null`");
             //Exception thrown as required
         }
 
-        mapper.disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);  
+        mapper.disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
         final CharacterBean charBean = MAPPER.readValue("{\"v\":null}", CharacterBean.class);
         assertNotNull(wrapper);
         assertEquals('\u0000', charBean.getV());
@@ -266,32 +269,32 @@ public class JDKScalarsTest
         assertNotNull(array);
         assertEquals(1, array.length);
         assertEquals(0, array[0]);
-        
+
         // [databind#381]
         final ObjectMapper mapper = new ObjectMapper();
         mapper.disable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS);
         try {
             mapper.readValue("{\"v\":[3]}", IntBean.class);
             fail("Did not throw exception when reading a value from a single value array with the UNWRAP_SINGLE_VALUE_ARRAYS feature disabled");
-        } catch (JsonMappingException exp) {
+        } catch (final JsonMappingException exp) {
             //Correctly threw exception
         }
-        
+
         mapper.enable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS);
-        
+
         result = mapper.readValue("{\"v\":[3]}", IntBean.class);
         assertEquals(3, result._v);
-        
+
         result = mapper.readValue("[{\"v\":[3]}]", IntBean.class);
         assertEquals(3, result._v);
-        
+
         try {
             mapper.readValue("[{\"v\":[3,3]}]", IntBean.class);
             fail("Did not throw exception while reading a value from a multi value array with UNWRAP_SINGLE_VALUE_ARRAY feature enabled");
-        } catch (JsonMappingException exp) {
+        } catch (final JsonMappingException exp) {
             //threw exception as required
         }
-        
+
         result = mapper.readValue("{\"v\":[null]}", IntBean.class);
         assertNotNull(result);
         assertEquals(0, result._v);
@@ -301,7 +304,7 @@ public class JDKScalarsTest
         assertEquals(1, array.length);
         assertEquals(0, array[0]);
     }
-    
+
     public void testLongWrapper() throws Exception
     {
         Long result = MAPPER.readValue("12345678901", Long.class);
@@ -329,32 +332,32 @@ public class JDKScalarsTest
         assertNotNull(array);
         assertEquals(1, array.length);
         assertEquals(0, array[0]);
-        
+
         // [databind#381]
         final ObjectMapper mapper = new ObjectMapper();
         mapper.disable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS);
         try {
             mapper.readValue("{\"v\":[3]}", LongBean.class);
             fail("Did not throw exception when reading a value from a single value array with the UNWRAP_SINGLE_VALUE_ARRAYS feature disabled");
-        } catch (JsonMappingException exp) {
+        } catch (final JsonMappingException exp) {
             //Correctly threw exception
         }
-        
+
         mapper.enable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS);
-        
+
         result = mapper.readValue("{\"v\":[3]}", LongBean.class);
         assertEquals(3, result._v);
-        
+
         result = mapper.readValue("[{\"v\":[3]}]", LongBean.class);
         assertEquals(3, result._v);
-        
+
         try {
             mapper.readValue("[{\"v\":[3,3]}]", LongBean.class);
             fail("Did not throw exception while reading a value from a multi value array with UNWRAP_SINGLE_VALUE_ARRAY feature enabled");
-        } catch (JsonMappingException exp) {
+        } catch (final JsonMappingException exp) {
             //threw exception as required
         }
-        
+
         result = mapper.readValue("{\"v\":[null]}", LongBean.class);
         assertNotNull(result);
         assertEquals(0, result._v);
@@ -371,7 +374,7 @@ public class JDKScalarsTest
      */
     public void testIntWithOverride() throws Exception
     {
-        IntBean2 result = MAPPER.readValue("{\"v\":8}", IntBean2.class);
+        final IntBean2 result = MAPPER.readValue("{\"v\":8}", IntBean2.class);
         assertEquals(9, result._v);
     }
 
@@ -394,7 +397,7 @@ public class JDKScalarsTest
         assertEquals(0.0, result._v);
 
         // should work with arrays too..
-        double[] array = MAPPER.readValue("[ null ]", double[].class);
+        final double[] array = MAPPER.readValue("[ null ]", double[].class);
         assertNotNull(array);
         assertEquals(1, array.length);
         assertEquals(0.0, array[0]);
@@ -408,12 +411,12 @@ public class JDKScalarsTest
     public void testFloatWrapper() throws Exception
     {
         // Also: should be able to coerce floats, strings:
-        String[] STRS = new String[] {
+        final String[] STRS = new String[] {
             "1.0", "0.0", "-0.3", "0.7", "42.012", "-999.0", NAN_STRING
         };
 
-        for (String str : STRS) {
-            Float exp = Float.valueOf(str);
+        for (final String str : STRS) {
+            final Float exp = Float.valueOf(str);
             Float result;
 
             if (NAN_STRING != str) {
@@ -431,12 +434,12 @@ public class JDKScalarsTest
     public void testDoubleWrapper() throws Exception
     {
         // Also: should be able to coerce doubles, strings:
-        String[] STRS = new String[] {
+        final String[] STRS = new String[] {
             "1.0", "0.0", "-0.3", "0.7", "42.012", "-999.0", NAN_STRING
         };
 
-        for (String str : STRS) {
-            Double exp = Double.valueOf(str);
+        for (final String str : STRS) {
+            final Double exp = Double.valueOf(str);
             Double result;
 
             // First, as regular double value
@@ -458,31 +461,31 @@ public class JDKScalarsTest
         try {
             mapper.readValue("{\"v\":[" + value + "]}", DoubleBean.class);
             fail("Did not throw exception when reading a value from a single value array with the UNWRAP_SINGLE_VALUE_ARRAYS feature disabled");
-        } catch (JsonMappingException exp) {
+        } catch (final JsonMappingException exp) {
             //Correctly threw exception
         }
-        
+
         mapper.enable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS);
-        
+
         DoubleBean result = mapper.readValue("{\"v\":[" + value + "]}",
                 DoubleBean.class);
         assertEquals(value, result._v);
-        
+
         result = mapper.readValue("[{\"v\":[" + value + "]}]", DoubleBean.class);
         assertEquals(value, result._v);
-        
+
         try {
             mapper.readValue("[{\"v\":[" + value + "," + value + "]}]", DoubleBean.class);
             fail("Did not throw exception while reading a value from a multi value array with UNWRAP_SINGLE_VALUE_ARRAY feature enabled");
-        } catch (JsonMappingException exp) {
+        } catch (final JsonMappingException exp) {
             //threw exception as required
         }
-        
+
         result = mapper.readValue("{\"v\":[null]}", DoubleBean.class);
         assertNotNull(result);
         assertEquals(0d, result._v);
 
-        double[] array = mapper.readValue("[ [ null ] ]", double[].class);
+        final double[] array = mapper.readValue("[ [ null ] ]", double[].class);
         assertNotNull(array);
         assertEquals(1, array.length);
         assertEquals(0d, array[0]);
@@ -492,26 +495,26 @@ public class JDKScalarsTest
     {
         // first, simple case:
         // bit tricky with binary fps but...
-        double value = Double.POSITIVE_INFINITY;
-        DoubleBean result = MAPPER.readValue("{\"v\":\""+value+"\"}", DoubleBean.class);
+        final double value = Double.POSITIVE_INFINITY;
+        final DoubleBean result = MAPPER.readValue("{\"v\":\""+value+"\"}", DoubleBean.class);
         assertEquals(value, result._v);
-        
+
         // should work with arrays too..
-        double[] array = MAPPER.readValue("[ \"Infinity\" ]", double[].class);
+        final double[] array = MAPPER.readValue("[ \"Infinity\" ]", double[].class);
         assertNotNull(array);
         assertEquals(1, array.length);
         assertEquals(Double.POSITIVE_INFINITY, array[0]);
     }
-    
+
     public void testFloatPrimitiveNonNumeric() throws Exception
     {
         // bit tricky with binary fps but...
-        float value = Float.POSITIVE_INFINITY;
-        FloatBean result = MAPPER.readValue("{\"v\":\""+value+"\"}", FloatBean.class);
+        final float value = Float.POSITIVE_INFINITY;
+        final FloatBean result = MAPPER.readValue("{\"v\":\""+value+"\"}", FloatBean.class);
         assertEquals(value, result._v);
-        
+
         // should work with arrays too..
-        float[] array = MAPPER.readValue("[ \"Infinity\" ]", float[].class);
+        final float[] array = MAPPER.readValue("[ \"Infinity\" ]", float[].class);
         assertNotNull(array);
         assertEquals(1, array.length);
         assertEquals(Float.POSITIVE_INFINITY, array[0]);
@@ -523,39 +526,15 @@ public class JDKScalarsTest
     /**********************************************************
      */
 
-    public void testEmptyToNullCoercionForPrimitives() throws Exception {
-        _testEmptyToNullCoercion(int.class, Integer.valueOf(0));
-        _testEmptyToNullCoercion(long.class, Long.valueOf(0));
-        _testEmptyToNullCoercion(double.class, Double.valueOf(0.0));
-        _testEmptyToNullCoercion(float.class, Float.valueOf(0.0f));
-    }
-
-    private void _testEmptyToNullCoercion(Class<?> primType, Object emptyValue) throws Exception
-    {
-        final String EMPTY = "\"\"";
-
-        // as per [databind#1095] should only allow coercion from empty String,
-        // if `null` is acceptable
-        ObjectReader intR = MAPPER.readerFor(primType);
-        assertEquals(emptyValue, intR.readValue(EMPTY));
-        try {
-            intR.with(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
-                .readValue("\"\"");
-            fail("Should not have passed");
-        } catch (JsonMappingException e) {
-            verifyException(e, "cannot coerce empty String");
-        }
-    }
-
     public void testBase64Variants() throws Exception
     {
         final byte[] INPUT = "abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890X".getBytes("UTF-8");
-        
+
         // default encoding is "MIME, no linefeeds", so:
         Assert.assertArrayEquals(INPUT, MAPPER.readValue(
                 quote("YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY3ODkwYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY3ODkwWA=="),
                 byte[].class));
-        ObjectReader reader = MAPPER.readerFor(byte[].class);
+        final ObjectReader reader = MAPPER.readerFor(byte[].class);
         Assert.assertArrayEquals(INPUT, (byte[]) reader.with(Base64Variants.MIME_NO_LINEFEEDS).readValue(
                 quote("YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY3ODkwYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY3ODkwWA=="
         )));
@@ -571,7 +550,7 @@ public class JDKScalarsTest
         Assert.assertArrayEquals(INPUT, (byte[]) reader.with(Base64Variants.PEM).readValue(
                 quote("YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY3ODkwYWJjZGVmZ2hpamts\\nbW5vcHFyc3R1dnd4eXoxMjM0NTY3ODkwWA=="
         )));
-    }    
+    }
 
     /*
     /**********************************************************
@@ -587,14 +566,14 @@ public class JDKScalarsTest
     {
         final int NR_OF_INTS = 100;
 
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < NR_OF_INTS; ++i) {
             sb.append(" ");
             sb.append(i);
         }
-        JsonParser jp = MAPPER.getFactory().createParser(sb.toString());
+        final JsonParser jp = MAPPER.getFactory().createParser(sb.toString());
         for (int i = 0; i < NR_OF_INTS; ++i) {
-            Integer result = MAPPER.readValue(jp, Integer.class);
+            final Integer result = MAPPER.readValue(jp, Integer.class);
             assertEquals(Integer.valueOf(i), result);
         }
         jp.close();
@@ -654,33 +633,6 @@ public class JDKScalarsTest
         assertEquals(0.0, bean.doubleValue);
     }
 
-    private void _verifyEmptyStringFailForPrimitives(String propName) throws IOException
-    {
-        final ObjectReader reader = MAPPER
-                .readerFor(PrimitivesBean.class)
-                .with(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
-        try {
-            reader.readValue(aposToQuotes("{'"+propName+"':''}"));
-            fail("Expected failure for boolean + empty String");
-        } catch (JsonMappingException e) {
-            verifyException(e, "cannot coerce empty String (\"\")");
-            verifyException(e, "to Null value");
-        }
-    }
-    
-    // for [databind#403]
-    public void testEmptyStringFailForPrimitives() throws IOException
-    {
-        _verifyEmptyStringFailForPrimitives("booleanValue");
-        _verifyEmptyStringFailForPrimitives("byteValue");
-        _verifyEmptyStringFailForPrimitives("charValue");
-        _verifyEmptyStringFailForPrimitives("shortValue");
-        _verifyEmptyStringFailForPrimitives("intValue");
-        _verifyEmptyStringFailForPrimitives("longValue");
-        _verifyEmptyStringFailForPrimitives("floatValue");
-        _verifyEmptyStringFailForPrimitives("doubleValue");
-    }
-
     /*
     /**********************************************************
     /* Null handling for scalars in POJO
@@ -713,38 +665,38 @@ public class JDKScalarsTest
         try {
             reader.readValue("{\"booleanValue\":null}");
             fail("Expected failure for boolean + null");
-        } catch (JsonMappingException e) {
+        } catch (final JsonMappingException e) {
             verifyException(e, "cannot map `null` into type boolean");
         }
         // byte/char/short/int/long
         try {
             reader.readValue("{\"byteValue\":null}");
             fail("Expected failure for byte + null");
-        } catch (JsonMappingException e) {
+        } catch (final JsonMappingException e) {
             verifyException(e, "cannot map `null` into type byte");
         }
         try {
             reader.readValue("{\"charValue\":null}");
             fail("Expected failure for char + null");
-        } catch (JsonMappingException e) {
+        } catch (final JsonMappingException e) {
             verifyException(e, "cannot map `null` into type char");
         }
         try {
             reader.readValue("{\"shortValue\":null}");
             fail("Expected failure for short + null");
-        } catch (JsonMappingException e) {
+        } catch (final JsonMappingException e) {
             verifyException(e, "cannot map `null` into type short");
         }
         try {
             reader.readValue("{\"intValue\":null}");
             fail("Expected failure for int + null");
-        } catch (JsonMappingException e) {
+        } catch (final JsonMappingException e) {
             verifyException(e, "cannot map `null` into type int");
         }
         try {
             reader.readValue("{\"longValue\":null}");
             fail("Expected failure for long + null");
-        } catch (JsonMappingException e) {
+        } catch (final JsonMappingException e) {
             verifyException(e, "cannot map `null` into type long");
         }
 
@@ -752,13 +704,13 @@ public class JDKScalarsTest
         try {
             reader.readValue("{\"floatValue\":null}");
             fail("Expected failure for float + null");
-        } catch (JsonMappingException e) {
+        } catch (final JsonMappingException e) {
             verifyException(e, "cannot map `null` into type float");
         }
         try {
             reader.readValue("{\"doubleValue\":null}");
             fail("Expected failure for double + null");
-        } catch (JsonMappingException e) {
+        } catch (final JsonMappingException e) {
             verifyException(e, "cannot map `null` into type double");
         }
     }
@@ -767,7 +719,7 @@ public class JDKScalarsTest
     {
         _testNullForPrimitiveArrays(boolean[].class, Boolean.FALSE);
         _testNullForPrimitiveArrays(byte[].class, Byte.valueOf((byte) 0));
-        _testNullForPrimitiveArrays(char[].class, Character.valueOf((char) 0), false);
+        _testNullForPrimitiveArrays(char[].class, Character.valueOf((char) 0));
         _testNullForPrimitiveArrays(short[].class, Short.valueOf((short)0));
         _testNullForPrimitiveArrays(int[].class, Integer.valueOf(0));
         _testNullForPrimitiveArrays(long[].class, Long.valueOf(0L));
@@ -775,14 +727,8 @@ public class JDKScalarsTest
         _testNullForPrimitiveArrays(double[].class, Double.valueOf(0d));
     }
 
-    private void _testNullForPrimitiveArrays(Class<?> cls, Object defValue) throws IOException {
-        _testNullForPrimitiveArrays(cls, defValue, true);
-    }
-
-    private void _testNullForPrimitiveArrays(Class<?> cls, Object defValue,
-            boolean testEmptyString) throws IOException
+    private void _testNullForPrimitiveArrays(final Class<?> cls, final Object defValue) throws IOException
     {
-        final String EMPTY_STRING_JSON = "[ \"\" ]";
         final String JSON_WITH_NULL = "[ null ]";
         final String SIMPLE_NAME = "`"+cls.getSimpleName()+"`";
         final ObjectReader readerCoerceOk = MAPPER.readerFor(cls);
@@ -795,23 +741,9 @@ public class JDKScalarsTest
         try {
             readerNoCoerce.readValue(JSON_WITH_NULL);
             fail("Should not pass");
-        } catch (JsonMappingException e) {
+        } catch (final JsonMappingException e) {
             verifyException(e, "Cannot coerce `null`");
-            verifyException(e, "as content of type "+SIMPLE_NAME);
-        }
-        
-        if (testEmptyString) {
-            ob = readerCoerceOk.forType(cls).readValue(EMPTY_STRING_JSON);
-            assertEquals(1, Array.getLength(ob));
-            assertEquals(defValue, Array.get(ob, 0));
-
-            try {
-                readerNoCoerce.readValue(EMPTY_STRING_JSON);
-                fail("Should not pass");
-            } catch (JsonMappingException e) {
-                verifyException(e, "Cannot coerce empty String (\"\")");
-                verifyException(e, "as content of type "+SIMPLE_NAME);
-            }
+            verifyException(e, "to element of "+SIMPLE_NAME);
         }
     }
 
@@ -823,28 +755,27 @@ public class JDKScalarsTest
 
     public void testInvalidStringCoercionFail() throws IOException
     {
-        _testInvalidStringCoercionFail(boolean[].class);
-        _testInvalidStringCoercionFail(byte[].class);
+        _testInvalidStringCoercionFail(boolean[].class, "boolean");
+        _testInvalidStringCoercionFail(byte[].class, "byte[]");
 
         // char[] is special, cannot use generalized test here
 //        _testInvalidStringCoercionFail(char[].class);
-        _testInvalidStringCoercionFail(short[].class);
-        _testInvalidStringCoercionFail(int[].class);
-        _testInvalidStringCoercionFail(long[].class);
-        _testInvalidStringCoercionFail(float[].class);
-        _testInvalidStringCoercionFail(double[].class);
+        _testInvalidStringCoercionFail(short[].class, "short");
+        _testInvalidStringCoercionFail(int[].class, "int");
+        _testInvalidStringCoercionFail(long[].class, "long");
+        _testInvalidStringCoercionFail(float[].class, "float");
+        _testInvalidStringCoercionFail(double[].class, "double");
     }
 
-    private void _testInvalidStringCoercionFail(Class<?> cls) throws IOException
+    private void _testInvalidStringCoercionFail(final Class<?> cls, String targetTypeName) throws IOException
     {
         final String JSON = "[ \"foobar\" ]";
-        final String SIMPLE_NAME = "`"+cls.getSimpleName()+"`";
 
         try {
             MAPPER.readerFor(cls).readValue(JSON);
             fail("Should not pass");
-        } catch (JsonMappingException e) {
-            verifyException(e, "Cannot deserialize value of type "+SIMPLE_NAME+" from String \"foobar\"");
+        } catch (final JsonMappingException e) {
+            verifyException(e, "Cannot deserialize value of type `"+targetTypeName+"` from String \"foobar\"");
         }
     }
 }

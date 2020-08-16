@@ -7,8 +7,6 @@ module com.fasterxml.jackson.module.blackbird {
     requires com.fasterxml.jackson.databind;
 
     exports com.fasterxml.jackson.module.blackbird;
-    exports com.fasterxml.jackson.module.blackbird.deser;
-    exports com.fasterxml.jackson.module.blackbird.ser;
 
     provides com.fasterxml.jackson.databind.Module with
         com.fasterxml.jackson.module.blackbird.BlackbirdModule;

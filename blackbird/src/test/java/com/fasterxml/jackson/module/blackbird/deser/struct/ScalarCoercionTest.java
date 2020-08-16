@@ -14,11 +14,13 @@ import java.math.BigInteger;
 // Copied from databind's test: com.fasterxml.jackson.databind.struct.ScalarCoercionTest
 public class ScalarCoercionTest extends BlackbirdTestBase
 {
-    private final ObjectMapper COERCING_MAPPER = newObjectMapper()
-            .enable(MapperFeature.ALLOW_COERCION_OF_SCALARS);
+    private final ObjectMapper COERCING_MAPPER = mapperBuilder()
+            .enable(MapperFeature.ALLOW_COERCION_OF_SCALARS)
+            .build();
 
-    private final ObjectMapper NOT_COERCING_MAPPER = newObjectMapper()
-            .disable(MapperFeature.ALLOW_COERCION_OF_SCALARS);
+    private final ObjectMapper NOT_COERCING_MAPPER = mapperBuilder()
+            .disable(MapperFeature.ALLOW_COERCION_OF_SCALARS)
+            .build();
 
     /*
     /**********************************************************
@@ -95,7 +97,6 @@ public class ScalarCoercionTest extends BlackbirdTestBase
             fail("Should have failed for "+type);
         } catch (MismatchedInputException e) {
             verifyException(e, "Cannot coerce empty String");
-            verifyException(e, "Null value for");
         }
     }
 
@@ -190,8 +191,6 @@ public class ScalarCoercionTest extends BlackbirdTestBase
             fail("Should not have allowed coercion");
         } catch (MismatchedInputException e) {
             verifyException(e, "Cannot coerce ");
-            verifyException(e, " for type `");
-            verifyException(e, "enable `MapperFeature.ALLOW_COERCION_OF_SCALARS` to allow");
         }
     }
 }

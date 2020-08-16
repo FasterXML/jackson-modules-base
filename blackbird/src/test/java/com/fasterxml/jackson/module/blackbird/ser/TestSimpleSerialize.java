@@ -112,10 +112,6 @@ public class TestSimpleSerialize extends BlackbirdTestBase
         public boolean getB() { return false; }
     }
 
-    static class CheckGeneratedSerializerName {
-        public String stringField;
-    }
-
     /*
     /**********************************************************************
     /* Test methods, method access

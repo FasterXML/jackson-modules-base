@@ -27,7 +27,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     final protected boolean _skipNulls;
 
     /**
-     * Marker that we set if mutator turns out to be broken in a systemic
+     * Marker that we set if mutator turns out to be broken in a systematic
      * way that we can handle by redirecting it back to standard one.
      */
     private volatile boolean broken = false;
@@ -272,7 +272,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     protected final long _deserializeLong(JsonParser p, DeserializationContext ctxt)
         throws IOException
     {
-        switch (p.getCurrentTokenId()) {
+        switch (p.currentTokenId()) {
         case JsonTokenId.ID_NUMBER_INT:
             return p.getLongValue();
         case JsonTokenId.ID_NUMBER_FLOAT:
@@ -312,7 +312,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 
     protected final String _deserializeString(JsonParser p, DeserializationContext ctxt) throws IOException
     {
-        switch (p.getCurrentTokenId()) {
+        switch (p.currentTokenId()) {
         case JsonTokenId.ID_STRING:
             return p.getText();
         case JsonTokenId.ID_NULL:

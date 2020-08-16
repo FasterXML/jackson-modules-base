@@ -129,7 +129,7 @@ public class ProblemHandlerTest extends BlackbirdTestBase
 
         @Override
         public Object handleUnexpectedToken(DeserializationContext ctxt,
-                Class<?> targetType, JsonToken t, JsonParser p,
+                JavaType targetType, JsonToken t, JsonParser p,
                 String failureMsg)
             throws IOException
         {

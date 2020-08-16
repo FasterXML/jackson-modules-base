@@ -142,10 +142,6 @@ public class TestSimpleDeserialize extends BlackbirdTestBase
         public List<Object> foos;
     }
 
-    static class CheckGeneratedDeserializerName {
-        public String stringField;
-    }
-
     /*
     /**********************************************************************
     /* Test methods, method access
