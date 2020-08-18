@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.module.blackbird;
 
+import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
@@ -27,8 +28,8 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @BenchmarkMode(Mode.Throughput)
 @Measurement(time = 30, iterations = 10)
 @Warmup(time = 10, iterations = 10)
-@OutputTimeUnit(TimeUnit.SECONDS)
-@Fork(1)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Fork(5)
 public abstract class BaseBenchmark {
 
     Random random = new Random(1337);
@@ -38,13 +39,13 @@ public abstract class BaseBenchmark {
     byte[] mediaItemJson;
     ObjectWriter mediaItemWriter;
     ObjectReader mediaItemReader;
-    ClassicBean classicBean;
-    byte[] classicBeanJson;
+    ClassicBean[] classicBeans;
+    byte[] classicBeansJson;
     ObjectWriter classicBeanWriter;
     ObjectReader classicBeanReader;
 
-    public static void main(String[] args) throws RunnerException {
-        Options options = new OptionsBuilder()
+    public static void main(final String[] args) throws RunnerException {
+        final Options options = new OptionsBuilder()
             .include(BaseBenchmark.class.getSimpleName())
             .build();
         new Runner(options).run();
@@ -64,11 +65,12 @@ public abstract class BaseBenchmark {
         mediaItemWriter = mapper.writerFor(MediaItem.class);
         mediaItemJson = mediaItemWriter.writeValueAsBytes(MediaItem.SAMPLE);
 
-        classicBeanReader = mapper.readerFor(ClassicBean.class);
-        classicBeanWriter = mapper.writerFor(ClassicBean.class);
-        classicBean = new ClassicBean();
+        classicBeanReader = mapper.readerFor(ClassicBean[].class);
+        classicBeanWriter = mapper.writerFor(ClassicBean[].class);
+        final ClassicBean classicBean = new ClassicBean();
         classicBean.setUp();
-        classicBeanJson = classicBeanWriter.writeValueAsBytes(classicBean);
+        classicBeans = Collections.nCopies(1000, classicBean).toArray(new ClassicBean[0]);
+        classicBeansJson = classicBeanWriter.writeValueAsBytes(classicBeans);
     }
 
     @Benchmark
@@ -87,7 +89,7 @@ public abstract class BaseBenchmark {
     }
 
     @Benchmark
-    public void classicMediaItemSer(Blackhole bh) throws Exception {
+    public void classicMediaItemSer(final Blackhole bh) throws Exception {
         mediaItemWriter.writeValue(new NopOutputStream(bh), MediaItem.SAMPLE);
     }
 
@@ -96,14 +98,13 @@ public abstract class BaseBenchmark {
         return mediaItemReader.readValue(mediaItemJson);
     }
 
-
     @Benchmark
-    public void classicBeanItemSer(Blackhole bh) throws Exception {
-        classicBeanWriter.writeValue(new NopOutputStream(bh), classicBean);
+    public void classicBeanItemSer(final Blackhole bh) throws Exception {
+        classicBeanWriter.writeValue(new NopOutputStream(bh), classicBeans);
     }
 
     @Benchmark
-    public ClassicBean classicBeanItemDeser() throws Exception {
-        return classicBeanReader.readValue(classicBeanJson);
+    public ClassicBean[] classicBeanItemDeser() throws Exception {
+        return classicBeanReader.readValue(classicBeansJson);
     }
 }
