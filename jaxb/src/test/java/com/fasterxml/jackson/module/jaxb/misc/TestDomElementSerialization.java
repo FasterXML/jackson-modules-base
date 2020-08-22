@@ -27,7 +27,7 @@ public class TestDomElementSerialization extends BaseJaxbTest
      */
 
     @SuppressWarnings("serial")
-    private final static class DomModule extends SimpleModule
+    final static class DomModule extends SimpleModule
     {
         public DomModule()
         {
@@ -47,7 +47,7 @@ public class TestDomElementSerialization extends BaseJaxbTest
         }
     }
     
-    private final static class DomSerializers extends Serializers.Base
+    final static class DomSerializers extends Serializers.Base
     {
         @Override
         public JsonSerializer<?> findSerializer(SerializationConfig config,

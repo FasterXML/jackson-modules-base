@@ -25,7 +25,7 @@ public class TestBuilders extends AfterburnerTestBase
     static class Thing {
         final String foo;
     
-        private Thing(String foo) {
+        Thing(String foo) {
             this.foo = foo;
         }
     }

@@ -18,19 +18,18 @@ import javax.inject.Inject;
  */
 public class ExtendInjectableTest
 {
-
-    private final ConstructorDependency constructorInjected = new ConstructorDependency();
-    private final ConstructorDependency constructorInjectedWithCustomAnnotation = new ConstructorDependency();
-    private final ConstructorDependency constructorInjectedWithGuiceAnnotation = new ConstructorDependency();
-    private final ConstructorDependency constructorInjectedWithJavaAnnotation = new ConstructorDependency();
-    private final FieldDependency fieldInjected = new FieldDependency();
-    private final FieldDependency fieldInjectedWithCustomAnnotation = new FieldDependency();
-    private final FieldDependency fieldInjectedWithGuiceAnnotation = new FieldDependency();
-    private final FieldDependency fieldInjectedWithJavaAnnotation = new FieldDependency();
-    private final MethodDependency methodInjected = new MethodDependency();
-    private final MethodDependency methodInjectedWithCustomAnnotation = new MethodDependency();
-    private final MethodDependency methodInjectedWithGuiceAnnotation = new MethodDependency();
-    private final MethodDependency methodInjectedWithJavaAnnotation = new MethodDependency();
+    final ConstructorDependency constructorInjected = new ConstructorDependency();
+    final ConstructorDependency constructorInjectedWithCustomAnnotation = new ConstructorDependency();
+    final ConstructorDependency constructorInjectedWithGuiceAnnotation = new ConstructorDependency();
+    final ConstructorDependency constructorInjectedWithJavaAnnotation = new ConstructorDependency();
+    final FieldDependency fieldInjected = new FieldDependency();
+    final FieldDependency fieldInjectedWithCustomAnnotation = new FieldDependency();
+    final FieldDependency fieldInjectedWithGuiceAnnotation = new FieldDependency();
+    final FieldDependency fieldInjectedWithJavaAnnotation = new FieldDependency();
+    final MethodDependency methodInjected = new MethodDependency();
+    final MethodDependency methodInjectedWithCustomAnnotation = new MethodDependency();
+    final MethodDependency methodInjectedWithGuiceAnnotation = new MethodDependency();
+    final MethodDependency methodInjectedWithJavaAnnotation = new MethodDependency();
 
     @Test
     public void testModulesRegisteredThroughInjectionWithKey() throws Exception
@@ -96,9 +95,9 @@ public class ExtendInjectableTest
     static class ReadableBean extends InjectableBean {
 
         @JsonProperty("field_value")
-        private String fieldValue;
-        private String methodValue;
-        private final String constructorValue;
+        String fieldValue;
+        String methodValue;
+        final String constructorValue;
 
         @JsonCreator
         private ReadableBean(@JacksonInject ConstructorDependency constructorInjected,
@@ -131,30 +130,30 @@ public class ExtendInjectableTest
     static class InjectableBean
     {
         @Inject
-        private FieldDependency fieldInjected;
-        private MethodDependency methodInjected;
-        private final ConstructorDependency constructorInjected;
+        FieldDependency fieldInjected;
+        MethodDependency methodInjected;
+        final ConstructorDependency constructorInjected;
 
         @JacksonInject
         @Inject
         @javax.inject.Named("javax")
-        private FieldDependency fieldInjectedWithJavaAnnotation;
-        private MethodDependency methodInjectedWithJavaAnnotation;
-        private final ConstructorDependency constructorInjectedWithJavaAnnotation;
+        FieldDependency fieldInjectedWithJavaAnnotation;
+        MethodDependency methodInjectedWithJavaAnnotation;
+        final ConstructorDependency constructorInjectedWithJavaAnnotation;
 
         @JacksonInject
         @Inject
         @com.google.inject.name.Named("guice")
-        private FieldDependency fieldInjectedWithGuiceAnnotation;
-        private MethodDependency methodInjectedWithGuiceAnnotation;
-        private final ConstructorDependency constructorInjectedWithGuiceAnnotation;
+        FieldDependency fieldInjectedWithGuiceAnnotation;
+        MethodDependency methodInjectedWithGuiceAnnotation;
+        final ConstructorDependency constructorInjectedWithGuiceAnnotation;
 
         @JacksonInject
         @Inject
         @Ann
-        private FieldDependency fieldInjectedWithCustomAnnotation;
-        private MethodDependency methodInjectedWithCustomAnnotation;
-        private final ConstructorDependency constructorInjectedWithCustomAnnotation;
+        FieldDependency fieldInjectedWithCustomAnnotation;
+        MethodDependency methodInjectedWithCustomAnnotation;
+        final ConstructorDependency constructorInjectedWithCustomAnnotation;
 
         @Inject // this is simply to make sure we *can* build this correctly
         protected InjectableBean(ConstructorDependency constructorInjected,
