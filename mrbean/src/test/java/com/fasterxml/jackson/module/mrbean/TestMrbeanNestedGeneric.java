@@ -5,8 +5,6 @@ import java.util.List;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 
-import com.fasterxml.jackson.module.mrbean.MrBeanModule;
-
 /**
  * Tests to verify whether generic declarations are properly handled by Mr Bean.
  */

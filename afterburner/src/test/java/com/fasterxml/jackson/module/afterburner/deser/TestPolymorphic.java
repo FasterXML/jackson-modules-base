@@ -10,7 +10,7 @@ public class TestPolymorphic extends AfterburnerTestBase
 {
     static class Envelope {
         @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.EXTERNAL_PROPERTY, property="class")
-        private Object payload;
+        Object payload;
 
         public Envelope(@JsonProperty("payload") Object payload) {
             this.payload = payload;
