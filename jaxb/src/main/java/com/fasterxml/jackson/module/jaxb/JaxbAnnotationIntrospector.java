@@ -280,11 +280,11 @@ public class JaxbAnnotationIntrospector
             switch (m.getParameterCount()) {
             case 0: // getter
                 idPropName = findJaxbPropertyName(m, m.getRawType(),
-                        BeanUtil.okNameForGetter(m));
+                        okNameForGetter(m));
                 break method_loop;
             case 1: // setter
                 idPropName = findJaxbPropertyName(m, m.getRawType(),
-                        BeanUtil.okNameForMutator(m, "set"));
+                        okNameForMutator(m));
                 break method_loop;
             }
         }
@@ -345,7 +345,7 @@ public class JaxbAnnotationIntrospector
         }
         return null;
     }
-    
+
     /*
     @Override
     public String[] findPropertiesToIgnore(MapperConfig<?> config, Annotated a) {
@@ -364,6 +364,7 @@ public class JaxbAnnotationIntrospector
     @Override
     public Boolean findIgnoreUnknownProperties(MapperConfig<?> config, AnnotatedClass ac);
 
+    /*
     @Override
     public JsonIgnoreProperties.Value findPropertyIgnorals(MapperConfig<?> config, Annotated ac);
     */
@@ -436,9 +437,9 @@ public class JaxbAnnotationIntrospector
                     AnnotatedMethod am = (AnnotatedMethod) ann;
                     String str;
                     if (am.getParameterCount() == 0) {
-                        str = BeanUtil.okNameForGetter(am);
+                        str = okNameForGetter(am);
                     } else {
-                        str = BeanUtil.okNameForMutator(am, "set");
+                        str = okNameForMutator(am);
                     }
                     if (str != null) {
                         return name.withSimpleName(str);
@@ -846,7 +847,7 @@ public class JaxbAnnotationIntrospector
         if (a instanceof AnnotatedMethod) {
             AnnotatedMethod am = (AnnotatedMethod) a;
             return isVisible(am)
-                ? findJaxbPropertyName(am, am.getRawType(), BeanUtil.okNameForGetter(am))
+                ? findJaxbPropertyName(am, am.getRawType(), okNameForGetter(am))
                 : null;
         }
         if (a instanceof AnnotatedField) {
@@ -1020,7 +1021,7 @@ public class JaxbAnnotationIntrospector
                 return null;
             }
             Class<?> rawType = am.getRawParameterType(0);
-            return findJaxbPropertyName(am, rawType, BeanUtil.okNameForMutator(am, "set"));
+            return findJaxbPropertyName(am, rawType, okNameForMutator(am));
         }
         if (a instanceof AnnotatedField) {
             AnnotatedField af = (AnnotatedField) a;
@@ -1453,5 +1454,62 @@ public class JaxbAnnotationIntrospector
             }
         }
         return null;
+    }
+
+    /*
+    /**********************************************************
+    /* Name-mangling support extracted from jackson-databind as of
+    /* 2.12 (due to databind refactoring).
+    /* Somewhat simplified, always use "standard" bean name mangling
+    /* and do not allow alternate prefixes
+    /**********************************************************
+     */
+
+    protected String okNameForGetter(AnnotatedMethod am) {
+        final String name = am.getName();
+        if (name.startsWith("is")) { // plus, must return a boolean
+            Class<?> rt = am.getRawType();
+            if (rt == Boolean.class || rt == Boolean.TYPE) {
+                return stdManglePropertyName(name, 2);
+            }
+        }
+        if (name.startsWith("get")) {
+            return stdManglePropertyName(name, 3);
+        }
+        return null;
+    }
+    
+    protected String okNameForMutator(AnnotatedMethod am) {
+        final String name = am.getName();
+        if (name.startsWith("set")) {
+            return stdManglePropertyName(name, 3);
+        }
+        return null;
+    }
+
+    protected String stdManglePropertyName(final String basename, final int offset)
+    {
+        final int end = basename.length();
+        if (end == offset) { // empty name, nope
+            return null;
+        }
+        // first: if it doesn't start with capital, return as-is
+        char c0 = basename.charAt(offset);
+        char c1 = Character.toLowerCase(c0);
+        if (c0 == c1) {
+            return basename.substring(offset);
+        }
+        // 17-Dec-2014, tatu: As per [databind#653], need to follow more
+        //   closely Java Beans spec; specifically, if two first are upper-case,
+        //   then no lower-casing should be done.
+        if ((offset + 1) < end) {
+            if (Character.isUpperCase(basename.charAt(offset+1))) {
+                return basename.substring(offset);
+            }
+        }
+        StringBuilder sb = new StringBuilder(end - offset);
+        sb.append(c1);
+        sb.append(basename, offset+1, end);
+        return sb.toString();
     }
 }

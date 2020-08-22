@@ -87,7 +87,7 @@ public class TestAdaptersForContainers extends BaseJaxbTest
     }
 
     static class WrapperWithGetterAndSetter {
-        private List<Date> values;
+        List<Date> values;
 
         public WrapperWithGetterAndSetter() { }
         public WrapperWithGetterAndSetter(long l) {

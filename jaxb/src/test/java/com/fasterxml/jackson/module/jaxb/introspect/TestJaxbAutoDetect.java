@@ -56,8 +56,7 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
 
     @XmlRootElement(name="bah")
     public static class JaxbAnnotatedObject {
-
-        private BigDecimal number;
+        BigDecimal number;
 
         public JaxbAnnotatedObject() { }
         

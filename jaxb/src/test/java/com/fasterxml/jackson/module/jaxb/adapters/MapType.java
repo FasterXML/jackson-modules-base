@@ -1,7 +1,5 @@
 package com.fasterxml.jackson.module.jaxb.adapters;
 
-import com.fasterxml.jackson.module.jaxb.adapters.EntryType;
-
 import java.util.List;
 
 /**
