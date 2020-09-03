@@ -26,13 +26,13 @@ public class TestSimpleMaterializedInterfaces
     {
         public int getY();
     }
-    
+
     public interface PartialBean {
         public boolean isOk();
         // and then non-getter/setter one:
         public int foobar();
     }
-    
+
     public interface BeanHolder {
         public Bean getBean();
     }
@@ -53,7 +53,13 @@ public class TestSimpleMaterializedInterfaces
     interface NonPublicBean {
         public abstract int getX();
     }
-    
+
+    public interface ExtendedBean extends Bean {
+        public default boolean anyValuePresent() {
+            return getX() > 0 || getA() != null;
+        }
+    }
+
     /*
     /**********************************************************
     /* Unit tests, low level
@@ -149,8 +155,8 @@ public class TestSimpleMaterializedInterfaces
         assertNotNull(bean);
         assertEquals("b", bean.getA());
         assertEquals(-4, bean.getX());
-    }    
-    
+    }
+
     public void testArrayInterface() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -172,7 +178,17 @@ public class TestSimpleMaterializedInterfaces
         assertEquals(1, bean.getX());
         assertEquals(2, bean.getY());
     }
-    
+
+    public void testDefaultMethods() throws Exception
+    {
+        ObjectMapper mapper = newMrBeanMapper();
+        ExtendedBean bean = mapper.readValue("{\"a\":\"value\",\"x\":123 }", ExtendedBean.class);
+        assertNotNull(bean);
+        assertEquals("value", bean.getA());
+        assertEquals(123, bean.getX());
+        assertTrue(bean.anyValuePresent());
+    }
+
     /*
     /**********************************************************
     /* Unit tests, higher level, error handling
@@ -212,6 +228,6 @@ public class TestSimpleMaterializedInterfaces
         } catch (JsonMappingException e) {
             verifyException(e, "is not public");
         }
-    }    
-    
+    }
+
 }
