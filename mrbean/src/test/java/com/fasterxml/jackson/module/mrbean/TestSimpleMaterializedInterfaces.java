@@ -56,10 +56,18 @@ public class TestSimpleMaterializedInterfaces
         public abstract int getX();
     }
 
-    public interface ExtendedBean extends Bean {
+    public interface OtherInterface {
+        public boolean anyValuePresent();
+    }
+
+    public interface BeanWithDefaultForOtherInterface extends Bean, OtherInterface {
         public default boolean anyValuePresent() {
             return getX() > 0 || getA() != null;
         }
+    }
+
+    public interface BeanWithInheritedDefault extends BeanWithDefaultForOtherInterface {
+        // in this interface, anyValuePresent() is an inherited (rather than declared) concrete method
     }
 
     /*
@@ -177,10 +185,20 @@ public class TestSimpleMaterializedInterfaces
         assertEquals(2, bean.getY());
     }
 
-    public void testDefaultMethods() throws Exception
+    public void testDefaultMethodInInterface() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
-        ExtendedBean bean = mapper.readValue("{\"a\":\"value\",\"x\":123 }", ExtendedBean.class);
+        BeanWithDefaultForOtherInterface bean = mapper.readValue("{\"a\":\"value\",\"x\":123 }", BeanWithDefaultForOtherInterface.class);
+        assertNotNull(bean);
+        assertEquals("value", bean.getA());
+        assertEquals(123, bean.getX());
+        assertTrue(bean.anyValuePresent());
+    }
+
+    public void testInheritedDefaultMethodInInterface() throws Exception
+    {
+        ObjectMapper mapper = newMrBeanMapper();
+        BeanWithInheritedDefault bean = mapper.readValue("{\"a\":\"value\",\"x\":123 }", BeanWithInheritedDefault.class);
         assertNotNull(bean);
         assertEquals("value", bean.getA());
         assertEquals(123, bean.getX());
