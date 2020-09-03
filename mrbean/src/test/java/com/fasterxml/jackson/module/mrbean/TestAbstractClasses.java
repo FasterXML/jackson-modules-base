@@ -24,7 +24,7 @@ public class TestAbstractClasses
 
         // also verify non-public methods
         protected abstract String getZ();
-        private Object customMethod() { return new Object(); }
+        private String customMethod() { return "Private methods rock!"; }
     }
 
     /*
@@ -42,6 +42,6 @@ public class TestAbstractClasses
         assertEquals(13, bean.y);
         assertEquals("Foo!", bean.getFoo());
         assertEquals("def", bean.getZ());
-        assertNotNull(bean.customMethod());
+        assertEquals("Private methods rock!", bean.customMethod());
     }
 }

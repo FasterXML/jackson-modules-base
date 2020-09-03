@@ -26,12 +26,17 @@ public class TestAbstractClassesWithOverrides
 
         // also verify non-public methods
         protected abstract String getZ();
-        private Object customMethod() { return new Object(); }
+        private Object customMethod() { return protectedAbstractMethod(); }
+        protected abstract Object protectedAbstractMethod();
     }
 
     public abstract static class CoffeeBean extends Bean {
         @Override public String roast(int temperature) {
             return "The coffee beans are roasting at " + temperature + " degrees now, yummy";
+        }
+
+        @Override protected Object protectedAbstractMethod() {
+            return "Private methods invoking protected abstract methods is the bomb!";
         }
     }
 
@@ -59,7 +64,7 @@ public class TestAbstractClassesWithOverrides
         assertEquals(13, bean.y);
         assertEquals("Foo!", bean.getFoo());
         assertEquals("def", bean.getZ());
-        assertNotNull(bean.customMethod());
         assertEquals("The coffee beans are roasting at 123 degrees now, yummy", bean.roast(123));
+        assertEquals("Private methods invoking protected abstract methods is the bomb!", bean.customMethod());
     }
 }
