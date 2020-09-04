@@ -52,6 +52,16 @@ ${project.groupId}.mrbean.*;version=${project.version}
       </plugin>
 
       <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+              <!-- Enable testing with Java 8 features, especially default methods in interfaces -->
+              <testSource>1.8</testSource>
+              <testTarget>1.8</testTarget>
+          </configuration>
+      </plugin>
+
+      <plugin>
         <!--  We will shade ASM, to simplify deployment, avoid version conflicts -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
