@@ -5,7 +5,7 @@
   <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
   <!-- that they should prefer consuming it instead. -->
   <!-- do_not_remove: published-with-gradle-metadata -->
-  <modelVersion>4.0.0</modelVersion> 
+  <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.fasterxml.jackson.module</groupId>
     <artifactId>jackson-modules-base</artifactId>
@@ -54,6 +54,16 @@ ${project.groupId}.mrbean.*;version=${project.version}
       <plugin>
 	<groupId>com.google.code.maven-replacer-plugin</groupId>
 	<artifactId>replacer</artifactId>
+      </plugin>
+
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+              <!-- Enable testing with Java 8 features, especially default methods in interfaces -->
+              <testSource>1.8</testSource>
+              <testTarget>1.8</testTarget>
+          </configuration>
       </plugin>
 
       <plugin>
