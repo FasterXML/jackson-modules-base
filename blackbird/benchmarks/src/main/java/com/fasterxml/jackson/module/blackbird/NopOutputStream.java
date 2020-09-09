@@ -7,7 +7,7 @@ import org.openjdk.jmh.infra.Blackhole;
 
 class NopOutputStream extends OutputStream
 {
-    private Blackhole bh;
+    private final Blackhole bh;
 
     public NopOutputStream(Blackhole bh) {
         this.bh = bh;
