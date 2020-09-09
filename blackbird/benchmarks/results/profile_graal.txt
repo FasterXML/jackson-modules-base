@@ -1,0 +1,978 @@
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI -XX:+UseJVMCICompiler --module-path=/home/steven/mp --upgrade-module-path=/home/steven/mp/compiler.jar:/home/steven/mp/compiler-management.jar
+# Warmup: 4 iterations, 10 s each
+# Measurement: 6 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Blackbird.classicMediaItemDeser
+
+# Run progress: 33.33% complete, ETA 00:07:38
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfAsmProfiler 
+# Profilers consume stdout and stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 97.185 ops/ms
+# Warmup Iteration   2: 469.084 ops/ms
+# Warmup Iteration   3: 646.051 ops/ms
+# Warmup Iteration   4: 645.022 ops/ms
+Iteration   1: 646.729 ops/ms
+Iteration   2: 644.663 ops/ms
+Iteration   3: 653.936 ops/ms
+Iteration   4: 644.031 ops/ms
+Iteration   5: 650.329 ops/ms
+Iteration   6: 654.378 ops/ms
+# Processing profiler results: LinuxPerfAsmProfiler 
+
+
+Result "com.fasterxml.jackson.module.blackbird.Blackbird.classicMediaItemDeser":
+  649.011 ±(99.9%) 12.772 ops/ms [Average]
+  (min, avg, max) = (644.031, 649.011, 654.378), stdev = 4.555
+  CI (99.9%): [636.239, 661.783] (assumes normal distribution)
+
+Secondary result "com.fasterxml.jackson.module.blackbird.Blackbird.classicMediaItemDeser:·asm":
+PrintAssembly processed: 595658 total address lines.
+Perf output processed (skipped 46.061 seconds):
+ Column 1: cycles (180765 events)
+
+Hottest code regions (>10.00% "cycles" events):
+
+....[Hottest Region 1]..............................................................................
+jvmci, level 4, com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString, version 2261 (1016 bytes) 
+
+          JVMCI data     [0x00007f24916e7810,0x00007f24916e7820] = 16
+         [Constant Pool (empty)]
+         [MachCode]
+         [Entry Point]
+           # {method} {0x00007f2440e2ba68} &apos;_finishAndReturnString&apos; &apos;()Ljava/lang/String;&apos; in &apos;com/fasterxml/jackson/core/json/UTF8StreamJsonParser&apos;
+           #           [sp+0x40]  (sp of caller)
+           0x00007f24916e64c0: 448b 5608 | 49c1 e203 
+           0x00007f24916e64c8: ;   {runtime_call ic_miss_stub}
+           0x00007f24916e64c8: 493b c20f | 852f c86c | f590 6666 | 0f1f 8400 | 0000 0000 | 6666 6690 
+         [Verified Entry Point]
+  0.03%    0x00007f24916e64e0: 8984 2400 | c0fe ff48 | 83ec 3848 | 896c 2430 
+  0.02%    0x00007f24916e64f0: ;*getfield _inputPtr {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@1 (line 2447)
+  0.02%    0x00007f24916e64f0: 448b 5e1c 
+  0.02%    0x00007f24916e64f4: ;*getfield _inputEnd {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@7 (line 2448)
+  0.02%    0x00007f24916e64f4: 448b 5640 | 0f1f 8400 | 0000 0000 | 453b d30f | 8ec4 0800 
+           0x00007f24916e6508: ;*if_icmplt {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@10 (line 2448)
+           0x00007f24916e6508: 0044 8b46 
+           0x00007f24916e650c: ;*aload_0 {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@0 (line 2447)
+           0x00007f24916e650c: 7846 0fbe | 14c5 1c00 | 0000 428b | 3cc5 2c00 
+           0x00007f24916e651c: ;*getfield _currentSegment {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::emptyAndGetCurrentSegment@42 (line 712)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@28 (line 2453)
+           0x00007f24916e651c: 0000 6690 | 4584 d20f | 85a4 0800 
+           0x00007f24916e6528: ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::emptyAndGetCurrentSegment@34 (line 709)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@28 (line 2453)
+           0x00007f24916e6528: 0042 c704 | c50c 0000 | 00ff ffff 
+           0x00007f24916e6534: ;*putfield _inputStart {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::emptyAndGetCurrentSegment@2 (line 700)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@28 (line 2453)
+           0x00007f24916e6534: ff42 c704 | c518 0000 | 0000 0000 
+           0x00007f24916e6540: ;*putfield _currentSize {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::emptyAndGetCurrentSegment@7 (line 701)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@28 (line 2453)
+           0x00007f24916e6540: 0042 c704 | c510 0000 | 0000 0000 
+           0x00007f24916e654c: ;*putfield _inputLen {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::emptyAndGetCurrentSegment@12 (line 702)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@28 (line 2453)
+           0x00007f24916e654c: 0041 807f | 3000 0f85 | d303 0000 | 4c8b ce42 | c704 c524 | 0000 0000 
+           0x00007f24916e6564: ;*putfield _inputBuffer {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::emptyAndGetCurrentSegment@17 (line 704)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@28 (line 2453)
+           0x00007f24916e6564: 0000 0041 | 807f 3000 | 0f85 f703 | 0000 42c7 | 04c5 3000 | 0000 0000 
+           0x00007f24916e657c: ;*putfield _resultString {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::emptyAndGetCurrentSegment@22 (line 705)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@28 (line 2453)
+           0x00007f24916e657c: 0000 6690 | 4180 7f30 | 000f 851a | 0400 0042 | c704 c534 | 0000 0000 
+           0x00007f24916e6594: ;*putfield _resultArray {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::emptyAndGetCurrentSegment@27 (line 706)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@28 (line 2453)
+           0x00007f24916e6594: 0000 0085 | ff0f 84f7 
+           0x00007f24916e659c: ;*ifnonnull {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::emptyAndGetCurrentSegment@47 (line 713)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@28 (line 2453)
+           0x00007f24916e659c: 0400 0048 
+           0x00007f24916e65a0: ;*astore_3 {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@31 (line 2453)
+           0x00007f24916e65a0: c1e7 038b | 770c 418b 
+           0x00007f24916e65a8: ;*getfield _inputEnd {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@38 (line 2456)
+           0x00007f24916e65a8: 5140 418b 
+           0x00007f24916e65ac: ;*iadd {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@44 (line 2456)
+           0x00007f24916e65ac: c303 c63b | d00f 8e6d 
+           0x00007f24916e65b4: ;   {oop([I{0x00000005cae53e00})}
+           0x00007f24916e65b4: 0300 0048 | ba00 3ee5 | ca05 0000 | 0041 3bc3 | 0f8e 3b08 
+           0x00007f24916e65c8: ;*if_icmpge {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@59 (line 2458)
+           0x00007f24916e65c8: 0000 458b | 91b4 0000 
+           0x00007f24916e65d0: ;*istore {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@48 (line 2456)
+           0x00007f24916e65d0: 0042 8b0c | d50c 0000 | 000f 1f80 | 0000 0000 | 413b cb0f | 86a1 0700 | 0047 0fbe 
+           0x00007f24916e65ec: ;*baload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@65 (line 2459)
+           0x00007f24916e65ec: 44d3 1041 
+           0x00007f24916e65f0: ;*iaload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@76 (line 2460)
+           0x00007f24916e65f0: 0fb6 d883 | 7c9a 1000 | 0f85 8604 
+           0x00007f24916e65fc: ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@77 (line 2460)
+           0x00007f24916e65fc: 0000 6690 | 85f6 0f84 | a507 0000 | 450f b6c0 | 6644 8947 
+           0x00007f24916e6610: ;*castore {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@114 (line 2468)
+           0x00007f24916e6610: 1041 ffc3 | 458b c341 | bb01 0000 | 0066 6690 | e940 0000 
+           0x00007f24916e6624: ;*iload_1 {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@56 (line 2458)
+           0x00007f24916e6624: 0066 6666 | 0f1f 8400 
+           0x00007f24916e662c: ;*if_icmpge {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@59 (line 2458)
+           0x00007f24916e662c: 0000 0000 | 413b c80f | 86b7 0700 | 0043 0fbe 
+           0x00007f24916e663c: ;*baload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@65 (line 2459)
+           0x00007f24916e663c: 5cd0 100f 
+           0x00007f24916e6640: ;*iaload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@76 (line 2460)
+           0x00007f24916e6640: b6eb 837c | aa10 000f | 8522 0000 
+           0x00007f24916e664c: ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@77 (line 2460)
+           0x00007f24916e664c: 0041 3bf3 | 0f86 6707 | 0000 0fb6 | db66 4289 
+           0x00007f24916e665c: ;*castore {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@114 (line 2468)
+           0x00007f24916e665c: 5c5f 1041 
+           0x00007f24916e6660: ;*iinc {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@103 (line 2467)
+           0x00007f24916e6660: ffc0 41ff 
+           0x00007f24916e6664: ;*iinc {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@108 (line 2468)
+           0x00007f24916e6664: c341 3bc0 | 7fc6 e9b8 
+           0x00007f24916e666c: ;*if_icmpge {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@59 (line 2458)
+           0x00007f24916e666c: 0600 000f 
+           0x00007f24916e6670: ;*iand {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@69 (line 2459)
+           0x00007f24916e6670: b6f3 83fe | 220f 85f1 
+           0x00007f24916e6678: ;*if_icmpne {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@84 (line 2461)
+           0x00007f24916e6678: 0600 0041 
+           0x00007f24916e667c: ;*iload {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@80 (line 2461)
+           0x00007f24916e667c: 8b59 788b | 14dd 1400 | 0000 448b | 14dd 2c00 
+           0x00007f24916e668c: ;*getfield _currentSegment {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::setCurrentAndReturn@36 (line 733)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@99 (line 2463)
+           0x00007f24916e668c: 0000 83fa | 010f 8dd5 
+           0x00007f24916e6694: ;*ifle {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::setCurrentAndReturn@9 (line 728)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@99 (line 2463)
+           0x00007f24916e6694: 0600 0066 | 0f1f 8400 | 0000 0000 | 4585 db0f | 84c3 0600 
+           0x00007f24916e66a8: ;*iload {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@80 (line 2461)
+           0x00007f24916e66a8: 0042 8b2c | d50c 0000 | 0045 85db | 0f8c b206 
+           0x00007f24916e66b8: ;*iflt {reexecute=0 rethrow=0 return_oop=0}
+                               ; - java.lang.String::checkBoundsOffCount@5 (line 3740)
+                               ; - java.lang.String::rangeCheck@4 (line 298)
+                               ; - java.lang.String::&lt;init&gt;@7 (line 294)
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::setCurrentAndReturn@41 (line 733)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@99 (line 2463)
+           0x00007f24916e66b8: 0000 8bd5 
+  0.01%    0x00007f24916e66bc: ;*isub {reexecute=0 rethrow=0 return_oop=0}
+                               ; - java.lang.String::checkBoundsOffCount@11 (line 3740)
+                               ; - java.lang.String::rangeCheck@4 (line 298)
+                               ; - java.lang.String::&lt;init&gt;@7 (line 294)
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::setCurrentAndReturn@41 (line 733)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@99 (line 2463)
+  0.01%    0x00007f24916e66bc: 412b d390 | 85d2 0f8c 
+           0x00007f24916e66c4: ;*if_icmple {reexecute=0 rethrow=0 return_oop=0}
+                               ; - java.lang.String::checkBoundsOffCount@12 (line 3740)
+                               ; - java.lang.String::rangeCheck@4 (line 298)
+                               ; - java.lang.String::&lt;init&gt;@7 (line 294)
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::setCurrentAndReturn@41 (line 733)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@99 (line 2463)
+           0x00007f24916e66c4: a406 0000 
+           0x00007f24916e66c8: ;*iadd {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@90 (line 2462)
+           0x00007f24916e66c8: 41ff c045 
+           0x00007f24916e66cc: ;*putfield _inputPtr {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@91 (line 2462)
+           0x00007f24916e66cc: 8941 1c44 | 891c dd18 
+           0x00007f24916e66d4: ;*putfield _currentSize {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::setCurrentAndReturn@2 (line 726)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@99 (line 2463)
+           0x00007f24916e66d4: 0000 004d | 8b87 2001 | 0000 498b | b730 0100 | 0041 8bfb | 488d 7f17 | 4883 e7f8 | 488b d749 
+           0x00007f24916e66f4: ;*newarray {reexecute=0 rethrow=0 return_oop=0}
+                               ; - java.lang.StringUTF16::compress@1 (line 161)
+                               ; - java.lang.String::&lt;init&gt;@36 (line 3651)
+                               ; - java.lang.String::&lt;init&gt;@10 (line 294)
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::setCurrentAndReturn@41 (line 733)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@99 (line 2463)
+           0x00007f24916e66f4: 03d0 448b | cb49 c1e1 
+           0x00007f24916e66fc: ;*getfield _textBuffer {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@95 (line 2463)
+           0x00007f24916e66fc: 0366 6690 | 483b d60f | 8768 0400 | 0049 8997 | 2001 0000 | 420f 1884 | 0700 0100 | 0042 0f18 
+           0x00007f24916e671c: 8407 4001 | 0000 420f | 1884 0780 | 0100 0045 | 8958 0c49 | c700 0100 | 0000 41c7 
+           0x00007f24916e6738: ;   {metadata({type array byte})}
+           0x00007f24916e6738: 4008 0c01 | 00f8 488d | 4ff0 4881 | f900 0800 | 000f 8348 | 0400 0048 | c7c6 1000 | 0000 e911 
+           0x00007f24916e6758: 0000 000f | 1f44 0000 | 49c7 0430 | 0000 0000 | 488d 7608 | 483b fe77 
+           0x00007f24916e6770: ;*newarray {reexecute=0 rethrow=0 return_oop=0}
+                               ; - java.lang.StringUTF16::compress@1 (line 161)
+                               ; - java.lang.String::&lt;init&gt;@36 (line 3651)
+                               ; - java.lang.String::&lt;init&gt;@10 (line 294)
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::setCurrentAndReturn@41 (line 733)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@99 (line 2463)
+           0x00007f24916e6770: ef44 3bdd | 0f8f 3b06 
+           0x00007f24916e6778: ;* unwind (locked if synchronized)
+                               ; - java.lang.StringUTF16::compress@-3
+                               ; - java.lang.StringUTF16::compress@9 (line 162)
+                               ; - java.lang.String::&lt;init&gt;@36 (line 3651)
+                               ; - java.lang.String::&lt;init&gt;@10 (line 294)
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::setCurrentAndReturn@41 (line 733)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@99 (line 2463)
+           0x00007f24916e6778: 0000 49c1 
+           0x00007f24916e677c: ;*getfield _currentSegment {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::setCurrentAndReturn@36 (line 733)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@99 (line 2463)
+           0x00007f24916e677c: e203 498d | 7210 498d | 7810 418b | d352 8bc2 | b900 ff00 | ff83 e2f0 | 83e0 0f85 | d20f 8447 
+           0x00007f24916e679c: 0000 00c5 | f96e c1c5 | f970 c000 | c5e1 efdb | 488d 3456 | 488d 3c17 | 48f7 dac5 | fa6f 0c56 
+  0.13%    0x00007f24916e67bc: c5e1 ebd9 | c5fa 6f54 | 5610 c5e1 | ebda c4e2 | 7917 d80f | 8573 0000 | 00c5 f167 | cac5 fa7f 
+           0x00007f24916e67dc: 0c17 6690 | 4883 c210 | 75d1 8bd0 | 83e2 f883 | e007 85d2 | 7428 c5f9 | 6ec1 c5f9 | 70c0 00c5 
+           0x00007f24916e67fc: e9ef d2c5 | fa6f 0ec4 | e279 17c8 | 753e c5f1 | 67ca c5f9 | d60f 4883 | c610 4883 | c708 8bd0 
+  0.01%    0x00007f24916e681c: 0f1f 4000 | 85d2 7421 | 488d 3456 | 488d 3c17 | 48f7 da0f | b704 56f7 | c000 ff00 | 0075 0d88 
+           0x00007f24916e683c: 0417 6690 | 48ff c275 | ea58 eb06 | 33c0 4883 
+           0x00007f24916e684c: ;* unwind (locked if synchronized)
+                               ; - java.lang.StringUTF16::compress@-3
+                               ; - java.lang.StringUTF16::compress@9 (line 162)
+                               ; - java.lang.String::&lt;init&gt;@36 (line 3651)
+                               ; - java.lang.String::&lt;init&gt;@10 (line 294)
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::setCurrentAndReturn@41 (line 733)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@99 (line 2463)
+           0x00007f24916e684c: c408 443b | d80f 85f7 
+           0x00007f24916e6854: ;*if_icmpne {reexecute=0 rethrow=0 return_oop=0}
+                               ; - java.lang.StringUTF16::compress@13 (line 162)
+                               ; - java.lang.String::&lt;init&gt;@36 (line 3651)
+                               ; - java.lang.String::&lt;init&gt;@10 (line 294)
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::setCurrentAndReturn@41 (line 733)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@99 (line 2463)
+           0x00007f24916e6854: 0400 0049 | 8bb7 2001 | 0000 488d | 5618 49ba 
+           0x00007f24916e6864: ;   {metadata(&apos;java/lang/String&apos;)}
+           0x00007f24916e6864: e81c 00c0 | 0700 0000 | 493b 9730 | 0100 000f | 87dc 0200 | 0049 8997 | 2001 0000 | 0f18 8618 
+           0x00007f24916e6884: 0100 0049 | 8b92 b800 | 0000 4889 | 16c7 4608 
+           0x00007f24916e6894: ;   {metadata(&apos;java/lang/String&apos;)}
+           0x00007f24916e6894: 9d03 00f8 | c746 0c00 | 0000 0048 | c746 1000 | 0000 004c | 8bde 49c1 | e803 4589 | 430c 4180 
+           0x00007f24916e68b4: 7f30 000f | 8522 0100 | 0049 8bc3 | 48c1 e803 | 8904 dd30 
+           0x00007f24916e68c8: ;*putfield _resultString {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::setCurrentAndReturn@47 (line 734)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@99 (line 2463)
+           0x00007f24916e68c8: 0000 0049 | 8bc1 4933 | c348 f7c0 | 0000 e0ff | 0f84 4101 | 0000 6690 | 4d85 db0f | 844f 0100 
+           0x00007f24916e68e8: 0048 be00 | 80f6 8224 | 7f00 0049 | c1e9 0966 | 0f1f 8400 | 0000 0000 | 4180 3c31 | 080f 8546 
+           0x00007f24916e6908: 0100 0049 
+           0x00007f24916e690c: ;*areturn {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString@102 (line 2463)
+           0x00007f24916e690c: 8bc3 488b | 6c24 3048 | 83c4 3849 | 8b8f 1001 
+           0x00007f24916e691c: ;   {poll_return}
+           0x00007f24916e691c: 0000 8501 | c5f8 77c3 | 8bc2 e98c | fcff ff4e | 8d14 c524 | 0000 0045 | 8b12 4585 | d20f 840e 
+           0x00007f24916e693c: 0200 0049 | 8b6f 3849 | c1e2 0348 | 85ed 0f84 | 6c02 0000 | 498b 5748 | 4c89 5415 | f84c 8d55 
+           0x00007f24916e695c: f84d 8957 | 384c 8bce | e9f2 fbff 
+           0x00007f24916e6968: ;*putfield _inputBuffer {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.util.TextBuffer::emptyAndGetCurrentSegment@17 (line 704)
+....................................................................................................
+ 22.09%  <total for region 1>
+
+....[Hottest Region 2]..............................................................................
+jvmci, level 4, com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName, version 2266 (1098 bytes) 
+
+          dependencies   [0x00007f24917d8030,0x00007f24917d8038] = 8
+          nul chk table  [0x00007f24917d8038,0x00007f24917d8090] = 88
+          JVMCI data     [0x00007f24917d8090,0x00007f24917d80a0] = 16
+         [Constant Pool (empty)]
+         [MachCode]
+         [Entry Point]
+           # {method} {0x00007f2440e27a18} &apos;nextFieldName&apos; &apos;(Lcom/fasterxml/jackson/core/SerializableString;)Z&apos; in &apos;com/fasterxml/jackson/core/json/UTF8StreamJsonParser&apos;
+           # this:     rsi:rsi   = &apos;com/fasterxml/jackson/core/json/UTF8StreamJsonParser&apos;
+           # parm0:    rdx:rdx   = &apos;com/fasterxml/jackson/core/SerializableString&apos;
+           #           [sp+0x40]  (sp of caller)
+  0.00%    0x00007f24917d5440: 448b 5608 | 49c1 e203 
+           0x00007f24917d5448: ;   {runtime_call ic_miss_stub}
+           0x00007f24917d5448: 493b c20f | 85af d85d | f590 6666 | 0f1f 8400 | 0000 0000 | 6666 6690 
+         [Verified Entry Point]
+  0.00%    0x00007f24917d5460: 8984 2400 | c0fe ff48 | 83ec 3848 | 896c 2430 | 4889 7424 | 1044 8b56 
+           0x00007f24917d5478: ;*getfield _currToken {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@6 (line 909)
+           0x00007f24917d5478: 140f 1f80 | 0000 0000 
+  0.00%    0x00007f24917d5480: ;   {oop(a &apos;com/fasterxml/jackson/core/JsonToken&apos;{0x00000005cb025ec0})}
+  0.00%    0x00007f24917d5480: 4181 fad8 | 4b60 b90f | 84dc 1100 | 0080 bea0 | 0000 0000 | 0f85 a413 
+           0x00007f24917d5498: ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@26 (line 913)
+           0x00007f24917d5498: 0000 8b46 
+           0x00007f24917d549c: ;*getfield _inputPtr {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWSOrEnd@1 (line 2992)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@34 (line 916)
+           0x00007f24917d549c: 1c44 8b5e 
+           0x00007f24917d54a0: ;*getfield _inputEnd {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWSOrEnd@5 (line 2992)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@34 (line 916)
+           0x00007f24917d54a0: 4044 3bd8 | 0f8e e913 
+           0x00007f24917d54a8: ;*if_icmplt {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWSOrEnd@8 (line 2992)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@34 (line 916)
+           0x00007f24917d54a8: 0000 448b | 86b4 0000 
+           0x00007f24917d54b0: ;*aload_0 {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@0 (line 908)
+           0x00007f24917d54b0: 0046 8b0c | c50c 0000 | 000f 1f80 | 0000 0000 | 443b c80f | 86fd 1300 
+           0x00007f24917d54c8: ;*baload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWSOrEnd@38 (line 2997)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@34 (line 916)
+           0x00007f24917d54c8: 0042 0fb6 
+           0x00007f24917d54cc: ;*iand {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWSOrEnd@42 (line 2997)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@34 (line 916)
+           0x00007f24917d54cc: 4cc0 1083 | f921 0f82 
+           0x00007f24917d54d4: ;*if_icmple {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWSOrEnd@47 (line 2998)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@34 (line 916)
+           0x00007f24917d54d4: 0b12 0000 | 83f9 230f | 1f44 0000 | 0f8c 2900 | 0000 83f9 | 230f 8418 | 1300 0083 | f92f 0f84 
+           0x00007f24917d54f4: 8f11 0000 | 83f9 5d0f | 1f44 0000 | 0f84 4313 | 0000 83f9 | 7d0f 84c2 
+           0x00007f24917d550c: ;*if_icmpeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWSOrEnd@53 (line 2999)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@34 (line 916)
+           0x00007f24917d550c: 1300 008b 
+           0x00007f24917d5510: ;*aload_0 {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@0 (line 908)
+           0x00007f24917d5510: 5e70 448b | 14dd 0c00 | 0000 8b3c | dd10 0000 
+           0x00007f24917d5520: ;*getfield _index {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.JsonReadContext::expectComma@2 (line 192)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@100 (line 937)
+           0x00007f24917d5520: 0041 83fa | 020f 8529 
+           0x00007f24917d5528: ;*ifne {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@190 (line 951)
+           0x00007f24917d5528: 1300 0048 | 85d2 0f84 | ef03 0000 | 448b 5208 | 49c1 e203 
+  0.06%    0x00007f24917d553c: ;   {metadata(&apos;com/fasterxml/jackson/core/io/SerializedString&apos;)}
+  0.06%    0x00007f24917d553c: 48bd 7862 | 28c0 0700 | 0000 493b | ea0f 8540 
+           0x00007f24917d554c: ;*invokeinterface asQuotedUTF8 {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@216 (line 961)
+           0x00007f24917d554c: 1100 00c7 | 4654 0000 
+           0x00007f24917d5554: ;*putfield _numTypesValid {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@2 (line 908)
+           0x00007f24917d5554: 0000 448b 
+           0x00007f24917d5558: ;*iadd {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWSOrEnd@34 (line 2997)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@34 (line 916)
+           0x00007f24917d5558: e841 ffc5 
+  0.01%    0x00007f24917d555c: ;*putfield _inputPtr {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWSOrEnd@35 (line 2997)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@34 (line 916)
+  0.01%    0x00007f24917d555c: 4489 6e1c | 4180 7f30 | 000f 855c | 0600 004c | 8bf6 41c7 | 8684 0000 | 0000 0000 
+           0x00007f24917d5578: ;*putfield _binaryValue {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@55 (line 922)
+           0x00007f24917d5578: 00ff c789 | 3cdd 1000 
+           0x00007f24917d5580: ;*putfield _index {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.JsonReadContext::expectComma@8 (line 192)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@100 (line 937)
+           0x00007f24917d5580: 0000 83ff | 010f 8c32 
+           0x00007f24917d5588: ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@103 (line 937)
+           0x00007f24917d5588: 0600 0045 | 3bcd 0f86 
+           0x00007f24917d5590: ;*baload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWS@26 (line 2936)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@148 (line 941)
+           0x00007f24917d5590: 5212 0000 | 430f b674 
+           0x00007f24917d5598: ;*iand {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWS@30 (line 2936)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@148 (line 941)
+           0x00007f24917d5598: c510 660f | 1f44 0000 | 83fe 210f | 82b2 1100 
+           0x00007f24917d55a8: ;*if_icmple {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWS@35 (line 2937)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@148 (line 941)
+           0x00007f24917d55a8: 0083 f92c | 0f85 0b12 
+           0x00007f24917d55b0: ;*if_icmpeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@109 (line 938)
+           0x00007f24917d55b0: 0000 453b | dd0f 8ec2 
+           0x00007f24917d55b8: ;*if_icmpge {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWS@8 (line 2935)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@148 (line 941)
+           0x00007f24917d55b8: 1200 000f | 1f44 0000 | 83fe 2f0f | 84bf 1200 
+           0x00007f24917d55c8: ;*if_icmpeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWS@41 (line 2938)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@148 (line 941)
+           0x00007f24917d55c8: 0083 fe23 | 0f84 e011 
+           0x00007f24917d55d0: ;*if_icmpne {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWS@47 (line 2938)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@148 (line 941)
+           0x00007f24917d55d0: 0000 6666 | 0f1f 8400 | 0000 0000 | 6666 6690 | 41f7 460c | 0008 0000 | 0f85 4011 
+           0x00007f24917d55ec: ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@160 (line 944)
+           0x00007f24917d55ec: 0000 448d 
+           0x00007f24917d55f0: ;*iadd {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWS@22 (line 2936)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@148 (line 941)
+           0x00007f24917d55f0: 5002 4589 
+           0x00007f24917d55f4: ;*putfield _inputPtr {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWS@23 (line 2936)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@148 (line 941)
+           0x00007f24917d55f4: 561c 83fe | 220f 8508 
+           0x00007f24917d55fc: ;*if_icmpne {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@212 (line 959)
+           0x00007f24917d55fc: 1100 0041 
+           0x00007f24917d5600: ;*getfield _currInputRow {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_updateNameLocation@2 (line 3785)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@206 (line 958)
+           0x00007f24917d5600: 8b76 4441 | 89b6 9800 
+           0x00007f24917d5608: ;*putfield _nameStartRow {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_updateNameLocation@5 (line 3785)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@206 (line 958)
+           0x00007f24917d5608: 0000 4589 | 9694 0000 
+           0x00007f24917d5610: ;*putfield _nameStartOffset {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_updateNameLocation@15 (line 3787)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@206 (line 958)
+           0x00007f24917d5610: 0045 2b56 
+           0x00007f24917d5614: ;*isub {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_updateNameLocation@24 (line 3788)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@206 (line 958)
+           0x00007f24917d5614: 4845 8996 
+           0x00007f24917d5618: ;*putfield _nameStartCol {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_updateNameLocation@25 (line 3788)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@206 (line 958)
+           0x00007f24917d5618: 9c00 0000 
+  0.65%    0x00007f24917d561c: ;*getfield _quotedUTF8Ref {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.io.SerializedString::asQuotedUTF8@1 (line 119)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@216 (line 961)
+  0.65%    0x00007f24917d561c: 8b72 1049 | bb00 80f6 | 8224 7f00 
+           0x00007f24917d5628: ;*putfield _currentName {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.JsonReadContext::setCurrentName@2 (line 197)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@289 (line 973)
+           0x00007f24917d5628: 004c 895c | 2420 85f6 | 0f84 b70e 
+           0x00007f24917d5634: ;*ifnonnull {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.io.SerializedString::asQuotedUTF8@6 (line 120)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@216 (line 961)
+           0x00007f24917d5634: 0000 48c1 
+           0x00007f24917d5638: ;*astore_3 {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@221 (line 961)
+           0x00007f24917d5638: e603 448b | 560c 418b 
+           0x00007f24917d5640: ;*getfield _inputPtr {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@227 (line 965)
+           0x00007f24917d5640: 6e1c 458b 
+           0x00007f24917d5644: ;*iadd {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@232 (line 965)
+           0x00007f24917d5644: c244 03c5 
+           0x00007f24917d5648: ;*iadd {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@234 (line 965)
+           0x00007f24917d5648: 418d 4004 | 413b 4640 | 0f8d 6410 
+           0x00007f24917d5654: ;*if_icmpge {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@239 (line 965)
+           0x00007f24917d5654: 0000 418b | 86b4 0000 
+           0x00007f24917d565c: ;*astore_3 {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@221 (line 961)
+           0x00007f24917d565c: 0044 8b0c | c50c 0000 | 0045 3bc8 | 0f86 6d10 
+           0x00007f24917d566c: ;*baload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@257 (line 968)
+           0x00007f24917d566c: 0000 4180 | 7cc0 1022 | 0f85 a311 
+           0x00007f24917d5678: ;*if_icmpne {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@260 (line 968)
+           0x00007f24917d5678: 0000 660f | 1f44 0000 | 4585 d20f | 842d 0500 
+           0x00007f24917d5688: ;*if_icmpne {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@276 (line 972)
+           0x00007f24917d5688: 0044 3bcd | 0f86 d110 
+           0x00007f24917d5690: ;*baload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@318 (line 978)
+           0x00007f24917d5690: 0000 0fbe 
+           0x00007f24917d5694: ;*baload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@311 (line 978)
+           0x00007f24917d5694: 4e10 6666 | 0f1f 8400 | 0000 0000 | 3a4c c510 | 0f85 7c10 
+           0x00007f24917d56a8: ;*if_icmpeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@319 (line 978)
+           0x00007f24917d56a8: 0000 ffc5 | bb01 0000 | 008b cde9 
+           0x00007f24917d56b4: ;*iload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@272 (line 972)
+           0x00007f24917d56b4: 4100 0000 | 0f1f 8400 
+           0x00007f24917d56bc: ;*invokevirtual setCurrentName {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@289 (line 973)
+           0x00007f24917d56bc: 0000 0000 | 443b d30f | 86c3 1000 
+           0x00007f24917d56c8: ;*baload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@311 (line 978)
+           0x00007f24917d56c8: 0044 3bc9 | 0f86 4011 
+           0x00007f24917d56d0: ;*baload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@318 (line 978)
+           0x00007f24917d56d0: 0000 0fbe 
+           0x00007f24917d56d4: ;*baload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@311 (line 978)
+           0x00007f24917d56d4: 6c1e 1066 | 0f1f 8400 | 0000 0000 | 403a 6cc1 | 100f 853d 
+           0x00007f24917d56e8: ;*if_icmpeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@319 (line 978)
+           0x00007f24917d56e8: 1100 0049 | 8baf 1001 
+           0x00007f24917d56f0: ; ImmutableOopMap {rax=NarrowOop rdx=Oop rsi=Oop r14=Oop [16]=Oop }
+                               ;*iload {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@272 (line 972)
+                               ;   {poll}
+           0x00007f24917d56f0: 0000 8545 
+           0x00007f24917d56f4: ;*iinc {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@325 (line 981)
+           0x00007f24917d56f4: 00ff c3ff 
+           0x00007f24917d56f8: ;*iinc {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@328 (line 982)
+           0x00007f24917d56f8: c141 3bc8 
+  0.01%    0x00007f24917d56fc: ;*if_icmpne {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@276 (line 972)
+  0.01%    0x00007f24917d56fc: 75c2 458b 
+           0x00007f24917d5700: ;*aload_0 {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@279 (line 973)
+           0x00007f24917d5700: 4670 428b | 34c5 2000 | 0000 85f6 | 0f85 ea10 
+           0x00007f24917d5710: ;*ifnull {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.JsonReadContext::setCurrentName@9 (line 198)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@289 (line 973)
+           0x00007f24917d5710: 0000 8bf1 
+           0x00007f24917d5714: ;*iadd {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@296 (line 974)
+           0x00007f24917d5714: ffc6 443b | ce0f 867f 
+           0x00007f24917d571c: ;*baload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipColonFast@8 (line 1103)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@297 (line 974)
+           0x00007f24917d571c: 1100 0090 | 807c c610 | 3a0f 85c6 
+           0x00007f24917d5728: ;*if_icmpne {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipColonFast@13 (line 1104)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@297 (line 974)
+           0x00007f24917d5728: 1000 008d 
+           0x00007f24917d572c: ;*iinc {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipColonFast@5 (line 1103)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@297 (line 974)
+           0x00007f24917d572c: 7102 443b | ce0f 86fc | 1000 0044 | 0fbe 4cc6 
+           0x00007f24917d573c: ;*baload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipColonFast@24 (line 1105)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@297 (line 974)
+           0x00007f24917d573c: 1066 6690 | 4183 f921 | 0f8c 9211 
+           0x00007f24917d5748: ;*if_icmple {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipColonFast@29 (line 1106)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@297 (line 974)
+           0x00007f24917d5748: 0000 4183 | f92f 0f84 
+           0x00007f24917d5750: ;*if_icmpeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipColonFast@35 (line 1107)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@297 (line 974)
+           0x00007f24917d5750: f70e 0000 | 4183 f923 | 0f84 f20f 
+           0x00007f24917d575c: ;*if_icmpeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipColonFast@41 (line 1107)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@297 (line 974)
+           0x00007f24917d575c: 0000 6690 | 4180 7f30 | 000f 85d4 
+           0x00007f24917d5768: ;*putfield _currentName {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.JsonReadContext::setCurrentName@2 (line 197)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@289 (line 973)
+           0x00007f24917d5768: 0400 008b 
+           0x00007f24917d576c: ;*getfield _value {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.io.SerializedString::getValue@1 (line 91)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@284 (line 973)
+           0x00007f24917d576c: 720c 4289 | 34c5 2800 | 0000 48c1 
+           0x00007f24917d5778: ;*putfield _currentName {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.JsonReadContext::setCurrentName@2 (line 197)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@289 (line 973)
+           0x00007f24917d5778: e603 49c1 
+           0x00007f24917d577c: ;*getfield _parsingContext {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@280 (line 973)
+           0x00007f24917d577c: e003 4d8b | d04c 33d6 | 49f7 c200 | 00e0 ff0f | 841a 0000 | 0048 85f6 | 0f84 1100 | 0000 49c1 
+           0x00007f24917d579c: e809 6690 | 4380 3c18 | 080f 8553 
+           0x00007f24917d57a8: ;*putfield _currentName {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.JsonReadContext::setCurrentName@2 (line 197)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@289 (line 973)
+           0x00007f24917d57a8: 0500 0044 
+           0x00007f24917d57ac: ;*iinc {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipColonFast@21 (line 1105)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@297 (line 974)
+           0x00007f24917d57ac: 8d41 0345 
+           0x00007f24917d57b0: ;*putfield _inputPtr {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipColonFast@46 (line 1108)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@297 (line 974)
+           0x00007f24917d57b0: 8946 1c41 | 807f 3000 | 0f85 4704 
+           0x00007f24917d57bc: ;   {oop(a &apos;com/fasterxml/jackson/core/JsonToken&apos;{0x00000005cb025ec0})}
+           0x00007f24917d57bc: 0000 41c7 | 4614 d84b 
+           0x00007f24917d57c4: ;   {oop(a &apos;com/fasterxml/jackson/core/JsonToken&apos;{0x00000005cb025ec0})}
+           0x00007f24917d57c4: 60b9 48be | c05e 02cb | 0500 0000 | 4d8b d64c | 33d6 6666 | 0f1f 8400 | 0000 0000 | 49f7 c200 
+           0x00007f24917d57e4: 00e0 ff0f | 841e 0000 | 0048 85f6 | 0f84 1500 | 0000 498b | f648 c1ee | 0966 6690 | 4280 3c1e 
+           0x00007f24917d5804: 080f 85de 
+           0x00007f24917d5808: ;*putfield _currToken {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_isNextTokenNameYes@4 (line 1151)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@303 (line 975)
+           0x00007f24917d5808: 0400 0041 
+           0x00007f24917d580c: ;*getfield _currInputRow {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_updateLocation@2 (line 3776)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_isNextTokenNameYes@8 (line 1152)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@303 (line 975)
+           0x00007f24917d580c: 8b76 4441 
+           0x00007f24917d5810: ;*putfield _tokenInputRow {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_updateLocation@5 (line 3776)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_isNextTokenNameYes@8 (line 1152)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@303 (line 975)
+           0x00007f24917d5810: 8976 4c49 
+           0x00007f24917d5814: ;*i2l {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_updateLocation@19 (line 3778)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_isNextTokenNameYes@8 (line 1152)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@303 (line 975)
+           0x00007f24917d5814: 63f0 4903 
+           0x00007f24917d5818: ;*ladd {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_updateLocation@20 (line 3778)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_isNextTokenNameYes@8 (line 1152)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@303 (line 975)
+           0x00007f24917d5818: 7620 4989 
+           0x00007f24917d581c: ;*putfield _tokenInputTotal {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_updateLocation@21 (line 3778)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_isNextTokenNameYes@8 (line 1152)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@303 (line 975)
+           0x00007f24917d581c: 7628 418b | f041 2b76 
+           0x00007f24917d5824: ;*isub {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_updateLocation@30 (line 3779)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_isNextTokenNameYes@8 (line 1152)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@303 (line 975)
+           0x00007f24917d5824: 4841 8976 
+           0x00007f24917d5828: ;*putfield _tokenInputCol {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_updateLocation@31 (line 3779)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_isNextTokenNameYes@8 (line 1152)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@303 (line 975)
+           0x00007f24917d5828: 5041 83f9 | 220f 8482 | 0000 0041 | 83f9 310f | 84f2 0000 | 0041 83f9 | 320f 84e8 | 0000 0041 
+           0x00007f24917d5848: 83f9 5b0f | 842e 0400 | 0041 83f9 | 330f 84d4 | 0000 0041 | 83f9 3490 | 0f84 c900 | 0000 4183 
+           0x00007f24917d5868: f936 0f84 | bf00 0000 | 4183 f937 | 0f84 b500 | 0000 4183 | f97b 6690 | 0f84 f104 | 0000 4183 
+           0x00007f24917d5888: f935 0f84 | 9f00 0000 | 4183 f930 | 0f84 9500 | 0000 4183 | f938 6690 | 0f84 8900 | 0000 4183 
+           0x00007f24917d58a8: f939 0f84 | 7f00 0000 | e9e2 0d00 
+           0x00007f24917d58b4: ;*lookupswitch {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_isNextTokenNameYes@12 (line 1154)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@303 (line 975)
+           0x00007f24917d58b4: 0041 c686 | a000 0000 
+           0x00007f24917d58bc: ;*putfield _tokenIncomplete {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_isNextTokenNameYes@170 (line 1156)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName@303 (line 975)
+           0x00007f24917d58bc: 0166 6690 | 4180 7f30 | 000f 855a 
+           0x00007f24917d58c8: ;   {oop(a &apos;com/fasterxml/jackson/core/JsonToken&apos;{0x00000005cb025e90})}
+           0x00007f24917d58c8: 0400 0041 | c746 74d2 
+....................................................................................................
+ 21.52%  <total for region 2>
+
+....[Hottest Region 3]..............................................................................
+jvmci, level 4, com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize, version 2396 (780 bytes) 
+
+  0.00%    0x00007f2491954ea0: 48f7 c600 | 00e0 ff0f | 841d 0000 | 004d 85db | 0f84 1400 
+           0x00007f2491954eb4: ;*putfield _currentValue {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.JsonReadContext::setCurrentValue@2 (line 96)
+                               ; - com.fasterxml.jackson.core.base.ParserBase::setCurrentValue@5 (line 256)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@112 (line 138)
+           0x00007f2491954eb4: 0000 488b | f048 c1ee | 0966 6690 | 803c 3e08 | 0f85 bb11 
+           0x00007f2491954ec8: ;   {oop(a &apos;com/fasterxml/jackson/core/JsonToken&apos;{0x00000005cb026068})}
+           0x00007f2491954ec8: 0000 49ba | 6860 02cb | 0500 0000 | 4c89 5424 | 280f 1f80 | 0000 0000 | 4585 c90f | 8493 0b00 
+           0x00007f2491954ee8: ;*if_icmpge {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@170 (line 148)
+           0x00007f2491954ee8: 0044 894c | 245c 8b73 
+           0x00007f2491954ef0: ;*return {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.core.json.JsonReadContext::setCurrentValue@5 (line 97)
+                               ; - com.fasterxml.jackson.core.base.ParserBase::setCurrentValue@5 (line 256)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@112 (line 138)
+           0x00007f2491954ef0: 608b 2cf5 | 0c00 0000 | 468b 04c5 
+           0x00007f2491954efc: ;*return {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.core.json.JsonReadContext::setCurrentValue@5 (line 97)
+                               ; - com.fasterxml.jackson.core.base.ParserBase::setCurrentValue@5 (line 256)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@112 (line 138)
+           0x00007f2491954efc: 1000 0000 
+  0.00%    0x00007f2491954f00: ; implicit exception: deoptimizes
+                               ; ImmutableOopMap {rax=Oop rcx=Oop rdx=Oop rbx=Oop rsi=NarrowOop r8=NarrowOop r11=Oop [40]=Oop [48]=Oop [56]=Oop [64]=Oop [72]=Oop }
+  0.00%    0x00007f2491954f00: 468b 2cc5 | 0800 0000 | 85ed 0f84 | 7c21 0000 | 4489 6c24 | 588b 34f5 | 1000 0000 | 8bc6 48c1 
+           0x00007f2491954f20: ;*aaload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@189 (line 150)
+           0x00007f2491954f20: e003 49c1 
+           0x00007f2491954f24: ;*aaload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@179 (line 149)
+           0x00007f2491954f24: e003 488b 
+           0x00007f2491954f28: ;*invokevirtual nextFieldName {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@190 (line 150)
+           0x00007f2491954f28: f248 8bd0 | 4c89 4424 | 2048 b870 | 3131 c007 | 0000 000f | 1f40 0090 | 0f1f 8000 
+           0x00007f2491954f44: ;   {virtual_call}
+           0x00007f2491954f44: 0000 00e8 
+           0x00007f2491954f48: ; ImmutableOopMap {[32]=Oop [40]=Oop [48]=Oop [56]=Oop [64]=Oop [72]=Oop }
+                               ;*invokevirtual nextFieldName {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@190 (line 150)
+           0x00007f2491954f48: f404 e8ff | 9085 c00f | 84b7 2100 
+           0x00007f2491954f54: ;*ifne {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@193 (line 150)
+           0x00007f2491954f54: 0048 8b54 | 2440 448b 
+           0x00007f2491954f5c: ;*getfield _parsingContext {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@24 (line 883)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f2491954f5c: 5a70 8b72 
+           0x00007f2491954f60: ;*getfield _currToken {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@1 (line 715)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f2491954f60: 1445 8bc3 | 49c1 e003 
+           0x00007f2491954f68: ;   {oop(a &apos;com/fasterxml/jackson/core/JsonToken&apos;{0x00000005cb025ec0})}
+           0x00007f2491954f68: 81fe d84b | 60b9 0f85 
+           0x00007f2491954f70: ;*if_acmpne {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@7 (line 715)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f2491954f70: 130d 0000 
+  0.03%    0x00007f2491954f74: ;*putfield _nameCopied {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@2 (line 875)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+  0.03%    0x00007f2491954f74: c642 6900 | 0f1f 8400 | 0000 0000 | 4180 7f30 | 000f 85c4 
+           0x00007f2491954f88: ;*putfield _nextToken {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@12 (line 877)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f2491954f88: 1100 0044 
+           0x00007f2491954f8c: ;*getfield _nextToken {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@6 (line 876)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f2491954f8c: 8b52 74c7 | 4274 0000 
+           0x00007f2491954f94: ;*putfield _nextToken {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@12 (line 877)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f2491954f94: 0000 448b 
+           0x00007f2491954f98: ;*getfield _tokenInputRow {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@28 (line 883)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f2491954f98: 4a4c 8b4a 
+           0x00007f2491954f9c: ;*getfield _tokenInputCol {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@32 (line 883)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f2491954f9c: 5041 8bda | 48c1 e303 
+           0x00007f2491954fa4: ;   {oop(a &apos;com/fasterxml/jackson/core/JsonToken&apos;{0x00000005cb025f50})}
+           0x00007f2491954fa4: 4181 faea | 4b60 b90f | 8443 1300 
+           0x00007f2491954fb0: ;   {oop(a &apos;com/fasterxml/jackson/core/JsonToken&apos;{0x00000005cb025f20})}
+           0x00007f2491954fb0: 0041 81fa | e44b 60b9 | 0f84 e714 
+           0x00007f2491954fbc: ;*putfield _parsingContext {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@67 (line 885)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f2491954fbc: 0000 4889 | 5c24 1844 | 8954 2414 | 488b 7c24 
+           0x00007f2491954fcc: ;*aload_0 {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@70 (line 887)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f2491954fcc: 6041 807f | 3000 0f85 | ad11 0000 | 448b 5424 | 1444 8952 | 1448 8bf2 | 4833 7424 | 1848 f7c6 
+           0x00007f2491954fec: 0000 e0ff | 0f84 c911 | 0000 488b | 5c24 180f | 1f44 0000 | 4885 db0f | 84c0 1100 | 0048 8bf2 
+  0.02%    0x00007f249195500c: 48c1 ee09 | 803c 3e08 | 0f85 7513 | 0000 448b 
+           0x00007f249195501c: ;*putfield _currToken {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@73 (line 887)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f249195501c: 6c24 584a | 8b1c ed30 | 0300 0048 | 8b43 3848 | 8b74 2420 | 4c8b da48 
+           0x00007f2491955034: ;*invokevirtual deserializeAndSet {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@226 (line 159)
+           0x00007f2491955034: 8b4c 2438 | 4c8b 4424 
+           0x00007f249195503c: ; ImmutableOopMap {[32]=Oop [40]=Oop [48]=Oop [56]=Oop [64]=Oop [72]=Oop }
+                               ;*invokevirtual deserializeAndSet {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@226 (line 159)
+           0x00007f249195503c: 30ff d090 | 41ba 0100 | 0000 e97c 
+           0x00007f2491955048: ;*iload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@166 (line 148)
+           0x00007f2491955048: 0100 000f 
+           0x00007f249195504c: ;*if_icmpge {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@170 (line 148)
+           0x00007f249195504c: 1f44 0000 
+           0x00007f2491955050: ;*getfield _orderedProperties {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@174 (line 149)
+           0x00007f2491955050: 8b5e 6466 | 0f1f 8400 | 0000 0000 
+  0.00%    0x00007f249195505c: ;*iload {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@166 (line 148)
+  0.00%    0x00007f249195505c: 6666 6690 
+           0x00007f2491955060: ; implicit exception: deoptimizes
+                               ; ImmutableOopMap {rdx=Oop rbx=NarrowOop rsi=Oop [40]=Oop [48]=Oop [56]=Oop [64]=Oop [72]=Oop }
+           0x00007f2491955060: 443b 14dd | 0c00 0000 | 0f83 b81e 
+           0x00007f249195506c: ;*aaload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@179 (line 149)
+           0x00007f249195506c: 0000 8b46 
+           0x00007f2491955070: ;*iload {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@166 (line 148)
+           0x00007f2491955070: 6044 3b14 | c50c 0000 | 000f 83a7 
+           0x00007f249195507c: ;*aaload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@189 (line 150)
+           0x00007f249195507c: 1e00 0048 
+           0x00007f2491955080: ;*getfield _orderedProperties {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@174 (line 149)
+           0x00007f2491955080: c1e3 0342 
+           0x00007f2491955084: ;*iload {reexecute=1 rethrow=0 return_oop=0}
+                               ; - (reexecute) com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@166 (line 148)
+           0x00007f2491955084: 8b5c 9310 
+  0.04%    0x00007f2491955088: ; implicit exception: deoptimizes
+                               ; ImmutableOopMap {rax=NarrowOop rdx=Oop rbx=NarrowOop [40]=Oop [48]=Oop [56]=Oop [64]=Oop [72]=Oop }
+  0.04%    0x00007f2491955088: 8b2c dd08 | 0000 0048 
+           0x00007f2491955090: ;*getfield _orderedPropertyNames {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@184 (line 150)
+           0x00007f2491955090: c1e0 0342 | 8b44 9010 
+           0x00007f2491955098: ;*aaload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@189 (line 150)
+           0x00007f2491955098: 48c1 e003 
+           0x00007f249195509c: ;*aaload {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@179 (line 149)
+           0x00007f249195509c: 48c1 e303 | 488b f248 
+           0x00007f24919550a4: ;*invokevirtual nextFieldName {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@190 (line 150)
+           0x00007f24919550a4: 8bd0 4489 | 5424 5848 | 895c 2418 | 896c 2454 | 48b8 7031 | 31c0 0700 | 0000 9090 | 0f1f 8000 
+           0x00007f24919550c4: ;   {virtual_call}
+           0x00007f24919550c4: 0000 00e8 
+           0x00007f24919550c8: ; ImmutableOopMap {[24]=Oop [40]=Oop [48]=Oop [56]=Oop [64]=Oop [72]=Oop }
+                               ;*invokevirtual nextFieldName {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@190 (line 150)
+           0x00007f24919550c8: 7403 e8ff | 9085 c00f | 8482 1d00 
+           0x00007f24919550d4: ;*ifne {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@193 (line 150)
+           0x00007f24919550d4: 0048 8b54 | 2440 448b 
+           0x00007f24919550dc: ;*getfield _parsingContext {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@24 (line 883)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f24919550dc: 5a70 8b72 
+           0x00007f24919550e0: ;*getfield _currToken {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@1 (line 715)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f24919550e0: 1445 8bc3 | 49c1 e003 
+  0.02%    0x00007f24919550e8: ;   {oop(a &apos;com/fasterxml/jackson/core/JsonToken&apos;{0x00000005cb025ec0})}
+  0.02%    0x00007f24919550e8: 81fe d84b | 60b9 0f85 
+           0x00007f24919550f0: ;*if_acmpne {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@7 (line 715)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f24919550f0: f100 0000 
+  0.05%    0x00007f24919550f4: ;*putfield _nameCopied {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@2 (line 875)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+  0.05%    0x00007f24919550f4: c642 6900 | 0f1f 8400 | 0000 0000 | 4180 7f30 | 000f 85da 
+           0x00007f2491955108: ;*putfield _nextToken {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@12 (line 877)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f2491955108: 0200 0044 
+           0x00007f249195510c: ;*getfield _nextToken {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@6 (line 876)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f249195510c: 8b52 74c7 | 4274 0000 
+           0x00007f2491955114: ;*putfield _nextToken {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@12 (line 877)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f2491955114: 0000 448b 
+           0x00007f2491955118: ;*getfield _tokenInputRow {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@28 (line 883)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f2491955118: 4a4c 8b4a 
+           0x00007f249195511c: ;*getfield _tokenInputCol {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@32 (line 883)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f249195511c: 5041 8bda | 48c1 e303 
+  0.01%    0x00007f2491955124: ;   {oop(a &apos;com/fasterxml/jackson/core/JsonToken&apos;{0x00000005cb025f50})}
+  0.01%    0x00007f2491955124: 4181 faea | 4b60 b90f | 84e2 0300 
+           0x00007f2491955130: ;   {oop(a &apos;com/fasterxml/jackson/core/JsonToken&apos;{0x00000005cb025f20})}
+           0x00007f2491955130: 0041 81fa | e44b 60b9 | 0f84 9104 
+           0x00007f249195513c: ;*putfield _parsingContext {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@67 (line 885)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f249195513c: 0000 4889 | 5c24 0844 | 8954 2414 | 488b 7c24 
+           0x00007f249195514c: ;*aload_0 {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@70 (line 887)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f249195514c: 6041 807f | 3000 0f85 | c702 0000 | 448b 5424 | 1444 8952 | 1448 8bf2 | 4833 7424 | 0848 f7c6 
+           0x00007f249195516c: 0000 e0ff | 0f84 de02 | 0000 488b | 5c24 080f | 1f44 0000 | 4885 db0f | 84d4 0200 | 0048 8bf2 
+  0.13%    0x00007f249195518c: 48c1 ee09 | 803c 3e08 | 0f85 e503 | 0000 8b6c 
+           0x00007f249195519c: ;*putfield _currToken {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextAfterName@73 (line 887)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@11 (line 716)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f249195519c: 2454 488b | 1ced 3003 | 0000 488b | 4338 488b | 7424 184c | 8bda 488b 
+           0x00007f24919551b4: ;*invokevirtual deserializeAndSet {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@226 (line 159)
+           0x00007f24919551b4: 4c24 384c | 8b44 2430 
+  0.10%    0x00007f24919551bc: ; ImmutableOopMap {[24]=Oop [40]=Oop [48]=Oop [56]=Oop [64]=Oop [72]=Oop }
+                               ;*invokevirtual deserializeAndSet {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@226 (line 159)
+  0.10%    0x00007f24919551bc: ffd0 9044 | 8b54 2458 
+  0.04%    0x00007f24919551c4: ;*iinc {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@247 (line 148)
+  0.04%    0x00007f24919551c4: 41ff c244 | 8b4c 245c | 488b 5424 | 4048 8b74 | 2448 453b | ca0f 8f71 | feff ff90 | e997 0800 
+           0x00007f24919551e4: ;*if_icmpge {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@170 (line 148)
+           0x00007f24919551e4: 0080 baa0 | 0000 0000 | 0f85 6a1f 
+           0x00007f24919551f0: ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@24 (line 721)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+           0x00007f24919551f0: 0000 8b72 
+           0x00007f24919551f4: ;*getfield _inputPtr {reexecute=0 rethrow=0 return_oop=0}
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWSOrEnd@1 (line 2992)
+                               ; - com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken@32 (line 724)
+                               ; - com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize@217 (line 157)
+....................................................................................................
+ 12.60%  <total for region 3>
+
+....[Hottest Regions]...............................................................................
+ 22.09%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString, version 2261 (1016 bytes) 
+ 21.52%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName, version 2266 (1098 bytes) 
+ 12.60%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize, version 2396 (780 bytes) 
+  9.09%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName, version 2266 (771 bytes) 
+  2.49%      jvmci, level 4  com.fasterxml.jackson.databind.deser.std.EnumDeserializer::deserialize, version 2467 (533 bytes) 
+  2.22%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SettableObjectProperty::deserializeAndSet, version 2423 (241 bytes) 
+  2.17%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SettableStringProperty::deserializeAndSet, version 2403 (315 bytes) 
+  1.57%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize, version 2396 (448 bytes) 
+  1.36%      jvmci, level 4  com.fasterxml.jackson.core.JsonFactory::createParser, version 2643 (693 bytes) 
+  1.27%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken, version 2363 (294 bytes) 
+  1.14%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SettableIntProperty::deserializeAndSet, version 2411 (324 bytes) 
+  1.10%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString, version 2261 (21 bytes) 
+  1.10%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SettableIntProperty::deserializeAndSet, version 2411 (188 bytes) 
+  1.10%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize, version 2396 (199 bytes) 
+  0.92%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextTokenNotInObject, version 2432 (404 bytes) 
+  0.73%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SettableLongProperty::deserializeAndSet, version 2509 (439 bytes) 
+  0.68%      jvmci, level 4  com.fasterxml.jackson.databind.deser.std.CollectionDeserializer::_deserializeFromArray, version 2654 (432 bytes) 
+  0.56%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize, version 2396 (230 bytes) 
+  0.56%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextTokenNotInObject, version 2432 (141 bytes) 
+  0.55%      jvmci, level 4  com.fasterxml.jackson.core.json.JsonReadContext::createChildArrayContext, version 2496 (374 bytes) 
+ 15.17%  <...other 765 warm regions...>
+....................................................................................................
+100.00%  <totals>
+
+....[Hottest Methods (after inlining)]..............................................................
+ 31.19%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextFieldName, version 2266 
+ 23.39%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_finishAndReturnString, version 2261 
+ 16.75%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SuperSonicBeanDeserializer::deserialize, version 2396 
+  2.95%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SettableObjectProperty::deserializeAndSet, version 2423 
+  2.94%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SettableStringProperty::deserializeAndSet, version 2403 
+  2.88%      jvmci, level 4  com.fasterxml.jackson.databind.deser.std.CollectionDeserializer::_deserializeFromArray, version 2654 
+  2.63%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SettableIntProperty::deserializeAndSet, version 2411 
+  2.59%      jvmci, level 4  com.fasterxml.jackson.databind.deser.std.EnumDeserializer::deserialize, version 2467 
+  2.33%      jvmci, level 4  com.fasterxml.jackson.core.JsonFactory::createParser, version 2643 
+  1.69%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextToken, version 2363 
+  1.56%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_nextTokenNotInObject, version 2432 
+  1.55%      jvmci, level 4  com.fasterxml.jackson.databind.ObjectReader::_bindAndClose, version 2640 
+  1.42%      jvmci, level 4  com.fasterxml.jackson.databind.deser.std.StringCollectionDeserializer::deserialize, version 2690 
+  1.11%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.deser.SettableLongProperty::deserializeAndSet, version 2509 
+  0.66%      jvmci, level 4  com.fasterxml.jackson.core.json.JsonReadContext::createChildArrayContext, version 2496 
+  0.48%      jvmci, level 4  com.fasterxml.jackson.module.blackbird.jmh_generated.Blackbird_classicMediaItemDeser_jmhTest::classicMediaItemDeser_thrpt_jmhStub, version 19656 
+  0.48%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::nextTextValue, version 2470 
+  0.42%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_closeArrayScope, version 13575 
+  0.39%      jvmci, level 4  com.fasterxml.jackson.core.json.UTF8StreamJsonParser::_skipWS, version 2377 
+  0.39%      jvmci, level 4  com.fasterxml.jackson.core.sym.ByteQuadsCanonicalizer::&lt;init&gt;, version 2645 
+  2.22%  <...other 380 warm methods...>
+....................................................................................................
+100.00%  <totals>
+
+....[Distribution by Source]........................................................................
+ 98.71%      jvmci, level 4
+  0.75%           libjvm.so
+  0.22%        runtime stub
+  0.13%              kernel
+  0.12%        libc-2.31.so
+  0.02%              [vdso]
+  0.02%          ld-2.31.so
+  0.02%  libpthread-2.31.so
+  0.00%         interpreter
+  0.00%         c1, level 1
+....................................................................................................
+100.00%  <totals>
+
