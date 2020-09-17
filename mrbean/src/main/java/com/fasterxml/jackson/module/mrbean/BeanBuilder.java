@@ -76,7 +76,10 @@ public class BeanBuilder
             for (Method m : impl.getRawClass().getDeclaredMethods()) {
                 // 15-Sep-2015, tatu: As per [module-mrbean#25], make sure to ignore static
                 //    methods.
-                if (Modifier.isStatic(m.getModifiers())) {
+                if (Modifier.isStatic(m.getModifiers())
+                        // Looks like generics can introduce hidden bridge and/or synthetic methods.
+                        // I don't think we want to consider those...
+                        || m.isSynthetic() || m.isBridge()) {
                     continue;
                 }
                 String methodName = m.getName();
@@ -245,7 +248,7 @@ public class BeanBuilder
         Class<?> rt = m.getReturnType();
         return (rt == Boolean.class || rt == Boolean.TYPE);
     }
-    
+
     /*
     /**********************************************************
     /* Internal methods, bytecode generation
@@ -354,7 +357,7 @@ public class BeanBuilder
     /* Internal methods, other
     /**********************************************************
      */
-    
+
     protected String decap(String name) {
         char c = name.charAt(0);
         if (name.length() > 1
