@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.module.mrbean;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.mrbean.AbstractTypeMaterializer.MyClassLoader;
 import org.objectweb.asm.AnnotationVisitor;
@@ -41,16 +42,37 @@ public class TestBridgeMethods extends BaseTest {
         Coffee getDrink();
     }
 
-    public void testCovariantProperty() throws Exception
+    public interface GenericHolder<T> {
+        T getObject();
+    }
+
+    public interface SpecificCoffeeHolder extends GenericHolder<Coffee> {
+        @JsonProperty("drink")
+        Coffee getObject();
+    }
+
+    public void testSimpleCovariantProperty() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
 
-        Class<? extends CoffeeHolder> aClass = reorderBridgeMethodFirst(CoffeeHolder.class, "getDrink");
-        CoffeeHolder result = mapper.readValue("{\"drink\":{\"type\":\"coffee\",\"flavor\":\"pumpkin spice\"}}", aClass);
+        Class<? extends CoffeeHolder> targetClass = reorderBridgeMethodFirst(CoffeeHolder.class, "getDrink");
+        CoffeeHolder result = mapper.readValue("{\"drink\":{\"type\":\"coffee\",\"flavor\":\"pumpkin spice\"}}", targetClass);
         assertNotNull(result);
         assertNotNull(result.getDrink());
         assertEquals("coffee", result.getDrink().getType());
         assertEquals("pumpkin spice", result.getDrink().getFlavor());
+    }
+
+    public void testGenericCovariantProperty() throws Exception
+    {
+        ObjectMapper mapper = newMrBeanMapper();
+
+        Class<? extends SpecificCoffeeHolder> targetClass = reorderBridgeMethodFirst(SpecificCoffeeHolder.class, "getObject");
+        SpecificCoffeeHolder result = mapper.readValue("{\"drink\":{\"type\":\"coffee\",\"flavor\":\"pumpkin spice\"}}", targetClass);
+        assertNotNull(result);
+        assertNotNull(result.getObject());
+        assertEquals("coffee", result.getObject().getType());
+        assertEquals("pumpkin spice", result.getObject().getFlavor());
     }
 
     /**
