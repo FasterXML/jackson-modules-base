@@ -24,7 +24,7 @@ import static com.fasterxml.jackson.module.mrbean.TypeDefinitionUtil.createTypeD
  * Nifty class for pulling implementations of classes out of thin air.
  *<p>
  * ... friends call him Mister Bean... :-)
- * 
+ *
  * @author tatu
  * @author sunny
  */
@@ -46,7 +46,7 @@ public class AbstractTypeMaterializer
          * NOTE: defaults to `true` since 3.0 (earlier defaulted to `false`)
          */
         FAIL_ON_UNMATERIALIZED_METHOD(true),
-        
+
         /**
          * Feature that determines what happens when attempt is made to
          * generate implementation of non-public class or interface.
@@ -68,7 +68,7 @@ public class AbstractTypeMaterializer
             }
             return flags;
         }
-                
+
         private Feature(boolean defaultState) { _defaultState = defaultState; }
         public boolean enabledByDefault() { return _defaultState; }
         public int getMask() { return (1 << ordinal()); }
@@ -84,7 +84,7 @@ public class AbstractTypeMaterializer
      * Default package to use for generated classes.
      */
     public final static String DEFAULT_PACKAGE_FOR_GENERATED = "com.fasterxml.jackson.module.mrbean.generated.";
-    
+
     /**
      * We will use per-materializer class loader for now; would be nice
      * to find a way to reduce number of class loaders (and hence
@@ -101,18 +101,18 @@ public class AbstractTypeMaterializer
      * Package name to use as prefix for generated classes.
      */
     protected String _defaultPackage = DEFAULT_PACKAGE_FOR_GENERATED;
-    
+
     /*
     /**********************************************************
     /* Construction, configuration
     /**********************************************************
      */
-    
+
     public AbstractTypeMaterializer() {
         this(null);
     }
 
-    
+
     /**
      * @param parentClassLoader Class loader to use for generated classes; if
      *   null, will use class loader that loaded materializer itself.
@@ -133,7 +133,7 @@ public class AbstractTypeMaterializer
     public Version version() {
         return PackageVersion.VERSION;
     }
-    
+
     /**
      * Method for checking whether given feature is enabled or not
      */
@@ -203,7 +203,7 @@ public class AbstractTypeMaterializer
         // might want to skip proxies, local types too... but let them be for now:
         //if (intr.findTypeResolver(beanDesc.getClassInfo(), type) == null) {
         Class<?> materializedType;
-        
+
         if (type.hasGenericTypes()) {
             materializedType = materializeGenericType(config, type);
         } else {
@@ -308,7 +308,7 @@ public class AbstractTypeMaterializer
      * To support actual dynamic loading of bytecode we need a simple
      * custom classloader.
      */
-    private static class MyClassLoader extends ClassLoader
+    static class MyClassLoader extends ClassLoader
     {
         public MyClassLoader(ClassLoader parent)
         {
@@ -316,7 +316,7 @@ public class AbstractTypeMaterializer
         }
 
         /**
-         * @param targetClass Interface or abstract class that class to load should extend or 
+         * @param targetClass Interface or abstract class that class to load should extend or
          *   implement
          */
         public Class<?> loadAndResolve(String className, byte[] byteCode, Class<?> targetClass)
@@ -327,7 +327,7 @@ public class AbstractTypeMaterializer
             if (old != null && targetClass.isAssignableFrom(old)) {
                 return old;
             }
-            
+
             Class<?> impl;
             try {
                 impl = defineClass(className, byteCode, 0, byteCode.length);
