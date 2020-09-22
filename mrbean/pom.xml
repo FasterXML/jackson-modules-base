@@ -47,6 +47,15 @@ ${project.groupId}.mrbean.*;version=${project.version}
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>
     </dependency>
+
+    <!-- 22-Sep-2020, tatu: For #110 test will use Asm for now
+      -->
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>9.0</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
