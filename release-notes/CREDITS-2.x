@@ -56,7 +56,13 @@ Harrison Houghton (hrhino@github)
 
 Bartosz Baranowski (baranowb@github)
 
-* Reported #84: Add expand entity protection and secure processing to
+* Reported #84: (jaxb) Add expand entity protection and secure processing to
   DomElementJsonDeserializer
  (2.10.0)
- 
+
+
+Robby Morgan (robbytx@github)
+
+* Contributed #109: (mrbean) Fix detection of inherited default method in Java 8+ interface
+ (2.11.3)
+

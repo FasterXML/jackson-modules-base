@@ -176,16 +176,29 @@ public class BeanBuilder
     {
         final String name = m0.getName();
         final Class<?>[] argTypes = m0.getParameterTypes();
+        try {
+            // 22-Sep-2020: [modules-base#109]: getMethod returns the most-specific method
+            //  implementation, for public methods only (which is any method in an interface)
+            Method effectiveMethod = implementedType.getRawClass().getMethod(name, argTypes);
+            if (BeanUtil.isConcrete(effectiveMethod)) {
+                return true;
+            }
+        } catch (NoSuchMethodException e) {
+            // method must be non-public, fallback to using getDeclaredMethod
+        }
+
         for (JavaType curr = implementedType; (curr != null) && !curr.isJavaLangObject();
                 curr = curr.getSuperClass()) {
             // 29-Nov-2015, tatu: Avoiding exceptions would be good, so would linear scan
             //    be better here?
             try {
                 Method effectiveMethod = curr.getRawClass().getDeclaredMethod(name, argTypes);
-                if (effectiveMethod != null && BeanUtil.isConcrete(effectiveMethod)) {
+                if (BeanUtil.isConcrete(effectiveMethod)) {
                     return true;
                 }
-            } catch (NoSuchMethodException e) { }
+            } catch (NoSuchMethodException e) {
+                // method must exist on a superclass, continue searching...
+            }
         }
         return false;
     }
@@ -240,7 +253,7 @@ public class BeanBuilder
         Class<?> rt = m.getReturnType();
         return (rt == Boolean.class || rt == Boolean.TYPE);
     }
-    
+
     /*
     /**********************************************************
     /* Internal methods, bytecode generation
@@ -288,7 +301,7 @@ public class BeanBuilder
     /* Internal methods, other
     /**********************************************************
      */
-    
+
     protected String decap(String name) {
         char c = name.charAt(0);
         if (name.length() > 1

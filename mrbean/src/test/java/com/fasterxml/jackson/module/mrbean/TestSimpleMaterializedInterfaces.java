@@ -28,13 +28,13 @@ public class TestSimpleMaterializedInterfaces
     {
         public int getY();
     }
-    
+
     public interface PartialBean {
         public boolean isOk();
         // and then non-getter/setter one:
         public int foobar();
     }
-    
+
     public interface BeanHolder {
         public Bean getBean();
     }
@@ -55,7 +55,21 @@ public class TestSimpleMaterializedInterfaces
     interface NonPublicBean {
         public abstract int getX();
     }
-    
+
+    public interface OtherInterface {
+        public boolean anyValuePresent();
+    }
+
+    public interface BeanWithDefaultForOtherInterface extends Bean, OtherInterface {
+        public default boolean anyValuePresent() {
+            return getX() > 0 || getA() != null;
+        }
+    }
+
+    public interface BeanWithInheritedDefault extends BeanWithDefaultForOtherInterface {
+        // in this interface, anyValuePresent() is an inherited (rather than declared) concrete method
+    }
+
     /*
     /**********************************************************
     /* Unit tests, low level
@@ -88,7 +102,7 @@ public class TestSimpleMaterializedInterfaces
     public void testLowLevelMaterializerFailOnIncompatible() throws Exception
     {
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
-        DeserializationConfig config = new ObjectMapper().deserializationConfig();
+        DeserializationConfig config = new JsonMapper().deserializationConfig();
         try {
             _materializeRawType(mat, config, InvalidBean.class);
             fail("Expected exception for incompatible property types");
@@ -102,7 +116,7 @@ public class TestSimpleMaterializedInterfaces
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
         //  by default early failure is disabled, enable:
         mat.enable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
-        DeserializationConfig config = new ObjectMapper().deserializationConfig();
+        DeserializationConfig config = new JsonMapper().deserializationConfig();
         try {
             _materializeRawType(mat, config, PartialBean.class);
             fail("Expected exception for unrecognized method");
@@ -149,8 +163,8 @@ public class TestSimpleMaterializedInterfaces
         assertNotNull(bean);
         assertEquals("b", bean.getA());
         assertEquals(-4, bean.getX());
-    }    
-    
+    }
+
     public void testArrayInterface() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -170,7 +184,29 @@ public class TestSimpleMaterializedInterfaces
         assertEquals(1, bean.getX());
         assertEquals(2, bean.getY());
     }
-    
+
+    // [modules-base#109]
+    public void testDefaultMethodInInterface() throws Exception
+    {
+        ObjectMapper mapper = newMrBeanMapper();
+        BeanWithDefaultForOtherInterface bean = mapper.readValue("{\"a\":\"value\",\"x\":123 }", BeanWithDefaultForOtherInterface.class);
+        assertNotNull(bean);
+        assertEquals("value", bean.getA());
+        assertEquals(123, bean.getX());
+        assertTrue(bean.anyValuePresent());
+    }
+
+    // [modules-base#109]
+    public void testInheritedDefaultMethodInInterface() throws Exception
+    {
+        ObjectMapper mapper = newMrBeanMapper();
+        BeanWithInheritedDefault bean = mapper.readValue("{\"a\":\"value\",\"x\":123 }", BeanWithInheritedDefault.class);
+        assertNotNull(bean);
+        assertEquals("value", bean.getA());
+        assertEquals(123, bean.getX());
+        assertTrue(bean.anyValuePresent());
+    }
+
     /*
     /**********************************************************
     /* Unit tests, higher level, error handling
@@ -200,7 +236,7 @@ public class TestSimpleMaterializedInterfaces
         }
     }
 
-    // fail gracefully if super type not public
+    // Fail gracefully if super type not public
     public void testNonPublic() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -210,6 +246,5 @@ public class TestSimpleMaterializedInterfaces
         } catch (JsonMappingException e) {
             verifyException(e, "is not public");
         }
-    }    
-    
+    }
 }
