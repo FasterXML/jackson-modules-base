@@ -26,13 +26,13 @@ public class TestSimpleMaterializedInterfaces
     {
         public int getY();
     }
-    
+
     public interface PartialBean {
         public boolean isOk();
         // and then non-getter/setter one:
         public int foobar();
     }
-    
+
     public interface BeanHolder {
         public Bean getBean();
     }
@@ -53,7 +53,21 @@ public class TestSimpleMaterializedInterfaces
     interface NonPublicBean {
         public abstract int getX();
     }
-    
+
+    public interface OtherInterface {
+        public boolean anyValuePresent();
+    }
+
+    public interface BeanWithDefaultForOtherInterface extends Bean, OtherInterface {
+        public default boolean anyValuePresent() {
+            return getX() > 0 || getA() != null;
+        }
+    }
+
+    public interface BeanWithInheritedDefault extends BeanWithDefaultForOtherInterface {
+        // in this interface, anyValuePresent() is an inherited (rather than declared) concrete method
+    }
+
     /*
     /**********************************************************
     /* Unit tests, low level
@@ -128,8 +142,7 @@ public class TestSimpleMaterializedInterfaces
      */
     public void testSimpleInteface() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         Bean bean = mapper.readValue("{\"a\":\"value\",\"x\":123 }", Bean.class);
         assertNotNull(bean);
         assertEquals("value", bean.getA());
@@ -141,20 +154,18 @@ public class TestSimpleMaterializedInterfaces
      */
     public void testBeanHolder() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         BeanHolder holder = mapper.readValue("{\"bean\":{\"a\":\"b\",\"x\":-4 }}", BeanHolder.class);
         assertNotNull(holder);
         Bean bean = holder.getBean();
         assertNotNull(bean);
         assertEquals("b", bean.getA());
         assertEquals(-4, bean.getX());
-    }    
-    
+    }
+
     public void testArrayInterface() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         ArrayBean bean = mapper.readValue("{\"values\":[1,2,3], \"words\": [ \"cool\", \"beans\" ] }",
                 ArrayBean.class);
         assertNotNull(bean);
@@ -164,15 +175,36 @@ public class TestSimpleMaterializedInterfaces
 
     public void testSubInterface() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         BeanWithY bean = mapper.readValue("{\"a\":\"b\",\"x\":1, \"y\":2 }", BeanWithY.class);
         assertNotNull(bean);
         assertEquals("b", bean.getA());
         assertEquals(1, bean.getX());
         assertEquals(2, bean.getY());
     }
-    
+
+    // [modules-base#109]
+    public void testDefaultMethodInInterface() throws Exception
+    {
+        ObjectMapper mapper = newMrBeanMapper();
+        BeanWithDefaultForOtherInterface bean = mapper.readValue("{\"a\":\"value\",\"x\":123 }", BeanWithDefaultForOtherInterface.class);
+        assertNotNull(bean);
+        assertEquals("value", bean.getA());
+        assertEquals(123, bean.getX());
+        assertTrue(bean.anyValuePresent());
+    }
+
+    // [modules-base#109]
+    public void testInheritedDefaultMethodInInterface() throws Exception
+    {
+        ObjectMapper mapper = newMrBeanMapper();
+        BeanWithInheritedDefault bean = mapper.readValue("{\"a\":\"value\",\"x\":123 }", BeanWithInheritedDefault.class);
+        assertNotNull(bean);
+        assertEquals("value", bean.getA());
+        assertEquals(123, bean.getX());
+        assertTrue(bean.anyValuePresent());
+    }
+
     /*
     /**********************************************************
     /* Unit tests, higher level, error handling
@@ -201,7 +233,7 @@ public class TestSimpleMaterializedInterfaces
         }
     }
 
-    // As per [JACKSON-683]: fail gracefully if super type not public
+    // Fail gracefully if super type not public
     public void testNonPublic() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -212,6 +244,5 @@ public class TestSimpleMaterializedInterfaces
         } catch (JsonMappingException e) {
             verifyException(e, "is not public");
         }
-    }    
-    
+    }
 }
