@@ -36,8 +36,8 @@ not datatype, data format, or JAX-RS provider modules.
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- 21-Jul-2020, tatu: 7.3.1 -> 8.0.1 for Jackson 2.12 -->
-    <version.asm>8.0.1</version.asm>
+    <!-- 22-Sep-2020, tatu: 7.3.1 -> 9.0 for Jackson 2.12 -->
+    <version.asm>9.0</version.asm>
   </properties>
 
   <dependencyManagement>
