@@ -296,7 +296,7 @@ public class AbstractTypeMaterializer
      * To support actual dynamic loading of bytecode we need a simple
      * custom classloader.
      */
-    private static class MyClassLoader extends ClassLoader
+    static class MyClassLoader extends ClassLoader
     {
         public MyClassLoader(ClassLoader parent)
         {

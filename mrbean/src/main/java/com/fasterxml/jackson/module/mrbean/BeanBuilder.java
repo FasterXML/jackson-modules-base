@@ -76,7 +76,11 @@ public class BeanBuilder
             for (Method m : impl.getRawClass().getDeclaredMethods()) {
                 // 15-Sep-2015, tatu: As per [module-mrbean#25], make sure to ignore static
                 //    methods.
-                if (Modifier.isStatic(m.getModifiers())) {
+                if (Modifier.isStatic(m.getModifiers())
+                        // 22-Sep-2020: [modules-base#110] Looks like generics can introduce
+                        // hidden bridge and/or synthetic methods; skip same way as core
+                        // jackson-databind does
+                        || m.isSynthetic() || m.isBridge()) {                
                     continue;
                 }
                 String methodName = m.getName();

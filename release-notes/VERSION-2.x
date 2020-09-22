@@ -14,6 +14,8 @@ Modules:
 
 #109: (mrbean) Fix detection of inherited default method in Java 8+ interface
  (contributed by Robby M)
+#110: (mrbean) Avoid generating implementations of synthetic bridge methods
+ (contributed by Robby M)
 
 2.11.2 (02-Aug-2020)
 
