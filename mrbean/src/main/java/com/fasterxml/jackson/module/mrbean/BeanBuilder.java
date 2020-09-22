@@ -182,7 +182,8 @@ public class BeanBuilder
         final String name = m0.getName();
         final Class<?>[] argTypes = m0.getParameterTypes();
         try {
-            // getMethod returns the most-specific method implementation, for public methods only (which is any method in an interface)
+            // 22-Sep-2020: [modules-base#109]: getMethod returns the most-specific method
+            //  implementation, for public methods only (which is any method in an interface)
             Method effectiveMethod = implementedType.getRawClass().getMethod(name, argTypes);
             if (BeanUtil.isConcrete(effectiveMethod)) {
                 return true;

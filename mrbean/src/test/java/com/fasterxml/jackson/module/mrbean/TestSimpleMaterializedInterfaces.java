@@ -142,8 +142,7 @@ public class TestSimpleMaterializedInterfaces
      */
     public void testSimpleInteface() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         Bean bean = mapper.readValue("{\"a\":\"value\",\"x\":123 }", Bean.class);
         assertNotNull(bean);
         assertEquals("value", bean.getA());
@@ -155,8 +154,7 @@ public class TestSimpleMaterializedInterfaces
      */
     public void testBeanHolder() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         BeanHolder holder = mapper.readValue("{\"bean\":{\"a\":\"b\",\"x\":-4 }}", BeanHolder.class);
         assertNotNull(holder);
         Bean bean = holder.getBean();
@@ -167,8 +165,7 @@ public class TestSimpleMaterializedInterfaces
 
     public void testArrayInterface() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         ArrayBean bean = mapper.readValue("{\"values\":[1,2,3], \"words\": [ \"cool\", \"beans\" ] }",
                 ArrayBean.class);
         assertNotNull(bean);
@@ -178,8 +175,7 @@ public class TestSimpleMaterializedInterfaces
 
     public void testSubInterface() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
         BeanWithY bean = mapper.readValue("{\"a\":\"b\",\"x\":1, \"y\":2 }", BeanWithY.class);
         assertNotNull(bean);
         assertEquals("b", bean.getA());
@@ -187,6 +183,7 @@ public class TestSimpleMaterializedInterfaces
         assertEquals(2, bean.getY());
     }
 
+    // [modules-base#109]
     public void testDefaultMethodInInterface() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -197,6 +194,7 @@ public class TestSimpleMaterializedInterfaces
         assertTrue(bean.anyValuePresent());
     }
 
+    // [modules-base#109]
     public void testInheritedDefaultMethodInInterface() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -235,7 +233,7 @@ public class TestSimpleMaterializedInterfaces
         }
     }
 
-    // As per [JACKSON-683]: fail gracefully if super type not public
+    // Fail gracefully if super type not public
     public void testNonPublic() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -247,5 +245,4 @@ public class TestSimpleMaterializedInterfaces
             verifyException(e, "is not public");
         }
     }
-
 }

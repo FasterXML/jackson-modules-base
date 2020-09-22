@@ -55,7 +55,9 @@ ${project.groupId}.mrbean.*;version=${project.version}
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <configuration>
-              <!-- Enable testing with Java 8 features, especially default methods in interfaces -->
+              <!-- [modules-base#109] Enable testing with Java 8 features,
+                  especially default methods in interfaces
+                -->
               <testSource>1.8</testSource>
               <testTarget>1.8</testTarget>
           </configuration>
