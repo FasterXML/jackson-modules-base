@@ -65,4 +65,5 @@ Robby Morgan (robbytx@github)
 
 * Contributed #109: (mrbean) Fix detection of inherited default method in Java 8+ interface
  (2.11.3)
-
+* Contributed #110: (mrbean) Avoid generating implementations of synthetic bridge methods
+ (2.11.3)
