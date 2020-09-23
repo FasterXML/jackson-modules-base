@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.module.mrbean;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TestAbstractClassesWithOverrides
@@ -42,6 +43,30 @@ public class TestAbstractClassesWithOverrides
 
     public abstract static class PeruvianCoffeeBean extends CoffeeBean {}
 
+    /*
+     * Test classes where some concrete method has been re-"abstract"-ed
+     */
+
+    public abstract static class CoffeeBeanWithVariableFoo extends CoffeeBean
+    {
+        @Override public abstract String getFoo();
+    }
+
+    public abstract static class StringlessCoffeeBean extends CoffeeBean
+    {
+        @Override public abstract String toString();
+    }
+
+    public abstract static class UnroastableCoffeeBean extends CoffeeBean
+    {
+        @Override public abstract String roast(int temperature);
+    }
+
+    public abstract static class CoffeeBeanLackingPublicMethod extends CoffeeBean
+    {
+        @Override protected abstract Object protectedAbstractMethod();
+    }
+
 
     /*
     /**********************************************************
@@ -51,14 +76,89 @@ public class TestAbstractClassesWithOverrides
 
     public void testOverrides() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
 
         Bean bean = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", CoffeeBean.class);
         verifyBean(bean);
 
         Bean bean2 = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", PeruvianCoffeeBean.class);
         verifyBean(bean2);
+    }
+
+    public void testReAbstractedMethods() throws Exception
+    {
+        AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
+        // ensure that we will only get deferred error methods
+        mat.disable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new MrBeanModule(mat));
+
+        verifyReAbstractedProperty(mapper);
+
+        Bean bean = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", StringlessCoffeeBean.class);
+        verifyBean(bean);
+        try {
+            assertNotNull(bean.toString());
+            fail("Should not pass");
+        } catch (UnsupportedOperationException e) {
+            verifyException(e, "Unimplemented method 'toString'");
+        }
+
+        Bean unroastableBean = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", UnroastableCoffeeBean.class);
+        try {
+            unroastableBean.roast(123);
+            fail("Should not pass");
+        } catch (UnsupportedOperationException e) {
+            verifyException(e, "Unimplemented method 'roast'");
+        }
+
+        Bean beanLackingNonPublicMethod = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", CoffeeBeanLackingPublicMethod.class);
+        try {
+            beanLackingNonPublicMethod.customMethod();
+            fail("Should not pass");
+        } catch (UnsupportedOperationException e) {
+            verifyException(e, "Unimplemented method 'protectedAbstractMethod'");
+        }
+    }
+
+    // Ensures that the re-abstracted method will read "foo" from the JSON, regardless of the FAIL_ON_UNMATERIALIZED_METHOD setting
+    private void verifyReAbstractedProperty(ObjectMapper mapper) throws com.fasterxml.jackson.core.JsonProcessingException {
+        Bean beanWithNoFoo = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", CoffeeBeanWithVariableFoo.class);
+        assertNull(beanWithNoFoo.getFoo());
+        Bean beanWithOtherFoo = mapper.readValue("{ \"foo\": \"Another Foo!\", \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", CoffeeBeanWithVariableFoo.class);
+        assertEquals("Another Foo!", beanWithOtherFoo.getFoo());
+    }
+
+    public void testEagerFailureOnReAbstractedMethods() throws Exception
+    {
+        AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
+        // ensure that we will get eager failure on abstract methods
+        mat.enable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new MrBeanModule(mat));
+
+        verifyReAbstractedProperty(mapper);
+
+        try {
+            mapper.readValue("{}", StringlessCoffeeBean.class);
+            fail("Should not pass");
+        } catch (JsonMappingException e) {
+            verifyException(e, "Unrecognized abstract method 'toString'");
+        }
+
+        try {
+            mapper.readValue("{}", UnroastableCoffeeBean.class);
+            fail("Should not pass");
+        } catch (JsonMappingException e) {
+            verifyException(e, "Unrecognized abstract method 'roast'");
+        }
+
+        try {
+            mapper.readValue("{}", CoffeeBeanLackingPublicMethod.class);
+            fail("Should not pass");
+        } catch (JsonMappingException e) {
+            verifyException(e, "Unrecognized abstract method 'protectedAbstractMethod'");
+        }
     }
 
     private void verifyBean(Bean bean) {
