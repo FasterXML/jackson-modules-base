@@ -202,9 +202,9 @@ public class BeanBuilder
             //    be better here?
             try {
                 Method effectiveMethod = curr.getRawClass().getDeclaredMethod(name, argTypes);
-                if (BeanUtil.isConcrete(effectiveMethod)) {
-                    return true;
-                }
+
+                // we've found the method, so we can simply check whether it is concrete
+                return BeanUtil.isConcrete(effectiveMethod);
             } catch (NoSuchMethodException e) {
                 // method must exist on a superclass, continue searching...
             }
