@@ -72,7 +72,11 @@ public class TestAbstractClassesWithOverrides
 
     public void testReAbstractedMethods() throws Exception
     {
-        ObjectMapper mapper = newMrBeanMapper();
+        AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
+        // ensure that we will only get deferred error methods
+        mat.disable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new MrBeanModule(mat));
 
         Bean bean = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", StringlessCoffeeBean.class);
         verifyBean(bean);
