@@ -47,6 +47,11 @@ public class TestAbstractClassesWithOverrides
         @Override public abstract String toString();
     }
 
+    public abstract static class CoffeeBeanWithVariableFoo extends CoffeeBean
+    {
+        @Override public abstract String getFoo();
+    }
+
 
     /*
     /**********************************************************
@@ -76,6 +81,12 @@ public class TestAbstractClassesWithOverrides
         } catch (UnsupportedOperationException e) {
             verifyException(e, "Unimplemented method 'toString'");
         }
+
+        // Ensure that the re-abstracted method will read "foo" from the JSON
+        Bean beanWithNoFoo = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", CoffeeBeanWithVariableFoo.class);
+        assertNull(beanWithNoFoo.getFoo());
+        Bean beanWithOtherFoo = mapper.readValue("{ \"foo\": \"Another Foo!\", \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", CoffeeBeanWithVariableFoo.class);
+        assertEquals("Another Foo!", beanWithOtherFoo.getFoo());
     }
 
     private void verifyBean(Bean bean) {
