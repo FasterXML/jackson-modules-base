@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.module.mrbean;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TestAbstractClassesWithOverrides
@@ -47,6 +48,11 @@ public class TestAbstractClassesWithOverrides
         @Override public abstract String toString();
     }
 
+    public abstract static class UnroastableCoffeeBean extends CoffeeBean
+    {
+        @Override public abstract String roast(int temperature);
+    }
+
     public abstract static class CoffeeBeanWithVariableFoo extends CoffeeBean
     {
         @Override public abstract String getFoo();
@@ -82,8 +88,17 @@ public class TestAbstractClassesWithOverrides
         verifyBean(bean);
         try {
             assertNotNull(bean.toString());
+            fail("Should not pass");
         } catch (UnsupportedOperationException e) {
             verifyException(e, "Unimplemented method 'toString'");
+        }
+
+        Bean unroastableBean = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", UnroastableCoffeeBean.class);
+        try {
+            unroastableBean.roast(123);
+            fail("Should not pass");
+        } catch (UnsupportedOperationException e) {
+            verifyException(e, "Unimplemented method 'roast'");
         }
 
         // Ensure that the re-abstracted method will read "foo" from the JSON
