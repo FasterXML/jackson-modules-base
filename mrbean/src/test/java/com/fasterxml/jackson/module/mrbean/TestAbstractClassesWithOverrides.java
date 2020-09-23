@@ -42,6 +42,11 @@ public class TestAbstractClassesWithOverrides
 
     public abstract static class PeruvianCoffeeBean extends CoffeeBean {}
 
+    public abstract static class StringlessCoffeeBean extends CoffeeBean
+    {
+        @Override public abstract String toString();
+    }
+
 
     /*
     /**********************************************************
@@ -51,14 +56,26 @@ public class TestAbstractClassesWithOverrides
 
     public void testOverrides() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new MrBeanModule());
+        ObjectMapper mapper = newMrBeanMapper();
 
         Bean bean = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", CoffeeBean.class);
         verifyBean(bean);
 
         Bean bean2 = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", PeruvianCoffeeBean.class);
         verifyBean(bean2);
+    }
+
+    public void testReAbstractedMethods() throws Exception
+    {
+        ObjectMapper mapper = newMrBeanMapper();
+
+        Bean bean = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", StringlessCoffeeBean.class);
+        verifyBean(bean);
+        try {
+            assertNotNull(bean.toString());
+        } catch (UnsupportedOperationException e) {
+            verifyException(e, "Unimplemented method 'toString'");
+        }
     }
 
     private void verifyBean(Bean bean) {
