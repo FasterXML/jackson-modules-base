@@ -84,6 +84,8 @@ public class TestAbstractClassesWithOverrides
         ObjectMapper mapper = new ObjectMapper()
                 .registerModule(new MrBeanModule(mat));
 
+        verifyReAbstractedProperty(mapper);
+
         Bean bean = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", StringlessCoffeeBean.class);
         verifyBean(bean);
         try {
@@ -100,12 +102,39 @@ public class TestAbstractClassesWithOverrides
         } catch (UnsupportedOperationException e) {
             verifyException(e, "Unimplemented method 'roast'");
         }
+    }
 
-        // Ensure that the re-abstracted method will read "foo" from the JSON
+    // Ensures that the re-abstracted method will read "foo" from the JSON, regardless of the FAIL_ON_UNMATERIALIZED_METHOD setting
+    private void verifyReAbstractedProperty(ObjectMapper mapper) throws com.fasterxml.jackson.core.JsonProcessingException {
         Bean beanWithNoFoo = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", CoffeeBeanWithVariableFoo.class);
         assertNull(beanWithNoFoo.getFoo());
         Bean beanWithOtherFoo = mapper.readValue("{ \"foo\": \"Another Foo!\", \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", CoffeeBeanWithVariableFoo.class);
         assertEquals("Another Foo!", beanWithOtherFoo.getFoo());
+    }
+
+    public void testEagerFailureOnReAbstractedMethods() throws Exception
+    {
+        AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
+        // ensure that we will get eager failure on abstract methods
+        mat.enable(AbstractTypeMaterializer.Feature.FAIL_ON_UNMATERIALIZED_METHOD);
+        ObjectMapper mapper = new ObjectMapper()
+                .registerModule(new MrBeanModule(mat));
+
+        verifyReAbstractedProperty(mapper);
+
+        try {
+            mapper.readValue("{}", StringlessCoffeeBean.class);
+            fail("Should not pass");
+        } catch (JsonMappingException e) {
+            verifyException(e, "Unrecognized abstract method 'toString'");
+        }
+
+        try {
+            mapper.readValue("{}", UnroastableCoffeeBean.class);
+            fail("Should not pass");
+        } catch (JsonMappingException e) {
+            verifyException(e, "Unrecognized abstract method 'roast'");
+        }
     }
 
     private void verifyBean(Bean bean) {
