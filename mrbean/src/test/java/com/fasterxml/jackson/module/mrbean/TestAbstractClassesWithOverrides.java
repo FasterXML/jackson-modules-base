@@ -43,6 +43,15 @@ public class TestAbstractClassesWithOverrides
 
     public abstract static class PeruvianCoffeeBean extends CoffeeBean {}
 
+    /*
+     * Test classes where some concrete method has been re-"abstract"-ed
+     */
+
+    public abstract static class CoffeeBeanWithVariableFoo extends CoffeeBean
+    {
+        @Override public abstract String getFoo();
+    }
+
     public abstract static class StringlessCoffeeBean extends CoffeeBean
     {
         @Override public abstract String toString();
@@ -53,9 +62,9 @@ public class TestAbstractClassesWithOverrides
         @Override public abstract String roast(int temperature);
     }
 
-    public abstract static class CoffeeBeanWithVariableFoo extends CoffeeBean
+    public abstract static class CoffeeBeanLackingPublicMethod extends CoffeeBean
     {
-        @Override public abstract String getFoo();
+        @Override protected abstract Object protectedAbstractMethod();
     }
 
 
@@ -102,6 +111,14 @@ public class TestAbstractClassesWithOverrides
         } catch (UnsupportedOperationException e) {
             verifyException(e, "Unimplemented method 'roast'");
         }
+
+        Bean beanLackingNonPublicMethod = mapper.readValue("{ \"x\" : \"abc\", \"y\" : 13, \"z\" : \"def\" }", CoffeeBeanLackingPublicMethod.class);
+        try {
+            beanLackingNonPublicMethod.customMethod();
+            fail("Should not pass");
+        } catch (UnsupportedOperationException e) {
+            verifyException(e, "Unimplemented method 'protectedAbstractMethod'");
+        }
     }
 
     // Ensures that the re-abstracted method will read "foo" from the JSON, regardless of the FAIL_ON_UNMATERIALIZED_METHOD setting
@@ -134,6 +151,13 @@ public class TestAbstractClassesWithOverrides
             fail("Should not pass");
         } catch (JsonMappingException e) {
             verifyException(e, "Unrecognized abstract method 'roast'");
+        }
+
+        try {
+            mapper.readValue("{}", CoffeeBeanLackingPublicMethod.class);
+            fail("Should not pass");
+        } catch (JsonMappingException e) {
+            verifyException(e, "Unrecognized abstract method 'protectedAbstractMethod'");
         }
     }
 
