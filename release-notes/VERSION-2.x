@@ -15,7 +15,7 @@ Modules:
 #100: Prevent "double-prefixing" Mr Bean generated classes
 - Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
 
-2.11.3 (not yet released)
+2.11.3 (02-Oct-2020)
 
 #109: (mrbean) Fix detection of inherited default method in Java 8+ interface
  (contributed by Robby M)
