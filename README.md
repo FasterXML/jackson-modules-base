@@ -9,6 +9,7 @@ for more mature (and generally slower moving, stable) modules.
 Currently included are:
 
 * [Afterburner](afterburner/)
+* [Blackbird](blackbird/) (NEW in 2.12!)
 * [Guice](guice/)
 * [JAXB Annotations](jaxb/)
 * [Mr Bean](mrbean/)
