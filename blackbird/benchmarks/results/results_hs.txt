@@ -1,0 +1,3310 @@
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.openjdk.jmh.util.Utils (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to field java.io.PrintStream.charOut
+WARNING: Please consider reporting this to the maintainers of org.openjdk.jmh.util.Utils
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Afterburner.beanArrayDeser
+
+# Run progress: 0.00% complete, ETA 11:40:00
+# Fork: 1 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.216 ops/ms
+# Warmup Iteration   2: 1.279 ops/ms
+# Warmup Iteration   3: 1.278 ops/ms
+# Warmup Iteration   4: 1.279 ops/ms
+# Warmup Iteration   5: 1.276 ops/ms
+# Warmup Iteration   6: 1.281 ops/ms
+# Warmup Iteration   7: 1.281 ops/ms
+# Warmup Iteration   8: 1.279 ops/ms
+# Warmup Iteration   9: 1.280 ops/ms
+# Warmup Iteration  10: 1.280 ops/ms
+Iteration   1: 1.280 ops/ms
+Iteration   2: 1.280 ops/ms
+Iteration   3: 1.280 ops/ms
+Iteration   4: 1.280 ops/ms
+Iteration   5: 1.280 ops/ms
+Iteration   6: 1.280 ops/ms
+Iteration   7: 1.280 ops/ms
+Iteration   8: 1.280 ops/ms
+Iteration   9: 1.280 ops/ms
+Iteration  10: 1.280 ops/ms
+
+# Run progress: 0.95% complete, ETA 11:35:12
+# Fork: 2 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.271 ops/ms
+# Warmup Iteration   2: 1.323 ops/ms
+# Warmup Iteration   3: 1.323 ops/ms
+# Warmup Iteration   4: 1.323 ops/ms
+# Warmup Iteration   5: 1.322 ops/ms
+# Warmup Iteration   6: 1.324 ops/ms
+# Warmup Iteration   7: 1.324 ops/ms
+# Warmup Iteration   8: 1.323 ops/ms
+# Warmup Iteration   9: 1.324 ops/ms
+# Warmup Iteration  10: 1.323 ops/ms
+Iteration   1: 1.324 ops/ms
+Iteration   2: 1.324 ops/ms
+Iteration   3: 1.324 ops/ms
+Iteration   4: 1.324 ops/ms
+Iteration   5: 1.324 ops/ms
+Iteration   6: 1.323 ops/ms
+Iteration   7: 1.324 ops/ms
+Iteration   8: 1.324 ops/ms
+Iteration   9: 1.324 ops/ms
+Iteration  10: 1.324 ops/ms
+
+# Run progress: 1.90% complete, ETA 11:30:05
+# Fork: 3 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.243 ops/ms
+# Warmup Iteration   2: 1.309 ops/ms
+# Warmup Iteration   3: 1.309 ops/ms
+# Warmup Iteration   4: 1.309 ops/ms
+# Warmup Iteration   5: 1.307 ops/ms
+# Warmup Iteration   6: 1.310 ops/ms
+# Warmup Iteration   7: 1.310 ops/ms
+# Warmup Iteration   8: 1.309 ops/ms
+# Warmup Iteration   9: 1.311 ops/ms
+# Warmup Iteration  10: 1.310 ops/ms
+Iteration   1: 1.309 ops/ms
+Iteration   2: 1.310 ops/ms
+Iteration   3: 1.310 ops/ms
+Iteration   4: 1.310 ops/ms
+Iteration   5: 1.310 ops/ms
+Iteration   6: 1.309 ops/ms
+Iteration   7: 1.310 ops/ms
+Iteration   8: 1.310 ops/ms
+Iteration   9: 1.310 ops/ms
+Iteration  10: 1.310 ops/ms
+
+# Run progress: 2.86% complete, ETA 11:22:53
+# Fork: 4 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.226 ops/ms
+# Warmup Iteration   2: 1.278 ops/ms
+# Warmup Iteration   3: 1.280 ops/ms
+# Warmup Iteration   4: 1.279 ops/ms
+# Warmup Iteration   5: 1.279 ops/ms
+# Warmup Iteration   6: 1.280 ops/ms
+# Warmup Iteration   7: 1.280 ops/ms
+# Warmup Iteration   8: 1.280 ops/ms
+# Warmup Iteration   9: 1.277 ops/ms
+# Warmup Iteration  10: 1.279 ops/ms
+Iteration   1: 1.280 ops/ms
+Iteration   2: 1.279 ops/ms
+Iteration   3: 1.279 ops/ms
+Iteration   4: 1.279 ops/ms
+Iteration   5: 1.279 ops/ms
+Iteration   6: 1.280 ops/ms
+Iteration   7: 1.280 ops/ms
+Iteration   8: 1.280 ops/ms
+Iteration   9: 1.279 ops/ms
+Iteration  10: 1.280 ops/ms
+
+# Run progress: 3.81% complete, ETA 11:16:13
+# Fork: 5 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.251 ops/ms
+# Warmup Iteration   2: 1.301 ops/ms
+# Warmup Iteration   3: 1.302 ops/ms
+# Warmup Iteration   4: 1.301 ops/ms
+# Warmup Iteration   5: 1.300 ops/ms
+# Warmup Iteration   6: 1.301 ops/ms
+# Warmup Iteration   7: 1.301 ops/ms
+# Warmup Iteration   8: 1.300 ops/ms
+# Warmup Iteration   9: 1.302 ops/ms
+# Warmup Iteration  10: 1.302 ops/ms
+Iteration   1: 1.302 ops/ms
+Iteration   2: 1.302 ops/ms
+Iteration   3: 1.302 ops/ms
+Iteration   4: 1.302 ops/ms
+Iteration   5: 1.302 ops/ms
+Iteration   6: 1.302 ops/ms
+Iteration   7: 1.300 ops/ms
+Iteration   8: 1.302 ops/ms
+Iteration   9: 1.301 ops/ms
+Iteration  10: 1.302 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Afterburner.beanArrayDeser":
+  1.299 ±(99.9%) 0.009 ops/ms [Average]
+  (min, avg, max) = (1.279, 1.299, 1.324), stdev = 0.017
+  CI (99.9%): [1.290, 1.308] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Afterburner.beanArraySer
+
+# Run progress: 4.76% complete, ETA 11:09:18
+# Fork: 1 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+2.089 ops/ms
+# Warmup Iteration   2: 2.158 ops/ms
+# Warmup Iteration   3: 2.161 ops/ms
+# Warmup Iteration   4: 2.160 ops/ms
+# Warmup Iteration   5: 2.158 ops/ms
+# Warmup Iteration   6: 2.160 ops/ms
+# Warmup Iteration   7: 2.159 ops/ms
+# Warmup Iteration   8: 2.160 ops/ms
+# Warmup Iteration   9: 2.162 ops/ms
+# Warmup Iteration  10: 2.160 ops/ms
+Iteration   1: 2.160 ops/ms
+Iteration   2: 2.160 ops/ms
+Iteration   3: 2.160 ops/ms
+Iteration   4: 2.159 ops/ms
+Iteration   5: 2.161 ops/ms
+Iteration   6: 2.161 ops/ms
+Iteration   7: 2.160 ops/ms
+Iteration   8: 2.162 ops/ms
+Iteration   9: 2.161 ops/ms
+Iteration  10: 2.162 ops/ms
+
+# Run progress: 5.71% complete, ETA 11:02:43
+# Fork: 2 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+2.147 ops/ms
+# Warmup Iteration   2: 2.211 ops/ms
+# Warmup Iteration   3: 2.213 ops/ms
+# Warmup Iteration   4: 2.213 ops/ms
+# Warmup Iteration   5: 2.213 ops/ms
+# Warmup Iteration   6: 2.212 ops/ms
+# Warmup Iteration   7: 2.213 ops/ms
+# Warmup Iteration   8: 2.214 ops/ms
+# Warmup Iteration   9: 2.212 ops/ms
+# Warmup Iteration  10: 2.213 ops/ms
+Iteration   1: 2.214 ops/ms
+Iteration   2: 2.213 ops/ms
+Iteration   3: 2.213 ops/ms
+Iteration   4: 2.213 ops/ms
+Iteration   5: 2.213 ops/ms
+Iteration   6: 2.214 ops/ms
+Iteration   7: 2.214 ops/ms
+Iteration   8: 2.213 ops/ms
+Iteration   9: 2.214 ops/ms
+Iteration  10: 2.213 ops/ms
+
+# Run progress: 6.67% complete, ETA 10:55:56
+# Fork: 3 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+2.147 ops/ms
+# Warmup Iteration   2: 2.207 ops/ms
+# Warmup Iteration   3: 2.207 ops/ms
+# Warmup Iteration   4: 2.208 ops/ms
+# Warmup Iteration   5: 2.207 ops/ms
+# Warmup Iteration   6: 2.208 ops/ms
+# Warmup Iteration   7: 2.207 ops/ms
+# Warmup Iteration   8: 2.206 ops/ms
+# Warmup Iteration   9: 2.208 ops/ms
+# Warmup Iteration  10: 2.209 ops/ms
+Iteration   1: 2.208 ops/ms
+Iteration   2: 2.208 ops/ms
+Iteration   3: 2.208 ops/ms
+Iteration   4: 2.208 ops/ms
+Iteration   5: 2.208 ops/ms
+Iteration   6: 2.207 ops/ms
+Iteration   7: 2.208 ops/ms
+Iteration   8: 2.208 ops/ms
+Iteration   9: 2.208 ops/ms
+Iteration  10: 2.207 ops/ms
+
+# Run progress: 7.62% complete, ETA 10:49:11
+# Fork: 4 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+2.111 ops/ms
+# Warmup Iteration   2: 2.178 ops/ms
+# Warmup Iteration   3: 2.177 ops/ms
+# Warmup Iteration   4: 2.177 ops/ms
+# Warmup Iteration   5: 2.177 ops/ms
+# Warmup Iteration   6: 2.180 ops/ms
+# Warmup Iteration   7: 2.177 ops/ms
+# Warmup Iteration   8: 2.177 ops/ms
+# Warmup Iteration   9: 2.178 ops/ms
+# Warmup Iteration  10: 2.179 ops/ms
+Iteration   1: 2.178 ops/ms
+Iteration   2: 2.178 ops/ms
+Iteration   3: 2.178 ops/ms
+Iteration   4: 2.178 ops/ms
+Iteration   5: 2.178 ops/ms
+Iteration   6: 2.178 ops/ms
+Iteration   7: 2.179 ops/ms
+Iteration   8: 2.178 ops/ms
+Iteration   9: 2.179 ops/ms
+Iteration  10: 2.178 ops/ms
+
+# Run progress: 8.57% complete, ETA 10:42:24
+# Fork: 5 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+2.145 ops/ms
+# Warmup Iteration   2: 2.201 ops/ms
+# Warmup Iteration   3: 2.204 ops/ms
+# Warmup Iteration   4: 2.205 ops/ms
+# Warmup Iteration   5: 2.204 ops/ms
+# Warmup Iteration   6: 2.204 ops/ms
+# Warmup Iteration   7: 2.205 ops/ms
+# Warmup Iteration   8: 2.205 ops/ms
+# Warmup Iteration   9: 2.204 ops/ms
+# Warmup Iteration  10: 2.205 ops/ms
+Iteration   1: 2.205 ops/ms
+Iteration   2: 2.205 ops/ms
+Iteration   3: 2.205 ops/ms
+Iteration   4: 2.205 ops/ms
+Iteration   5: 2.205 ops/ms
+Iteration   6: 2.205 ops/ms
+Iteration   7: 2.202 ops/ms
+Iteration   8: 2.202 ops/ms
+Iteration   9: 2.202 ops/ms
+Iteration  10: 2.203 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Afterburner.beanArraySer":
+  2.193 ±(99.9%) 0.010 ops/ms [Average]
+  (min, avg, max) = (2.159, 2.193, 2.214), stdev = 0.020
+  CI (99.9%): [2.183, 2.203] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Afterburner.classicBeanItemDeser
+
+# Run progress: 9.52% complete, ETA 10:35:36
+# Fork: 1 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.447 ops/ms
+# Warmup Iteration   2: 1.485 ops/ms
+# Warmup Iteration   3: 1.485 ops/ms
+# Warmup Iteration   4: 1.486 ops/ms
+# Warmup Iteration   5: 1.483 ops/ms
+# Warmup Iteration   6: 1.489 ops/ms
+# Warmup Iteration   7: 1.487 ops/ms
+# Warmup Iteration   8: 1.486 ops/ms
+# Warmup Iteration   9: 1.487 ops/ms
+# Warmup Iteration  10: 1.485 ops/ms
+Iteration   1: 1.486 ops/ms
+Iteration   2: 1.486 ops/ms
+Iteration   3: 1.486 ops/ms
+Iteration   4: 1.487 ops/ms
+Iteration   5: 1.486 ops/ms
+Iteration   6: 1.487 ops/ms
+Iteration   7: 1.488 ops/ms
+Iteration   8: 1.488 ops/ms
+Iteration   9: 1.487 ops/ms
+Iteration  10: 1.488 ops/ms
+
+# Run progress: 10.48% complete, ETA 10:28:51
+# Fork: 2 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.338 ops/ms
+# Warmup Iteration   2: 1.382 ops/ms
+# Warmup Iteration   3: 1.382 ops/ms
+# Warmup Iteration   4: 1.383 ops/ms
+# Warmup Iteration   5: 1.381 ops/ms
+# Warmup Iteration   6: 1.382 ops/ms
+# Warmup Iteration   7: 1.383 ops/ms
+# Warmup Iteration   8: 1.383 ops/ms
+# Warmup Iteration   9: 1.384 ops/ms
+# Warmup Iteration  10: 1.384 ops/ms
+Iteration   1: 1.383 ops/ms
+Iteration   2: 1.383 ops/ms
+Iteration   3: 1.383 ops/ms
+Iteration   4: 1.384 ops/ms
+Iteration   5: 1.384 ops/ms
+Iteration   6: 1.383 ops/ms
+Iteration   7: 1.384 ops/ms
+Iteration   8: 1.384 ops/ms
+Iteration   9: 1.384 ops/ms
+Iteration  10: 1.384 ops/ms
+
+# Run progress: 11.43% complete, ETA 10:22:08
+# Fork: 3 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.347 ops/ms
+# Warmup Iteration   2: 1.399 ops/ms
+# Warmup Iteration   3: 1.399 ops/ms
+# Warmup Iteration   4: 1.401 ops/ms
+# Warmup Iteration   5: 1.397 ops/ms
+# Warmup Iteration   6: 1.399 ops/ms
+# Warmup Iteration   7: 1.399 ops/ms
+# Warmup Iteration   8: 1.396 ops/ms
+# Warmup Iteration   9: 1.401 ops/ms
+# Warmup Iteration  10: 1.401 ops/ms
+Iteration   1: 1.401 ops/ms
+Iteration   2: 1.401 ops/ms
+Iteration   3: 1.402 ops/ms
+Iteration   4: 1.402 ops/ms
+Iteration   5: 1.402 ops/ms
+Iteration   6: 1.401 ops/ms
+Iteration   7: 1.399 ops/ms
+Iteration   8: 1.399 ops/ms
+Iteration   9: 1.399 ops/ms
+Iteration  10: 1.400 ops/ms
+
+# Run progress: 12.38% complete, ETA 10:15:24
+# Fork: 4 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.296 ops/ms
+# Warmup Iteration   2: 1.344 ops/ms
+# Warmup Iteration   3: 1.344 ops/ms
+# Warmup Iteration   4: 1.345 ops/ms
+# Warmup Iteration   5: 1.342 ops/ms
+# Warmup Iteration   6: 1.346 ops/ms
+# Warmup Iteration   7: 1.345 ops/ms
+# Warmup Iteration   8: 1.344 ops/ms
+# Warmup Iteration   9: 1.346 ops/ms
+# Warmup Iteration  10: 1.346 ops/ms
+Iteration   1: 1.346 ops/ms
+Iteration   2: 1.346 ops/ms
+Iteration   3: 1.346 ops/ms
+Iteration   4: 1.346 ops/ms
+Iteration   5: 1.347 ops/ms
+Iteration   6: 1.346 ops/ms
+Iteration   7: 1.321 ops/ms
+Iteration   8: 1.345 ops/ms
+Iteration   9: 1.345 ops/ms
+Iteration  10: 1.346 ops/ms
+
+# Run progress: 13.33% complete, ETA 10:08:41
+# Fork: 5 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.334 ops/ms
+# Warmup Iteration   2: 1.371 ops/ms
+# Warmup Iteration   3: 1.370 ops/ms
+# Warmup Iteration   4: 1.372 ops/ms
+# Warmup Iteration   5: 1.371 ops/ms
+# Warmup Iteration   6: 1.373 ops/ms
+# Warmup Iteration   7: 1.373 ops/ms
+# Warmup Iteration   8: 1.372 ops/ms
+# Warmup Iteration   9: 1.373 ops/ms
+# Warmup Iteration  10: 1.372 ops/ms
+Iteration   1: 1.373 ops/ms
+Iteration   2: 1.373 ops/ms
+Iteration   3: 1.373 ops/ms
+Iteration   4: 1.373 ops/ms
+Iteration   5: 1.373 ops/ms
+Iteration   6: 1.373 ops/ms
+Iteration   7: 1.373 ops/ms
+Iteration   8: 1.373 ops/ms
+Iteration   9: 1.373 ops/ms
+Iteration  10: 1.373 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Afterburner.classicBeanItemDeser":
+  1.398 ±(99.9%) 0.024 ops/ms [Average]
+  (min, avg, max) = (1.321, 1.398, 1.488), stdev = 0.049
+  CI (99.9%): [1.373, 1.422] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Afterburner.classicBeanItemSer
+
+# Run progress: 14.29% complete, ETA 10:01:57
+# Fork: 1 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+2.313 ops/ms
+# Warmup Iteration   2: 2.351 ops/ms
+# Warmup Iteration   3: 2.343 ops/ms
+# Warmup Iteration   4: 2.352 ops/ms
+# Warmup Iteration   5: 2.348 ops/ms
+# Warmup Iteration   6: 2.350 ops/ms
+# Warmup Iteration   7: 2.351 ops/ms
+# Warmup Iteration   8: 2.353 ops/ms
+# Warmup Iteration   9: 2.353 ops/ms
+# Warmup Iteration  10: 2.352 ops/ms
+Iteration   1: 2.351 ops/ms
+Iteration   2: 2.351 ops/ms
+Iteration   3: 2.352 ops/ms
+Iteration   4: 2.353 ops/ms
+Iteration   5: 2.334 ops/ms
+Iteration   6: 2.352 ops/ms
+Iteration   7: 2.335 ops/ms
+Iteration   8: 2.354 ops/ms
+Iteration   9: 2.348 ops/ms
+Iteration  10: 2.351 ops/ms
+
+# Run progress: 15.24% complete, ETA 09:55:13
+# Fork: 2 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+2.345 ops/ms
+# Warmup Iteration   2: 2.390 ops/ms
+# Warmup Iteration   3: 2.387 ops/ms
+# Warmup Iteration   4: 2.387 ops/ms
+# Warmup Iteration   5: 2.387 ops/ms
+# Warmup Iteration   6: 2.386 ops/ms
+# Warmup Iteration   7: 2.387 ops/ms
+# Warmup Iteration   8: 2.387 ops/ms
+# Warmup Iteration   9: 2.388 ops/ms
+# Warmup Iteration  10: 2.387 ops/ms
+Iteration   1: 2.385 ops/ms
+Iteration   2: 2.390 ops/ms
+Iteration   3: 2.386 ops/ms
+Iteration   4: 2.388 ops/ms
+Iteration   5: 2.385 ops/ms
+Iteration   6: 2.387 ops/ms
+Iteration   7: 2.386 ops/ms
+Iteration   8: 2.387 ops/ms
+Iteration   9: 2.380 ops/ms
+Iteration  10: 2.383 ops/ms
+
+# Run progress: 16.19% complete, ETA 09:48:31
+# Fork: 3 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+2.224 ops/ms
+# Warmup Iteration   2: 2.232 ops/ms
+# Warmup Iteration   3: 2.229 ops/ms
+# Warmup Iteration   4: 2.250 ops/ms
+# Warmup Iteration   5: 2.259 ops/ms
+# Warmup Iteration   6: 2.252 ops/ms
+# Warmup Iteration   7: 2.253 ops/ms
+# Warmup Iteration   8: 2.264 ops/ms
+# Warmup Iteration   9: 2.250 ops/ms
+# Warmup Iteration  10: 2.255 ops/ms
+Iteration   1: 2.252 ops/ms
+Iteration   2: 2.246 ops/ms
+Iteration   3: 2.244 ops/ms
+Iteration   4: 2.272 ops/ms
+Iteration   5: 2.277 ops/ms
+Iteration   6: 2.265 ops/ms
+Iteration   7: 2.272 ops/ms
+Iteration   8: 2.258 ops/ms
+Iteration   9: 2.249 ops/ms
+Iteration  10: 2.268 ops/ms
+
+# Run progress: 17.14% complete, ETA 09:41:49
+# Fork: 4 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+2.256 ops/ms
+# Warmup Iteration   2: 2.273 ops/ms
+# Warmup Iteration   3: 2.267 ops/ms
+# Warmup Iteration   4: 2.269 ops/ms
+# Warmup Iteration   5: 2.269 ops/ms
+# Warmup Iteration   6: 2.274 ops/ms
+# Warmup Iteration   7: 2.273 ops/ms
+# Warmup Iteration   8: 2.272 ops/ms
+# Warmup Iteration   9: 2.273 ops/ms
+# Warmup Iteration  10: 2.273 ops/ms
+Iteration   1: 2.272 ops/ms
+Iteration   2: 2.273 ops/ms
+Iteration   3: 2.273 ops/ms
+Iteration   4: 2.283 ops/ms
+Iteration   5: 2.282 ops/ms
+Iteration   6: 2.283 ops/ms
+Iteration   7: 2.283 ops/ms
+Iteration   8: 2.279 ops/ms
+Iteration   9: 2.282 ops/ms
+Iteration  10: 2.283 ops/ms
+
+# Run progress: 18.10% complete, ETA 09:35:06
+# Fork: 5 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+2.313 ops/ms
+# Warmup Iteration   2: 2.355 ops/ms
+# Warmup Iteration   3: 2.353 ops/ms
+# Warmup Iteration   4: 2.354 ops/ms
+# Warmup Iteration   5: 2.352 ops/ms
+# Warmup Iteration   6: 2.355 ops/ms
+# Warmup Iteration   7: 2.349 ops/ms
+# Warmup Iteration   8: 2.354 ops/ms
+# Warmup Iteration   9: 2.355 ops/ms
+# Warmup Iteration  10: 2.353 ops/ms
+Iteration   1: 2.351 ops/ms
+Iteration   2: 2.354 ops/ms
+Iteration   3: 2.352 ops/ms
+Iteration   4: 2.354 ops/ms
+Iteration   5: 2.352 ops/ms
+Iteration   6: 2.352 ops/ms
+Iteration   7: 2.349 ops/ms
+Iteration   8: 2.349 ops/ms
+Iteration   9: 2.355 ops/ms
+Iteration  10: 2.361 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Afterburner.classicBeanItemSer":
+  2.325 ±(99.9%) 0.024 ops/ms [Average]
+  (min, avg, max) = (2.244, 2.325, 2.390), stdev = 0.048
+  CI (99.9%): [2.301, 2.349] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Afterburner.classicMediaItemDeser
+
+# Run progress: 19.05% complete, ETA 09:28:25
+# Fork: 1 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+391.916 ops/ms
+# Warmup Iteration   2: 403.219 ops/ms
+# Warmup Iteration   3: 403.618 ops/ms
+# Warmup Iteration   4: 403.723 ops/ms
+# Warmup Iteration   5: 403.727 ops/ms
+# Warmup Iteration   6: 403.652 ops/ms
+# Warmup Iteration   7: 403.653 ops/ms
+# Warmup Iteration   8: 403.807 ops/ms
+# Warmup Iteration   9: 403.426 ops/ms
+# Warmup Iteration  10: 403.559 ops/ms
+Iteration   1: 403.407 ops/ms
+Iteration   2: 403.520 ops/ms
+Iteration   3: 403.564 ops/ms
+Iteration   4: 403.689 ops/ms
+Iteration   5: 403.551 ops/ms
+Iteration   6: 403.599 ops/ms
+Iteration   7: 403.084 ops/ms
+Iteration   8: 403.222 ops/ms
+Iteration   9: 403.335 ops/ms
+Iteration  10: 403.357 ops/ms
+
+# Run progress: 20.00% complete, ETA 09:21:42
+# Fork: 2 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+385.141 ops/ms
+# Warmup Iteration   2: 398.113 ops/ms
+# Warmup Iteration   3: 399.119 ops/ms
+# Warmup Iteration   4: 399.236 ops/ms
+# Warmup Iteration   5: 399.002 ops/ms
+# Warmup Iteration   6: 399.276 ops/ms
+# Warmup Iteration   7: 399.049 ops/ms
+# Warmup Iteration   8: 399.021 ops/ms
+# Warmup Iteration   9: 399.012 ops/ms
+# Warmup Iteration  10: 399.163 ops/ms
+Iteration   1: 399.102 ops/ms
+Iteration   2: 399.144 ops/ms
+Iteration   3: 398.877 ops/ms
+Iteration   4: 399.131 ops/ms
+Iteration   5: 399.164 ops/ms
+Iteration   6: 399.191 ops/ms
+Iteration   7: 399.786 ops/ms
+Iteration   8: 399.392 ops/ms
+Iteration   9: 399.452 ops/ms
+Iteration  10: 399.575 ops/ms
+
+# Run progress: 20.95% complete, ETA 09:15:00
+# Fork: 3 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+396.069 ops/ms
+# Warmup Iteration   2: 406.923 ops/ms
+# Warmup Iteration   3: 407.835 ops/ms
+# Warmup Iteration   4: 408.035 ops/ms
+# Warmup Iteration   5: 408.109 ops/ms
+# Warmup Iteration   6: 407.750 ops/ms
+# Warmup Iteration   7: 407.912 ops/ms
+# Warmup Iteration   8: 407.952 ops/ms
+# Warmup Iteration   9: 407.945 ops/ms
+# Warmup Iteration  10: 407.820 ops/ms
+Iteration   1: 407.961 ops/ms
+Iteration   2: 407.933 ops/ms
+Iteration   3: 408.117 ops/ms
+Iteration   4: 407.922 ops/ms
+Iteration   5: 407.751 ops/ms
+Iteration   6: 407.876 ops/ms
+Iteration   7: 405.013 ops/ms
+Iteration   8: 407.765 ops/ms
+Iteration   9: 407.917 ops/ms
+Iteration  10: 407.651 ops/ms
+
+# Run progress: 21.90% complete, ETA 09:08:17
+# Fork: 4 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+388.940 ops/ms
+# Warmup Iteration   2: 402.232 ops/ms
+# Warmup Iteration   3: 403.629 ops/ms
+# Warmup Iteration   4: 403.344 ops/ms
+# Warmup Iteration   5: 403.886 ops/ms
+# Warmup Iteration   6: 403.534 ops/ms
+# Warmup Iteration   7: 403.627 ops/ms
+# Warmup Iteration   8: 403.403 ops/ms
+# Warmup Iteration   9: 403.459 ops/ms
+# Warmup Iteration  10: 403.500 ops/ms
+Iteration   1: 403.632 ops/ms
+Iteration   2: 403.538 ops/ms
+Iteration   3: 403.709 ops/ms
+Iteration   4: 403.727 ops/ms
+Iteration   5: 403.718 ops/ms
+Iteration   6: 403.520 ops/ms
+Iteration   7: 403.322 ops/ms
+Iteration   8: 403.356 ops/ms
+Iteration   9: 403.488 ops/ms
+Iteration  10: 403.180 ops/ms
+
+# Run progress: 22.86% complete, ETA 09:01:36
+# Fork: 5 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+389.372 ops/ms
+# Warmup Iteration   2: 403.056 ops/ms
+# Warmup Iteration   3: 402.717 ops/ms
+# Warmup Iteration   4: 403.029 ops/ms
+# Warmup Iteration   5: 402.653 ops/ms
+# Warmup Iteration   6: 402.835 ops/ms
+# Warmup Iteration   7: 402.755 ops/ms
+# Warmup Iteration   8: 402.737 ops/ms
+# Warmup Iteration   9: 402.862 ops/ms
+# Warmup Iteration  10: 402.963 ops/ms
+Iteration   1: 402.999 ops/ms
+Iteration   2: 402.866 ops/ms
+Iteration   3: 402.829 ops/ms
+Iteration   4: 403.041 ops/ms
+Iteration   5: 402.884 ops/ms
+Iteration   6: 403.007 ops/ms
+Iteration   7: 402.754 ops/ms
+Iteration   8: 402.746 ops/ms
+Iteration   9: 402.629 ops/ms
+Iteration  10: 402.754 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Afterburner.classicMediaItemDeser":
+  403.335 ±(99.9%) 1.337 ops/ms [Average]
+  (min, avg, max) = (398.877, 403.335, 408.117), stdev = 2.700
+  CI (99.9%): [401.998, 404.671] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Afterburner.classicMediaItemSer
+
+# Run progress: 23.81% complete, ETA 08:54:54
+# Fork: 1 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+589.486 ops/ms
+# Warmup Iteration   2: 608.238 ops/ms
+# Warmup Iteration   3: 609.837 ops/ms
+# Warmup Iteration   4: 609.769 ops/ms
+# Warmup Iteration   5: 609.624 ops/ms
+# Warmup Iteration   6: 609.581 ops/ms
+# Warmup Iteration   7: 609.524 ops/ms
+# Warmup Iteration   8: 609.515 ops/ms
+# Warmup Iteration   9: 609.170 ops/ms
+# Warmup Iteration  10: 609.529 ops/ms
+Iteration   1: 609.605 ops/ms
+Iteration   2: 609.343 ops/ms
+Iteration   3: 609.546 ops/ms
+Iteration   4: 609.587 ops/ms
+Iteration   5: 609.209 ops/ms
+Iteration   6: 609.499 ops/ms
+Iteration   7: 609.274 ops/ms
+Iteration   8: 609.436 ops/ms
+Iteration   9: 609.211 ops/ms
+Iteration  10: 609.458 ops/ms
+
+# Run progress: 24.76% complete, ETA 08:48:11
+# Fork: 2 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+596.972 ops/ms
+# Warmup Iteration   2: 615.479 ops/ms
+# Warmup Iteration   3: 615.213 ops/ms
+# Warmup Iteration   4: 615.278 ops/ms
+# Warmup Iteration   5: 615.426 ops/ms
+# Warmup Iteration   6: 615.380 ops/ms
+# Warmup Iteration   7: 615.478 ops/ms
+# Warmup Iteration   8: 614.939 ops/ms
+# Warmup Iteration   9: 615.347 ops/ms
+# Warmup Iteration  10: 615.585 ops/ms
+Iteration   1: 615.279 ops/ms
+Iteration   2: 615.486 ops/ms
+Iteration   3: 615.452 ops/ms
+Iteration   4: 615.248 ops/ms
+Iteration   5: 615.270 ops/ms
+Iteration   6: 615.228 ops/ms
+Iteration   7: 616.897 ops/ms
+Iteration   8: 616.630 ops/ms
+Iteration   9: 616.727 ops/ms
+Iteration  10: 616.847 ops/ms
+
+# Run progress: 25.71% complete, ETA 08:41:32
+# Fork: 3 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+598.024 ops/ms
+# Warmup Iteration   2: 614.556 ops/ms
+# Warmup Iteration   3: 614.368 ops/ms
+# Warmup Iteration   4: 614.309 ops/ms
+# Warmup Iteration   5: 614.719 ops/ms
+# Warmup Iteration   6: 614.442 ops/ms
+# Warmup Iteration   7: 614.036 ops/ms
+# Warmup Iteration   8: 614.632 ops/ms
+# Warmup Iteration   9: 614.424 ops/ms
+# Warmup Iteration  10: 614.347 ops/ms
+Iteration   1: 614.660 ops/ms
+Iteration   2: 614.505 ops/ms
+Iteration   3: 614.757 ops/ms
+Iteration   4: 614.498 ops/ms
+Iteration   5: 614.670 ops/ms
+Iteration   6: 612.457 ops/ms
+Iteration   7: 613.982 ops/ms
+Iteration   8: 613.638 ops/ms
+Iteration   9: 613.956 ops/ms
+Iteration  10: 613.418 ops/ms
+
+# Run progress: 26.67% complete, ETA 08:34:50
+# Fork: 4 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+590.944 ops/ms
+# Warmup Iteration   2: 605.799 ops/ms
+# Warmup Iteration   3: 604.719 ops/ms
+# Warmup Iteration   4: 605.611 ops/ms
+# Warmup Iteration   5: 605.521 ops/ms
+# Warmup Iteration   6: 604.296 ops/ms
+# Warmup Iteration   7: 604.492 ops/ms
+# Warmup Iteration   8: 605.078 ops/ms
+# Warmup Iteration   9: 604.788 ops/ms
+# Warmup Iteration  10: 605.290 ops/ms
+Iteration   1: 605.538 ops/ms
+Iteration   2: 605.584 ops/ms
+Iteration   3: 605.351 ops/ms
+Iteration   4: 605.203 ops/ms
+Iteration   5: 605.122 ops/ms
+Iteration   6: 605.186 ops/ms
+Iteration   7: 604.640 ops/ms
+Iteration   8: 605.778 ops/ms
+Iteration   9: 605.425 ops/ms
+Iteration  10: 605.636 ops/ms
+
+# Run progress: 27.62% complete, ETA 08:28:08
+# Fork: 5 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+589.857 ops/ms
+# Warmup Iteration   2: 606.156 ops/ms
+# Warmup Iteration   3: 607.449 ops/ms
+# Warmup Iteration   4: 607.734 ops/ms
+# Warmup Iteration   5: 607.297 ops/ms
+# Warmup Iteration   6: 607.587 ops/ms
+# Warmup Iteration   7: 607.857 ops/ms
+# Warmup Iteration   8: 607.682 ops/ms
+# Warmup Iteration   9: 607.814 ops/ms
+# Warmup Iteration  10: 607.810 ops/ms
+Iteration   1: 607.303 ops/ms
+Iteration   2: 607.555 ops/ms
+Iteration   3: 607.649 ops/ms
+Iteration   4: 607.563 ops/ms
+Iteration   5: 607.461 ops/ms
+Iteration   6: 607.451 ops/ms
+Iteration   7: 607.548 ops/ms
+Iteration   8: 607.250 ops/ms
+Iteration   9: 607.533 ops/ms
+Iteration  10: 607.774 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Afterburner.classicMediaItemSer":
+  610.446 ±(99.9%) 1.996 ops/ms [Average]
+  (min, avg, max) = (604.640, 610.446, 616.897), stdev = 4.032
+  CI (99.9%): [608.450, 612.442] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Afterburner.constructorArrayDeser
+
+# Run progress: 28.57% complete, ETA 08:21:27
+# Fork: 1 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.057 ops/ms
+# Warmup Iteration   2: 1.121 ops/ms
+# Warmup Iteration   3: 1.122 ops/ms
+# Warmup Iteration   4: 1.121 ops/ms
+# Warmup Iteration   5: 1.121 ops/ms
+# Warmup Iteration   6: 1.119 ops/ms
+# Warmup Iteration   7: 1.121 ops/ms
+# Warmup Iteration   8: 1.121 ops/ms
+# Warmup Iteration   9: 1.121 ops/ms
+# Warmup Iteration  10: 1.118 ops/ms
+Iteration   1: 1.121 ops/ms
+Iteration   2: 1.121 ops/ms
+Iteration   3: 1.122 ops/ms
+Iteration   4: 1.121 ops/ms
+Iteration   5: 1.121 ops/ms
+Iteration   6: 1.120 ops/ms
+Iteration   7: 1.122 ops/ms
+Iteration   8: 1.122 ops/ms
+Iteration   9: 1.122 ops/ms
+Iteration  10: 1.122 ops/ms
+
+# Run progress: 29.52% complete, ETA 08:14:45
+# Fork: 2 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.065 ops/ms
+# Warmup Iteration   2: 1.127 ops/ms
+# Warmup Iteration   3: 1.128 ops/ms
+# Warmup Iteration   4: 1.128 ops/ms
+# Warmup Iteration   5: 1.128 ops/ms
+# Warmup Iteration   6: 1.126 ops/ms
+# Warmup Iteration   7: 1.128 ops/ms
+# Warmup Iteration   8: 1.128 ops/ms
+# Warmup Iteration   9: 1.128 ops/ms
+# Warmup Iteration  10: 1.127 ops/ms
+Iteration   1: 1.128 ops/ms
+Iteration   2: 1.127 ops/ms
+Iteration   3: 1.128 ops/ms
+Iteration   4: 1.128 ops/ms
+Iteration   5: 1.127 ops/ms
+Iteration   6: 1.124 ops/ms
+Iteration   7: 1.129 ops/ms
+Iteration   8: 1.129 ops/ms
+Iteration   9: 1.129 ops/ms
+Iteration  10: 1.129 ops/ms
+
+# Run progress: 30.48% complete, ETA 08:08:05
+# Fork: 3 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.065 ops/ms
+# Warmup Iteration   2: 1.127 ops/ms
+# Warmup Iteration   3: 1.127 ops/ms
+# Warmup Iteration   4: 1.127 ops/ms
+# Warmup Iteration   5: 1.127 ops/ms
+# Warmup Iteration   6: 1.125 ops/ms
+# Warmup Iteration   7: 1.127 ops/ms
+# Warmup Iteration   8: 1.127 ops/ms
+# Warmup Iteration   9: 1.127 ops/ms
+# Warmup Iteration  10: 1.127 ops/ms
+Iteration   1: 1.127 ops/ms
+Iteration   2: 1.127 ops/ms
+Iteration   3: 1.127 ops/ms
+Iteration   4: 1.127 ops/ms
+Iteration   5: 1.127 ops/ms
+Iteration   6: 1.127 ops/ms
+Iteration   7: 1.127 ops/ms
+Iteration   8: 1.127 ops/ms
+Iteration   9: 1.127 ops/ms
+Iteration  10: 1.127 ops/ms
+
+# Run progress: 31.43% complete, ETA 08:01:23
+# Fork: 4 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.053 ops/ms
+# Warmup Iteration   2: 1.108 ops/ms
+# Warmup Iteration   3: 1.108 ops/ms
+# Warmup Iteration   4: 1.109 ops/ms
+# Warmup Iteration   5: 1.109 ops/ms
+# Warmup Iteration   6: 1.100 ops/ms
+# Warmup Iteration   7: 1.110 ops/ms
+# Warmup Iteration   8: 1.108 ops/ms
+# Warmup Iteration   9: 1.109 ops/ms
+# Warmup Iteration  10: 1.106 ops/ms
+Iteration   1: 1.110 ops/ms
+Iteration   2: 1.110 ops/ms
+Iteration   3: 1.110 ops/ms
+Iteration   4: 1.110 ops/ms
+Iteration   5: 1.110 ops/ms
+Iteration   6: 1.110 ops/ms
+Iteration   7: 1.110 ops/ms
+Iteration   8: 1.110 ops/ms
+Iteration   9: 1.110 ops/ms
+Iteration  10: 1.110 ops/ms
+
+# Run progress: 32.38% complete, ETA 07:54:43
+# Fork: 5 of 5
+# Warmup Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+1.074 ops/ms
+# Warmup Iteration   2: 1.132 ops/ms
+# Warmup Iteration   3: 1.133 ops/ms
+# Warmup Iteration   4: 1.132 ops/ms
+# Warmup Iteration   5: 1.132 ops/ms
+# Warmup Iteration   6: 1.131 ops/ms
+# Warmup Iteration   7: 1.134 ops/ms
+# Warmup Iteration   8: 1.133 ops/ms
+# Warmup Iteration   9: 1.133 ops/ms
+# Warmup Iteration  10: 1.133 ops/ms
+Iteration   1: 1.133 ops/ms
+Iteration   2: 1.133 ops/ms
+Iteration   3: 1.133 ops/ms
+Iteration   4: 1.134 ops/ms
+Iteration   5: 1.133 ops/ms
+Iteration   6: 1.133 ops/ms
+Iteration   7: 1.133 ops/ms
+Iteration   8: 1.133 ops/ms
+Iteration   9: 1.134 ops/ms
+Iteration  10: 1.133 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Afterburner.constructorArrayDeser":
+  1.124 ±(99.9%) 0.004 ops/ms [Average]
+  (min, avg, max) = (1.110, 1.124, 1.134), stdev = 0.008
+  CI (99.9%): [1.120, 1.128] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Blackbird.beanArrayDeser
+
+# Run progress: 33.33% complete, ETA 07:48:04
+# Fork: 1 of 5
+# Warmup Iteration   1: 1.239 ops/ms
+# Warmup Iteration   2: 1.307 ops/ms
+# Warmup Iteration   3: 1.308 ops/ms
+# Warmup Iteration   4: 1.309 ops/ms
+# Warmup Iteration   5: 1.308 ops/ms
+# Warmup Iteration   6: 1.309 ops/ms
+# Warmup Iteration   7: 1.309 ops/ms
+# Warmup Iteration   8: 1.307 ops/ms
+# Warmup Iteration   9: 1.309 ops/ms
+# Warmup Iteration  10: 1.309 ops/ms
+Iteration   1: 1.309 ops/ms
+Iteration   2: 1.309 ops/ms
+Iteration   3: 1.309 ops/ms
+Iteration   4: 1.309 ops/ms
+Iteration   5: 1.309 ops/ms
+Iteration   6: 1.309 ops/ms
+Iteration   7: 1.309 ops/ms
+Iteration   8: 1.309 ops/ms
+Iteration   9: 1.309 ops/ms
+Iteration  10: 1.309 ops/ms
+
+# Run progress: 34.29% complete, ETA 07:41:23
+# Fork: 2 of 5
+# Warmup Iteration   1: 1.243 ops/ms
+# Warmup Iteration   2: 1.295 ops/ms
+# Warmup Iteration   3: 1.293 ops/ms
+# Warmup Iteration   4: 1.295 ops/ms
+# Warmup Iteration   5: 1.284 ops/ms
+# Warmup Iteration   6: 1.296 ops/ms
+# Warmup Iteration   7: 1.296 ops/ms
+# Warmup Iteration   8: 1.295 ops/ms
+# Warmup Iteration   9: 1.296 ops/ms
+# Warmup Iteration  10: 1.296 ops/ms
+Iteration   1: 1.295 ops/ms
+Iteration   2: 1.296 ops/ms
+Iteration   3: 1.295 ops/ms
+Iteration   4: 1.296 ops/ms
+Iteration   5: 1.296 ops/ms
+Iteration   6: 1.296 ops/ms
+Iteration   7: 1.296 ops/ms
+Iteration   8: 1.295 ops/ms
+Iteration   9: 1.295 ops/ms
+Iteration  10: 1.295 ops/ms
+
+# Run progress: 35.24% complete, ETA 07:34:43
+# Fork: 3 of 5
+# Warmup Iteration   1: 1.255 ops/ms
+# Warmup Iteration   2: 1.310 ops/ms
+# Warmup Iteration   3: 1.311 ops/ms
+# Warmup Iteration   4: 1.311 ops/ms
+# Warmup Iteration   5: 1.308 ops/ms
+# Warmup Iteration   6: 1.312 ops/ms
+# Warmup Iteration   7: 1.312 ops/ms
+# Warmup Iteration   8: 1.310 ops/ms
+# Warmup Iteration   9: 1.312 ops/ms
+# Warmup Iteration  10: 1.312 ops/ms
+Iteration   1: 1.312 ops/ms
+Iteration   2: 1.312 ops/ms
+Iteration   3: 1.312 ops/ms
+Iteration   4: 1.312 ops/ms
+Iteration   5: 1.312 ops/ms
+Iteration   6: 1.312 ops/ms
+Iteration   7: 1.312 ops/ms
+Iteration   8: 1.312 ops/ms
+Iteration   9: 1.312 ops/ms
+Iteration  10: 1.312 ops/ms
+
+# Run progress: 36.19% complete, ETA 07:28:05
+# Fork: 4 of 5
+# Warmup Iteration   1: 1.247 ops/ms
+# Warmup Iteration   2: 1.303 ops/ms
+# Warmup Iteration   3: 1.303 ops/ms
+# Warmup Iteration   4: 1.303 ops/ms
+# Warmup Iteration   5: 1.296 ops/ms
+# Warmup Iteration   6: 1.304 ops/ms
+# Warmup Iteration   7: 1.305 ops/ms
+# Warmup Iteration   8: 1.302 ops/ms
+# Warmup Iteration   9: 1.305 ops/ms
+# Warmup Iteration  10: 1.305 ops/ms
+Iteration   1: 1.305 ops/ms
+Iteration   2: 1.305 ops/ms
+Iteration   3: 1.305 ops/ms
+Iteration   4: 1.305 ops/ms
+Iteration   5: 1.304 ops/ms
+Iteration   6: 1.305 ops/ms
+Iteration   7: 1.305 ops/ms
+Iteration   8: 1.305 ops/ms
+Iteration   9: 1.305 ops/ms
+Iteration  10: 1.305 ops/ms
+
+# Run progress: 37.14% complete, ETA 07:21:23
+# Fork: 5 of 5
+# Warmup Iteration   1: 1.231 ops/ms
+# Warmup Iteration   2: 1.281 ops/ms
+# Warmup Iteration   3: 1.280 ops/ms
+# Warmup Iteration   4: 1.281 ops/ms
+# Warmup Iteration   5: 1.280 ops/ms
+# Warmup Iteration   6: 1.283 ops/ms
+# Warmup Iteration   7: 1.283 ops/ms
+# Warmup Iteration   8: 1.282 ops/ms
+# Warmup Iteration   9: 1.282 ops/ms
+# Warmup Iteration  10: 1.284 ops/ms
+Iteration   1: 1.282 ops/ms
+Iteration   2: 1.282 ops/ms
+Iteration   3: 1.283 ops/ms
+Iteration   4: 1.283 ops/ms
+Iteration   5: 1.282 ops/ms
+Iteration   6: 1.282 ops/ms
+Iteration   7: 1.282 ops/ms
+Iteration   8: 1.282 ops/ms
+Iteration   9: 1.283 ops/ms
+Iteration  10: 1.282 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Blackbird.beanArrayDeser":
+  1.301 ±(99.9%) 0.005 ops/ms [Average]
+  (min, avg, max) = (1.282, 1.301, 1.312), stdev = 0.011
+  CI (99.9%): [1.295, 1.306] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Blackbird.beanArraySer
+
+# Run progress: 38.10% complete, ETA 07:14:41
+# Fork: 1 of 5
+# Warmup Iteration   1: 2.038 ops/ms
+# Warmup Iteration   2: 2.112 ops/ms
+# Warmup Iteration   3: 2.111 ops/ms
+# Warmup Iteration   4: 2.113 ops/ms
+# Warmup Iteration   5: 2.112 ops/ms
+# Warmup Iteration   6: 2.114 ops/ms
+# Warmup Iteration   7: 2.113 ops/ms
+# Warmup Iteration   8: 2.115 ops/ms
+# Warmup Iteration   9: 2.113 ops/ms
+# Warmup Iteration  10: 2.112 ops/ms
+Iteration   1: 2.113 ops/ms
+Iteration   2: 2.113 ops/ms
+Iteration   3: 2.114 ops/ms
+Iteration   4: 2.113 ops/ms
+Iteration   5: 2.113 ops/ms
+Iteration   6: 2.031 ops/ms
+Iteration   7: 2.110 ops/ms
+Iteration   8: 2.110 ops/ms
+Iteration   9: 2.111 ops/ms
+Iteration  10: 2.111 ops/ms
+
+# Run progress: 39.05% complete, ETA 07:07:59
+# Fork: 2 of 5
+# Warmup Iteration   1: 2.067 ops/ms
+# Warmup Iteration   2: 2.123 ops/ms
+# Warmup Iteration   3: 2.123 ops/ms
+# Warmup Iteration   4: 2.124 ops/ms
+# Warmup Iteration   5: 2.125 ops/ms
+# Warmup Iteration   6: 2.125 ops/ms
+# Warmup Iteration   7: 2.124 ops/ms
+# Warmup Iteration   8: 2.125 ops/ms
+# Warmup Iteration   9: 2.124 ops/ms
+# Warmup Iteration  10: 2.124 ops/ms
+Iteration   1: 2.124 ops/ms
+Iteration   2: 2.125 ops/ms
+Iteration   3: 2.124 ops/ms
+Iteration   4: 2.124 ops/ms
+Iteration   5: 2.125 ops/ms
+Iteration   6: 2.124 ops/ms
+Iteration   7: 2.125 ops/ms
+Iteration   8: 2.125 ops/ms
+Iteration   9: 2.125 ops/ms
+Iteration  10: 2.125 ops/ms
+
+# Run progress: 40.00% complete, ETA 07:01:18
+# Fork: 3 of 5
+# Warmup Iteration   1: 2.056 ops/ms
+# Warmup Iteration   2: 2.137 ops/ms
+# Warmup Iteration   3: 2.136 ops/ms
+# Warmup Iteration   4: 2.137 ops/ms
+# Warmup Iteration   5: 2.138 ops/ms
+# Warmup Iteration   6: 2.139 ops/ms
+# Warmup Iteration   7: 2.139 ops/ms
+# Warmup Iteration   8: 2.137 ops/ms
+# Warmup Iteration   9: 2.136 ops/ms
+# Warmup Iteration  10: 2.139 ops/ms
+Iteration   1: 2.139 ops/ms
+Iteration   2: 2.138 ops/ms
+Iteration   3: 2.139 ops/ms
+Iteration   4: 2.138 ops/ms
+Iteration   5: 2.138 ops/ms
+Iteration   6: 2.138 ops/ms
+Iteration   7: 2.128 ops/ms
+Iteration   8: 2.127 ops/ms
+Iteration   9: 2.128 ops/ms
+Iteration  10: 2.128 ops/ms
+
+# Run progress: 40.95% complete, ETA 06:54:36
+# Fork: 4 of 5
+# Warmup Iteration   1: 2.036 ops/ms
+# Warmup Iteration   2: 2.093 ops/ms
+# Warmup Iteration   3: 2.092 ops/ms
+# Warmup Iteration   4: 2.094 ops/ms
+# Warmup Iteration   5: 2.095 ops/ms
+# Warmup Iteration   6: 2.095 ops/ms
+# Warmup Iteration   7: 2.097 ops/ms
+# Warmup Iteration   8: 2.096 ops/ms
+# Warmup Iteration   9: 2.096 ops/ms
+# Warmup Iteration  10: 2.096 ops/ms
+Iteration   1: 2.096 ops/ms
+Iteration   2: 2.096 ops/ms
+Iteration   3: 2.096 ops/ms
+Iteration   4: 2.096 ops/ms
+Iteration   5: 2.096 ops/ms
+Iteration   6: 2.096 ops/ms
+Iteration   7: 2.093 ops/ms
+Iteration   8: 2.093 ops/ms
+Iteration   9: 2.093 ops/ms
+Iteration  10: 2.092 ops/ms
+
+# Run progress: 41.90% complete, ETA 06:47:54
+# Fork: 5 of 5
+# Warmup Iteration   1: 2.061 ops/ms
+# Warmup Iteration   2: 2.117 ops/ms
+# Warmup Iteration   3: 2.117 ops/ms
+# Warmup Iteration   4: 2.116 ops/ms
+# Warmup Iteration   5: 2.117 ops/ms
+# Warmup Iteration   6: 2.118 ops/ms
+# Warmup Iteration   7: 2.117 ops/ms
+# Warmup Iteration   8: 2.118 ops/ms
+# Warmup Iteration   9: 2.117 ops/ms
+# Warmup Iteration  10: 2.117 ops/ms
+Iteration   1: 2.117 ops/ms
+Iteration   2: 2.117 ops/ms
+Iteration   3: 2.117 ops/ms
+Iteration   4: 2.116 ops/ms
+Iteration   5: 2.117 ops/ms
+Iteration   6: 2.117 ops/ms
+Iteration   7: 2.116 ops/ms
+Iteration   8: 2.117 ops/ms
+Iteration   9: 2.117 ops/ms
+Iteration  10: 2.116 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Blackbird.beanArraySer":
+  2.115 ±(99.9%) 0.009 ops/ms [Average]
+  (min, avg, max) = (2.031, 2.115, 2.139), stdev = 0.018
+  CI (99.9%): [2.106, 2.124] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Blackbird.classicBeanItemDeser
+
+# Run progress: 42.86% complete, ETA 06:41:12
+# Fork: 1 of 5
+# Warmup Iteration   1: 1.178 ops/ms
+# Warmup Iteration   2: 1.217 ops/ms
+# Warmup Iteration   3: 1.217 ops/ms
+# Warmup Iteration   4: 1.218 ops/ms
+# Warmup Iteration   5: 1.219 ops/ms
+# Warmup Iteration   6: 1.213 ops/ms
+# Warmup Iteration   7: 1.218 ops/ms
+# Warmup Iteration   8: 1.218 ops/ms
+# Warmup Iteration   9: 1.218 ops/ms
+# Warmup Iteration  10: 1.219 ops/ms
+Iteration   1: 1.219 ops/ms
+Iteration   2: 1.218 ops/ms
+Iteration   3: 1.219 ops/ms
+Iteration   4: 1.219 ops/ms
+Iteration   5: 1.219 ops/ms
+Iteration   6: 1.219 ops/ms
+Iteration   7: 1.218 ops/ms
+Iteration   8: 1.218 ops/ms
+Iteration   9: 1.219 ops/ms
+Iteration  10: 1.218 ops/ms
+
+# Run progress: 43.81% complete, ETA 06:34:31
+# Fork: 2 of 5
+# Warmup Iteration   1: 1.271 ops/ms
+# Warmup Iteration   2: 1.314 ops/ms
+# Warmup Iteration   3: 1.316 ops/ms
+# Warmup Iteration   4: 1.315 ops/ms
+# Warmup Iteration   5: 1.310 ops/ms
+# Warmup Iteration   6: 1.317 ops/ms
+# Warmup Iteration   7: 1.316 ops/ms
+# Warmup Iteration   8: 1.316 ops/ms
+# Warmup Iteration   9: 1.316 ops/ms
+# Warmup Iteration  10: 1.316 ops/ms
+Iteration   1: 1.316 ops/ms
+Iteration   2: 1.316 ops/ms
+Iteration   3: 1.316 ops/ms
+Iteration   4: 1.316 ops/ms
+Iteration   5: 1.316 ops/ms
+Iteration   6: 1.316 ops/ms
+Iteration   7: 1.317 ops/ms
+Iteration   8: 1.317 ops/ms
+Iteration   9: 1.317 ops/ms
+Iteration  10: 1.317 ops/ms
+
+# Run progress: 44.76% complete, ETA 06:27:49
+# Fork: 3 of 5
+# Warmup Iteration   1: 1.205 ops/ms
+# Warmup Iteration   2: 1.251 ops/ms
+# Warmup Iteration   3: 1.250 ops/ms
+# Warmup Iteration   4: 1.250 ops/ms
+# Warmup Iteration   5: 1.249 ops/ms
+# Warmup Iteration   6: 1.248 ops/ms
+# Warmup Iteration   7: 1.252 ops/ms
+# Warmup Iteration   8: 1.251 ops/ms
+# Warmup Iteration   9: 1.251 ops/ms
+# Warmup Iteration  10: 1.251 ops/ms
+Iteration   1: 1.251 ops/ms
+Iteration   2: 1.251 ops/ms
+Iteration   3: 1.251 ops/ms
+Iteration   4: 1.252 ops/ms
+Iteration   5: 1.251 ops/ms
+Iteration   6: 1.252 ops/ms
+Iteration   7: 1.252 ops/ms
+Iteration   8: 1.252 ops/ms
+Iteration   9: 1.252 ops/ms
+Iteration  10: 1.252 ops/ms
+
+# Run progress: 45.71% complete, ETA 06:21:08
+# Fork: 4 of 5
+# Warmup Iteration   1: 1.194 ops/ms
+# Warmup Iteration   2: 1.232 ops/ms
+# Warmup Iteration   3: 1.234 ops/ms
+# Warmup Iteration   4: 1.234 ops/ms
+# Warmup Iteration   5: 1.235 ops/ms
+# Warmup Iteration   6: 1.228 ops/ms
+# Warmup Iteration   7: 1.234 ops/ms
+# Warmup Iteration   8: 1.234 ops/ms
+# Warmup Iteration   9: 1.235 ops/ms
+# Warmup Iteration  10: 1.235 ops/ms
+Iteration   1: 1.234 ops/ms
+Iteration   2: 1.234 ops/ms
+Iteration   3: 1.235 ops/ms
+Iteration   4: 1.235 ops/ms
+Iteration   5: 1.235 ops/ms
+Iteration   6: 1.235 ops/ms
+Iteration   7: 1.235 ops/ms
+Iteration   8: 1.235 ops/ms
+Iteration   9: 1.235 ops/ms
+Iteration  10: 1.235 ops/ms
+
+# Run progress: 46.67% complete, ETA 06:14:26
+# Fork: 5 of 5
+# Warmup Iteration   1: 1.191 ops/ms
+# Warmup Iteration   2: 1.228 ops/ms
+# Warmup Iteration   3: 1.230 ops/ms
+# Warmup Iteration   4: 1.229 ops/ms
+# Warmup Iteration   5: 1.230 ops/ms
+# Warmup Iteration   6: 1.229 ops/ms
+# Warmup Iteration   7: 1.229 ops/ms
+# Warmup Iteration   8: 1.230 ops/ms
+# Warmup Iteration   9: 1.230 ops/ms
+# Warmup Iteration  10: 1.230 ops/ms
+Iteration   1: 1.230 ops/ms
+Iteration   2: 1.230 ops/ms
+Iteration   3: 1.230 ops/ms
+Iteration   4: 1.230 ops/ms
+Iteration   5: 1.230 ops/ms
+Iteration   6: 1.229 ops/ms
+Iteration   7: 1.230 ops/ms
+Iteration   8: 1.230 ops/ms
+Iteration   9: 1.230 ops/ms
+Iteration  10: 1.230 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Blackbird.classicBeanItemDeser":
+  1.250 ±(99.9%) 0.017 ops/ms [Average]
+  (min, avg, max) = (1.218, 1.250, 1.317), stdev = 0.035
+  CI (99.9%): [1.233, 1.268] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Blackbird.classicBeanItemSer
+
+# Run progress: 47.62% complete, ETA 06:07:45
+# Fork: 1 of 5
+# Warmup Iteration   1: 2.120 ops/ms
+# Warmup Iteration   2: 2.151 ops/ms
+# Warmup Iteration   3: 2.160 ops/ms
+# Warmup Iteration   4: 2.158 ops/ms
+# Warmup Iteration   5: 2.150 ops/ms
+# Warmup Iteration   6: 2.145 ops/ms
+# Warmup Iteration   7: 2.146 ops/ms
+# Warmup Iteration   8: 2.112 ops/ms
+# Warmup Iteration   9: 2.146 ops/ms
+# Warmup Iteration  10: 2.136 ops/ms
+Iteration   1: 2.139 ops/ms
+Iteration   2: 2.146 ops/ms
+Iteration   3: 2.146 ops/ms
+Iteration   4: 2.146 ops/ms
+Iteration   5: 2.140 ops/ms
+Iteration   6: 2.131 ops/ms
+Iteration   7: 2.151 ops/ms
+Iteration   8: 2.154 ops/ms
+Iteration   9: 2.151 ops/ms
+Iteration  10: 2.150 ops/ms
+
+# Run progress: 48.57% complete, ETA 06:01:03
+# Fork: 2 of 5
+# Warmup Iteration   1: 2.074 ops/ms
+# Warmup Iteration   2: 2.105 ops/ms
+# Warmup Iteration   3: 2.089 ops/ms
+# Warmup Iteration   4: 2.101 ops/ms
+# Warmup Iteration   5: 2.101 ops/ms
+# Warmup Iteration   6: 2.098 ops/ms
+# Warmup Iteration   7: 2.100 ops/ms
+# Warmup Iteration   8: 2.101 ops/ms
+# Warmup Iteration   9: 2.103 ops/ms
+# Warmup Iteration  10: 2.101 ops/ms
+Iteration   1: 2.101 ops/ms
+Iteration   2: 2.101 ops/ms
+Iteration   3: 2.101 ops/ms
+Iteration   4: 2.101 ops/ms
+Iteration   5: 2.100 ops/ms
+Iteration   6: 2.102 ops/ms
+Iteration   7: 2.088 ops/ms
+Iteration   8: 2.088 ops/ms
+Iteration   9: 2.088 ops/ms
+Iteration  10: 2.089 ops/ms
+
+# Run progress: 49.52% complete, ETA 05:54:22
+# Fork: 3 of 5
+# Warmup Iteration   1: 2.073 ops/ms
+# Warmup Iteration   2: 2.114 ops/ms
+# Warmup Iteration   3: 2.115 ops/ms
+# Warmup Iteration   4: 2.113 ops/ms
+# Warmup Iteration   5: 2.107 ops/ms
+# Warmup Iteration   6: 2.117 ops/ms
+# Warmup Iteration   7: 2.117 ops/ms
+# Warmup Iteration   8: 2.117 ops/ms
+# Warmup Iteration   9: 2.117 ops/ms
+# Warmup Iteration  10: 2.116 ops/ms
+Iteration   1: 2.117 ops/ms
+Iteration   2: 2.115 ops/ms
+Iteration   3: 2.118 ops/ms
+Iteration   4: 2.117 ops/ms
+Iteration   5: 2.117 ops/ms
+Iteration   6: 2.117 ops/ms
+Iteration   7: 2.103 ops/ms
+Iteration   8: 2.103 ops/ms
+Iteration   9: 2.104 ops/ms
+Iteration  10: 2.102 ops/ms
+
+# Run progress: 50.48% complete, ETA 05:47:41
+# Fork: 4 of 5
+# Warmup Iteration   1: 2.188 ops/ms
+# Warmup Iteration   2: 2.224 ops/ms
+# Warmup Iteration   3: 2.223 ops/ms
+# Warmup Iteration   4: 2.199 ops/ms
+# Warmup Iteration   5: 2.174 ops/ms
+# Warmup Iteration   6: 2.198 ops/ms
+# Warmup Iteration   7: 2.184 ops/ms
+# Warmup Iteration   8: 2.204 ops/ms
+# Warmup Iteration   9: 2.173 ops/ms
+# Warmup Iteration  10: 2.194 ops/ms
+Iteration   1: 2.196 ops/ms
+Iteration   2: 2.193 ops/ms
+Iteration   3: 2.190 ops/ms
+Iteration   4: 2.203 ops/ms
+Iteration   5: 2.191 ops/ms
+Iteration   6: 2.188 ops/ms
+Iteration   7: 2.181 ops/ms
+Iteration   8: 2.177 ops/ms
+Iteration   9: 2.176 ops/ms
+Iteration  10: 2.181 ops/ms
+
+# Run progress: 51.43% complete, ETA 05:41:00
+# Fork: 5 of 5
+# Warmup Iteration   1: 2.121 ops/ms
+# Warmup Iteration   2: 2.179 ops/ms
+# Warmup Iteration   3: 2.179 ops/ms
+# Warmup Iteration   4: 2.173 ops/ms
+# Warmup Iteration   5: 2.166 ops/ms
+# Warmup Iteration   6: 2.173 ops/ms
+# Warmup Iteration   7: 2.173 ops/ms
+# Warmup Iteration   8: 2.173 ops/ms
+# Warmup Iteration   9: 2.173 ops/ms
+# Warmup Iteration  10: 2.173 ops/ms
+Iteration   1: 2.174 ops/ms
+Iteration   2: 2.173 ops/ms
+Iteration   3: 2.173 ops/ms
+Iteration   4: 2.172 ops/ms
+Iteration   5: 2.173 ops/ms
+Iteration   6: 2.173 ops/ms
+Iteration   7: 2.142 ops/ms
+Iteration   8: 2.142 ops/ms
+Iteration   9: 2.142 ops/ms
+Iteration  10: 2.141 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Blackbird.classicBeanItemSer":
+  2.140 ±(99.9%) 0.017 ops/ms [Average]
+  (min, avg, max) = (2.088, 2.140, 2.203), stdev = 0.035
+  CI (99.9%): [2.123, 2.157] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Blackbird.classicMediaItemDeser
+
+# Run progress: 52.38% complete, ETA 05:34:18
+# Fork: 1 of 5
+# Warmup Iteration   1: 373.099 ops/ms
+# Warmup Iteration   2: 386.706 ops/ms
+# Warmup Iteration   3: 386.418 ops/ms
+# Warmup Iteration   4: 386.766 ops/ms
+# Warmup Iteration   5: 386.708 ops/ms
+# Warmup Iteration   6: 386.449 ops/ms
+# Warmup Iteration   7: 386.559 ops/ms
+# Warmup Iteration   8: 386.889 ops/ms
+# Warmup Iteration   9: 386.682 ops/ms
+# Warmup Iteration  10: 386.846 ops/ms
+Iteration   1: 386.704 ops/ms
+Iteration   2: 386.533 ops/ms
+Iteration   3: 386.954 ops/ms
+Iteration   4: 386.505 ops/ms
+Iteration   5: 386.644 ops/ms
+Iteration   6: 386.357 ops/ms
+Iteration   7: 386.382 ops/ms
+Iteration   8: 386.481 ops/ms
+Iteration   9: 386.339 ops/ms
+Iteration  10: 386.344 ops/ms
+
+# Run progress: 53.33% complete, ETA 05:27:37
+# Fork: 2 of 5
+# Warmup Iteration   1: 377.475 ops/ms
+# Warmup Iteration   2: 390.200 ops/ms
+# Warmup Iteration   3: 390.929 ops/ms
+# Warmup Iteration   4: 390.733 ops/ms
+# Warmup Iteration   5: 390.845 ops/ms
+# Warmup Iteration   6: 390.707 ops/ms
+# Warmup Iteration   7: 390.821 ops/ms
+# Warmup Iteration   8: 390.675 ops/ms
+# Warmup Iteration   9: 390.821 ops/ms
+# Warmup Iteration  10: 390.695 ops/ms
+Iteration   1: 390.970 ops/ms
+Iteration   2: 390.646 ops/ms
+Iteration   3: 390.650 ops/ms
+Iteration   4: 390.814 ops/ms
+Iteration   5: 390.476 ops/ms
+Iteration   6: 390.735 ops/ms
+Iteration   7: 389.087 ops/ms
+Iteration   8: 389.450 ops/ms
+Iteration   9: 389.219 ops/ms
+Iteration  10: 389.325 ops/ms
+
+# Run progress: 54.29% complete, ETA 05:20:55
+# Fork: 3 of 5
+# Warmup Iteration   1: 372.393 ops/ms
+# Warmup Iteration   2: 382.887 ops/ms
+# Warmup Iteration   3: 383.158 ops/ms
+# Warmup Iteration   4: 382.460 ops/ms
+# Warmup Iteration   5: 382.930 ops/ms
+# Warmup Iteration   6: 382.892 ops/ms
+# Warmup Iteration   7: 382.128 ops/ms
+# Warmup Iteration   8: 382.340 ops/ms
+# Warmup Iteration   9: 382.534 ops/ms
+# Warmup Iteration  10: 382.628 ops/ms
+Iteration   1: 382.339 ops/ms
+Iteration   2: 382.698 ops/ms
+Iteration   3: 382.281 ops/ms
+Iteration   4: 382.747 ops/ms
+Iteration   5: 382.433 ops/ms
+Iteration   6: 382.336 ops/ms
+Iteration   7: 381.227 ops/ms
+Iteration   8: 381.638 ops/ms
+Iteration   9: 381.135 ops/ms
+Iteration  10: 381.291 ops/ms
+
+# Run progress: 55.24% complete, ETA 05:14:15
+# Fork: 4 of 5
+# Warmup Iteration   1: 376.557 ops/ms
+# Warmup Iteration   2: 389.824 ops/ms
+# Warmup Iteration   3: 387.598 ops/ms
+# Warmup Iteration   4: 387.706 ops/ms
+# Warmup Iteration   5: 388.504 ops/ms
+# Warmup Iteration   6: 387.822 ops/ms
+# Warmup Iteration   7: 387.301 ops/ms
+# Warmup Iteration   8: 387.832 ops/ms
+# Warmup Iteration   9: 387.620 ops/ms
+# Warmup Iteration  10: 386.801 ops/ms
+Iteration   1: 387.770 ops/ms
+Iteration   2: 387.595 ops/ms
+Iteration   3: 387.981 ops/ms
+Iteration   4: 387.718 ops/ms
+Iteration   5: 387.554 ops/ms
+Iteration   6: 386.737 ops/ms
+Iteration   7: 385.877 ops/ms
+Iteration   8: 386.851 ops/ms
+Iteration   9: 386.506 ops/ms
+Iteration  10: 386.397 ops/ms
+
+# Run progress: 56.19% complete, ETA 05:07:34
+# Fork: 5 of 5
+# Warmup Iteration   1: 374.670 ops/ms
+# Warmup Iteration   2: 389.434 ops/ms
+# Warmup Iteration   3: 390.256 ops/ms
+# Warmup Iteration   4: 389.986 ops/ms
+# Warmup Iteration   5: 390.065 ops/ms
+# Warmup Iteration   6: 390.244 ops/ms
+# Warmup Iteration   7: 390.221 ops/ms
+# Warmup Iteration   8: 390.178 ops/ms
+# Warmup Iteration   9: 389.840 ops/ms
+# Warmup Iteration  10: 389.953 ops/ms
+Iteration   1: 390.079 ops/ms
+Iteration   2: 390.052 ops/ms
+Iteration   3: 390.121 ops/ms
+Iteration   4: 390.149 ops/ms
+Iteration   5: 390.340 ops/ms
+Iteration   6: 390.116 ops/ms
+Iteration   7: 389.697 ops/ms
+Iteration   8: 389.921 ops/ms
+Iteration   9: 390.039 ops/ms
+Iteration  10: 389.751 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Blackbird.classicMediaItemDeser":
+  387.160 ±(99.9%) 1.507 ops/ms [Average]
+  (min, avg, max) = (381.135, 387.160, 390.970), stdev = 3.043
+  CI (99.9%): [385.653, 388.666] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Blackbird.classicMediaItemSer
+
+# Run progress: 57.14% complete, ETA 05:00:54
+# Fork: 1 of 5
+# Warmup Iteration   1: 564.856 ops/ms
+# Warmup Iteration   2: 563.840 ops/ms
+# Warmup Iteration   3: 566.729 ops/ms
+# Warmup Iteration   4: 566.415 ops/ms
+# Warmup Iteration   5: 567.093 ops/ms
+# Warmup Iteration   6: 566.916 ops/ms
+# Warmup Iteration   7: 566.675 ops/ms
+# Warmup Iteration   8: 566.657 ops/ms
+# Warmup Iteration   9: 566.836 ops/ms
+# Warmup Iteration  10: 566.812 ops/ms
+Iteration   1: 567.264 ops/ms
+Iteration   2: 567.316 ops/ms
+Iteration   3: 566.845 ops/ms
+Iteration   4: 567.368 ops/ms
+Iteration   5: 566.994 ops/ms
+Iteration   6: 567.245 ops/ms
+Iteration   7: 567.747 ops/ms
+Iteration   8: 567.346 ops/ms
+Iteration   9: 567.455 ops/ms
+Iteration  10: 567.475 ops/ms
+
+# Run progress: 58.10% complete, ETA 04:54:13
+# Fork: 2 of 5
+# Warmup Iteration   1: 570.368 ops/ms
+# Warmup Iteration   2: 584.465 ops/ms
+# Warmup Iteration   3: 586.427 ops/ms
+# Warmup Iteration   4: 586.408 ops/ms
+# Warmup Iteration   5: 585.084 ops/ms
+# Warmup Iteration   6: 586.455 ops/ms
+# Warmup Iteration   7: 586.442 ops/ms
+# Warmup Iteration   8: 585.707 ops/ms
+# Warmup Iteration   9: 586.499 ops/ms
+# Warmup Iteration  10: 586.847 ops/ms
+Iteration   1: 586.585 ops/ms
+Iteration   2: 586.723 ops/ms
+Iteration   3: 586.578 ops/ms
+Iteration   4: 586.622 ops/ms
+Iteration   5: 586.922 ops/ms
+Iteration   6: 586.739 ops/ms
+Iteration   7: 588.170 ops/ms
+Iteration   8: 587.766 ops/ms
+Iteration   9: 587.750 ops/ms
+Iteration  10: 588.250 ops/ms
+
+# Run progress: 59.05% complete, ETA 04:47:32
+# Fork: 3 of 5
+# Warmup Iteration   1: 551.028 ops/ms
+# Warmup Iteration   2: 561.184 ops/ms
+# Warmup Iteration   3: 564.790 ops/ms
+# Warmup Iteration   4: 563.672 ops/ms
+# Warmup Iteration   5: 562.532 ops/ms
+# Warmup Iteration   6: 561.632 ops/ms
+# Warmup Iteration   7: 564.402 ops/ms
+# Warmup Iteration   8: 565.039 ops/ms
+# Warmup Iteration   9: 564.591 ops/ms
+# Warmup Iteration  10: 565.852 ops/ms
+Iteration   1: 565.253 ops/ms
+Iteration   2: 565.408 ops/ms
+Iteration   3: 561.840 ops/ms
+Iteration   4: 561.538 ops/ms
+Iteration   5: 565.281 ops/ms
+Iteration   6: 565.467 ops/ms
+Iteration   7: 561.995 ops/ms
+Iteration   8: 562.708 ops/ms
+Iteration   9: 562.319 ops/ms
+Iteration  10: 562.103 ops/ms
+
+# Run progress: 60.00% complete, ETA 04:40:50
+# Fork: 4 of 5
+# Warmup Iteration   1: 574.157 ops/ms
+# Warmup Iteration   2: 583.391 ops/ms
+# Warmup Iteration   3: 587.119 ops/ms
+# Warmup Iteration   4: 586.384 ops/ms
+# Warmup Iteration   5: 587.410 ops/ms
+# Warmup Iteration   6: 587.175 ops/ms
+# Warmup Iteration   7: 587.178 ops/ms
+# Warmup Iteration   8: 587.126 ops/ms
+# Warmup Iteration   9: 587.133 ops/ms
+# Warmup Iteration  10: 587.425 ops/ms
+Iteration   1: 587.456 ops/ms
+Iteration   2: 587.545 ops/ms
+Iteration   3: 587.688 ops/ms
+Iteration   4: 587.647 ops/ms
+Iteration   5: 587.500 ops/ms
+Iteration   6: 587.030 ops/ms
+Iteration   7: 584.387 ops/ms
+Iteration   8: 584.994 ops/ms
+Iteration   9: 585.153 ops/ms
+Iteration  10: 585.184 ops/ms
+
+# Run progress: 60.95% complete, ETA 04:34:09
+# Fork: 5 of 5
+# Warmup Iteration   1: 561.155 ops/ms
+# Warmup Iteration   2: 575.469 ops/ms
+# Warmup Iteration   3: 573.437 ops/ms
+# Warmup Iteration   4: 574.134 ops/ms
+# Warmup Iteration   5: 574.453 ops/ms
+# Warmup Iteration   6: 574.563 ops/ms
+# Warmup Iteration   7: 574.035 ops/ms
+# Warmup Iteration   8: 575.710 ops/ms
+# Warmup Iteration   9: 574.868 ops/ms
+# Warmup Iteration  10: 575.173 ops/ms
+Iteration   1: 575.730 ops/ms
+Iteration   2: 574.667 ops/ms
+Iteration   3: 576.177 ops/ms
+Iteration   4: 576.256 ops/ms
+Iteration   5: 574.222 ops/ms
+Iteration   6: 575.649 ops/ms
+Iteration   7: 573.770 ops/ms
+Iteration   8: 572.502 ops/ms
+Iteration   9: 573.370 ops/ms
+Iteration  10: 574.174 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Blackbird.classicMediaItemSer":
+  575.804 ±(99.9%) 4.887 ops/ms [Average]
+  (min, avg, max) = (561.538, 575.804, 588.250), stdev = 9.871
+  CI (99.9%): [570.917, 580.690] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Blackbird.constructorArrayDeser
+
+# Run progress: 61.90% complete, ETA 04:27:28
+# Fork: 1 of 5
+# Warmup Iteration   1: 1.050 ops/ms
+# Warmup Iteration   2: 1.119 ops/ms
+# Warmup Iteration   3: 1.120 ops/ms
+# Warmup Iteration   4: 1.119 ops/ms
+# Warmup Iteration   5: 1.120 ops/ms
+# Warmup Iteration   6: 1.116 ops/ms
+# Warmup Iteration   7: 1.120 ops/ms
+# Warmup Iteration   8: 1.120 ops/ms
+# Warmup Iteration   9: 1.120 ops/ms
+# Warmup Iteration  10: 1.118 ops/ms
+Iteration   1: 1.120 ops/ms
+Iteration   2: 1.120 ops/ms
+Iteration   3: 1.120 ops/ms
+Iteration   4: 1.120 ops/ms
+Iteration   5: 1.120 ops/ms
+Iteration   6: 1.120 ops/ms
+Iteration   7: 1.120 ops/ms
+Iteration   8: 1.119 ops/ms
+Iteration   9: 1.119 ops/ms
+Iteration  10: 1.119 ops/ms
+
+# Run progress: 62.86% complete, ETA 04:20:46
+# Fork: 2 of 5
+# Warmup Iteration   1: 1.061 ops/ms
+# Warmup Iteration   2: 1.126 ops/ms
+# Warmup Iteration   3: 1.127 ops/ms
+# Warmup Iteration   4: 1.127 ops/ms
+# Warmup Iteration   5: 1.127 ops/ms
+# Warmup Iteration   6: 1.123 ops/ms
+# Warmup Iteration   7: 1.127 ops/ms
+# Warmup Iteration   8: 1.127 ops/ms
+# Warmup Iteration   9: 1.127 ops/ms
+# Warmup Iteration  10: 1.126 ops/ms
+Iteration   1: 1.127 ops/ms
+Iteration   2: 1.127 ops/ms
+Iteration   3: 1.128 ops/ms
+Iteration   4: 1.127 ops/ms
+Iteration   5: 1.127 ops/ms
+Iteration   6: 1.127 ops/ms
+Iteration   7: 1.128 ops/ms
+Iteration   8: 1.128 ops/ms
+Iteration   9: 1.127 ops/ms
+Iteration  10: 1.128 ops/ms
+
+# Run progress: 63.81% complete, ETA 04:14:05
+# Fork: 3 of 5
+# Warmup Iteration   1: 1.073 ops/ms
+# Warmup Iteration   2: 1.130 ops/ms
+# Warmup Iteration   3: 1.131 ops/ms
+# Warmup Iteration   4: 1.131 ops/ms
+# Warmup Iteration   5: 1.132 ops/ms
+# Warmup Iteration   6: 1.128 ops/ms
+# Warmup Iteration   7: 1.132 ops/ms
+# Warmup Iteration   8: 1.132 ops/ms
+# Warmup Iteration   9: 1.132 ops/ms
+# Warmup Iteration  10: 1.132 ops/ms
+Iteration   1: 1.133 ops/ms
+Iteration   2: 1.133 ops/ms
+Iteration   3: 1.133 ops/ms
+Iteration   4: 1.133 ops/ms
+Iteration   5: 1.132 ops/ms
+Iteration   6: 1.097 ops/ms
+Iteration   7: 1.132 ops/ms
+Iteration   8: 1.132 ops/ms
+Iteration   9: 1.132 ops/ms
+Iteration  10: 1.132 ops/ms
+
+# Run progress: 64.76% complete, ETA 04:07:24
+# Fork: 4 of 5
+# Warmup Iteration   1: 1.060 ops/ms
+# Warmup Iteration   2: 1.125 ops/ms
+# Warmup Iteration   3: 1.124 ops/ms
+# Warmup Iteration   4: 1.125 ops/ms
+# Warmup Iteration   5: 1.126 ops/ms
+# Warmup Iteration   6: 1.122 ops/ms
+# Warmup Iteration   7: 1.126 ops/ms
+# Warmup Iteration   8: 1.126 ops/ms
+# Warmup Iteration   9: 1.126 ops/ms
+# Warmup Iteration  10: 1.126 ops/ms
+Iteration   1: 1.127 ops/ms
+Iteration   2: 1.126 ops/ms
+Iteration   3: 1.126 ops/ms
+Iteration   4: 1.126 ops/ms
+Iteration   5: 1.126 ops/ms
+Iteration   6: 1.126 ops/ms
+Iteration   7: 1.122 ops/ms
+Iteration   8: 1.122 ops/ms
+Iteration   9: 1.122 ops/ms
+Iteration  10: 1.122 ops/ms
+
+# Run progress: 65.71% complete, ETA 04:00:42
+# Fork: 5 of 5
+# Warmup Iteration   1: 1.052 ops/ms
+# Warmup Iteration   2: 1.112 ops/ms
+# Warmup Iteration   3: 1.112 ops/ms
+# Warmup Iteration   4: 1.112 ops/ms
+# Warmup Iteration   5: 1.112 ops/ms
+# Warmup Iteration   6: 1.111 ops/ms
+# Warmup Iteration   7: 1.113 ops/ms
+# Warmup Iteration   8: 1.112 ops/ms
+# Warmup Iteration   9: 1.113 ops/ms
+# Warmup Iteration  10: 1.109 ops/ms
+Iteration   1: 1.113 ops/ms
+Iteration   2: 1.113 ops/ms
+Iteration   3: 1.112 ops/ms
+Iteration   4: 1.113 ops/ms
+Iteration   5: 1.112 ops/ms
+Iteration   6: 1.112 ops/ms
+Iteration   7: 1.105 ops/ms
+Iteration   8: 1.105 ops/ms
+Iteration   9: 1.105 ops/ms
+Iteration  10: 1.105 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Blackbird.constructorArrayDeser":
+  1.122 ±(99.9%) 0.004 ops/ms [Average]
+  (min, avg, max) = (1.097, 1.122, 1.133), stdev = 0.009
+  CI (99.9%): [1.118, 1.126] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Vanilla.beanArrayDeser
+
+# Run progress: 66.67% complete, ETA 03:54:01
+# Fork: 1 of 5
+# Warmup Iteration   1: 1.125 ops/ms
+# Warmup Iteration   2: 1.189 ops/ms
+# Warmup Iteration   3: 1.189 ops/ms
+# Warmup Iteration   4: 1.189 ops/ms
+# Warmup Iteration   5: 1.188 ops/ms
+# Warmup Iteration   6: 1.187 ops/ms
+# Warmup Iteration   7: 1.188 ops/ms
+# Warmup Iteration   8: 1.188 ops/ms
+# Warmup Iteration   9: 1.182 ops/ms
+# Warmup Iteration  10: 1.189 ops/ms
+Iteration   1: 1.189 ops/ms
+Iteration   2: 1.188 ops/ms
+Iteration   3: 1.189 ops/ms
+Iteration   4: 1.189 ops/ms
+Iteration   5: 1.188 ops/ms
+Iteration   6: 1.189 ops/ms
+Iteration   7: 1.189 ops/ms
+Iteration   8: 1.189 ops/ms
+Iteration   9: 1.188 ops/ms
+Iteration  10: 1.189 ops/ms
+
+# Run progress: 67.62% complete, ETA 03:47:20
+# Fork: 2 of 5
+# Warmup Iteration   1: 1.123 ops/ms
+# Warmup Iteration   2: 1.182 ops/ms
+# Warmup Iteration   3: 1.183 ops/ms
+# Warmup Iteration   4: 1.183 ops/ms
+# Warmup Iteration   5: 1.182 ops/ms
+# Warmup Iteration   6: 1.179 ops/ms
+# Warmup Iteration   7: 1.182 ops/ms
+# Warmup Iteration   8: 1.183 ops/ms
+# Warmup Iteration   9: 1.180 ops/ms
+# Warmup Iteration  10: 1.184 ops/ms
+Iteration   1: 1.183 ops/ms
+Iteration   2: 1.183 ops/ms
+Iteration   3: 1.183 ops/ms
+Iteration   4: 1.183 ops/ms
+Iteration   5: 1.183 ops/ms
+Iteration   6: 1.183 ops/ms
+Iteration   7: 1.184 ops/ms
+Iteration   8: 1.184 ops/ms
+Iteration   9: 1.184 ops/ms
+Iteration  10: 1.183 ops/ms
+
+# Run progress: 68.57% complete, ETA 03:40:38
+# Fork: 3 of 5
+# Warmup Iteration   1: 1.115 ops/ms
+# Warmup Iteration   2: 1.165 ops/ms
+# Warmup Iteration   3: 1.166 ops/ms
+# Warmup Iteration   4: 1.165 ops/ms
+# Warmup Iteration   5: 1.166 ops/ms
+# Warmup Iteration   6: 1.165 ops/ms
+# Warmup Iteration   7: 1.166 ops/ms
+# Warmup Iteration   8: 1.166 ops/ms
+# Warmup Iteration   9: 1.165 ops/ms
+# Warmup Iteration  10: 1.166 ops/ms
+Iteration   1: 1.166 ops/ms
+Iteration   2: 1.166 ops/ms
+Iteration   3: 1.166 ops/ms
+Iteration   4: 1.166 ops/ms
+Iteration   5: 1.166 ops/ms
+Iteration   6: 1.166 ops/ms
+Iteration   7: 1.166 ops/ms
+Iteration   8: 1.166 ops/ms
+Iteration   9: 1.167 ops/ms
+Iteration  10: 1.166 ops/ms
+
+# Run progress: 69.52% complete, ETA 03:33:57
+# Fork: 4 of 5
+# Warmup Iteration   1: 1.143 ops/ms
+# Warmup Iteration   2: 1.197 ops/ms
+# Warmup Iteration   3: 1.197 ops/ms
+# Warmup Iteration   4: 1.197 ops/ms
+# Warmup Iteration   5: 1.197 ops/ms
+# Warmup Iteration   6: 1.194 ops/ms
+# Warmup Iteration   7: 1.197 ops/ms
+# Warmup Iteration   8: 1.197 ops/ms
+# Warmup Iteration   9: 1.193 ops/ms
+# Warmup Iteration  10: 1.198 ops/ms
+Iteration   1: 1.197 ops/ms
+Iteration   2: 1.198 ops/ms
+Iteration   3: 1.198 ops/ms
+Iteration   4: 1.198 ops/ms
+Iteration   5: 1.198 ops/ms
+Iteration   6: 1.198 ops/ms
+Iteration   7: 1.199 ops/ms
+Iteration   8: 1.198 ops/ms
+Iteration   9: 1.198 ops/ms
+Iteration  10: 1.199 ops/ms
+
+# Run progress: 70.48% complete, ETA 03:27:16
+# Fork: 5 of 5
+# Warmup Iteration   1: 1.118 ops/ms
+# Warmup Iteration   2: 1.181 ops/ms
+# Warmup Iteration   3: 1.181 ops/ms
+# Warmup Iteration   4: 1.182 ops/ms
+# Warmup Iteration   5: 1.182 ops/ms
+# Warmup Iteration   6: 1.170 ops/ms
+# Warmup Iteration   7: 1.182 ops/ms
+# Warmup Iteration   8: 1.183 ops/ms
+# Warmup Iteration   9: 1.180 ops/ms
+# Warmup Iteration  10: 1.183 ops/ms
+Iteration   1: 1.183 ops/ms
+Iteration   2: 1.182 ops/ms
+Iteration   3: 1.183 ops/ms
+Iteration   4: 1.182 ops/ms
+Iteration   5: 1.182 ops/ms
+Iteration   6: 1.183 ops/ms
+Iteration   7: 1.182 ops/ms
+Iteration   8: 1.182 ops/ms
+Iteration   9: 1.182 ops/ms
+Iteration  10: 1.182 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Vanilla.beanArrayDeser":
+  1.184 ±(99.9%) 0.005 ops/ms [Average]
+  (min, avg, max) = (1.166, 1.184, 1.199), stdev = 0.010
+  CI (99.9%): [1.179, 1.189] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Vanilla.beanArraySer
+
+# Run progress: 71.43% complete, ETA 03:20:35
+# Fork: 1 of 5
+# Warmup Iteration   1: 1.990 ops/ms
+# Warmup Iteration   2: 2.045 ops/ms
+# Warmup Iteration   3: 2.045 ops/ms
+# Warmup Iteration   4: 2.046 ops/ms
+# Warmup Iteration   5: 2.046 ops/ms
+# Warmup Iteration   6: 2.047 ops/ms
+# Warmup Iteration   7: 2.047 ops/ms
+# Warmup Iteration   8: 2.047 ops/ms
+# Warmup Iteration   9: 2.046 ops/ms
+# Warmup Iteration  10: 2.047 ops/ms
+Iteration   1: 2.047 ops/ms
+Iteration   2: 2.047 ops/ms
+Iteration   3: 2.047 ops/ms
+Iteration   4: 2.047 ops/ms
+Iteration   5: 2.047 ops/ms
+Iteration   6: 2.047 ops/ms
+Iteration   7: 2.037 ops/ms
+Iteration   8: 2.037 ops/ms
+Iteration   9: 2.038 ops/ms
+Iteration  10: 2.037 ops/ms
+
+# Run progress: 72.38% complete, ETA 03:13:53
+# Fork: 2 of 5
+# Warmup Iteration   1: 1.957 ops/ms
+# Warmup Iteration   2: 2.012 ops/ms
+# Warmup Iteration   3: 2.012 ops/ms
+# Warmup Iteration   4: 2.013 ops/ms
+# Warmup Iteration   5: 2.013 ops/ms
+# Warmup Iteration   6: 2.014 ops/ms
+# Warmup Iteration   7: 2.007 ops/ms
+# Warmup Iteration   8: 2.006 ops/ms
+# Warmup Iteration   9: 2.006 ops/ms
+# Warmup Iteration  10: 2.007 ops/ms
+Iteration   1: 2.007 ops/ms
+Iteration   2: 2.005 ops/ms
+Iteration   3: 2.007 ops/ms
+Iteration   4: 2.007 ops/ms
+Iteration   5: 2.007 ops/ms
+Iteration   6: 2.003 ops/ms
+Iteration   7: 2.016 ops/ms
+Iteration   8: 2.016 ops/ms
+Iteration   9: 2.016 ops/ms
+Iteration  10: 2.016 ops/ms
+
+# Run progress: 73.33% complete, ETA 03:07:12
+# Fork: 3 of 5
+# Warmup Iteration   1: 2.017 ops/ms
+# Warmup Iteration   2: 2.076 ops/ms
+# Warmup Iteration   3: 2.077 ops/ms
+# Warmup Iteration   4: 2.080 ops/ms
+# Warmup Iteration   5: 2.081 ops/ms
+# Warmup Iteration   6: 2.082 ops/ms
+# Warmup Iteration   7: 2.082 ops/ms
+# Warmup Iteration   8: 2.082 ops/ms
+# Warmup Iteration   9: 2.082 ops/ms
+# Warmup Iteration  10: 2.083 ops/ms
+Iteration   1: 2.082 ops/ms
+Iteration   2: 2.082 ops/ms
+Iteration   3: 2.083 ops/ms
+Iteration   4: 2.082 ops/ms
+Iteration   5: 2.082 ops/ms
+Iteration   6: 2.082 ops/ms
+Iteration   7: 2.083 ops/ms
+Iteration   8: 2.084 ops/ms
+Iteration   9: 2.084 ops/ms
+Iteration  10: 2.084 ops/ms
+
+# Run progress: 74.29% complete, ETA 03:00:31
+# Fork: 4 of 5
+# Warmup Iteration   1: 1.948 ops/ms
+# Warmup Iteration   2: 2.008 ops/ms
+# Warmup Iteration   3: 2.008 ops/ms
+# Warmup Iteration   4: 2.005 ops/ms
+# Warmup Iteration   5: 2.008 ops/ms
+# Warmup Iteration   6: 2.008 ops/ms
+# Warmup Iteration   7: 2.011 ops/ms
+# Warmup Iteration   8: 2.012 ops/ms
+# Warmup Iteration   9: 2.011 ops/ms
+# Warmup Iteration  10: 2.010 ops/ms
+Iteration   1: 2.011 ops/ms
+Iteration   2: 2.011 ops/ms
+Iteration   3: 2.011 ops/ms
+Iteration   4: 2.011 ops/ms
+Iteration   5: 2.011 ops/ms
+Iteration   6: 2.011 ops/ms
+Iteration   7: 2.007 ops/ms
+Iteration   8: 2.006 ops/ms
+Iteration   9: 2.006 ops/ms
+Iteration  10: 2.006 ops/ms
+
+# Run progress: 75.24% complete, ETA 02:53:50
+# Fork: 5 of 5
+# Warmup Iteration   1: 1.989 ops/ms
+# Warmup Iteration   2: 2.057 ops/ms
+# Warmup Iteration   3: 2.057 ops/ms
+# Warmup Iteration   4: 2.058 ops/ms
+# Warmup Iteration   5: 2.059 ops/ms
+# Warmup Iteration   6: 2.058 ops/ms
+# Warmup Iteration   7: 2.058 ops/ms
+# Warmup Iteration   8: 2.058 ops/ms
+# Warmup Iteration   9: 2.058 ops/ms
+# Warmup Iteration  10: 2.057 ops/ms
+Iteration   1: 2.057 ops/ms
+Iteration   2: 2.059 ops/ms
+Iteration   3: 2.059 ops/ms
+Iteration   4: 2.058 ops/ms
+Iteration   5: 2.058 ops/ms
+Iteration   6: 2.058 ops/ms
+Iteration   7: 2.058 ops/ms
+Iteration   8: 2.059 ops/ms
+Iteration   9: 2.059 ops/ms
+Iteration  10: 2.058 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Vanilla.beanArraySer":
+  2.041 ±(99.9%) 0.014 ops/ms [Average]
+  (min, avg, max) = (2.003, 2.041, 2.084), stdev = 0.029
+  CI (99.9%): [2.026, 2.055] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Vanilla.classicBeanItemDeser
+
+# Run progress: 76.19% complete, ETA 02:47:09
+# Fork: 1 of 5
+# Warmup Iteration   1: 1.021 ops/ms
+# Warmup Iteration   2: 1.060 ops/ms
+# Warmup Iteration   3: 1.061 ops/ms
+# Warmup Iteration   4: 1.061 ops/ms
+# Warmup Iteration   5: 1.061 ops/ms
+# Warmup Iteration   6: 1.060 ops/ms
+# Warmup Iteration   7: 1.061 ops/ms
+# Warmup Iteration   8: 1.062 ops/ms
+# Warmup Iteration   9: 1.061 ops/ms
+# Warmup Iteration  10: 1.061 ops/ms
+Iteration   1: 1.062 ops/ms
+Iteration   2: 1.062 ops/ms
+Iteration   3: 1.062 ops/ms
+Iteration   4: 1.062 ops/ms
+Iteration   5: 1.062 ops/ms
+Iteration   6: 1.062 ops/ms
+Iteration   7: 1.062 ops/ms
+Iteration   8: 1.062 ops/ms
+Iteration   9: 1.062 ops/ms
+Iteration  10: 1.062 ops/ms
+
+# Run progress: 77.14% complete, ETA 02:40:28
+# Fork: 2 of 5
+# Warmup Iteration   1: 1.007 ops/ms
+# Warmup Iteration   2: 1.048 ops/ms
+# Warmup Iteration   3: 1.048 ops/ms
+# Warmup Iteration   4: 1.047 ops/ms
+# Warmup Iteration   5: 1.048 ops/ms
+# Warmup Iteration   6: 1.047 ops/ms
+# Warmup Iteration   7: 1.048 ops/ms
+# Warmup Iteration   8: 1.048 ops/ms
+# Warmup Iteration   9: 1.048 ops/ms
+# Warmup Iteration  10: 1.047 ops/ms
+Iteration   1: 1.048 ops/ms
+Iteration   2: 1.048 ops/ms
+Iteration   3: 1.048 ops/ms
+Iteration   4: 1.048 ops/ms
+Iteration   5: 1.048 ops/ms
+Iteration   6: 1.048 ops/ms
+Iteration   7: 1.048 ops/ms
+Iteration   8: 1.048 ops/ms
+Iteration   9: 1.048 ops/ms
+Iteration  10: 1.048 ops/ms
+
+# Run progress: 78.10% complete, ETA 02:33:47
+# Fork: 3 of 5
+# Warmup Iteration   1: 1.036 ops/ms
+# Warmup Iteration   2: 1.088 ops/ms
+# Warmup Iteration   3: 1.088 ops/ms
+# Warmup Iteration   4: 1.088 ops/ms
+# Warmup Iteration   5: 1.088 ops/ms
+# Warmup Iteration   6: 1.082 ops/ms
+# Warmup Iteration   7: 1.089 ops/ms
+# Warmup Iteration   8: 1.089 ops/ms
+# Warmup Iteration   9: 1.089 ops/ms
+# Warmup Iteration  10: 1.089 ops/ms
+Iteration   1: 1.089 ops/ms
+Iteration   2: 1.089 ops/ms
+Iteration   3: 1.089 ops/ms
+Iteration   4: 1.089 ops/ms
+Iteration   5: 1.089 ops/ms
+Iteration   6: 1.090 ops/ms
+Iteration   7: 1.089 ops/ms
+Iteration   8: 1.089 ops/ms
+Iteration   9: 1.088 ops/ms
+Iteration  10: 1.089 ops/ms
+
+# Run progress: 79.05% complete, ETA 02:27:05
+# Fork: 4 of 5
+# Warmup Iteration   1: 1.026 ops/ms
+# Warmup Iteration   2: 1.065 ops/ms
+# Warmup Iteration   3: 1.065 ops/ms
+# Warmup Iteration   4: 1.065 ops/ms
+# Warmup Iteration   5: 1.065 ops/ms
+# Warmup Iteration   6: 1.062 ops/ms
+# Warmup Iteration   7: 1.064 ops/ms
+# Warmup Iteration   8: 1.064 ops/ms
+# Warmup Iteration   9: 1.064 ops/ms
+# Warmup Iteration  10: 1.064 ops/ms
+Iteration   1: 1.066 ops/ms
+Iteration   2: 1.066 ops/ms
+Iteration   3: 1.066 ops/ms
+Iteration   4: 1.065 ops/ms
+Iteration   5: 1.065 ops/ms
+Iteration   6: 1.065 ops/ms
+Iteration   7: 1.066 ops/ms
+Iteration   8: 1.065 ops/ms
+Iteration   9: 1.065 ops/ms
+Iteration  10: 1.066 ops/ms
+
+# Run progress: 80.00% complete, ETA 02:20:24
+# Fork: 5 of 5
+# Warmup Iteration   1: 1.044 ops/ms
+# Warmup Iteration   2: 1.084 ops/ms
+# Warmup Iteration   3: 1.084 ops/ms
+# Warmup Iteration   4: 1.083 ops/ms
+# Warmup Iteration   5: 1.084 ops/ms
+# Warmup Iteration   6: 1.082 ops/ms
+# Warmup Iteration   7: 1.084 ops/ms
+# Warmup Iteration   8: 1.083 ops/ms
+# Warmup Iteration   9: 1.084 ops/ms
+# Warmup Iteration  10: 1.084 ops/ms
+Iteration   1: 1.085 ops/ms
+Iteration   2: 1.085 ops/ms
+Iteration   3: 1.085 ops/ms
+Iteration   4: 1.085 ops/ms
+Iteration   5: 1.085 ops/ms
+Iteration   6: 1.084 ops/ms
+Iteration   7: 1.089 ops/ms
+Iteration   8: 1.089 ops/ms
+Iteration   9: 1.089 ops/ms
+Iteration  10: 1.089 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Vanilla.classicBeanItemDeser":
+  1.070 ±(99.9%) 0.008 ops/ms [Average]
+  (min, avg, max) = (1.048, 1.070, 1.090), stdev = 0.016
+  CI (99.9%): [1.062, 1.078] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Vanilla.classicBeanItemSer
+
+# Run progress: 80.95% complete, ETA 02:13:43
+# Fork: 1 of 5
+# Warmup Iteration   1: 1.956 ops/ms
+# Warmup Iteration   2: 2.010 ops/ms
+# Warmup Iteration   3: 2.019 ops/ms
+# Warmup Iteration   4: 2.021 ops/ms
+# Warmup Iteration   5: 2.023 ops/ms
+# Warmup Iteration   6: 2.018 ops/ms
+# Warmup Iteration   7: 2.019 ops/ms
+# Warmup Iteration   8: 2.018 ops/ms
+# Warmup Iteration   9: 2.017 ops/ms
+# Warmup Iteration  10: 2.018 ops/ms
+Iteration   1: 2.018 ops/ms
+Iteration   2: 2.019 ops/ms
+Iteration   3: 2.018 ops/ms
+Iteration   4: 2.017 ops/ms
+Iteration   5: 2.018 ops/ms
+Iteration   6: 2.016 ops/ms
+Iteration   7: 2.007 ops/ms
+Iteration   8: 2.007 ops/ms
+Iteration   9: 2.006 ops/ms
+Iteration  10: 2.007 ops/ms
+
+# Run progress: 81.90% complete, ETA 02:07:02
+# Fork: 2 of 5
+# Warmup Iteration   1: 1.915 ops/ms
+# Warmup Iteration   2: 1.976 ops/ms
+# Warmup Iteration   3: 1.973 ops/ms
+# Warmup Iteration   4: 1.965 ops/ms
+# Warmup Iteration   5: 1.970 ops/ms
+# Warmup Iteration   6: 1.971 ops/ms
+# Warmup Iteration   7: 1.972 ops/ms
+# Warmup Iteration   8: 1.970 ops/ms
+# Warmup Iteration   9: 1.970 ops/ms
+# Warmup Iteration  10: 1.972 ops/ms
+Iteration   1: 1.973 ops/ms
+Iteration   2: 1.972 ops/ms
+Iteration   3: 1.972 ops/ms
+Iteration   4: 1.972 ops/ms
+Iteration   5: 1.972 ops/ms
+Iteration   6: 1.973 ops/ms
+Iteration   7: 1.982 ops/ms
+Iteration   8: 1.982 ops/ms
+Iteration   9: 1.980 ops/ms
+Iteration  10: 1.982 ops/ms
+
+# Run progress: 82.86% complete, ETA 02:00:21
+# Fork: 3 of 5
+# Warmup Iteration   1: 1.873 ops/ms
+# Warmup Iteration   2: 1.906 ops/ms
+# Warmup Iteration   3: 1.924 ops/ms
+# Warmup Iteration   4: 1.924 ops/ms
+# Warmup Iteration   5: 1.921 ops/ms
+# Warmup Iteration   6: 1.925 ops/ms
+# Warmup Iteration   7: 1.927 ops/ms
+# Warmup Iteration   8: 1.929 ops/ms
+# Warmup Iteration   9: 1.928 ops/ms
+# Warmup Iteration  10: 1.929 ops/ms
+Iteration   1: 1.926 ops/ms
+Iteration   2: 1.926 ops/ms
+Iteration   3: 1.929 ops/ms
+Iteration   4: 1.929 ops/ms
+Iteration   5: 1.929 ops/ms
+Iteration   6: 1.929 ops/ms
+Iteration   7: 1.920 ops/ms
+Iteration   8: 1.920 ops/ms
+Iteration   9: 1.921 ops/ms
+Iteration  10: 1.920 ops/ms
+
+# Run progress: 83.81% complete, ETA 01:53:40
+# Fork: 4 of 5
+# Warmup Iteration   1: 1.895 ops/ms
+# Warmup Iteration   2: 1.920 ops/ms
+# Warmup Iteration   3: 1.920 ops/ms
+# Warmup Iteration   4: 1.932 ops/ms
+# Warmup Iteration   5: 1.937 ops/ms
+# Warmup Iteration   6: 1.934 ops/ms
+# Warmup Iteration   7: 1.932 ops/ms
+# Warmup Iteration   8: 1.930 ops/ms
+# Warmup Iteration   9: 1.930 ops/ms
+# Warmup Iteration  10: 1.930 ops/ms
+Iteration   1: 1.931 ops/ms
+Iteration   2: 1.930 ops/ms
+Iteration   3: 1.930 ops/ms
+Iteration   4: 1.931 ops/ms
+Iteration   5: 1.932 ops/ms
+Iteration   6: 1.930 ops/ms
+Iteration   7: 1.926 ops/ms
+Iteration   8: 1.927 ops/ms
+Iteration   9: 1.928 ops/ms
+Iteration  10: 1.929 ops/ms
+
+# Run progress: 84.76% complete, ETA 01:46:58
+# Fork: 5 of 5
+# Warmup Iteration   1: 1.859 ops/ms
+# Warmup Iteration   2: 1.900 ops/ms
+# Warmup Iteration   3: 1.900 ops/ms
+# Warmup Iteration   4: 1.894 ops/ms
+# Warmup Iteration   5: 1.904 ops/ms
+# Warmup Iteration   6: 1.895 ops/ms
+# Warmup Iteration   7: 1.898 ops/ms
+# Warmup Iteration   8: 1.897 ops/ms
+# Warmup Iteration   9: 1.898 ops/ms
+# Warmup Iteration  10: 1.899 ops/ms
+Iteration   1: 1.898 ops/ms
+Iteration   2: 1.897 ops/ms
+Iteration   3: 1.898 ops/ms
+Iteration   4: 1.899 ops/ms
+Iteration   5: 1.898 ops/ms
+Iteration   6: 1.898 ops/ms
+Iteration   7: 1.906 ops/ms
+Iteration   8: 1.907 ops/ms
+Iteration   9: 1.907 ops/ms
+Iteration  10: 1.907 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Vanilla.classicBeanItemSer":
+  1.949 ±(99.9%) 0.020 ops/ms [Average]
+  (min, avg, max) = (1.897, 1.949, 2.019), stdev = 0.041
+  CI (99.9%): [1.929, 1.969] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Vanilla.classicMediaItemDeser
+
+# Run progress: 85.71% complete, ETA 01:40:17
+# Fork: 1 of 5
+# Warmup Iteration   1: 307.076 ops/ms
+# Warmup Iteration   2: 320.514 ops/ms
+# Warmup Iteration   3: 319.693 ops/ms
+# Warmup Iteration   4: 319.831 ops/ms
+# Warmup Iteration   5: 319.237 ops/ms
+# Warmup Iteration   6: 319.485 ops/ms
+# Warmup Iteration   7: 319.655 ops/ms
+# Warmup Iteration   8: 319.951 ops/ms
+# Warmup Iteration   9: 319.970 ops/ms
+# Warmup Iteration  10: 319.948 ops/ms
+Iteration   1: 319.879 ops/ms
+Iteration   2: 319.929 ops/ms
+Iteration   3: 319.821 ops/ms
+Iteration   4: 319.920 ops/ms
+Iteration   5: 319.646 ops/ms
+Iteration   6: 319.848 ops/ms
+Iteration   7: 319.331 ops/ms
+Iteration   8: 319.545 ops/ms
+Iteration   9: 319.567 ops/ms
+Iteration  10: 319.362 ops/ms
+
+# Run progress: 86.67% complete, ETA 01:33:36
+# Fork: 2 of 5
+# Warmup Iteration   1: 309.629 ops/ms
+# Warmup Iteration   2: 322.616 ops/ms
+# Warmup Iteration   3: 323.571 ops/ms
+# Warmup Iteration   4: 323.505 ops/ms
+# Warmup Iteration   5: 322.865 ops/ms
+# Warmup Iteration   6: 323.349 ops/ms
+# Warmup Iteration   7: 323.207 ops/ms
+# Warmup Iteration   8: 323.478 ops/ms
+# Warmup Iteration   9: 323.068 ops/ms
+# Warmup Iteration  10: 323.566 ops/ms
+Iteration   1: 323.341 ops/ms
+Iteration   2: 323.430 ops/ms
+Iteration   3: 323.300 ops/ms
+Iteration   4: 323.341 ops/ms
+Iteration   5: 323.077 ops/ms
+Iteration   6: 323.379 ops/ms
+Iteration   7: 321.567 ops/ms
+Iteration   8: 321.919 ops/ms
+Iteration   9: 321.842 ops/ms
+Iteration  10: 321.934 ops/ms
+
+# Run progress: 87.62% complete, ETA 01:26:55
+# Fork: 3 of 5
+# Warmup Iteration   1: 303.332 ops/ms
+# Warmup Iteration   2: 317.430 ops/ms
+# Warmup Iteration   3: 317.701 ops/ms
+# Warmup Iteration   4: 317.709 ops/ms
+# Warmup Iteration   5: 318.044 ops/ms
+# Warmup Iteration   6: 317.705 ops/ms
+# Warmup Iteration   7: 317.675 ops/ms
+# Warmup Iteration   8: 318.006 ops/ms
+# Warmup Iteration   9: 317.763 ops/ms
+# Warmup Iteration  10: 317.847 ops/ms
+Iteration   1: 317.761 ops/ms
+Iteration   2: 317.534 ops/ms
+Iteration   3: 317.842 ops/ms
+Iteration   4: 317.867 ops/ms
+Iteration   5: 317.812 ops/ms
+Iteration   6: 317.637 ops/ms
+Iteration   7: 322.327 ops/ms
+Iteration   8: 322.548 ops/ms
+Iteration   9: 322.095 ops/ms
+Iteration  10: 322.222 ops/ms
+
+# Run progress: 88.57% complete, ETA 01:20:14
+# Fork: 4 of 5
+# Warmup Iteration   1: 320.327 ops/ms
+# Warmup Iteration   2: 337.747 ops/ms
+# Warmup Iteration   3: 338.104 ops/ms
+# Warmup Iteration   4: 338.374 ops/ms
+# Warmup Iteration   5: 338.032 ops/ms
+# Warmup Iteration   6: 338.216 ops/ms
+# Warmup Iteration   7: 338.101 ops/ms
+# Warmup Iteration   8: 338.265 ops/ms
+# Warmup Iteration   9: 338.511 ops/ms
+# Warmup Iteration  10: 338.356 ops/ms
+Iteration   1: 338.195 ops/ms
+Iteration   2: 338.283 ops/ms
+Iteration   3: 338.456 ops/ms
+Iteration   4: 338.282 ops/ms
+Iteration   5: 338.314 ops/ms
+Iteration   6: 338.311 ops/ms
+Iteration   7: 339.568 ops/ms
+Iteration   8: 339.515 ops/ms
+Iteration   9: 339.438 ops/ms
+Iteration  10: 339.442 ops/ms
+
+# Run progress: 89.52% complete, ETA 01:13:32
+# Fork: 5 of 5
+# Warmup Iteration   1: 312.903 ops/ms
+# Warmup Iteration   2: 325.678 ops/ms
+# Warmup Iteration   3: 326.211 ops/ms
+# Warmup Iteration   4: 326.388 ops/ms
+# Warmup Iteration   5: 326.058 ops/ms
+# Warmup Iteration   6: 326.327 ops/ms
+# Warmup Iteration   7: 326.052 ops/ms
+# Warmup Iteration   8: 326.301 ops/ms
+# Warmup Iteration   9: 326.313 ops/ms
+# Warmup Iteration  10: 326.341 ops/ms
+Iteration   1: 326.231 ops/ms
+Iteration   2: 326.195 ops/ms
+Iteration   3: 326.159 ops/ms
+Iteration   4: 326.269 ops/ms
+Iteration   5: 326.270 ops/ms
+Iteration   6: 302.513 ops/ms
+Iteration   7: 326.429 ops/ms
+Iteration   8: 325.975 ops/ms
+Iteration   9: 326.295 ops/ms
+Iteration  10: 326.089 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Vanilla.classicMediaItemDeser":
+  324.917 ±(99.9%) 3.942 ops/ms [Average]
+  (min, avg, max) = (302.513, 324.917, 339.568), stdev = 7.963
+  CI (99.9%): [320.975, 328.859] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Vanilla.classicMediaItemSer
+
+# Run progress: 90.48% complete, ETA 01:06:51
+# Fork: 1 of 5
+# Warmup Iteration   1: 539.407 ops/ms
+# Warmup Iteration   2: 542.896 ops/ms
+# Warmup Iteration   3: 544.085 ops/ms
+# Warmup Iteration   4: 543.990 ops/ms
+# Warmup Iteration   5: 543.925 ops/ms
+# Warmup Iteration   6: 543.329 ops/ms
+# Warmup Iteration   7: 544.025 ops/ms
+# Warmup Iteration   8: 543.787 ops/ms
+# Warmup Iteration   9: 543.440 ops/ms
+# Warmup Iteration  10: 543.892 ops/ms
+Iteration   1: 544.268 ops/ms
+Iteration   2: 544.181 ops/ms
+Iteration   3: 543.758 ops/ms
+Iteration   4: 544.266 ops/ms
+Iteration   5: 544.294 ops/ms
+Iteration   6: 543.711 ops/ms
+Iteration   7: 541.672 ops/ms
+Iteration   8: 542.018 ops/ms
+Iteration   9: 542.206 ops/ms
+Iteration  10: 542.150 ops/ms
+
+# Run progress: 91.43% complete, ETA 01:00:10
+# Fork: 2 of 5
+# Warmup Iteration   1: 551.494 ops/ms
+# Warmup Iteration   2: 560.189 ops/ms
+# Warmup Iteration   3: 562.946 ops/ms
+# Warmup Iteration   4: 561.429 ops/ms
+# Warmup Iteration   5: 562.786 ops/ms
+# Warmup Iteration   6: 561.624 ops/ms
+# Warmup Iteration   7: 562.618 ops/ms
+# Warmup Iteration   8: 562.230 ops/ms
+# Warmup Iteration   9: 562.240 ops/ms
+# Warmup Iteration  10: 561.966 ops/ms
+Iteration   1: 562.113 ops/ms
+Iteration   2: 562.443 ops/ms
+Iteration   3: 563.336 ops/ms
+Iteration   4: 562.691 ops/ms
+Iteration   5: 563.134 ops/ms
+Iteration   6: 562.152 ops/ms
+Iteration   7: 557.290 ops/ms
+Iteration   8: 556.683 ops/ms
+Iteration   9: 556.708 ops/ms
+Iteration  10: 556.262 ops/ms
+
+# Run progress: 92.38% complete, ETA 00:53:29
+# Fork: 3 of 5
+# Warmup Iteration   1: 557.204 ops/ms
+# Warmup Iteration   2: 576.852 ops/ms
+# Warmup Iteration   3: 570.713 ops/ms
+# Warmup Iteration   4: 570.709 ops/ms
+# Warmup Iteration   5: 570.457 ops/ms
+# Warmup Iteration   6: 570.508 ops/ms
+# Warmup Iteration   7: 570.360 ops/ms
+# Warmup Iteration   8: 570.504 ops/ms
+# Warmup Iteration   9: 570.057 ops/ms
+# Warmup Iteration  10: 569.930 ops/ms
+Iteration   1: 570.497 ops/ms
+Iteration   2: 570.700 ops/ms
+Iteration   3: 570.959 ops/ms
+Iteration   4: 571.111 ops/ms
+Iteration   5: 570.818 ops/ms
+Iteration   6: 570.567 ops/ms
+Iteration   7: 576.793 ops/ms
+Iteration   8: 576.430 ops/ms
+Iteration   9: 576.307 ops/ms
+Iteration  10: 576.468 ops/ms
+
+# Run progress: 93.33% complete, ETA 00:46:48
+# Fork: 4 of 5
+# Warmup Iteration   1: 567.322 ops/ms
+# Warmup Iteration   2: 585.424 ops/ms
+# Warmup Iteration   3: 582.046 ops/ms
+# Warmup Iteration   4: 582.700 ops/ms
+# Warmup Iteration   5: 584.687 ops/ms
+# Warmup Iteration   6: 582.838 ops/ms
+# Warmup Iteration   7: 585.508 ops/ms
+# Warmup Iteration   8: 581.788 ops/ms
+# Warmup Iteration   9: 583.876 ops/ms
+# Warmup Iteration  10: 583.505 ops/ms
+Iteration   1: 583.863 ops/ms
+Iteration   2: 583.229 ops/ms
+Iteration   3: 582.765 ops/ms
+Iteration   4: 583.484 ops/ms
+Iteration   5: 583.840 ops/ms
+Iteration   6: 583.558 ops/ms
+Iteration   7: 584.770 ops/ms
+Iteration   8: 584.107 ops/ms
+Iteration   9: 584.604 ops/ms
+Iteration  10: 583.438 ops/ms
+
+# Run progress: 94.29% complete, ETA 00:40:06
+# Fork: 5 of 5
+# Warmup Iteration   1: 552.230 ops/ms
+# Warmup Iteration   2: 557.255 ops/ms
+# Warmup Iteration   3: 559.884 ops/ms
+# Warmup Iteration   4: 560.204 ops/ms
+# Warmup Iteration   5: 559.436 ops/ms
+# Warmup Iteration   6: 558.909 ops/ms
+# Warmup Iteration   7: 559.537 ops/ms
+# Warmup Iteration   8: 559.250 ops/ms
+# Warmup Iteration   9: 559.918 ops/ms
+# Warmup Iteration  10: 559.781 ops/ms
+Iteration   1: 559.995 ops/ms
+Iteration   2: 559.292 ops/ms
+Iteration   3: 560.061 ops/ms
+Iteration   4: 559.463 ops/ms
+Iteration   5: 559.969 ops/ms
+Iteration   6: 559.677 ops/ms
+Iteration   7: 560.088 ops/ms
+Iteration   8: 560.808 ops/ms
+Iteration   9: 559.997 ops/ms
+Iteration  10: 561.092 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Vanilla.classicMediaItemSer":
+  564.082 ±(99.9%) 6.896 ops/ms [Average]
+  (min, avg, max) = (541.672, 564.082, 584.770), stdev = 13.931
+  CI (99.9%): [557.185, 570.978] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: 10 iterations, 10 s each
+# Measurement: 10 iterations, 30 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: com.fasterxml.jackson.module.blackbird.Vanilla.constructorArrayDeser
+
+# Run progress: 95.24% complete, ETA 00:33:25
+# Fork: 1 of 5
+# Warmup Iteration   1: 1.040 ops/ms
+# Warmup Iteration   2: 1.101 ops/ms
+# Warmup Iteration   3: 1.102 ops/ms
+# Warmup Iteration   4: 1.102 ops/ms
+# Warmup Iteration   5: 1.101 ops/ms
+# Warmup Iteration   6: 1.098 ops/ms
+# Warmup Iteration   7: 1.102 ops/ms
+# Warmup Iteration   8: 1.102 ops/ms
+# Warmup Iteration   9: 1.101 ops/ms
+# Warmup Iteration  10: 1.097 ops/ms
+Iteration   1: 1.102 ops/ms
+Iteration   2: 1.102 ops/ms
+Iteration   3: 1.102 ops/ms
+Iteration   4: 1.102 ops/ms
+Iteration   5: 1.102 ops/ms
+Iteration   6: 1.102 ops/ms
+Iteration   7: 1.102 ops/ms
+Iteration   8: 1.101 ops/ms
+Iteration   9: 1.102 ops/ms
+Iteration  10: 1.102 ops/ms
+
+# Run progress: 96.19% complete, ETA 00:26:44
+# Fork: 2 of 5
+# Warmup Iteration   1: 1.054 ops/ms
+# Warmup Iteration   2: 1.119 ops/ms
+# Warmup Iteration   3: 1.120 ops/ms
+# Warmup Iteration   4: 1.120 ops/ms
+# Warmup Iteration   5: 1.120 ops/ms
+# Warmup Iteration   6: 1.118 ops/ms
+# Warmup Iteration   7: 1.121 ops/ms
+# Warmup Iteration   8: 1.120 ops/ms
+# Warmup Iteration   9: 1.121 ops/ms
+# Warmup Iteration  10: 1.120 ops/ms
+Iteration   1: 1.120 ops/ms
+Iteration   2: 1.120 ops/ms
+Iteration   3: 1.121 ops/ms
+Iteration   4: 1.120 ops/ms
+Iteration   5: 1.119 ops/ms
+Iteration   6: 1.120 ops/ms
+Iteration   7: 1.121 ops/ms
+Iteration   8: 1.122 ops/ms
+Iteration   9: 1.122 ops/ms
+Iteration  10: 1.122 ops/ms
+
+# Run progress: 97.14% complete, ETA 00:20:03
+# Fork: 3 of 5
+# Warmup Iteration   1: 1.060 ops/ms
+# Warmup Iteration   2: 1.116 ops/ms
+# Warmup Iteration   3: 1.116 ops/ms
+# Warmup Iteration   4: 1.117 ops/ms
+# Warmup Iteration   5: 1.115 ops/ms
+# Warmup Iteration   6: 1.112 ops/ms
+# Warmup Iteration   7: 1.116 ops/ms
+# Warmup Iteration   8: 1.115 ops/ms
+# Warmup Iteration   9: 1.116 ops/ms
+# Warmup Iteration  10: 1.112 ops/ms
+Iteration   1: 1.116 ops/ms
+Iteration   2: 1.116 ops/ms
+Iteration   3: 1.116 ops/ms
+Iteration   4: 1.116 ops/ms
+Iteration   5: 1.116 ops/ms
+Iteration   6: 1.115 ops/ms
+Iteration   7: 1.115 ops/ms
+Iteration   8: 1.115 ops/ms
+Iteration   9: 1.115 ops/ms
+Iteration  10: 1.115 ops/ms
+
+# Run progress: 98.10% complete, ETA 00:13:22
+# Fork: 4 of 5
+# Warmup Iteration   1: 1.062 ops/ms
+# Warmup Iteration   2: 1.110 ops/ms
+# Warmup Iteration   3: 1.111 ops/ms
+# Warmup Iteration   4: 1.110 ops/ms
+# Warmup Iteration   5: 1.111 ops/ms
+# Warmup Iteration   6: 1.106 ops/ms
+# Warmup Iteration   7: 1.115 ops/ms
+# Warmup Iteration   8: 1.115 ops/ms
+# Warmup Iteration   9: 1.115 ops/ms
+# Warmup Iteration  10: 1.112 ops/ms
+Iteration   1: 1.116 ops/ms
+Iteration   2: 1.115 ops/ms
+Iteration   3: 1.115 ops/ms
+Iteration   4: 1.116 ops/ms
+Iteration   5: 1.116 ops/ms
+Iteration   6: 1.114 ops/ms
+Iteration   7: 1.118 ops/ms
+Iteration   8: 1.118 ops/ms
+Iteration   9: 1.118 ops/ms
+Iteration  10: 1.117 ops/ms
+
+# Run progress: 99.05% complete, ETA 00:06:41
+# Fork: 5 of 5
+# Warmup Iteration   1: 1.061 ops/ms
+# Warmup Iteration   2: 1.114 ops/ms
+# Warmup Iteration   3: 1.115 ops/ms
+# Warmup Iteration   4: 1.114 ops/ms
+# Warmup Iteration   5: 1.114 ops/ms
+# Warmup Iteration   6: 1.107 ops/ms
+# Warmup Iteration   7: 1.114 ops/ms
+# Warmup Iteration   8: 1.114 ops/ms
+# Warmup Iteration   9: 1.114 ops/ms
+# Warmup Iteration  10: 1.111 ops/ms
+Iteration   1: 1.114 ops/ms
+Iteration   2: 1.114 ops/ms
+Iteration   3: 1.114 ops/ms
+Iteration   4: 1.115 ops/ms
+Iteration   5: 1.114 ops/ms
+Iteration   6: 1.114 ops/ms
+Iteration   7: 1.115 ops/ms
+Iteration   8: 1.115 ops/ms
+Iteration   9: 1.114 ops/ms
+Iteration  10: 1.114 ops/ms
+
+
+Result "com.fasterxml.jackson.module.blackbird.Vanilla.constructorArrayDeser":
+  1.114 ±(99.9%) 0.003 ops/ms [Average]
+  (min, avg, max) = (1.101, 1.114, 1.122), stdev = 0.006
+  CI (99.9%): [1.111, 1.117] (assumes normal distribution)
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: <none>
+# Measurement: 1 iterations, single-shot each
+# Timeout: 10 min per iteration
+# Threads: 1 thread
+# Benchmark mode: Single shot invocation time
+# Benchmark: com.fasterxml.jackson.module.blackbird.StartupTimeBenchmark.afterburner
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 1 of 10
+Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+314.001 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 2 of 10
+Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+307.692 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 3 of 10
+Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+284.860 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 4 of 10
+Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+315.952 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 5 of 10
+Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+312.115 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 6 of 10
+Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+292.334 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 7 of 10
+Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+286.988 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 8 of 10
+Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+257.177 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 9 of 10
+Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+307.035 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 10 of 10
+Iteration   1: WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.fasterxml.jackson.module.afterburner.util.MyClassLoader (file:/home/steven/code/jackson-modules-base/blackbird/benchmarks/target/benchmarks.jar) to method java.lang.ClassLoader.findLoadedClass(java.lang.String)
+WARNING: Please consider reporting this to the maintainers of com.fasterxml.jackson.module.afterburner.util.MyClassLoader
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+287.438 ms/op
+
+
+Result "com.fasterxml.jackson.module.blackbird.StartupTimeBenchmark.afterburner":
+  N = 10
+  mean =    296.559 ±(99.9%) 27.770 ms/op
+
+  Histogram, ms/op:
+    [250.000, 255.000) = 0 
+    [255.000, 260.000) = 1 
+    [260.000, 265.000) = 0 
+    [265.000, 270.000) = 0 
+    [270.000, 275.000) = 0 
+    [275.000, 280.000) = 0 
+    [280.000, 285.000) = 1 
+    [285.000, 290.000) = 2 
+    [290.000, 295.000) = 1 
+    [295.000, 300.000) = 0 
+    [300.000, 305.000) = 0 
+    [305.000, 310.000) = 2 
+    [310.000, 315.000) = 2 
+
+  Percentiles, ms/op:
+      p(0.0000) =    257.177 ms/op
+     p(50.0000) =    299.685 ms/op
+     p(90.0000) =    315.757 ms/op
+     p(95.0000) =    315.952 ms/op
+     p(99.0000) =    315.952 ms/op
+     p(99.9000) =    315.952 ms/op
+     p(99.9900) =    315.952 ms/op
+     p(99.9990) =    315.952 ms/op
+     p(99.9999) =    315.952 ms/op
+    p(100.0000) =    315.952 ms/op
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: <none>
+# Measurement: 1 iterations, single-shot each
+# Timeout: 10 min per iteration
+# Threads: 1 thread
+# Benchmark mode: Single shot invocation time
+# Benchmark: com.fasterxml.jackson.module.blackbird.StartupTimeBenchmark.blackbird
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 1 of 10
+Iteration   1: 265.623 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 2 of 10
+Iteration   1: 312.177 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 3 of 10
+Iteration   1: 292.352 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 4 of 10
+Iteration   1: 299.969 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 5 of 10
+Iteration   1: 267.998 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 6 of 10
+Iteration   1: 286.434 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 7 of 10
+Iteration   1: 291.120 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 8 of 10
+Iteration   1: 300.891 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 9 of 10
+Iteration   1: 320.951 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 10 of 10
+Iteration   1: 282.491 ms/op
+
+
+Result "com.fasterxml.jackson.module.blackbird.StartupTimeBenchmark.blackbird":
+  N = 10
+  mean =    292.001 ±(99.9%) 26.581 ms/op
+
+  Histogram, ms/op:
+    [260.000, 265.000) = 0 
+    [265.000, 270.000) = 2 
+    [270.000, 275.000) = 0 
+    [275.000, 280.000) = 0 
+    [280.000, 285.000) = 1 
+    [285.000, 290.000) = 1 
+    [290.000, 295.000) = 2 
+    [295.000, 300.000) = 1 
+    [300.000, 305.000) = 1 
+    [305.000, 310.000) = 0 
+    [310.000, 315.000) = 1 
+    [315.000, 320.000) = 0 
+    [320.000, 325.000) = 1 
+
+  Percentiles, ms/op:
+      p(0.0000) =    265.623 ms/op
+     p(50.0000) =    291.736 ms/op
+     p(90.0000) =    320.074 ms/op
+     p(95.0000) =    320.951 ms/op
+     p(99.0000) =    320.951 ms/op
+     p(99.9000) =    320.951 ms/op
+     p(99.9900) =    320.951 ms/op
+     p(99.9990) =    320.951 ms/op
+     p(99.9999) =    320.951 ms/op
+    p(100.0000) =    320.951 ms/op
+
+
+# JMH version: 1.25
+# VM version: JDK 14.0.2, OpenJDK 64-Bit Server VM, 14.0.2+12
+# VM invoker: /usr/lib/jvm/java-14-openjdk-14.0.2.12-1.rolling.fc32.x86_64/bin/java
+# VM options: <none>
+# Warmup: <none>
+# Measurement: 1 iterations, single-shot each
+# Timeout: 10 min per iteration
+# Threads: 1 thread
+# Benchmark mode: Single shot invocation time
+# Benchmark: com.fasterxml.jackson.module.blackbird.StartupTimeBenchmark.vanilla
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 1 of 10
+Iteration   1: 249.109 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 2 of 10
+Iteration   1: 268.947 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 3 of 10
+Iteration   1: 270.761 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 4 of 10
+Iteration   1: 241.265 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 5 of 10
+Iteration   1: 254.474 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 6 of 10
+Iteration   1: 261.242 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 7 of 10
+Iteration   1: 253.752 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 8 of 10
+Iteration   1: 260.014 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 9 of 10
+Iteration   1: 259.565 ms/op
+
+# Run progress: 100.00% complete, ETA 00:00:00
+# Fork: 10 of 10
+Iteration   1: 247.064 ms/op
+
+
+Result "com.fasterxml.jackson.module.blackbird.StartupTimeBenchmark.vanilla":
+  N = 10
+  mean =    256.619 ±(99.9%) 14.163 ms/op
+
+  Histogram, ms/op:
+    [240.000, 242.500) = 1 
+    [242.500, 245.000) = 0 
+    [245.000, 247.500) = 1 
+    [247.500, 250.000) = 1 
+    [250.000, 252.500) = 0 
+    [252.500, 255.000) = 2 
+    [255.000, 257.500) = 0 
+    [257.500, 260.000) = 1 
+    [260.000, 262.500) = 2 
+    [262.500, 265.000) = 0 
+    [265.000, 267.500) = 0 
+    [267.500, 270.000) = 1 
+    [270.000, 272.500) = 1 
+    [272.500, 275.000) = 0 
+    [275.000, 277.500) = 0 
+
+  Percentiles, ms/op:
+      p(0.0000) =    241.265 ms/op
+     p(50.0000) =    257.020 ms/op
+     p(90.0000) =    270.580 ms/op
+     p(95.0000) =    270.761 ms/op
+     p(99.0000) =    270.761 ms/op
+     p(99.9000) =    270.761 ms/op
+     p(99.9900) =    270.761 ms/op
+     p(99.9990) =    270.761 ms/op
+     p(99.9999) =    270.761 ms/op
+    p(100.0000) =    270.761 ms/op
+
+
+# Run complete. Total time: 11:42:19
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+Benchmark                           Mode  Cnt    Score    Error   Units
+Afterburner.beanArrayDeser         thrpt   50    1.299 ±  0.009  ops/ms
+Afterburner.beanArraySer           thrpt   50    2.193 ±  0.010  ops/ms
+Afterburner.classicBeanItemDeser   thrpt   50    1.398 ±  0.024  ops/ms
+Afterburner.classicBeanItemSer     thrpt   50    2.325 ±  0.024  ops/ms
+Afterburner.classicMediaItemDeser  thrpt   50  403.335 ±  1.337  ops/ms
+Afterburner.classicMediaItemSer    thrpt   50  610.446 ±  1.996  ops/ms
+Afterburner.constructorArrayDeser  thrpt   50    1.124 ±  0.004  ops/ms
+Blackbird.beanArrayDeser           thrpt   50    1.301 ±  0.005  ops/ms
+Blackbird.beanArraySer             thrpt   50    2.115 ±  0.009  ops/ms
+Blackbird.classicBeanItemDeser     thrpt   50    1.250 ±  0.017  ops/ms
+Blackbird.classicBeanItemSer       thrpt   50    2.140 ±  0.017  ops/ms
+Blackbird.classicMediaItemDeser    thrpt   50  387.160 ±  1.507  ops/ms
+Blackbird.classicMediaItemSer      thrpt   50  575.804 ±  4.887  ops/ms
+Blackbird.constructorArrayDeser    thrpt   50    1.122 ±  0.004  ops/ms
+Vanilla.beanArrayDeser             thrpt   50    1.184 ±  0.005  ops/ms
+Vanilla.beanArraySer               thrpt   50    2.041 ±  0.014  ops/ms
+Vanilla.classicBeanItemDeser       thrpt   50    1.070 ±  0.008  ops/ms
+Vanilla.classicBeanItemSer         thrpt   50    1.949 ±  0.020  ops/ms
+Vanilla.classicMediaItemDeser      thrpt   50  324.917 ±  3.942  ops/ms
+Vanilla.classicMediaItemSer        thrpt   50  564.082 ±  6.896  ops/ms
+Vanilla.constructorArrayDeser      thrpt   50    1.114 ±  0.003  ops/ms
+StartupTimeBenchmark.afterburner      ss   10  296.559 ± 27.770   ms/op
+StartupTimeBenchmark.blackbird        ss   10  292.001 ± 26.581   ms/op
+StartupTimeBenchmark.vanilla          ss   10  256.619 ± 14.163   ms/op

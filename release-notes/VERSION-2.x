@@ -1,5 +1,7 @@
 Project: jackson-modules-base
 Modules:
+  jackson-module-afterburner
+  jackson-module-blackbird (2.12)
   jackson-module-guice
   jackson-module-jaxb
   jackson-module-mrbean
@@ -12,6 +14,9 @@ Modules:
 
 2.12.0 (not yet released)
 
+#85: Add Blackbird module -- alternative for Afterburner that works better with
+   new(er) JVMs
+ (contributed by Steven S)
 #100: Prevent "double-prefixing" Mr Bean generated classes
 - Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
 
