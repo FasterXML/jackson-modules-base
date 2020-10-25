@@ -3,7 +3,12 @@ Base modules
 (version numbers in brackets indicate release in which the problem was fixed)
 (NOTE: incomplete -- need to collect info from sub-projects, pre-2.9)
 
+Authors:
+
 Tatu Saloranta, tatu.saloranta@iki.fi: author
+Steven Schlansker (stevenschlansker@github):  author of Blackbird module (2.12)
+
+Other contributors:
 
 Vojtěch Habarta (vojtechhabarta@gitub)
 
