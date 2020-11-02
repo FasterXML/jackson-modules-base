@@ -2,7 +2,7 @@ package com.fasterxml.jackson.module.paranamer;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 
 public class TestCreatorWithNamingStrategy
     extends ModuleTestBase
@@ -22,7 +22,7 @@ public class TestCreatorWithNamingStrategy
 
     private final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new ParanamerModule())
-            .setPropertyNamingStrategy(PropertyNamingStrategy.UPPER_CAMEL_CASE);
+            .setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
 
     public void testSimpleConstructor() throws Exception
     {
