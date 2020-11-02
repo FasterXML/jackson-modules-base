@@ -2,7 +2,12 @@ Here are people who have contributed to development Jackson JSON processor
 Base modules, version 3.x
 (version numbers in brackets indicate release in which the problem was fixed)
 
+Authors:
+
 Tatu Saloranta, tatu.saloranta@iki.fi: author
+Steven Schlansker (stevenschlansker@github):  author of Blackbird module
+
+Other contributors:
 
 Georgios Andrianakis (geoand@github)
 
