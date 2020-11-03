@@ -17,7 +17,9 @@ Modules:
 #85: Add Blackbird module -- alternative for Afterburner that works better with
    new(er) JVMs
  (contributed by Steven S)
-#100: Prevent "double-prefixing" Mr Bean generated classes
+#100: (mrbean) Prevent "double-prefixing" Mr Bean generated classes
+#115: (jaxb) Remove ` java.beans.Introspector` dependency from JAXB module (to
+   get rid of `java.desktop` module dep)
 - Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
 
 2.11.3 (02-Oct-2020)

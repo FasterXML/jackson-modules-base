@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.module.jaxb;
 
-import java.beans.Introspector;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
@@ -19,7 +18,6 @@ import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.databind.util.Converter;
 import com.fasterxml.jackson.module.jaxb.deser.DataHandlerJsonDeserializer;
@@ -280,11 +278,11 @@ public class JaxbAnnotationIntrospector
             switch (m.getParameterCount()) {
             case 0: // getter
                 idPropName = findJaxbPropertyName(m, m.getRawType(),
-                        okNameForGetter(m));
+                        _okNameForGetter(m));
                 break method_loop;
             case 1: // setter
                 idPropName = findJaxbPropertyName(m, m.getRawType(),
-                        okNameForMutator(m));
+                        _okNameForMutator(m));
                 break method_loop;
             }
         }
@@ -437,9 +435,9 @@ public class JaxbAnnotationIntrospector
                     AnnotatedMethod am = (AnnotatedMethod) ann;
                     String str;
                     if (am.getParameterCount() == 0) {
-                        str = okNameForGetter(am);
+                        str = _okNameForGetter(am);
                     } else {
-                        str = okNameForMutator(am);
+                        str = _okNameForMutator(am);
                     }
                     if (str != null) {
                         return name.withSimpleName(str);
@@ -607,7 +605,7 @@ public class JaxbAnnotationIntrospector
                             }
                         }
                         if (name == null || MARKER_FOR_DEFAULT.equals(name)) {
-                            name = Introspector.decapitalize(refType.getSimpleName());
+                            name = _decapitalize(refType.getSimpleName());
                         }
                         result.add(new NamedType(refType, name));
                     }
@@ -847,7 +845,7 @@ public class JaxbAnnotationIntrospector
         if (a instanceof AnnotatedMethod) {
             AnnotatedMethod am = (AnnotatedMethod) a;
             return isVisible(am)
-                ? findJaxbPropertyName(am, am.getRawType(), okNameForGetter(am))
+                ? findJaxbPropertyName(am, am.getRawType(), _okNameForGetter(am))
                 : null;
         }
         if (a instanceof AnnotatedField) {
@@ -1021,7 +1019,7 @@ public class JaxbAnnotationIntrospector
                 return null;
             }
             Class<?> rawType = am.getRawParameterType(0);
-            return findJaxbPropertyName(am, rawType, okNameForMutator(am));
+            return findJaxbPropertyName(am, rawType, _okNameForMutator(am));
         }
         if (a instanceof AnnotatedField) {
             AnnotatedField af = (AnnotatedField) a;
@@ -1230,7 +1228,7 @@ public class JaxbAnnotationIntrospector
                         return _combineNames(name, rootElement.namespace(), defaultName);
                     }
                     // Is there a namespace there to use? Probably not?
-                    return new PropertyName(Introspector.decapitalize(aeType.getSimpleName()));
+                    return new PropertyName(_decapitalize(aeType.getSimpleName()));
                 }
             }
         }
@@ -1465,29 +1463,29 @@ public class JaxbAnnotationIntrospector
     /**********************************************************
      */
 
-    protected String okNameForGetter(AnnotatedMethod am) {
+    protected String _okNameForGetter(AnnotatedMethod am) {
         final String name = am.getName();
         if (name.startsWith("is")) { // plus, must return a boolean
             Class<?> rt = am.getRawType();
             if (rt == Boolean.class || rt == Boolean.TYPE) {
-                return stdManglePropertyName(name, 2);
+                return _stdManglePropertyName(name, 2);
             }
         }
         if (name.startsWith("get")) {
-            return stdManglePropertyName(name, 3);
+            return _stdManglePropertyName(name, 3);
         }
         return null;
     }
     
-    protected String okNameForMutator(AnnotatedMethod am) {
+    protected String _okNameForMutator(AnnotatedMethod am) {
         final String name = am.getName();
         if (name.startsWith("set")) {
-            return stdManglePropertyName(name, 3);
+            return _stdManglePropertyName(name, 3);
         }
         return null;
     }
 
-    protected String stdManglePropertyName(final String basename, final int offset)
+    protected String _stdManglePropertyName(final String basename, final int offset)
     {
         final int end = basename.length();
         if (end == offset) { // empty name, nope
@@ -1511,5 +1509,29 @@ public class JaxbAnnotationIntrospector
         sb.append(c1);
         sb.append(basename, offset+1, end);
         return sb.toString();
+    }
+
+    // 02-Nov-2020, tatu: Does not seem to be covered by any unit tests that
+    //    fail if we simply returned "name" as-is.... ?!
+    // @since 2.12: to remove `java.beans.Introspector.decapitalize(...)` dependency
+    protected String _decapitalize(String name) {
+        if (name.length() > 0) {
+            final char firstOrig = name.charAt(0);
+            final char firstLC = Character.toLowerCase(firstOrig);
+
+            // Lower-case first character if not already lower-case and
+            // is not followed by another upper-case character
+            if (firstOrig != firstLC) {
+                if (name.length() == 1) {
+                    return String.valueOf(firstLC);
+                }
+                if (!Character.isUpperCase(name.charAt(1))) {
+                    char chars[] = name.toCharArray();
+                    chars[0] = Character.toLowerCase(chars[0]);
+                    return new String(chars);
+                }
+            }
+        }
+        return name;
     }
 }
