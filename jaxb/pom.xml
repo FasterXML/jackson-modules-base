@@ -127,6 +127,10 @@ data-binding.
                   <pattern>javax.xml.bind</pattern>
                   <shadedPattern>jakarta.xml.bind</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>javax.activation</pattern>
+                  <shadedPattern>jakarta.activation</shadedPattern>
+                </relocation>
               </relocations>
             </configuration>
           </execution>
