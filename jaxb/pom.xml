@@ -119,7 +119,7 @@ data-binding.
               <createDependencyReducedPom>false</createDependencyReducedPom>
               <artifactSet>
                 <includes>
-                  <include>com.fasterxml.jackson.module:jackson-module-jaxb-annotations</include>
+                  <include>${project.groupId}:${project.artifactId}</include>
                 </includes>
               </artifactSet>
               <relocations>
