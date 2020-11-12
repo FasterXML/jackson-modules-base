@@ -1,7 +1,8 @@
 module com.fasterxml.jackson.module.jaxb {
     requires java.logging;
     requires java.xml;
-    requires java.xml.bind;
+    requires static java.xml.bind;
+    requires static jakarta.xml.bind;
 
     // Needed for JDK9+, but optionally only
     requires static java.activation;
