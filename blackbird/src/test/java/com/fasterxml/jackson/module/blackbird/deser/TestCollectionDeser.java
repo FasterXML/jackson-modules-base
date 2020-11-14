@@ -10,7 +10,7 @@ public class TestCollectionDeser extends BlackbirdTestBase
     // [module-afterburner#36]
     static class CollectionBean
     {
-        private Collection<String> x = new TreeSet<String>();
+        Collection<String> x = new TreeSet<String>();
 
         public Collection<String> getStuff() { return x; }
     }
