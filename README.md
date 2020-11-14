@@ -16,6 +16,10 @@ Currently included are:
 * [OSGi](osgi/)
 * [Paranamer](paranamer/)
 
+## Status
+
+[![Build Status](https://travis-ci.org/FasterXML/jackson-modules-base.svg)](https://travis-ci.org/FasterXML/jackson-modules-base)
+
 ## License
 
 All modules are licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
@@ -29,7 +33,10 @@ whereas 3.0 will use [ByteBuddy](https://github.com/raphw/byte-buddy) (licensed 
 
 
 ## Using Jakarta
-* Jakarta can be referenced for the JAXB module by using the classifier "jakarta" in your dependency
+
+A note on compatibility of JAXB annotations module, Jakarta 3.0 API libraries for JAXB: with Jackson 2.12,
+Jakarta versions can be referenced for the JAXB module by using the classifier "jakarta" in your dependency
+
 ```
 <dependency>
     <groupId>com.fasterxml.jackson.jaxrs</groupId>
@@ -37,11 +44,6 @@ whereas 3.0 will use [ByteBuddy](https://github.com/raphw/byte-buddy) (licensed 
     <classifier>jakarta</classifier>
 </dependency>
 ``` 
-
-
-## Status
-
-[![Build Status](https://travis-ci.org/FasterXML/jackson-modules-base.svg)](https://travis-ci.org/FasterXML/jackson-modules-base)
 
 ## More
 
