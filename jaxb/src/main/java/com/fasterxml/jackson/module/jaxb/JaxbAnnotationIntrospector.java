@@ -840,7 +840,7 @@ public class JaxbAnnotationIntrospector
     public PropertyName findNameForSerialization(MapperConfig<?> config, Annotated a)
     {
         // 16-Sep-2016, tatu: Prior to 2.9 logic her more complicated, on assumption
-        //    that visibility rules may require return of "" if method/fied visible;
+        //    that visibility rules may require return of "" if method/field visible;
         //    however, that is not required and causes issues so... now simpler:
         if (a instanceof AnnotatedMethod) {
             AnnotatedMethod am = (AnnotatedMethod) a;
@@ -1238,7 +1238,8 @@ public class JaxbAnnotationIntrospector
                     || ae.hasAnnotation(XmlElements.class)
                     // 09-Aug-2014, tatu: Note: prior to 2.4.2, we used to give explicit name "value"
                     //   if there was "@XmlValue" annotation; since then, only implicit name.
-                    || ae.hasAnnotation(XmlValue.class);
+                    || ae.hasAnnotation(XmlValue.class)
+                    ;
         }
         // One more thing: 
         return hasAName ? PropertyName.USE_DEFAULT : null;
