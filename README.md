@@ -27,6 +27,18 @@ licensed as per:
 
 whereas 3.0 will use [ByteBuddy](https://github.com/raphw/byte-buddy) (licensed as per https://github.com/raphw/byte-buddy/blob/master/LICENSE)
 
+
+## Using Jakarta
+* Jakarta can be referenced for the JAXB module by using the classifier "jakarta" in your dependency
+```
+<dependency>
+    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+    <artifactId>jackson-module-jaxb-annotations</artifactId>
+    <classifier>jakarta</classifier>
+</dependency>
+``` 
+
+
 ## Status
 
 [![Build Status](https://travis-ci.org/FasterXML/jackson-modules-base.svg)](https://travis-ci.org/FasterXML/jackson-modules-base)
