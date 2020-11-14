@@ -70,9 +70,9 @@ public class JaxbAnnotationIntrospector
     private static final long serialVersionUID = -1L;
 
     protected final static String DEFAULT_NAME_FOR_XML_VALUE = "value";
-    
+
     protected final static boolean DEFAULT_IGNORE_XMLIDREF = false;
-    
+
     protected final static String MARKER_FOR_DEFAULT = "##default";
 
     protected final static JsonFormat.Value FORMAT_STRING = new JsonFormat.Value().withShape(JsonFormat.Shape.STRING);
