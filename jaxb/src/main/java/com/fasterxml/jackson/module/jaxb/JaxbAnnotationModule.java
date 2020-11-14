@@ -56,6 +56,15 @@ public class JaxbAnnotationModule extends com.fasterxml.jackson.databind.Module
      */
     protected JsonInclude.Include _nonNillableInclusion;
 
+    /**
+     * Value to pass to
+     * {@link JaxbAnnotationIntrospector#setNameUsedForXmlValue}
+     * if defined and non-null.
+     *
+     * @since 2.12
+     */
+    protected String _nameUsedForXmlValue;
+
     /*
     /**********************************************************
     /* Life cycle
@@ -89,6 +98,9 @@ public class JaxbAnnotationModule extends com.fasterxml.jackson.databind.Module
             intr = new JaxbAnnotationIntrospector(context.getTypeFactory());
             if (_nonNillableInclusion != null) {
                 intr.setNonNillableInclusion(_nonNillableInclusion);
+            }
+            if (_nameUsedForXmlValue != null) {
+                intr.setNameUsedForXmlValue(_nameUsedForXmlValue);
             }
         }
         switch (_priority) {
@@ -128,6 +140,7 @@ public class JaxbAnnotationModule extends com.fasterxml.jackson.databind.Module
     public JaxbAnnotationModule setNonNillableInclusion(JsonInclude.Include incl) {
         _nonNillableInclusion = incl;
         if (_introspector != null) {
+            // 13-Nov-2020, tatu: should we pass null "incl"?
             _introspector.setNonNillableInclusion(incl);
         }
         return this;
@@ -138,5 +151,20 @@ public class JaxbAnnotationModule extends com.fasterxml.jackson.databind.Module
      */
     public JsonInclude.Include getNonNillableInclusion() {
         return _nonNillableInclusion;
+    }
+
+    /**
+     * @since 2.12
+     */
+    public JaxbAnnotationModule setNameUsedForXmlValue(String name) {
+        _nameUsedForXmlValue = name;
+        if ((name != null) && (_introspector != null)) {
+            _introspector.setNameUsedForXmlValue(name);
+        }
+        return this;
+    }
+
+    public String getNameUsedForXmlValue() {
+        return _nameUsedForXmlValue;
     }
 }
