@@ -59,11 +59,11 @@ public class JaxbAnnotationModule extends com.fasterxml.jackson.databind.Module
     /**
      * Value to pass to
      * {@link JaxbAnnotationIntrospector#setNameUsedForXmlValue}
-     * if defined and non-null.
+     * if introspector constructed by the module.
      *
      * @since 2.12
      */
-    protected String _nameUsedForXmlValue;
+    protected String _nameUsedForXmlValue = JaxbAnnotationIntrospector.DEFAULT_NAME_FOR_XML_VALUE;
 
     /*
     /**********************************************************
@@ -99,9 +99,7 @@ public class JaxbAnnotationModule extends com.fasterxml.jackson.databind.Module
             if (_nonNillableInclusion != null) {
                 intr.setNonNillableInclusion(_nonNillableInclusion);
             }
-            if (_nameUsedForXmlValue != null) {
-                intr.setNameUsedForXmlValue(_nameUsedForXmlValue);
-            }
+            intr.setNameUsedForXmlValue(_nameUsedForXmlValue);
         }
         switch (_priority) {
         case PRIMARY:
@@ -158,9 +156,6 @@ public class JaxbAnnotationModule extends com.fasterxml.jackson.databind.Module
      */
     public JaxbAnnotationModule setNameUsedForXmlValue(String name) {
         _nameUsedForXmlValue = name;
-        if ((name != null) && (_introspector != null)) {
-            _introspector.setNameUsedForXmlValue(name);
-        }
         return this;
     }
 
