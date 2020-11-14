@@ -70,9 +70,9 @@ public class JaxbAnnotationIntrospector
     private static final long serialVersionUID = -1L;
 
     protected final static String DEFAULT_NAME_FOR_XML_VALUE = "value";
-    
+
     protected final static boolean DEFAULT_IGNORE_XMLIDREF = false;
-    
+
     protected final static String MARKER_FOR_DEFAULT = "##default";
 
     // @since 2.5
@@ -86,7 +86,7 @@ public class JaxbAnnotationIntrospector
     protected final JsonDeserializer<?> _dataHandlerDeserializer;
 
     protected final TypeFactory _typeFactory;
-    
+
     protected final boolean _ignoreXmlIDREF;
 
     /**
