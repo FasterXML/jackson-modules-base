@@ -9,7 +9,7 @@ public class TestPolymorphic extends BlackbirdTestBase
 {
     static class Envelope {
         @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.EXTERNAL_PROPERTY, property="class")
-        private Object payload;
+        Object payload;
 
         public Envelope(@JsonProperty("payload") Object payload) {
             this.payload = payload;

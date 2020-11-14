@@ -87,10 +87,10 @@ public class TestBridgeMethods extends BaseTest
     @SuppressWarnings("unchecked")
     private static <T> Class<T> reorderBridgeMethodFirst(Class<T> clazz, final String methodName) throws IOException {
         ClassReader reader = new ClassReader(clazz.getName());
-        ClassWriter writer = new ClassWriter(0);
+        final ClassWriter writer = new ClassWriter(0);
         reader.accept(new ClassVisitor(Opcodes.ASM7, writer) {
-            private BufferingMethodVisitor _nonBridgeMethod;
-            private boolean _wroteBridgeMethod;
+            BufferingMethodVisitor _nonBridgeMethod;
+            boolean _wroteBridgeMethod;
 
             @Override
             public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {

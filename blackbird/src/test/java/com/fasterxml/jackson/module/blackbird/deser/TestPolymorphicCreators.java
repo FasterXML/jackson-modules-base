@@ -54,7 +54,7 @@ public class TestPolymorphicCreators extends BlackbirdTestBase
     {
         private final String opt;
 
-        private AbstractRoot(String opt) {
+        AbstractRoot(String opt) {
             this.opt = opt;
         }
 
@@ -75,7 +75,7 @@ public class TestPolymorphicCreators extends BlackbirdTestBase
     }
 
     static final class One extends AbstractRoot {
-        private One(String opt) {
+        One(String opt) {
             super(opt);
         }
 
