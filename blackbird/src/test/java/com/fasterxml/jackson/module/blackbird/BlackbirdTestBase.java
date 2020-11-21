@@ -157,6 +157,10 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
                 .addModule(new BlackbirdModule(MethodHandles::lookup));
     }
 
+    protected static JsonMapper newVanillaJSONMapper() {
+        return new JsonMapper();
+    }
+
     /*
     /**********************************************************
     /* Helper methods; assertions

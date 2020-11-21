@@ -15,7 +15,7 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
  * Unit tests for verifying handling of simple basic non-structured
  * types; primitives (and/or their wrappers), Strings.
  */
-public class JDKScalarsTest
+public class JDKScalarsDeserTest
     extends AfterburnerTestBase
 {
     final static String NAN_STRING = "NaN";
@@ -103,7 +103,7 @@ public class JDKScalarsTest
         public Double doubleValue;
     }
 
-    private final ObjectMapper MAPPER = new ObjectMapper();
+    private final ObjectMapper MAPPER = newObjectMapper();
 
     /*
     /**********************************************************
