@@ -151,6 +151,11 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
         return mapperBuilder().build();
     }
 
+    // preferred in 3.0:
+    protected static JsonMapper newAfterburnerMapper() {
+        return mapperBuilder().build();
+    }
+
     protected static JsonMapper.Builder mapperBuilder() {
         return JsonMapper.builder()
                 .addModule(new AfterburnerModule());
@@ -182,7 +187,7 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
     
     protected void assertToken(JsonToken expToken, JsonParser jp)
     {
-        assertToken(expToken, jp.getCurrentToken());
+        assertToken(expToken, jp.currentToken());
     }
 
     protected void assertType(Object ob, Class<?> expType)
@@ -211,7 +216,7 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
         String str = jp.getText();
 
         if (str.length() !=  actLen) {
-            fail("Internal problem (jp.token == "+jp.getCurrentToken()+"): jp.getText().length() ['"+str+"'] == "+str.length()+"; jp.getTextLength() == "+actLen);
+            fail("Internal problem (jp.token == "+jp.currentToken()+"): jp.getText().length() ['"+str+"'] == "+str.length()+"; jp.getTextLength() == "+actLen);
         }
         assertEquals("String access via getText(), getTextXxx() must be the same", str, str2);
 
@@ -222,7 +227,7 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
         throws IOException
     {
         assertEquals(expName, jp.getText());
-        assertEquals(expName, jp.getCurrentName());
+        assertEquals(expName, jp.currentName());
     }
     
     protected void verifyIntValue(JsonParser jp, long expValue)
