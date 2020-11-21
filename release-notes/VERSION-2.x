@@ -20,7 +20,8 @@ Modules:
 #100: (mrbean) Prevent "double-prefixing" Mr Bean generated classes
 #115: (jaxb) Remove ` java.beans.Introspector` dependency from JAXB module (to
    get rid of `java.desktop` module dep)
-#117: Use of `ToStringSerializer` via `@JsonSerialize` on `int`/`long` property does not work
+#117: (afterburner) Use of `ToStringSerializer` via `@JsonSerialize` on `int`/`long`
+   property does not work
  (reported by wujimin@github)
 - Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
 
