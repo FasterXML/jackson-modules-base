@@ -77,7 +77,7 @@ public class TestJDKTypes extends BaseTest
         assertEquals("abc", (String) value);
     }
 
-    // [modules-base#117]: should work with "Numbers-as-String" case too
+    // Extra test inspired by Afterburner report
     public void testIntAsString() throws Exception
     {
         final String EXP_JSON = "{\"value\":\"42\"}";
