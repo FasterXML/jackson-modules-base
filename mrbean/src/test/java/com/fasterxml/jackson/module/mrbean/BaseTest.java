@@ -27,6 +27,10 @@ public abstract class BaseTest
                 .build();
     }
 
+    protected ObjectMapper newPlainJsonMapper() {
+        return new JsonMapper();
+    }
+
     /*
     /**********************************************************
     /* Parser/generator construction
