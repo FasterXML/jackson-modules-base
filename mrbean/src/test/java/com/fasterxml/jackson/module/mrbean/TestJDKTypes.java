@@ -3,7 +3,10 @@ package com.fasterxml.jackson.module.mrbean;
 import java.io.Serializable;
 import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 /**
  * Tests stemming from [#12], where `Calendar` fails; however, bit more general
@@ -11,7 +14,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class TestJDKTypes extends BaseTest
 {
+    static class Bean117UsingJsonFormat {
+        @JsonFormat(shape = JsonFormat.Shape.STRING)
+        public int value = 42;
+    }
+
+    static class Bean117UsingJsonSerialize {
+        @JsonSerialize(using = ToStringSerializer.class)
+        public int value = 42;
+    }
+
     private final ObjectMapper MAPPER = newMrBeanMapper();
+    private final ObjectMapper VANILLA_MAPPER = newPlainJsonMapper();
 
     public void testDateTimeTypes() throws Exception
     {
@@ -61,5 +75,19 @@ public class TestJDKTypes extends BaseTest
 //        Serializable value = MAPPER.readValue(quote("abc"), Serializable.class);
         Serializable value = new ObjectMapper().readValue(quote("abc"), Serializable.class);
         assertEquals("abc", (String) value);
+    }
+
+    // [modules-base#117]: should work with "Numbers-as-String" case too
+    public void testIntAsString() throws Exception
+    {
+        final String EXP_JSON = "{\"value\":\"42\"}";
+
+        // First, check usage via `@JsonFormat`
+        assertEquals(EXP_JSON, VANILLA_MAPPER.writeValueAsString(new Bean117UsingJsonFormat()));
+        assertEquals(EXP_JSON, MAPPER.writeValueAsString(new Bean117UsingJsonFormat()));
+
+        // then with `@JsonSerialize`
+        assertEquals(EXP_JSON, VANILLA_MAPPER.writeValueAsString(new Bean117UsingJsonSerialize()));
+        assertEquals(EXP_JSON, MAPPER.writeValueAsString(new Bean117UsingJsonSerialize()));
     }
 }

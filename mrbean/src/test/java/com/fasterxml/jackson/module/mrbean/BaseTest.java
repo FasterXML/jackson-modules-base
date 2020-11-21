@@ -7,6 +7,7 @@ import junit.framework.TestCase;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 //import static org.junit.Assert.*;
 
@@ -20,7 +21,13 @@ public abstract class BaseTest
      */
 
     protected ObjectMapper newMrBeanMapper() {
-        return new ObjectMapper().registerModule(new MrBeanModule());
+        return JsonMapper.builder()
+                .addModule(new MrBeanModule())
+                .build();
+    }
+
+    protected ObjectMapper newPlainJsonMapper() {
+        return new JsonMapper();
     }
 
     /*
