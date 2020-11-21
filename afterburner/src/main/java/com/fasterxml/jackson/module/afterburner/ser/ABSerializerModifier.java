@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.ser.*;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
 
@@ -116,7 +117,6 @@ public class ABSerializerModifier extends BeanSerializerModifier
             
             if (type.isPrimitive()) {
                 if (type == Integer.TYPE) {
-
                     if (isMethod) {
                         it.set(collector.addIntGetter(bpw));
                     } else {
@@ -181,6 +181,14 @@ public class ABSerializerModifier extends BeanSerializerModifier
     protected boolean isDefaultSerializer(SerializationConfig config,
             JsonSerializer<?> ser)
     {
-        return ClassUtil.isJacksonStdImpl(ser);
+        if (ClassUtil.isJacksonStdImpl(ser)) {
+            // 20-Nov-2020, tatu: As per [modules-base#117], need to consider
+            //   one standard serializer that should not be replaced...
+            if (ser instanceof ToStringSerializer) {
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 }

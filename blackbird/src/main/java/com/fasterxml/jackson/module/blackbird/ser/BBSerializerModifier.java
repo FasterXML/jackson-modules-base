@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.annotation.JacksonStdImpl;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.ser.*;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.module.blackbird.util.ReflectionHack;
 import com.fasterxml.jackson.module.blackbird.util.Unchecked;
@@ -82,7 +83,7 @@ public class BBSerializerModifier extends BeanSerializerModifier
         // (although, interestingly enough, can seem to access private classes...)
 
         // 30-Jul-2012, tatu: [#6]: Needs to skip custom serializers, if any.
-        if (bpw.hasSerializer() && !ClassUtil.isJacksonStdImpl(bpw.getSerializer())) {
+        if (bpw.hasSerializer() && !isDefaultSerializer(config, bpw.getSerializer())) {
             return;
         }
         // [#9]: also skip unwrapping stuff...
@@ -159,5 +160,24 @@ public class BBSerializerModifier extends BeanSerializerModifier
                 it.set(new ObjectPropertyWriter(bpw, accessor, null));
             }
         }
+    }
+
+    /**
+     * Helper method used to check whether given serializer is the default
+     * serializer implementation: this is necessary to avoid overriding other
+     * kinds of serializers.
+     */
+    protected boolean isDefaultSerializer(SerializationConfig config,
+            JsonSerializer<?> ser)
+    {
+        if (ClassUtil.isJacksonStdImpl(ser)) {
+            // 20-Nov-2020, tatu: As per [modules-base#117], need to consider
+            //   one standard serializer that should not be replaced...
+            if (ser instanceof ToStringSerializer) {
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 }

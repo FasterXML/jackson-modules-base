@@ -179,6 +179,11 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
                 .addModule(new AfterburnerModule());
     }
 
+    // One withOUT afterburner module
+    protected static JsonMapper newVanillaJSONMapper() {
+        return new JsonMapper();
+    }
+
     /*
     /**********************************************************
     /* Helper methods; assertions
