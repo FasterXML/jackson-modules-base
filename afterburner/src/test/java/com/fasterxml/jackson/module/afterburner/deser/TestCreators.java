@@ -325,7 +325,6 @@ public class TestCreators extends AfterburnerTestBase
         assertEquals(42, bean.x);
     }
 
-    // [JACKSON-850]
     public void testNoArgsFactory() throws Exception
     {
         NoArgFactoryBean value = MAPPER.readValue("{\"y\":13}", NoArgFactoryBean.class);
@@ -335,7 +334,7 @@ public class TestCreators extends AfterburnerTestBase
 
     public void testSimpleDoubleConstructor() throws Exception
     {
-        Double exp = new Double("0.25");
+        Double exp = 0.25;
         DoubleConstructorBean bean = MAPPER.readValue(exp.toString(), DoubleConstructorBean.class);
         assertEquals(exp, bean.d);
     }
