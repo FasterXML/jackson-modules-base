@@ -128,14 +128,4 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
                 e.getClass().getName(), e.getMessage());
         Logger.getLogger(OptimizedBeanPropertyWriter.class.getName()).log(Level.WARNING, msg, e);
     }
-
-    /**
-     * Helper method used to check whether given serializer is the default
-     * serializer implementation: this is necessary to avoid overriding other
-     * kinds of deserializers.
-     */
-    protected boolean isDefaultSerializer(JsonSerializer<?> ser)
-    {
-        return (ser == null) || ClassUtil.isJacksonStdImpl(ser);
-    }
 }
