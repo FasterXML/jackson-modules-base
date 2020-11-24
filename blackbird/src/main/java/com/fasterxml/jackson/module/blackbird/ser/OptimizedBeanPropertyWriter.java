@@ -78,7 +78,7 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
         }
         // 04-Oct-2015, tatu: To fix [module-afterburner#59], need to disable use of
         //    fully optimized variant
-        if (!isDefaultSerializer(ser)) {
+        if (!SerializerUtil.isDefaultSerializer(ser)) {
             broken = true;
         }
     }

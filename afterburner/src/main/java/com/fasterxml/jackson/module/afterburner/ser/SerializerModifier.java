@@ -8,8 +8,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.ser.*;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.fasterxml.jackson.databind.util.ClassUtil;
+
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
 
 public class SerializerModifier extends BeanSerializerModifier
@@ -94,7 +93,7 @@ public class SerializerModifier extends BeanSerializerModifier
             
             // 30-Jul-2012, tatu: [#6]: Needs to skip custom serializers, if any.
             if (bpw.hasSerializer()) {
-                if (!isDefaultSerializer(config, bpw.getSerializer())) {
+                if (!SerializerUtil.isDefaultSerializer(bpw.getSerializer())) {
                     continue;
                 }
             }
@@ -155,24 +154,5 @@ public class SerializerModifier extends BeanSerializerModifier
             }
         }
         return collector;
-    }
-
-    /**
-     * Helper method used to check whether given serializer is the default
-     * serializer implementation: this is necessary to avoid overriding other
-     * kinds of serializers.
-     */
-    protected boolean isDefaultSerializer(SerializationConfig config,
-            JsonSerializer<?> ser)
-    {
-        if (ClassUtil.isJacksonStdImpl(ser)) {
-            // 20-Nov-2020, tatu: As per [modules-base#117], need to consider
-            //   one standard serializer that should not be replaced...
-            if (ser instanceof ToStringSerializer) {
-                return false;
-            }
-            return true;
-        }
-        return false;
     }
 }

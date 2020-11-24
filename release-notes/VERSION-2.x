@@ -23,6 +23,8 @@ Modules:
 #117: (afterburner) Use of `ToStringSerializer` via `@JsonSerialize` on `int`/`long`
    property does not work
  (reported by wujimin@github)
+#118: (afterburner) Using `@JsonFormat(shape = JsonFormat.Shape.STRING)` on `int`,
+   `long` properties not working
 - Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
 
 2.11.3 (02-Oct-2020)
