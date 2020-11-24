@@ -78,7 +78,7 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
         }
         // 04-Oct-2015, tatu: To fix [module-afterburner#59], need to disable use of
         //    fully optimized variant
-        if (!isDefaultSerializer(ser)) {
+        if (!SerializerUtil.isDefaultSerializer(ser)) {
             broken = true;
         }
     }
@@ -127,15 +127,5 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
                 bean.getClass(), _name, getClass().getName(),
                 e.getClass().getName(), e.getMessage());
         Logger.getLogger(OptimizedBeanPropertyWriter.class.getName()).log(Level.WARNING, msg, e);
-    }
-
-    /**
-     * Helper method used to check whether given serializer is the default
-     * serializer implementation: this is necessary to avoid overriding other
-     * kinds of deserializers.
-     */
-    protected boolean isDefaultSerializer(JsonSerializer<?> ser)
-    {
-        return (ser == null) || ClassUtil.isJacksonStdImpl(ser);
     }
 }

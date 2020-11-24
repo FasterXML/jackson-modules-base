@@ -8,8 +8,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.ser.*;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.fasterxml.jackson.databind.util.ClassUtil;
+
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
 
 public class ABSerializerModifier extends BeanSerializerModifier
@@ -91,7 +90,7 @@ public class ABSerializerModifier extends BeanSerializerModifier
             
             // 30-Jul-2012, tatu: [#6]: Needs to skip custom serializers, if any.
             if (bpw.hasSerializer()) {
-                if (!isDefaultSerializer(config, bpw.getSerializer())) {
+                if (!SerializerUtil.isDefaultSerializer(bpw.getSerializer())) {
                     continue;
                 }
             }
@@ -152,43 +151,5 @@ public class ABSerializerModifier extends BeanSerializerModifier
             }
         }
         return collector;
-    }
-
-    // 25-Oct-2017, tatu: Originally prototyped here, but unrolling implementation
-    //    merged in core databind for 3.0, so...
-    /*
-    @Override
-    public JsonSerializer<?> modifySerializer(SerializationConfig config,
-            BeanDescription beanDesc, JsonSerializer<?> serializer)
-    {
-        // 20-Oct-2017, tatu: Could add support for `BeanAsArraySerializer` and
-        //    `UnwrappingBeanSerializer` too, but for now focus on "vanilla" case
-        if (serializer.getClass() == BeanSerializer.class) {
-            BeanSerializer base = (BeanSerializer) serializer;
-            if (base.propertyCount() <= 6) {
-                return new SuperSonicBeanSerializer(base);
-            }
-        }
-        return serializer;
-    }
-    */
-
-    /**
-     * Helper method used to check whether given serializer is the default
-     * serializer implementation: this is necessary to avoid overriding other
-     * kinds of serializers.
-     */
-    protected boolean isDefaultSerializer(SerializationConfig config,
-            JsonSerializer<?> ser)
-    {
-        if (ClassUtil.isJacksonStdImpl(ser)) {
-            // 20-Nov-2020, tatu: As per [modules-base#117], need to consider
-            //   one standard serializer that should not be replaced...
-            if (ser instanceof ToStringSerializer) {
-                return false;
-            }
-            return true;
-        }
-        return false;
     }
 }
