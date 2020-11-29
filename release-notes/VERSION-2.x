@@ -12,7 +12,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.12.0 (not yet released)
+2.12.0 (29-Nov-2020)
 
 #85: Add Blackbird module -- alternative for Afterburner that works better with
    new(er) JVMs
