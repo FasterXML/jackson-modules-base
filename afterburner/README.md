@@ -5,6 +5,8 @@ Afterburner plugs in using standard `Module` interface.
 ## Status
 
 Module is considered stable and has been used in production environments since version 2.2.
+There is, however, a potential future replacement available (as of Jackson 2.12): Blackbird module.
+See the parent README for details.
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-afterburner/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-afterburner/)
 [![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.module/jackson-module-afterburner.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-afterburner)
@@ -19,7 +21,7 @@ To use module on Maven-based projects, use following dependency:
 <dependency>
   <groupId>com.fasterxml.jackson.module</groupId>
   <artifactId>jackson-module-afterburner</artifactId>
-  <version>2.11.0</version>
+  <version>2.12.0</version>
 </dependency>
 ```
 
@@ -36,8 +38,9 @@ Module jar is also a functional OSGi bundle, with proper import/export declarati
 To use the the Module in Jackson, simply register it with the ObjectMapper instance:
 
 ```java
-ObjectMapper mapper = new ObjectMapper()
-mapper.registerModule(new AfterburnerModule());
+ObjectMapper mapper = JsonMapper.builder()
+    .addModule(new AfterburnerModule())
+    .build();
 ```
 
 after which you just do data-binding as usual:

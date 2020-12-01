@@ -28,7 +28,7 @@ Blackbird passes all the original Afterburner tests (except a couple that didn't
 
 ### Maven dependency
 
-Blackbird is available on Maven Central as of 2.10.0:
+Blackbird is available on Maven Central as of 2.12.0:
 
 ```xml
 <dependency>
@@ -42,8 +42,9 @@ Blackbird is available on Maven Central as of 2.10.0:
 To use the Module in Jackson, simply register it with the ObjectMapper instance:
 
 ```java
-ObjectMapper mapper = new ObjectMapper()
-mapper.registerModule(new BlackbirdModule());
+ObjectMapper mapper = JsonMapper.builder()
+    .addModule(new BlackbirdModule())
+    .build();
 ```
 
 after which you just do data-binding as usual:
