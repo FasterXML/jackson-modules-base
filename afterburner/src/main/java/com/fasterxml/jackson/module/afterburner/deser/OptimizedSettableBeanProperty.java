@@ -222,7 +222,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             return parsed;            
         }
         // Otherwise, no can do:
-        return (Boolean) ctxt.handleUnexpectedToken(Boolean.TYPE, p);
+        return (Boolean) ctxt.handleUnexpectedToken(getType(), p);
     }
 
     // 16-Dec-2020, tatu: Copied from "StdDeserializer._parseIntPrimitive()" verbatim:
@@ -248,7 +248,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         case JsonTokenId.ID_NUMBER_INT:
             return p.getIntValue();
         case JsonTokenId.ID_NULL:
-            _verifyNullForPrimitive(ctxt, Integer.TYPE);
+            _verifyNullForPrimitive(ctxt);
             return 0;
         // 16-Dec-2020, tatu: not sure if this will work (no deserializer to pass),
          //    but we'll do our best
@@ -264,7 +264,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             }
             // fall through to fail
         default:
-            return ((Number) ctxt.handleUnexpectedToken(Integer.TYPE, p)).intValue();
+            return ((Number) ctxt.handleUnexpectedToken(getType(), p)).intValue();
         }
 
         final CoercionAction act = _checkFromStringCoercion(ctxt, text,
@@ -277,7 +277,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         }
         text = text.trim();
         if (_hasTextualNull(text)) {
-            _verifyNullForPrimitiveCoercion(ctxt, Integer.TYPE, text);
+            _verifyNullForPrimitiveCoercion(ctxt, text);
             return 0;
         }
         return _parseIntPrimitive(ctxt, text);
@@ -327,7 +327,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         case JsonTokenId.ID_NUMBER_INT:
             return p.getIntValue();
         case JsonTokenId.ID_NULL:
-            _verifyNullForPrimitive(ctxt, Long.TYPE);
+            _verifyNullForPrimitive(ctxt);
             return 0;
         // 16-Dec-2020, tatu: not sure if this will work (no deserializer to pass),
          //    but we'll do our best
@@ -343,7 +343,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             }
             // fall through to fail
         default:
-            return ((Number) ctxt.handleUnexpectedToken(Long.TYPE, p)).intValue();
+            return ((Number) ctxt.handleUnexpectedToken(getType(), p)).intValue();
         }
 
         final CoercionAction act = _checkFromStringCoercion(ctxt, text,
@@ -356,7 +356,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         }
         text = text.trim();
         if (_hasTextualNull(text)) {
-            _verifyNullForPrimitiveCoercion(ctxt, Long.TYPE, text);
+            _verifyNullForPrimitiveCoercion(ctxt, text);
             return 0;
         }
         return _parseLongPrimitive(ctxt, text);
@@ -408,7 +408,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
                 return text;
             }
         }
-        return (String) ctxt.handleUnexpectedToken(String.class, p);
+        return (String) ctxt.handleUnexpectedToken(getType(), p);
     }
 
     protected final boolean _deserializeBooleanFromOther(JsonParser p, DeserializationContext ctxt)
@@ -544,7 +544,7 @@ getType());
                 // since it MIGHT (but might not), create desc here, do not use helper
                 ctxt.reportInputMismatch(this,
 "Cannot coerce String value (\"%s\") to %s (but might if coercion using `CoercionConfig` was enabled)",
-value, _coercedTypeDesc(rawTargetType));
+value, _coercedTypeDesc());
             }
         }
         return act;
@@ -559,34 +559,34 @@ value, _coercedTypeDesc(rawTargetType));
             // 16-Dec-2020, tatu: Let's hope `null` for deserializer is ok...
             ctxt.reportBadCoercion(null, targetType, inputValue,
 "Cannot coerce %s to %s (but could if coercion was enabled using `CoercionConfig`)",
-inputDesc, _coercedTypeDesc(targetType));
+inputDesc, _coercedTypeDesc());
         }
         return act;
     }
 
-    private void _verifyNullForPrimitive(DeserializationContext ctxt,
-            Class<?> targetType) throws JsonMappingException
+    private void _verifyNullForPrimitive(DeserializationContext ctxt)
+            throws JsonMappingException
     {
         if (ctxt.isEnabled(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)) {
             ctxt.reportInputMismatch(this,
 "Cannot coerce `null` to %s (disable `DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES` to allow)",
-                    _coercedTypeDesc(targetType));
+                    _coercedTypeDesc());
         }
     }
 
     private final void _verifyNullForPrimitiveCoercion(DeserializationContext ctxt,
-            Class<?> targetType, String str) throws JsonMappingException
+            String str) throws JsonMappingException
     {
         if (ctxt.isEnabled(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)) {
             String strDesc = str.isEmpty() ? "empty String (\"\")" : String.format("String \"%s\"", str);
             ctxt.reportInputMismatch(this,
 "Cannot coerce %s to %s (disable `DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES` to allow)",
-                    strDesc, _coercedTypeDesc(targetType));
+                    strDesc, _coercedTypeDesc());
         }
     }
     
     // Simplified as we only ever get simple scalar types
-    private String _coercedTypeDesc(Class<?> targetType) {
-        return ClassUtil.getClassDescription(targetType) +" value";
+    private String _coercedTypeDesc() {
+        return ClassUtil.getClassDescription(getType()) +" value";
     }
 }
