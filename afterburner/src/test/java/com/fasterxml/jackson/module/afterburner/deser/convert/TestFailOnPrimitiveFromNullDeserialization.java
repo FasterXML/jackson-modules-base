@@ -1,11 +1,11 @@
-package com.fasterxml.jackson.module.blackbird.deser;
+package com.fasterxml.jackson.module.afterburner.deser.convert;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
-public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBase
+public class TestFailOnPrimitiveFromNullDeserialization extends AfterburnerTestBase
 {
     static class LongBean
     {
@@ -51,13 +51,13 @@ public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBas
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, IntBean.class);
             fail();
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type int");
+            verifyException(e, "Cannot coerce `null` to `int` value");
         }
         try {
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, LongBean.class);
             fail();
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type long");
+            verifyException(e, "Cannot coerce `null` to `long` value");
         }
         try {
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, BooleanBean.class);

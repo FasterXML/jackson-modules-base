@@ -1,11 +1,11 @@
-package com.fasterxml.jackson.module.afterburner.deser;
+package com.fasterxml.jackson.module.blackbird.deser.convert;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
-public class TestFailOnPrimitiveFromNullDeserialization extends AfterburnerTestBase
+public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBase
 {
     static class LongBean
     {
