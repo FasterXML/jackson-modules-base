@@ -587,6 +587,6 @@ inputDesc, _coercedTypeDesc());
     
     // Simplified as we only ever get simple scalar types
     private String _coercedTypeDesc() {
-        return ClassUtil.getClassDescription(getType()) +" value";
+        return ClassUtil.getTypeDescription(getType()) +" value";
     }
 }
