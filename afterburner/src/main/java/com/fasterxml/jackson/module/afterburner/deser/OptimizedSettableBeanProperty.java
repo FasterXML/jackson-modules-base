@@ -178,51 +178,70 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 
     protected final boolean _deserializeBoolean(JsonParser p, DeserializationContext ctxt) throws IOException
     {
-        JsonToken t = p.currentToken();
-        if (t == JsonToken.VALUE_TRUE) return true;
-        if (t == JsonToken.VALUE_FALSE) return false;
-        if (t == JsonToken.VALUE_NULL) {
-            if (ctxt.isEnabled(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)) {
-                _failNullToPrimitiveCoercion(ctxt, "boolean");
-            }
+        String text;
+        switch (p.currentTokenId()) {
+        case JsonTokenId.ID_STRING:
+            text = p.getText();
+            break;
+        case JsonTokenId.ID_NUMBER_INT:
+            // may accept ints too, (0 == false, otherwise true)
+
+            // call returns `null`, Boolean.TRUE or Boolean.FALSE so:
+            return Boolean.TRUE.equals(_checkIntToBooleanCoercion(p, ctxt, Boolean.TYPE));
+        case JsonTokenId.ID_TRUE: // usually caller should have handled but:
+            return true;
+        case JsonTokenId.ID_FALSE:
             return false;
+        case JsonTokenId.ID_NULL: // null fine for non-primitive
+            _verifyNullForPrimitive(ctxt);
+            return false;
+        // 29-Jun-2020, tatu: New! "Scalar from Object" (mostly for XML)
+        case JsonTokenId.ID_START_OBJECT:
+            text = ctxt.extractScalarFromObject(p, null, Boolean.TYPE);
+            break;
+        case JsonTokenId.ID_START_ARRAY:
+            // 12-Jun-2020, tatu: For some reason calling `_deserializeFromArray()` won't work so:
+            if (ctxt.isEnabled(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)) {
+                p.nextToken();
+                final boolean parsed = _deserializeBoolean(p, ctxt);
+                _verifyEndArrayForSingle(p, ctxt);
+                return parsed;
+            }
+            // fall through
+        default:
+            return ((Boolean) ctxt.handleUnexpectedToken(Boolean.TYPE, p)).booleanValue();
         }
 
-        if (t == JsonToken.VALUE_NUMBER_INT) {
-            _verifyScalarCoercion(ctxt, p, "boolean");
-            // 11-Jan-2012, tatus: May be outside of int...
-            if (p.getNumberType() == NumberType.INT) {
-                return (p.getIntValue() != 0);
-            }
-            return _deserializeBooleanFromOther(p, ctxt);
+        final CoercionAction act = _checkFromStringCoercion(ctxt, text,
+                LogicalType.Boolean, Boolean.TYPE);
+        if (act == CoercionAction.AsNull) {
+            _verifyNullForPrimitive(ctxt);
+            return false;
         }
-        // And finally, let's allow Strings to be converted too
-        if (t == JsonToken.VALUE_STRING) {
-            _verifyScalarCoercion(ctxt, p, "boolean");
-            String text = p.getText().trim();
-            if ("true".equals(text) || "True".equals(text)) {
+        if (act == CoercionAction.AsEmpty) {
+            return false;
+        }
+        text = text.trim();
+        final int len = text.length();
+
+        // For [databind#1852] allow some case-insensitive matches (namely,
+        // true/True/TRUE, false/False/FALSE
+        if (len == 4) {
+            if (_isTrue(text)) {
                 return true;
             }
-            if ("false".equals(text) || "False".equals(text) || text.length() == 0) {
+        } else if (len == 5) {
+            if (_isFalse(text)) {
                 return false;
             }
-            if (_hasTextualNull(text)) {
-                return false;
-            }
-            throw ctxt.weirdStringException(text, Boolean.TYPE, "only \"true\" or \"false\" recognized");
         }
-        // [databind#381]
-        if (t == JsonToken.START_ARRAY && ctxt.isEnabled(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)) {
-            p.nextToken();
-            final boolean parsed = _deserializeBooleanFromOther(p, ctxt);
-            t = p.nextToken();
-            if (t != JsonToken.END_ARRAY) {
-                _handleMissingEndArrayForSingle(p, ctxt);
-            }            
-            return parsed;            
+        if (_hasTextualNull(text)) {
+            _verifyNullForPrimitiveCoercion(ctxt, text);
+            return false;
         }
-        // Otherwise, no can do:
-        return (Boolean) ctxt.handleUnexpectedToken(getType(), p);
+        Boolean b = (Boolean) ctxt.handleWeirdStringValue(Boolean.TYPE, text,
+                "only \"true\"/\"True\"/\"TRUE\" or \"false\"/\"False\"/\"FALSE\" recognized");
+        return Boolean.TRUE.equals(b);
     }
 
     // 16-Dec-2020, tatu: Copied from "StdDeserializer._parseIntPrimitive()" verbatim:
@@ -427,28 +446,31 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 
     // // More helper methods from StdDeserializer
 
-    private void _failNullToPrimitiveCoercion(DeserializationContext ctxt, String type) throws JsonMappingException
-    {
-        ctxt.reportInputMismatch(getType(),
-                "Cannot map `null` into type %s (set DeserializationConfig.DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES to 'false' to allow)",
-                type);
-    }
-
-    private void _verifyScalarCoercion(DeserializationContext ctxt, JsonParser parser, String type) throws IOException {
-        MapperFeature feat = MapperFeature.ALLOW_COERCION_OF_SCALARS;
-        if (!ctxt.isEnabled(feat)) {
-            ctxt.reportInputMismatch(getType(),
-                    "Cannot coerce JSON %s value (%s) into %s (enable `%s.%s` to allow)",
-                    parser.currentToken().name(),
-                    parser.readValueAsTree(),
-                    type,
-                    feat.getClass().getSimpleName(),
-                    feat.name());
-        }
-    }
-
     private boolean _hasTextualNull(String value) {
         return "null".equals(value);
+    }
+
+    // [databind#1852]
+    private boolean _isTrue(String text) {
+        char c = text.charAt(0);
+        if (c == 't') {
+            return "true".equals(text);
+        }
+        if (c == 'T') {
+            return "TRUE".equals(text) || "True".equals(text);
+        }
+        return false;
+    }
+
+    private boolean _isFalse(String text) {
+        char c = text.charAt(0);
+        if (c == 'f') {
+            return "false".equals(text);
+        }
+        if (c == 'F') {
+            return "FALSE".equals(text) || "False".equals(text);
+        }
+        return false;
     }
 
     private final boolean _intOverflow(long value) {
@@ -521,6 +543,32 @@ getType());
                     "Floating-point value ("+p.getText()+")");
         }
         return act;
+    }
+
+    private Boolean _checkIntToBooleanCoercion(JsonParser p, DeserializationContext ctxt,
+            Class<?> rawTargetType)
+        throws IOException
+    {
+        CoercionAction act = ctxt.findCoercionAction(LogicalType.Boolean, rawTargetType, CoercionInputShape.Integer);
+        switch (act) {
+        case Fail:
+            _checkCoercionFail(ctxt, act, rawTargetType, p.getNumberValue(),
+                    "Integer value ("+p.getText()+")");
+            return Boolean.FALSE;
+        case AsNull:
+            return null;
+        case AsEmpty:
+            return Boolean.FALSE;
+        default:
+        }
+        // 13-Oct-2016, tatu: As per [databind#1324], need to be careful wrt
+        //    degenerate case of huge integers, legal in JSON.
+        //    Also note that number tokens can not have WS to trim:
+        if (p.getNumberType() == NumberType.INT) {
+            // but minor optimization for common case is possible:
+            return p.getIntValue() != 0;
+        }
+        return !"0".equals(p.getText());
     }
 
     private CoercionAction _checkFromStringCoercion(DeserializationContext ctxt, String value,

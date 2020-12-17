@@ -6,8 +6,6 @@ import java.util.Arrays;
 import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
 public abstract class AfterburnerTestBase extends junit.framework.TestCase
@@ -165,23 +163,12 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
 
     private static ObjectMapper SHARED_MAPPER;
 
+    @Deprecated
     protected ObjectMapper objectMapper() {
         if (SHARED_MAPPER == null) {
             SHARED_MAPPER = newObjectMapper();
         }
         return SHARED_MAPPER;
-    }
-
-    protected ObjectWriter objectWriter() {
-        return objectMapper().writer();
-    }
-
-    protected ObjectReader objectReader() {
-        return objectMapper().reader();
-    }
-    
-    protected ObjectReader objectReader(Class<?> cls) {
-        return objectMapper().readerFor(cls);
     }
 
     protected static JsonMapper newObjectMapper() {
@@ -194,10 +181,15 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
     }
 
     protected static JsonMapper.Builder mapperBuilder() {
+        return afterburnerMapperBuilder();
+    }
+
+    // preferred in 3.0:
+    protected static JsonMapper.Builder afterburnerMapperBuilder() {
         return JsonMapper.builder()
                 .addModule(new AfterburnerModule());
     }
-
+    
     // One withOUT afterburner module
     protected static JsonMapper newVanillaJSONMapper() {
         return new JsonMapper();

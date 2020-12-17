@@ -21,7 +21,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
     protected final SerializedString[] _orderedPropertyNames;
 
     /**
-     * Properties matching names in {@link #_orderedPropertyNames},
+     * Properties matching names in {@code #_orderedPropertyNames},
      * assigned after resolution when property instances are finalized.
      */
     protected SettableBeanProperty[] _orderedProperties;
@@ -77,9 +77,9 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         throws JsonMappingException
     {
         super.resolve(ctxt);
-        /* Ok, now; need to find actual property instances to go with order
-         * defined based on property names.
-         */
+        // Ok, now; need to find actual property instances to go with order
+        // defined based on property names.
+
         /* 20-Sep-2014, tatu: As per [Afterburner#43], use of `JsonTypeInfo.As.EXTERNAL_PROPERTY`
          *   will "hide" matching property, leading to no match below.
          *   But since we don't use optimized path if that case, let's just bail out.
@@ -173,7 +173,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
     public final Object deserialize(JsonParser p, DeserializationContext ctxt, Object bean)
         throws IOException
     {
-        // [databind#631]: Assign current value, to be accessible by custom serializers
+        // [databind#631]: Assign current value, to be accessible by custom deserializers
         p.setCurrentValue(bean);
         if (_injectables != null) {
             injectValues(ctxt, bean);
