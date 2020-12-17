@@ -409,36 +409,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         return (String) ctxt.handleUnexpectedToken(String.class, p);
     }
 
-    protected final boolean _deserializeBooleanFromOther(JsonParser p, DeserializationContext ctxt)
-        throws IOException
-    {
-        if (p.getNumberType() == NumberType.LONG) {
-            return (p.getLongValue() == 0L) ? Boolean.FALSE : Boolean.TRUE;
-        }
-        // no really good logic; let's actually resort to textual comparison
-        String str = p.getText();
-        if ("0.0".equals(str) || "0".equals(str)) {
-            return Boolean.FALSE;
-        }
-        return Boolean.TRUE;
-    }
-
     // // More helper methods from StdDeserializer
-
-    protected void _failNullToPrimitiveCoercion(DeserializationContext ctxt, String type) throws JsonMappingException
-    {
-        ctxt.reportInputMismatch(getType(),
-                "Cannot map `null` into type %s (set DeserializationConfig.DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES to 'false' to allow)",
-                type);
-    }
-
-    protected void _failDoubleToIntCoercion(JsonParser p, DeserializationContext ctxt,
-            String type) throws IOException
-    {
-        ctxt.reportInputMismatch(getType(),
-                "Can not coerce a floating-point value (%s) into %s; enable `DeserializationFeature.ACCEPT_FLOAT_AS_INT` to allow",
-                p.getValueAsString(), type);
-    }
 
     private boolean _hasTextualNull(String value) {
         return "null".equals(value);
@@ -478,7 +449,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         return n;
     }
 
-    protected final static boolean _isBlank(String text)
+    private final static boolean _isBlank(String text)
     {
         final int len = text.length();
         for (int i = 0; i < len; ++i) {
