@@ -17,6 +17,46 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
 
     public enum ABC { A, B, C; }
 
+    protected static class BooleanWrapper {
+        protected boolean b;
+
+        public BooleanWrapper() { }
+        public BooleanWrapper(boolean value) { b = value; }
+
+        public void setB(boolean b0) { b = b0; }
+        public boolean getB() { return b; }
+    }
+
+    protected static class IntWrapper {
+        protected int i;
+
+        public IntWrapper() { }
+        public IntWrapper(int value) { i = value; }
+
+        public void setI(int i0) { i = i0; }
+        public int getI() { return i; }
+    }
+
+    protected static class LongWrapper {
+        protected long l;
+
+        public LongWrapper() { }
+        public LongWrapper(long value) { l = value; }
+
+        public void setL(long l0) { l = l0; }
+        public long getL() { return l; }
+    }
+
+    protected static class DoubleWrapper {
+        protected double d;
+
+        public DoubleWrapper() { }
+        public DoubleWrapper(double value) { d = value; }
+
+        public void setD(double d0) { d = d0; }
+        public double getD() { return d; }
+    }
+
     // since 2.8
     public static class Point {
         public int x, y;
@@ -246,10 +286,26 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
      */
 
     public String quote(String str) {
+        return q(str);
+    }
+
+    public String q(String str) {
         return '"'+str+'"';
     }
 
     protected static String aposToQuotes(String json) {
+        return a2q(json);
+    }
+
+    protected static String a2q(String json) {
         return json.replace("'", "\"");
+    }
+    
+    protected byte[] utf8Bytes(String str) {
+        try {
+            return str.getBytes("UTF-8");
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 }

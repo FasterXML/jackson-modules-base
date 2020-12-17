@@ -1,45 +1,47 @@
-package com.fasterxml.jackson.module.afterburner.deser.convert;
+package com.fasterxml.jackson.module.blackbird.deser.convert;
 
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.CoercionAction;
 import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.type.LogicalType;
-import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 //Copied from "jackson-databind" as of 2.12.1
-public class CoerceFloatToIntTest extends AfterburnerTestBase
+public class CoerceFloatToIntTest extends BlackbirdTestBase
 {
-    private final ObjectMapper DEFAULT_MAPPER = newAfterburnerMapper();
+    private final ObjectMapper DEFAULT_MAPPER = newObjectMapper();
     private final ObjectReader READER_LEGACY_FAIL = DEFAULT_MAPPER.reader()
             .without(DeserializationFeature.ACCEPT_FLOAT_AS_INT);
 
     private final ObjectMapper MAPPER_TO_EMPTY; {
-        MAPPER_TO_EMPTY = newAfterburnerMapper();
+        MAPPER_TO_EMPTY = newObjectMapper();
         MAPPER_TO_EMPTY.coercionConfigFor(LogicalType.Integer)
             .setCoercion(CoercionInputShape.Float, CoercionAction.AsEmpty);
     }
 
     private final ObjectMapper MAPPER_TRY_CONVERT; {
-        MAPPER_TRY_CONVERT = newAfterburnerMapper();
+        MAPPER_TRY_CONVERT = newObjectMapper();
         MAPPER_TRY_CONVERT.coercionConfigFor(LogicalType.Integer)
             .setCoercion(CoercionInputShape.Float, CoercionAction.TryConvert);
     }
 
     private final ObjectMapper MAPPER_TO_NULL; {
-        MAPPER_TO_NULL = newAfterburnerMapper();
+        MAPPER_TO_NULL = newObjectMapper();
         MAPPER_TO_NULL.coercionConfigFor(LogicalType.Integer)
             .setCoercion(CoercionInputShape.Float, CoercionAction.AsNull);
     }
 
     private final ObjectMapper MAPPER_TO_FAIL; {
-        MAPPER_TO_FAIL = newAfterburnerMapper();
+        MAPPER_TO_FAIL = newObjectMapper();
         MAPPER_TO_FAIL.coercionConfigFor(LogicalType.Integer)
             .setCoercion(CoercionInputShape.Float, CoercionAction.Fail);
     }
@@ -57,7 +59,7 @@ public class CoerceFloatToIntTest extends AfterburnerTestBase
         assertEquals(1, I.intValue());
         {
             IntWrapper w = DEFAULT_MAPPER.readValue("{\"i\":-2.25 }", IntWrapper.class);
-            assertEquals(-2, w.i);
+            assertEquals(-2, w.getI());
             int[] arr = DEFAULT_MAPPER.readValue("[ 1.25 ]", int[].class);
             assertEquals(1, arr[0]);
         }
@@ -161,7 +163,7 @@ public class CoerceFloatToIntTest extends AfterburnerTestBase
         assertEquals(Integer.valueOf(0), MAPPER_TO_NULL.readValue("1.5", Integer.TYPE));
         {
             IntWrapper w = MAPPER_TO_NULL.readValue( "{\"i\":-2.25 }", IntWrapper.class);
-            assertEquals(0, w.i);
+            assertEquals(0, w.getI());
             int[] ints = MAPPER_TO_NULL.readValue("[ 2.5 ]", int[].class);
             assertEquals(1, ints.length);
             assertEquals(0, ints[0]);
@@ -213,7 +215,7 @@ public class CoerceFloatToIntTest extends AfterburnerTestBase
         assertEquals(Integer.valueOf(0), MAPPER_TO_EMPTY.readValue("1.5", Integer.TYPE));
         {
             IntWrapper w = MAPPER_TO_EMPTY.readValue( "{\"i\":-2.25 }", IntWrapper.class);
-            assertEquals(0, w.i);
+            assertEquals(0, w.getI());
             int[] ints = MAPPER_TO_EMPTY.readValue("[ 2.5 ]", int[].class);
             assertEquals(1, ints.length);
             assertEquals(0, ints[0]);
@@ -250,7 +252,7 @@ public class CoerceFloatToIntTest extends AfterburnerTestBase
         assertEquals(Integer.valueOf(3), MAPPER_TRY_CONVERT.readValue("3.4", Integer.TYPE));
         {
             IntWrapper w = MAPPER_TRY_CONVERT.readValue( "{\"i\":-2.25 }", IntWrapper.class);
-            assertEquals(-2, w.i);
+            assertEquals(-2, w.getI());
             int[] ints = MAPPER_TRY_CONVERT.readValue("[ 22.10 ]", int[].class);
             assertEquals(1, ints.length);
             assertEquals(22, ints[0]);
