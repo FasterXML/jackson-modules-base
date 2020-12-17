@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
+import com.fasterxml.jackson.module.blackbird.testutil.NoCheckSubTypeValidator;
+
 public abstract class BlackbirdTestBase extends junit.framework.TestCase
 {
     // // // First some "shared" classes from databind's `BaseMapTest`
@@ -214,6 +216,7 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
 
     protected static JsonMapper.Builder mapperBuilder() {
         return JsonMapper.builder()
+                .polymorphicTypeValidator(new NoCheckSubTypeValidator())
                 .addModule(new BlackbirdModule(MethodHandles::lookup));
     }
 

@@ -21,7 +21,7 @@ public class MapFormatShapeTest extends BlackbirdTestBase
         public int extra = 13;
     }
 
-    @JsonFormat(shape=JsonFormat.Shape.OBJECT)
+    @JsonFormat(shape=JsonFormat.Shape.POJO)
     static class Map476AsPOJO extends Map476Base { }
 
     @JsonPropertyOrder({ "a", "b", "c" })
@@ -30,7 +30,7 @@ public class MapFormatShapeTest extends BlackbirdTestBase
     {
         public Map476AsPOJO a;
         public Map476Base b;
-        @JsonFormat(shape=JsonFormat.Shape.OBJECT)
+        @JsonFormat(shape=JsonFormat.Shape.POJO)
         public Map476Base c;
 
         public Bean476Container(int forA, int forB, int forC) {
@@ -61,7 +61,7 @@ public class MapFormatShapeTest extends BlackbirdTestBase
     }
 
     // from [databind#1540]
-    @JsonFormat(shape = JsonFormat.Shape.OBJECT)
+    @JsonFormat(shape = JsonFormat.Shape.POJO)
     @JsonPropertyOrder({ "property", "map" })
     static class Map1540Implementation implements Map<Integer, Integer> {
         public int property;

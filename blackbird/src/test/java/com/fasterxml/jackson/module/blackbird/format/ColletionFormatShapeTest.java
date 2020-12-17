@@ -13,7 +13,7 @@ public class ColletionFormatShapeTest extends BlackbirdTestBase
 {
     // [databind#40]: Allow serialization 'as POJO' (resulting in JSON Object) 
     @JsonPropertyOrder({ "size", "value" })
-    @JsonFormat(shape=Shape.OBJECT)
+    @JsonFormat(shape=Shape.POJO)
     @JsonIgnoreProperties({ "empty" }) // from 'isEmpty()'
     static class CollectionAsPOJO
         extends ArrayList<String>
@@ -56,5 +56,4 @@ public class ColletionFormatShapeTest extends BlackbirdTestBase
         CollectionAsPOJO result = MAPPER.readValue(json, CollectionAsPOJO.class);
         assertEquals(2, result.size());
     }
-
 }

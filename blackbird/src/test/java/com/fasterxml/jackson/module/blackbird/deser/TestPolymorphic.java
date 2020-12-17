@@ -3,6 +3,7 @@ package com.fasterxml.jackson.module.blackbird.deser;
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class TestPolymorphic extends BlackbirdTestBase
@@ -34,11 +35,13 @@ public class TestPolymorphic extends BlackbirdTestBase
         }
     }
 
-    public void testAfterburner() throws Exception {
-        ObjectMapper mapper = newObjectMapper();
+    private final ObjectMapper MAPPER = newObjectMapper();
+    
+    public void testBasicPolymorphic() throws Exception
+    {
         Envelope envelope = new Envelope(new Payload("test"));
-        String json = mapper.writeValueAsString(envelope);
-        Envelope result = mapper.readValue(json, Envelope.class);
+        String json = MAPPER.writeValueAsString(envelope);
+        Envelope result = MAPPER.readValue(json, Envelope.class);
 
         assertNotNull(result);
         assertNotNull(result.payload);
@@ -50,17 +53,15 @@ public class TestPolymorphic extends BlackbirdTestBase
     {
         final String CLASS = Payload.class.getName();
 
-        ObjectMapper mapper = newObjectMapper();
-
         // First, case that has been working always
         final String successCase = "{\"payload\":{\"something\":\"test\"},\"class\":\""+CLASS+"\"}";
-        Envelope envelope1 = mapper.readValue(successCase, Envelope.class);
+        Envelope envelope1 = MAPPER.readValue(successCase, Envelope.class);
         assertNotNull(envelope1);
         assertEquals(Payload.class, envelope1.payload.getClass());
 
         // and then re-ordered case that was problematic
         final String failCase = "{\"class\":\""+CLASS+"\",\"payload\":{\"something\":\"test\"}}";
-        Envelope envelope2 = mapper.readValue(failCase, Envelope.class);
+        Envelope envelope2 = MAPPER.readValue(failCase, Envelope.class);
         assertNotNull(envelope2);
         assertEquals(Payload.class, envelope2.payload.getClass());
     }

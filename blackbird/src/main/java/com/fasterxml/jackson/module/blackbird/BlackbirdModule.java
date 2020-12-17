@@ -29,8 +29,8 @@ public class BlackbirdModule extends Module
     @Override
     public void setupModule(SetupContext context)
     {
-        context.addBeanDeserializerModifier(new BBDeserializerModifier(_lookups));
-        context.addBeanSerializerModifier(new BBSerializerModifier(_lookups));
+        context.addDeserializerModifier(new BBDeserializerModifier(_lookups));
+        context.addSerializerModifier(new BBSerializerModifier(_lookups));
     }
 
     @Override

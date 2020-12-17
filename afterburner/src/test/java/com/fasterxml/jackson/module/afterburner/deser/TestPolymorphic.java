@@ -35,11 +35,13 @@ public class TestPolymorphic extends AfterburnerTestBase
         }
     }
 
-    public void testAfterburner() throws Exception {
-        ObjectMapper mapper = newAfterburnerMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
+
+    public void testBasicPolymorphic() throws Exception
+    {
         Envelope envelope = new Envelope(new Payload("test"));
-        String json = mapper.writeValueAsString(envelope);
-        Envelope result = mapper.readValue(json, Envelope.class);
+        String json = MAPPER.writeValueAsString(envelope);
+        Envelope result = MAPPER.readValue(json, Envelope.class);
 
         assertNotNull(result);
         assertNotNull(result.payload);
@@ -51,17 +53,15 @@ public class TestPolymorphic extends AfterburnerTestBase
     {
         final String CLASS = Payload.class.getName();
 
-        ObjectMapper mapper = newAfterburnerMapper();
-
         // First, case that has been working always
         final String successCase = "{\"payload\":{\"something\":\"test\"},\"class\":\""+CLASS+"\"}";
-        Envelope envelope1 = mapper.readValue(successCase, Envelope.class);
+        Envelope envelope1 = MAPPER.readValue(successCase, Envelope.class);
         assertNotNull(envelope1);
         assertEquals(Payload.class, envelope1.payload.getClass());
 
         // and then re-ordered case that was problematic
         final String failCase = "{\"class\":\""+CLASS+"\",\"payload\":{\"something\":\"test\"}}";
-        Envelope envelope2 = mapper.readValue(failCase, Envelope.class);
+        Envelope envelope2 = MAPPER.readValue(failCase, Envelope.class);
         assertNotNull(envelope2);
         assertEquals(Payload.class, envelope2.payload.getClass());
     }

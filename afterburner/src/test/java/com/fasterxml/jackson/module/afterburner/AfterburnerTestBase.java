@@ -207,12 +207,12 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
 
     protected static ObjectMapper newAfterburnerMapper() {
         return afterburnerMapperBuilder()
-                .polymorphicTypeValidator(new NoCheckSubTypeValidator())
                 .build();
     }
 
     protected static MapperBuilder<?,?> afterburnerMapperBuilder() {
         return JsonMapper.builder()
+                .polymorphicTypeValidator(new NoCheckSubTypeValidator())
                 .addModule(new AfterburnerModule());
     }
 

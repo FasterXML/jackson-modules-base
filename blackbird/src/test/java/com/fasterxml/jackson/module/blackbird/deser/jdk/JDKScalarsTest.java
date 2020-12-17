@@ -872,5 +872,5 @@ public class JDKScalarsTest
             verifyException(e, "from Object value");
             verifyException(e, ClassUtil.getClassDescription(targetType));
         }
-    }
+    }    
 }

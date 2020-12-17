@@ -5,14 +5,15 @@ import java.util.*;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.*;
+import com.fasterxml.jackson.databind.deser.impl.BeanPropertyMap;
+import com.fasterxml.jackson.databind.deser.impl.UnwrappedPropertyHandler;
 import com.fasterxml.jackson.databind.util.NameTransformer;
 
 final class SuperSonicBeanDeserializer extends BeanDeserializer
 {
-    private static final long serialVersionUID = 1;
-
     /**
      * Names of properties being deserialized, in ordered they are
      * expected to have been written (as per serialization settings);
@@ -21,7 +22,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
     protected final SerializedString[] _orderedPropertyNames;
 
     /**
-     * Properties matching names in {@link #_orderedPropertyNames},
+     * Properties matching names in {@code _orderedPropertyNames},
      * assigned after resolution when property instances are finalized.
      */
     protected SettableBeanProperty[] _orderedProperties;
@@ -42,16 +43,37 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         }
     }
 
-    protected SuperSonicBeanDeserializer(SuperSonicBeanDeserializer src, NameTransformer unwrapper)
+    protected SuperSonicBeanDeserializer(SuperSonicBeanDeserializer src,
+            UnwrappedPropertyHandler unwrapHandler, BeanPropertyMap renamedProperties,
+            boolean ignoreAllUnknown)
     {
-        super(src, unwrapper);
-        _orderedProperties = src._orderedProperties;
+        super(src, unwrapHandler, renamedProperties, ignoreAllUnknown);
         _orderedPropertyNames = src._orderedPropertyNames;
+        _orderedProperties = src._orderedProperties;
     }
 
     @Override
-    public JsonDeserializer<Object> unwrappingDeserializer(NameTransformer unwrapper) {
-        return new SuperSonicBeanDeserializer(this, unwrapper);
+    public JsonDeserializer<Object> unwrappingDeserializer(DeserializationContext ctxt,
+            NameTransformer transformer)
+    {
+        // 17-Dec-2020, tatu: Was like so:
+//        return new SuperSonicBeanDeserializer(this, unwrapper);
+        // but Afterburner 3.0 had this:
+
+        // NOTE: copied verbatim from `BeanDeserializer`
+
+        if (_currentlyTransforming == transformer) { // from [databind#383]
+            return this;
+        }
+        _currentlyTransforming = transformer;
+        try {
+            UnwrappedPropertyHandler uwHandler = _unwrappedPropertyHandler;
+            if (uwHandler != null) {
+                uwHandler = uwHandler.renameAll(ctxt, transformer);
+            }
+            return new SuperSonicBeanDeserializer(this, uwHandler,
+                    _beanProperties.renameAll(ctxt, transformer), true);
+        } finally { _currentlyTransforming = null; }
     }
 
     // // Others, let's just leave as is; will not be optimized?
@@ -77,13 +99,12 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         throws JsonMappingException
     {
         super.resolve(ctxt);
-        /* Ok, now; need to find actual property instances to go with order
-         * defined based on property names.
-         */
-        /* 20-Sep-2014, tatu: As per [Afterburner#43], use of `JsonTypeInfo.As.EXTERNAL_PROPERTY`
-         *   will "hide" matching property, leading to no match below.
-         *   But since we don't use optimized path if that case, let's just bail out.
-         */
+        // Ok, now; need to find actual property instances to go with order
+        // defined based on property names.
+
+        // 20-Sep-2014, tatu: As per [afterburner#43], use of `JsonTypeInfo.As.EXTERNAL_PROPERTY`
+        //   will "hide" matching property, leading to no match below.
+        //   But since we don't use optimized path if that case, let's just bail out.
         if (_externalTypeIdHandler != null || _unwrappedPropertyHandler != null) {
             // should we assign empty array or... ?
             return;
@@ -92,9 +113,8 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         int len = _orderedPropertyNames.length;
         ArrayList<SettableBeanProperty> props = new ArrayList<SettableBeanProperty>(len);
         int i = 0;
-
         for (; i < len; ++i) {
-            SettableBeanProperty prop = _beanProperties.find(_orderedPropertyNames[i].toString());
+            SettableBeanProperty prop = _beanProperties.findDefinition(_orderedPropertyNames[i].toString());
             if (prop != null) {
                 props.add(prop);
             }
@@ -105,7 +125,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
             throw new IllegalStateException("Blackbird internal error: BeanDeserializer for "
                     +_beanType+" has no properties that match expected ordering (should have "+len+") -- can not create optimized deserializer");
         }
-        _orderedProperties = props.toArray(new SettableBeanProperty[props.size()]);
+        _orderedProperties = props.toArray(new SettableBeanProperty[0]);
     }
 
     @Override
@@ -117,7 +137,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         }
         // common case first:
         if (!p.isExpectedStartObjectToken()) {
-            return _deserializeOther(p, ctxt, p.getCurrentToken());
+            return _deserializeOther(p, ctxt, p.currentToken());
         }
         if (_nonStandardCreation) {
             p.nextToken();
@@ -148,7 +168,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         for (int i = 0, len = _orderedProperties.length; i < len; ++i) {
             SettableBeanProperty prop = _orderedProperties[i];
             if (!p.nextFieldName(_orderedPropertyNames[i])) { // miss...
-                if (p.getCurrentToken() == JsonToken.END_OBJECT) {
+                if (p.currentToken() == JsonToken.END_OBJECT) {
                     return bean;
                 }
                 // we likely point to FIELD_NAME, so can just call parent impl
@@ -191,7 +211,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
                 return super.deserialize(p,  ctxt, bean);
             }
         } else if (!p.hasToken(JsonToken.FIELD_NAME)
-                || !prop.getName().equals(p.getCurrentName())) {
+                || !prop.getName().equals(p.currentName())) {
             // no, something funky, use base impl for special cases
             return super.deserialize(p,  ctxt, bean);
         }
@@ -233,7 +253,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         // Allow Object Id references to come in as JSON Objects as well...
         if ((_objectIdReader != null) && _objectIdReader.maySerializeAsObject()) {
             if (p.hasTokenId(JsonTokenId.ID_FIELD_NAME)
-                    && _objectIdReader.isValidReferencePropertyName(p.getCurrentName(), p)) {
+                    && _objectIdReader.isValidReferencePropertyName(p.currentName(), p)) {
                 return deserializeFromObjectId(p, ctxt);
             }
         }
@@ -269,7 +289,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
                 return super.deserialize(p,  ctxt, bean);
             }
         } else if (!p.hasToken(JsonToken.FIELD_NAME)
-                || !prop.getName().equals(p.getCurrentName())) {
+                || !prop.getName().equals(p.currentName())) {
             return super.deserialize(p,  ctxt, bean);
         }
         // and deserialize

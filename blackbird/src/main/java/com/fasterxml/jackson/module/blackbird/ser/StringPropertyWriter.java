@@ -62,7 +62,7 @@ final class StringPropertyWriter
                 _nullSerializer.serialize(null, gen, prov);
             } else if (!_suppressNulls) {
                 gen.writeFieldName(_fastName);
-                prov.defaultSerializeNull(gen);
+                prov.defaultSerializeNullValue(gen);
             }
             return;
         }
@@ -99,7 +99,7 @@ final class StringPropertyWriter
             if (_suppressNulls) {
                 serializeAsPlaceholder(bean, gen, prov);
             } else {
-                prov.defaultSerializeNull(gen);
+                prov.defaultSerializeNullValue(gen);
             }
             return;
         }

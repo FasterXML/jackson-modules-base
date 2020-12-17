@@ -406,19 +406,11 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 
     // // More helper methods from StdDeserializer
 
-    protected void _failNullToPrimitiveCoercion(DeserializationContext ctxt, String type) throws JsonMappingException
+    private void _failNullToPrimitiveCoercion(DeserializationContext ctxt, String type) throws JsonMappingException
     {
         ctxt.reportInputMismatch(getType(),
                 "Cannot map `null` into type %s (set DeserializationConfig.DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES to 'false' to allow)",
                 type);
-    }
-
-    protected void _failDoubleToIntCoercion(JsonParser p, DeserializationContext ctxt,
-            String type) throws IOException
-    {
-        ctxt.reportInputMismatch(getType(),
-                "Can not coerce a floating-point value (%s) into %s; enable `DeserializationFeature.ACCEPT_FLOAT_AS_INT` to allow",
-                p.getValueAsString(), type);
     }
 
     private void _verifyScalarCoercion(DeserializationContext ctxt, JsonParser parser, String type) throws IOException {

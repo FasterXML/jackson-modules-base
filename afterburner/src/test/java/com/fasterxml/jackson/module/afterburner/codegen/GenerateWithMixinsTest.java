@@ -46,29 +46,29 @@ public class GenerateWithMixinsTest extends AfterburnerTestBase
         public void setField3(byte[] field3) {
           this.field3 = field3;
         }
-      }
+    }
 
-      public abstract class IgnoreField3MixIn {
-          @JsonIgnore
-          public abstract byte[] getField3();
-      }
+    public abstract class IgnoreField3MixIn {
+        @JsonIgnore
+        public abstract byte[] getField3();
+    }
 
-      public void testIssue51() throws Exception
-      {
-          _testIssue51(afterburnerMapperBuilder());
+    public void testIssue51() throws Exception
+    {
+        _testIssue51(afterburnerMapperBuilder());
 
-          // and, importantly, try again
+        // and, importantly, try again
 
-          _testIssue51(afterburnerMapperBuilder());
-      }
+        _testIssue51(afterburnerMapperBuilder());
+    }
 
-      public void _testIssue51(MapperBuilder<?,?> mapperB) throws Exception
-      {
-          SampleObject sampleObject = new SampleObject("field1", 2, "field3".getBytes());
-          ObjectMapper mapper = mapperB
-                  .addMixIn(SampleObject.class, IgnoreField3MixIn.class)
-                  .build();
-          String json = mapper.writeValueAsString(sampleObject);
-          assertEquals(aposToQuotes("{'field1':'field1','field2':2}"), json);
-      }
+    public void _testIssue51(MapperBuilder<?,?> mapperB) throws Exception
+    {
+        SampleObject sampleObject = new SampleObject("field1", 2, "field3".getBytes());
+        ObjectMapper mapper = mapperB
+                .addMixIn(SampleObject.class, IgnoreField3MixIn.class)
+                .build();
+        String json = mapper.writeValueAsString(sampleObject);
+        assertEquals(aposToQuotes("{'field1':'field1','field2':2}"), json);
+    }
 }

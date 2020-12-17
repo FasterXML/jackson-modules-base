@@ -1,14 +1,18 @@
 package com.fasterxml.jackson.module.blackbird.codegen;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 // for [afterburner#51], where re-generation of classes does not work
 // as expected
 public class GenerateWithMixinsTest extends BlackbirdTestBase
 {
+    @JsonPropertyOrder({ "field1", "field2" })
     static class SampleObject {
         private String field1;
         private int field2;
@@ -43,24 +47,29 @@ public class GenerateWithMixinsTest extends BlackbirdTestBase
         public void setField3(byte[] field3) {
           this.field3 = field3;
         }
-      }
+    }
 
-      public abstract class IgnoreField3MixIn {
+    public abstract class IgnoreField3MixIn {
         @JsonIgnore
         public abstract byte[] getField3();
-      }
+    }
 
-      public void testIssue51() throws JsonProcessingException
-      {
-          SampleObject sampleObject = new SampleObject("field1", 2, "field3".getBytes());
+    public void testIssue51() throws Exception
+    {
+        _testIssue51(mapperBuilder());
 
-          ObjectMapper objectMapper = newObjectMapper();
+        // and, importantly, try again
 
-          ObjectMapper objectMapperCopy = objectMapper.copy();
-          objectMapperCopy.addMixIn(SampleObject.class, IgnoreField3MixIn.class);
+        _testIssue51(mapperBuilder());
+    }
 
-          objectMapperCopy.writeValueAsString(sampleObject);
-
-          objectMapper.writeValueAsString(sampleObject);
-      }
+    public void _testIssue51(MapperBuilder<?,?> mapperB) throws Exception
+    {
+        SampleObject sampleObject = new SampleObject("field1", 2, "field3".getBytes());
+        ObjectMapper mapper = mapperB
+                .addMixIn(SampleObject.class, IgnoreField3MixIn.class)
+                .build();
+        String json = mapper.writeValueAsString(sampleObject);
+        assertEquals(aposToQuotes("{'field1':'field1','field2':2}"), json);
+    }
 }

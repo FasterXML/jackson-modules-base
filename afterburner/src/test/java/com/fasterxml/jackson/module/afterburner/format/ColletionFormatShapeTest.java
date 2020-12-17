@@ -56,5 +56,4 @@ public class ColletionFormatShapeTest extends AfterburnerTestBase
         CollectionAsPOJO result = MAPPER.readValue(json, CollectionAsPOJO.class);
         assertEquals(2, result.size());
     }
-
 }
