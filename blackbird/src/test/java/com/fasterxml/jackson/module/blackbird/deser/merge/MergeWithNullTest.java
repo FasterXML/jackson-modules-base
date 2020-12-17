@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.Nulls;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class MergeWithNullTest extends BlackbirdTestBase
@@ -85,9 +86,10 @@ public class MergeWithNullTest extends BlackbirdTestBase
 
         // First: via specific type override
         // important! We'll specify for value type to be merged
-        ObjectMapper mapper = newObjectMapper();
-        mapper.configOverride(AB.class)
-            .setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SKIP));
+        ObjectMapper mapper = mapperBuilder()
+                .withConfigOverride(AB.class,
+                        o -> o.setNullHandling(JsonSetter.Value.forValueNulls(Nulls.SKIP)))
+                .build();
         config = mapper.readerForUpdating(new ConfigDefault(137, -3))
                 .readValue(aposToQuotes("{'loc':null}"));
         assertNotNull(config.loc);
@@ -95,8 +97,9 @@ public class MergeWithNullTest extends BlackbirdTestBase
         assertEquals(-3, config.loc.b);
 
         // Second: by global defaults
-        mapper = newObjectMapper();
-        mapper.setDefaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SKIP));
+        mapper = mapperBuilder()
+                .changeDefaultNullHandling(n -> n.withValueNulls(Nulls.SKIP))
+                .build();
         config = mapper.readerForUpdating(new ConfigDefault(12, 34))
                 .readValue(aposToQuotes("{'loc':null}"));
         assertNotNull(config.loc);

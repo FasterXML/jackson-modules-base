@@ -25,11 +25,10 @@ public class TestCollectionDeser extends BlackbirdTestBase
     /**********************************************************************
      */
 
-    // [module-afterburner#36]
     public void testIntMethod() throws Exception
     {
-        ObjectMapper mapper = mapperBuilder()
-                .enable(MapperFeature.USE_GETTERS_AS_SETTERS)
+        final ObjectMapper mapper = mapperBuilder()
+                .configure(MapperFeature.USE_GETTERS_AS_SETTERS, true)
                 .build();
         CollectionBean bean = mapper.readValue("{\"stuff\":[\"a\",\"b\"]}",
                 CollectionBean.class);
@@ -37,12 +36,11 @@ public class TestCollectionDeser extends BlackbirdTestBase
         assertEquals(TreeSet.class, bean.x.getClass());
     }
 
-    // [module-afterburner#56]
     public void testUnwrapSingleArray() throws Exception
     {
-        final ObjectMapper mapper = newObjectMapper();
-        mapper.enable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS);
-
+        final ObjectMapper mapper = mapperBuilder()
+                .enable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)
+                .build();
         final Integer intValue = mapper.readValue("[ 1 ]", Integer.class);
         assertEquals(Integer.valueOf(1), intValue);
 

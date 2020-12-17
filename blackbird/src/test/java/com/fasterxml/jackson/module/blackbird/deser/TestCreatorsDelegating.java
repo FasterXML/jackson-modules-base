@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JacksonInject;
 
 import com.fasterxml.jackson.databind.*;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class TestCreatorsDelegating extends BlackbirdTestBase
@@ -71,13 +72,12 @@ public class TestCreatorsDelegating extends BlackbirdTestBase
         assertEquals(Boolean.TRUE, bb.value);
     }
     
-    // As per [JACKSON-711]: should also work with delegate model (single non-annotated arg)
     public void testWithCtorAndDelegate() throws Exception
     {
-        ObjectMapper mapper = newObjectMapper();
-        mapper.setInjectableValues(new InjectableValues.Std()
-            .addValue(String.class, "Pooka")
-            );
+        ObjectMapper mapper = mapperBuilder()
+                .injectableValues(new InjectableValues.Std()
+                        .addValue(String.class, "Pooka"))
+                .build();
         CtorBean711 bean = null;
         try {
             bean = mapper.readValue("38", CtorBean711.class);
@@ -90,10 +90,10 @@ public class TestCreatorsDelegating extends BlackbirdTestBase
 
     public void testWithFactoryAndDelegate() throws Exception
     {
-        ObjectMapper mapper = newObjectMapper();
-        mapper.setInjectableValues(new InjectableValues.Std()
-            .addValue(String.class, "Fygar")
-            );
+        ObjectMapper mapper = mapperBuilder()
+                .injectableValues(new InjectableValues.Std()
+                        .addValue(String.class, "Fygar"))
+                .build();
         FactoryBean711 bean = null;
         try {
             bean = mapper.readValue("38", FactoryBean711.class);

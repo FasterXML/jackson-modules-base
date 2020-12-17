@@ -56,7 +56,7 @@ public class CustomBeanPropertyWriterTest extends AfterburnerTestBase
           super.serializeAsField(bean, jgen, prov);
         }
     }
-    
+
     public void testCustomPropertyWriter() throws Exception
     {
         SimpleModule simpleModule = new SimpleModule()

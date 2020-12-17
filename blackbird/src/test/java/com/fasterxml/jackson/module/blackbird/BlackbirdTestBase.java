@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -80,6 +81,25 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
         public String toString() {
             return String.format("[x=%d, y=%d]", x, y);
         }
+    }
+
+    // 24-Oct-2017, tatu: Added to check for glitches in serialization unrolling
+    @JsonPropertyOrder({ "a", "b", "c", "d", "e", "f" })
+    protected static class Pojo6 {
+        private String b = "foo";
+        private double e = 0.25;
+
+        public Pojo6() { }
+
+        public int a = 13;
+        public String getB() { return b; }
+        public boolean c = true;
+        public long d = -13117L;
+        public double getE() { return e; };
+        public int[] f = new int[] { 1, 2, 3 };
+
+        public void setB(String v) { b = v; }
+        public void setE(double v) { e = v; }
     }
 
     /**
@@ -214,9 +234,9 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
         }
     }
 
-    protected void assertToken(JsonToken expToken, JsonParser jp)
+    protected void assertToken(JsonToken expToken, JsonParser p)
     {
-        assertToken(expToken, jp.getCurrentToken());
+        assertToken(expToken, p.currentToken());
     }
 
     protected void assertType(Object ob, Class<?> expType)
@@ -245,7 +265,7 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
         String str = jp.getText();
 
         if (str.length() !=  actLen) {
-            fail("Internal problem (jp.token == "+jp.getCurrentToken()+"): jp.getText().length() ['"+str+"'] == "+str.length()+"; jp.getTextLength() == "+actLen);
+            fail("Internal problem (jp.token == "+jp.currentToken()+"): jp.getText().length() ['"+str+"'] == "+str.length()+"; jp.getTextLength() == "+actLen);
         }
         assertEquals("String access via getText(), getTextXxx() must be the same", str, str2);
 
@@ -256,7 +276,7 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
         throws IOException
     {
         assertEquals(expName, jp.getText());
-        assertEquals(expName, jp.getCurrentName());
+        assertEquals(expName, jp.currentName());
     }
 
     protected void verifyIntValue(JsonParser jp, long expValue)

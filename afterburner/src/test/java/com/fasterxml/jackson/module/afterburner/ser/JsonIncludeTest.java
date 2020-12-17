@@ -10,7 +10,7 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 /**
  * Unit tests for checking that alternative settings for
- * serialization-side includesion work as expected.
+ * serialization-side inclusion work as expected.
  *<p>
  * NOTE: copied from `jackson-databind`
  */

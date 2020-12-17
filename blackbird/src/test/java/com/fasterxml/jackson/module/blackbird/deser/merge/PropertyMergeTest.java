@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 
 /**
@@ -118,8 +119,10 @@ public class PropertyMergeTest extends BlackbirdTestBase
         assertEquals(0, config.loc.b); // not passed, nor merge from original
 
         // but with type-overrides
-        ObjectMapper mapper = newObjectMapper();
-        mapper.configOverride(AB.class).setMergeable(true);
+        ObjectMapper mapper = mapperBuilder()
+                .withConfigOverride(AB.class,
+                        o -> o.setMergeable(true))
+                .build();
         config = mapper.readValue(aposToQuotes("{'loc':{'a':3}}"), NonMergeConfig.class);
         assertEquals(3, config.loc.a);
         assertEquals(2, config.loc.b); // original, merged
@@ -128,8 +131,9 @@ public class PropertyMergeTest extends BlackbirdTestBase
     public void testBeanMergingViaGlobal() throws Exception
     {
         // but with type-overrides
-        ObjectMapper mapper = newObjectMapper()
-                .setDefaultMergeable(true);
+        ObjectMapper mapper = mapperBuilder()
+                .defaultMergeable(true)
+                .build();
         NonMergeConfig config = mapper.readValue(aposToQuotes("{'loc':{'a':3}}"), NonMergeConfig.class);
         assertEquals(3, config.loc.a);
         assertEquals(2, config.loc.b); // original, merged

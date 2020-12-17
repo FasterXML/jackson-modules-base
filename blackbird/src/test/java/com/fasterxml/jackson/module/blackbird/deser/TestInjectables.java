@@ -50,11 +50,12 @@ public class TestInjectables extends BlackbirdTestBase
         final Object methodInjected = "methodInjected";
         final Object fieldInjected = "fieldInjected";
 
-        ObjectMapper mapper = newObjectMapper()
-                        .setInjectableValues(new InjectableValues.Std()
-                                .addValue("constructor_injected", constructorInjected)
-                                .addValue("method_injected", methodInjected)
-                                .addValue("field_injected", fieldInjected));
+        ObjectMapper mapper = mapperBuilder()
+                .injectableValues(new InjectableValues.Std()
+                        .addValue("constructor_injected", constructorInjected)
+                        .addValue("method_injected", methodInjected)
+                        .addValue("field_injected", fieldInjected))
+                .build();
 
         IssueGH471Bean bean = mapper.readValue("{\"x\":13,\"constructor_value\":\"constructor\",\"method_value\":\"method\",\"field_value\":\"field\"}",
                 IssueGH471Bean.class);

@@ -2,7 +2,9 @@ package com.fasterxml.jackson.module.blackbird.format;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 // [databind#1480]
@@ -52,9 +54,10 @@ public class BooleanFormatTest extends BlackbirdTestBase
     {
         assertEquals(aposToQuotes("{'b':true}"),
                 MAPPER.writeValueAsString(new BooleanWrapper(true)));
-        ObjectMapper m = newObjectMapper();
-        m.configOverride(Boolean.class)
-            .setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.NUMBER));
+        ObjectMapper m = mapperBuilder()
+                .withConfigOverride(Boolean.class,
+                        o -> o.setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.NUMBER)))
+                .build();
         assertEquals(aposToQuotes("{'b':1}"),
                 m.writeValueAsString(new BooleanWrapper(true)));
     }

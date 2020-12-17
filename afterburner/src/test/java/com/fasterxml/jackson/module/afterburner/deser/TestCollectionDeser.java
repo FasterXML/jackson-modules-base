@@ -3,8 +3,7 @@ package com.fasterxml.jackson.module.afterburner.deser;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
+
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 public class TestCollectionDeser extends AfterburnerTestBase
@@ -27,12 +26,10 @@ public class TestCollectionDeser extends AfterburnerTestBase
     /**********************************************************************
      */
 
-    // [module-afterburner#36]
     public void testIntMethod() throws Exception
     {
-        final ObjectMapper mapper = JsonMapper.builder()
+        final ObjectMapper mapper = afterburnerMapperBuilder()
                 .configure(MapperFeature.USE_GETTERS_AS_SETTERS, true)
-                .addModule(new AfterburnerModule())
                 .build();
         CollectionBean bean = mapper.readValue("{\"stuff\":[\"a\",\"b\"]}",
                 CollectionBean.class);
@@ -40,12 +37,10 @@ public class TestCollectionDeser extends AfterburnerTestBase
         assertEquals(TreeSet.class, bean.x.getClass());
     }
 
-    // [module-afterburner#56]
     public void testUnwrapSingleArray() throws Exception
     {
-        final ObjectMapper mapper = JsonMapper.builder()
+        final ObjectMapper mapper = afterburnerMapperBuilder()
                 .enable(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS)
-                .addModule(new AfterburnerModule())
                 .build();
         final Integer intValue = mapper.readValue("[ 1 ]", Integer.class);
         assertEquals(Integer.valueOf(1), intValue);

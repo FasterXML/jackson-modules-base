@@ -78,14 +78,13 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
     /**********************************************************************
      */
 
-    private final ObjectMapper VANILLA_MAPPER = new ObjectMapper();
+    private final ObjectMapper VANILLA_MAPPER = newVanillaJSONMapper();
     
     public void testStringSerWith() throws Exception
     {
-        ObjectMapper plainMapper = new ObjectMapper();
         ObjectMapper abMapper = newAfterburnerMapper();
         ClassWithPropOverrides input = new ClassWithPropOverrides();
-        String jsonPlain = plainMapper.writeValueAsString(input);
+        String jsonPlain = VANILLA_MAPPER.writeValueAsString(input);
         String jsonAb = abMapper.writeValueAsString(input);
         assertEquals(jsonPlain, jsonAb);
     }
@@ -116,7 +115,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
     /**********************************************************************
      */
 
-    public void testIntSerOverideNoAfterburner() throws Exception
+    public void testIntSerOverideVanilla() throws Exception
     {
         // First, baseline, no custom serializer
         assertEquals(aposToQuotes("{'value':42}"),
@@ -143,7 +142,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
         assertEquals(aposToQuotes("{'value':-42}"), json);
     }
 
-    public void testLongSerOverideNoAfterburner() throws Exception
+    public void testLongSerOverideVanilla() throws Exception
     {
         // First, baseline, no custom serializer
         assertEquals(aposToQuotes("{'value':999}"),

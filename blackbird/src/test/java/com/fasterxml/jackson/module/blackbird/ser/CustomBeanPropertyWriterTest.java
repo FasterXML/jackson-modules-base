@@ -3,11 +3,14 @@ package com.fasterxml.jackson.module.blackbird.ser;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import com.fasterxml.jackson.core.*;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 // for [afterburner#52]
@@ -56,18 +59,16 @@ public class CustomBeanPropertyWriterTest extends BlackbirdTestBase
           super.serializeAsField(bean, jgen, prov);
         }
     }
-    
+
     public void testCustomPropertyWriter() throws Exception
     {
-        ObjectMapper objectMapper = newObjectMapper();
-        SimpleModule simpleModule = new SimpleModule();
-        simpleModule.setSerializerModifier(new Only2BeanSerializerModifier());
-        objectMapper.registerModule(simpleModule);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
-        SampleObject sampleObject = new SampleObject(null, 2, 3);
-        String json = objectMapper.writeValueAsString(sampleObject);
-
-        assertEquals("{\"field2\":2}", json);
+        SimpleModule simpleModule = new SimpleModule()
+                .setSerializerModifier(new Only2BeanSerializerModifier());
+        ObjectMapper objectMapper = mapperBuilder()
+                .addModule(simpleModule)
+                .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL))
+                .build();
+        assertEquals("{\"field2\":2}",
+                objectMapper.writeValueAsString(new SampleObject(null, 2, 3)));
     }
 }

@@ -1,7 +1,9 @@
 package com.fasterxml.jackson.module.blackbird.deser.filter;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class IgnorePropertyOnDeser1217Test extends BlackbirdTestBase
@@ -50,9 +52,10 @@ public class IgnorePropertyOnDeser1217Test extends BlackbirdTestBase
 
     public void testIgnoreViaConfigOverride() throws Exception
     {
-        ObjectMapper mapper = newObjectMapper();
-        mapper.configOverride(Point.class)
-            .setIgnorals(JsonIgnoreProperties.Value.forIgnoredProperties("y"));
+        ObjectMapper mapper = mapperBuilder()
+                .withConfigOverride(Point.class,
+                        o -> o.setIgnorals(JsonIgnoreProperties.Value.forIgnoredProperties("y")))
+                .build();
         Point p = mapper.readValue(aposToQuotes("{'x':1,'y':2}"), Point.class);
         // bind 'x', but ignore 'y'
         assertEquals(1, p.x);

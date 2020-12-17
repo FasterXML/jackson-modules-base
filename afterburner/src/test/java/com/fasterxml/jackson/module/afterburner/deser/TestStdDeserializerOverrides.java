@@ -113,7 +113,7 @@ public class TestStdDeserializerOverrides extends AfterburnerTestBase
                         });
             }
         };
-        
+ 
         // but then fails with Afterburner
         Issue59Bean resultAB = afterburnerMapperBuilder()
                 .addModule(module)

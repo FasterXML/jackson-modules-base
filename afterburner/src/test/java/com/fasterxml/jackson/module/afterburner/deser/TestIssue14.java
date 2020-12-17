@@ -36,7 +36,7 @@ public class TestIssue14 extends AfterburnerTestBase
         order.createdAt = now;
         order.updatedAt = now;
 
-        ObjectMapper vanillaMapper = new ObjectMapper();
+        ObjectMapper vanillaMapper = newVanillaJSONMapper();
         ObjectMapper abMapper = newAfterburnerMapper();
 
         // First: ensure that serialization produces identical output

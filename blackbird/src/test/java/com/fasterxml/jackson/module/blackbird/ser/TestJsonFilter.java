@@ -1,9 +1,11 @@
 package com.fasterxml.jackson.module.blackbird.ser;
 
 import com.fasterxml.jackson.annotation.*;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.*;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 /**
@@ -18,8 +20,6 @@ public class TestJsonFilter extends BlackbirdTestBase
         public String b = "b";
     }
 
-    
-    // [Issue#89]
     static class Pod
     {
         protected String username;
@@ -74,9 +74,9 @@ public class TestJsonFilter extends BlackbirdTestBase
                 SimpleBeanPropertyFilter.filterOutAllExcept("a"));
         assertEquals("{\"a\":\"a\"}", MAPPER.writer(prov).writeValueAsString(new Bean()));
 
-        // [JACKSON-504]: also verify it works via mapper
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setFilterProvider(prov);
+        ObjectMapper mapper = mapperBuilder()
+                .filterProvider(prov)
+                .build();
         assertEquals("{\"a\":\"a\"}", mapper.writeValueAsString(new Bean()));
     }
 
@@ -100,8 +100,9 @@ public class TestJsonFilter extends BlackbirdTestBase
         
         // but when changing behavior, should work difference
         SimpleFilterProvider fp = new SimpleFilterProvider().setFailOnUnknownId(false);
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setFilterProvider(fp);
+        ObjectMapper mapper = mapperBuilder()
+                .filterProvider(fp)
+                .build();
         String json = mapper.writeValueAsString(new Bean());
         assertEquals("{\"a\":\"a\",\"b\":\"b\"}", json);
     }

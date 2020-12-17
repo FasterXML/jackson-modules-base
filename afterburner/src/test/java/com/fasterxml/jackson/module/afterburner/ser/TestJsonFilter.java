@@ -18,7 +18,6 @@ public class TestJsonFilter extends AfterburnerTestBase
         public String b = "b";
     }
 
-    // [Issue#89]
     static class Pod
     {
         protected String username;

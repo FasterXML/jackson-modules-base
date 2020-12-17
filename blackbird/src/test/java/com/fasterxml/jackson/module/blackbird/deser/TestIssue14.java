@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
-import java.lang.invoke.MethodHandles;
 import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -8,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class TestIssue14 extends BlackbirdTestBase
@@ -37,9 +36,8 @@ public class TestIssue14 extends BlackbirdTestBase
         order.createdAt = now;
         order.updatedAt = now;
 
-        ObjectMapper vanillaMapper = new ObjectMapper();
-        ObjectMapper abMapper = new ObjectMapper();
-        abMapper.registerModule(new BlackbirdModule(c -> MethodHandles.lookup()));
+        ObjectMapper vanillaMapper = newVanillaJSONMapper();
+        ObjectMapper abMapper = newObjectMapper();
 
         // First: ensure that serialization produces identical output
 
