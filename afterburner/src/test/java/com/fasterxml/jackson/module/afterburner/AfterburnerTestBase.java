@@ -18,6 +18,34 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
     
     public enum ABC { A, B, C; }
 
+    protected static class BooleanWrapper {
+        public Boolean b;
+
+        public BooleanWrapper() { }
+        public BooleanWrapper(Boolean value) { b = value; }
+    }
+
+    protected static class IntWrapper {
+        public int i;
+
+        public IntWrapper() { }
+        public IntWrapper(int value) { i = value; }
+    }
+
+    protected static class LongWrapper {
+        public long l;
+
+        public LongWrapper() { }
+        public LongWrapper(long value) { l = value; }
+    }
+
+    protected static class DoubleWrapper {
+        public double d;
+
+        public DoubleWrapper() { }
+        public DoubleWrapper(double value) { d = value; }
+    }
+
     // since 2.8
     public static class Point {
         public int x, y;
@@ -268,10 +296,26 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
      */
 
     public String quote(String str) {
+        return q(str);
+    }
+
+    public String q(String str) {
         return '"'+str+'"';
     }
 
     protected static String aposToQuotes(String json) {
+        return a2q(json);
+    }
+
+    protected static String a2q(String json) {
         return json.replace("'", "\"");
+    }
+    
+    protected byte[] utf8Bytes(String str) {
+        try {
+            return str.getBytes("UTF-8");
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 }

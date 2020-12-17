@@ -27,6 +27,10 @@ Modules:
    `long` properties not working
 - Add Gradle Module Metadata (https://blog.gradle.org/alignment-with-gradle-module-metadata)
 
+2.11.4 (12-Dec-2020)
+
+No changes since 2.11.3
+
 2.11.3 (02-Oct-2020)
 
 #109: (mrbean) Fix detection of inherited default method in Java 8+ interface

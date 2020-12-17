@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.blackbird.deser;
+package com.fasterxml.jackson.module.blackbird.deser.convert;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

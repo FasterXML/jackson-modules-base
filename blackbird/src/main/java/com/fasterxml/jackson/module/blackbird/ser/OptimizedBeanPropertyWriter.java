@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.SerializableString;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.fasterxml.jackson.databind.util.ClassUtil;
 
 /**
  * Intermediate base class that is used for concrete

@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.afterburner.deser;
+package com.fasterxml.jackson.module.afterburner.deser.convert;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,13 +53,13 @@ public class TestFailOnPrimitiveFromNullDeserialization
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, IntBean.class);
             fail();
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type int");
+            verifyException(e, "Cannot coerce `null` to `int` value");
         }
         try {
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, LongBean.class);
             fail();
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type long");
+            verifyException(e, "Cannot coerce `null` to `long` value");
         }
         try {
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, BooleanBean.class);

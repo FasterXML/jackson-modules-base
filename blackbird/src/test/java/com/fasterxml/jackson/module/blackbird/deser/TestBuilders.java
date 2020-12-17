@@ -6,7 +6,6 @@ import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class TestBuilders extends BlackbirdTestBase
 {
-    // [Issue#22]:
     static final class ThingBuilder
     {
         private String foo;
@@ -24,8 +23,8 @@ public class TestBuilders extends BlackbirdTestBase
     @JsonDeserialize(builder=ThingBuilder.class)
     static class Thing {
         final String foo;
-    
-        private Thing(String foo) {
+
+        Thing(String foo) {
             this.foo = foo;
         }
     }

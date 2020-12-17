@@ -41,10 +41,11 @@ public class IgnoreCreatorProp1317Test extends AfterburnerTestBase
         }
     }
 
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
+
     public void testThatJsonIgnoreWorksWithConstructorProperties() throws Exception {
-        ObjectMapper om = objectMapper();
         Testing testing = new Testing("shouldBeIgnored", "notIgnore");
-        String json = om.writeValueAsString(testing);
+        String json = MAPPER.writeValueAsString(testing);
 //        System.out.println(json);
         assertFalse(json.contains("shouldBeIgnored"));
     }
