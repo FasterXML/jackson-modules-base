@@ -3,6 +3,7 @@ package com.fasterxml.jackson.module.blackbird.deser.convert;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBase
@@ -10,21 +11,29 @@ public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBas
     static class LongBean
     {
         public long value;
+
+        public void setValue(long v) { value = v; }
     }
 
     static class IntBean
     {
         public int value;
+
+        public void setValue(int v) { value = v; }
     }
 
     static class BooleanBean
     {
         public boolean value;
+
+        public void setValue(boolean v) { value = v; }
     }
 
     static class DoubleBean
     {
         public double value;
+
+        public void setValue(double v) { value = v; }
     }
 
     private final static String BEAN_WITH_NULL_VALUE = "{\"value\": null}";
@@ -51,13 +60,13 @@ public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBas
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, IntBean.class);
             fail();
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type int");
+            verifyException(e, "Cannot coerce `null` to `int` value");
         }
         try {
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, LongBean.class);
             fail();
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type long");
+            verifyException(e, "Cannot coerce `null` to `long` value");
         }
         try {
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, BooleanBean.class);

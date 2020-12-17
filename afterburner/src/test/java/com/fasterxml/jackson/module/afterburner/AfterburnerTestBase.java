@@ -19,10 +19,12 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
     public enum ABC { A, B, C; }
 
     protected static class BooleanWrapper {
-        public Boolean b;
+        public boolean b;
 
         public BooleanWrapper() { }
-        public BooleanWrapper(Boolean value) { b = value; }
+        public BooleanWrapper(boolean value) { b = value; }
+
+        public boolean getB() { return b; }
     }
 
     protected static class IntWrapper {
@@ -30,13 +32,18 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
 
         public IntWrapper() { }
         public IntWrapper(int value) { i = value; }
+
+        public int getI() { return i; }
     }
 
     protected static class LongWrapper {
-        public long l;
+        protected long l;
 
         public LongWrapper() { }
         public LongWrapper(long value) { l = value; }
+
+        public void setL(long l0) { l = l0; }
+        public long getL() { return l; }
     }
 
     protected static class DoubleWrapper {
@@ -44,6 +51,8 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
 
         public DoubleWrapper() { }
         public DoubleWrapper(double value) { d = value; }
+
+        public double getD() { return d; }
     }
 
     // since 2.8
