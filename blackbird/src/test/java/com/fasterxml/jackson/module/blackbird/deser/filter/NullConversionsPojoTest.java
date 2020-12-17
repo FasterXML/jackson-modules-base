@@ -2,8 +2,10 @@ package com.fasterxml.jackson.module.blackbird.deser.filter;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.exc.InvalidNullException;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 // for [databind#1402]; configurable null handling, for values themselves
@@ -70,10 +72,11 @@ public class NullConversionsPojoTest extends BlackbirdTestBase
         String json = aposToQuotes("{'name':null}");
         NullsForString def = MAPPER.readValue(json, NullsForString.class);
         assertNull(def.getName());
-        
-        ObjectMapper mapper = newObjectMapper();
-        mapper.configOverride(String.class)
-            .setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.FAIL));
+
+        ObjectMapper mapper = mapperBuilder()
+                .withConfigOverride(String.class,
+                        o -> o.setNullHandling(JsonSetter.Value.forValueNulls(Nulls.FAIL)))
+                .build();
         try {
             mapper.readValue(json, NullsForString.class);
             fail("Should not pass");
@@ -99,9 +102,10 @@ public class NullConversionsPojoTest extends BlackbirdTestBase
         NullsForString def = MAPPER.readValue(json, NullsForString.class);
         assertNull(def.getName());
 
-        ObjectMapper mapper = newObjectMapper();
-        mapper.configOverride(String.class)
-            .setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
+        ObjectMapper mapper = mapperBuilder()
+                .withConfigOverride(String.class,
+                        o -> o.setNullHandling(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY)))
+                .build();
         NullsForString named = mapper.readValue(json, NullsForString.class);
         assertEquals("", named.getName());
     }

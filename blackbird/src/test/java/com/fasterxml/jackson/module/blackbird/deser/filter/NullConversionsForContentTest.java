@@ -4,9 +4,12 @@ import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+
 import com.fasterxml.jackson.core.type.TypeReference;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.exc.InvalidNullException;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 // For [databind#1402]; configurable null handling, for contents of
@@ -56,8 +59,9 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         assertNull(result.values.get(0));
 
         // but not when overridden globally:
-        ObjectMapper mapper = newObjectMapper();
-        mapper.setDefaultSetterInfo(JsonSetter.Value.forContentNulls(Nulls.FAIL));
+        ObjectMapper mapper = mapperBuilder()
+                .changeDefaultNullHandling(n -> n.withContentNulls(Nulls.FAIL))
+                .build();
         try {
             mapper.readValue(JSON, listType);
             fail("Should not pass");
@@ -66,9 +70,10 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         }
 
         // or configured for type:
-        mapper = newObjectMapper();
-        mapper.configOverride(List.class)
-                .setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.FAIL));
+        mapper = mapperBuilder()
+                .withConfigOverride(List.class,
+                        o -> o.setNullHandling(JsonSetter.Value.forContentNulls(Nulls.FAIL)))
+                .build();
         try {
             mapper.readValue(JSON, listType);
             fail("Should not pass");
@@ -209,16 +214,18 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         TypeReference<NullContentUndefined<List<Integer>>> listType = new TypeReference<NullContentUndefined<List<Integer>>>() { };
 
         // Let's see defaulting in action
-        ObjectMapper mapper = newObjectMapper();
-        mapper.setDefaultSetterInfo(JsonSetter.Value.forContentNulls(Nulls.AS_EMPTY));
+        ObjectMapper mapper = mapperBuilder()
+                .changeDefaultNullHandling(n -> n.withContentNulls(Nulls.AS_EMPTY))
+                .build();
         NullContentUndefined<List<Integer>> result = mapper.readValue(JSON, listType);
         assertEquals(1, result.values.size());
         assertEquals(Integer.valueOf(0), result.values.get(0));
 
         // or configured for type:
-        mapper = newObjectMapper();
-        mapper.configOverride(List.class)
-                .setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.AS_EMPTY));
+        mapper = mapperBuilder()
+                .withConfigOverride(List.class,
+                        o -> o.setNullHandling(JsonSetter.Value.forContentNulls(Nulls.AS_EMPTY)))
+                .build();
         result = mapper.readValue(JSON, listType);
         assertEquals(1, result.values.size());
         assertEquals(Integer.valueOf(0), result.values.get(0));
@@ -301,15 +308,17 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         TypeReference<NullContentUndefined<List<Long>>> listType = new TypeReference<NullContentUndefined<List<Long>>>() { };
 
         // Let's see defaulting in action
-        ObjectMapper mapper = newObjectMapper();
-        mapper.setDefaultSetterInfo(JsonSetter.Value.forContentNulls(Nulls.SKIP));
+        ObjectMapper mapper = mapperBuilder()
+                .changeDefaultNullHandling(n -> n.withContentNulls(Nulls.SKIP))
+                .build();
         NullContentUndefined<List<Long>> result = mapper.readValue(JSON, listType);
         assertEquals(0, result.values.size());
 
         // or configured for type:
-        mapper = newObjectMapper();
-        mapper.configOverride(List.class)
-                .setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.SKIP));
+        mapper = mapperBuilder()
+                .withConfigOverride(List.class,
+                        o -> o.setNullHandling(JsonSetter.Value.forContentNulls(Nulls.SKIP)))
+                .build();
         result = mapper.readValue(JSON, listType);
         assertEquals(0, result.values.size());
     }        
@@ -320,16 +329,18 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         final String JSON = aposToQuotes("{'values':[null]}");
         TypeReference<NullContentSkip<List<Long>>> listType = new TypeReference<NullContentSkip<List<Long>>>() { };
 
-        ObjectMapper mapper = newObjectMapper();
+        ObjectMapper mapper = mapperBuilder()
         // defaults call for fail; but POJO specifies "skip"; latter should win
-        mapper.setDefaultSetterInfo(JsonSetter.Value.forContentNulls(Nulls.FAIL));
+                .changeDefaultNullHandling(n -> n.withContentNulls(Nulls.FAIL))
+                .build();
         NullContentSkip<List<Long>> result = mapper.readValue(JSON, listType);
         assertEquals(0, result.values.size());
 
         // ditto for per-type defaults
-        mapper = newObjectMapper();
-        mapper.configOverride(List.class)
-                .setSetterInfo(JsonSetter.Value.forContentNulls(Nulls.FAIL));
+        mapper = mapperBuilder()
+                .withConfigOverride(List.class,
+                        o -> o.setNullHandling(JsonSetter.Value.forContentNulls(Nulls.FAIL)))
+                .build();
         result = mapper.readValue(JSON, listType);
         assertEquals(0, result.values.size());
     }        

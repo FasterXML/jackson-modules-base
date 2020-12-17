@@ -2,7 +2,9 @@ package com.fasterxml.jackson.module.blackbird.deser.filter;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+
 import com.fasterxml.jackson.databind.*;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 // for [databind#1402]; configurable null handling, specifically with SKIP
@@ -85,9 +87,10 @@ public class NullConversionsSkipTest extends BlackbirdTestBase
         StringValue result = MAPPER.readValue(json, StringValue.class);
         assertNull(result.value);
 
-        ObjectMapper mapper = newObjectMapper();
-        mapper.configOverride(String.class)
-            .setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SKIP));
+        ObjectMapper mapper = mapperBuilder()
+                .withConfigOverride(String.class,
+                         o -> o.setNullHandling(JsonSetter.Value.forValueNulls(Nulls.SKIP)))
+                .build();
         result = mapper.readValue(json, StringValue.class);
         assertEquals("default", result.value);
     }
