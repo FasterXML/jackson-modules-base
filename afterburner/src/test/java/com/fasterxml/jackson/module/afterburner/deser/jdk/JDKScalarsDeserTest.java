@@ -97,6 +97,9 @@ public class JDKScalarsDeserTest
         public long longValue = 100L;
         public float floatValue = 0.25f;
         public double doubleValue = -1.0;
+
+        public void setLongValue(long l) { longValue = l; }
+        public void setDoubleValue(double v) { doubleValue = v; }
     }
 
     static class WrappersBean
@@ -109,6 +112,9 @@ public class JDKScalarsDeserTest
         public Long longValue;
         public Float floatValue;
         public Double doubleValue;
+
+        public void setIntValue(Integer v) { intValue = v; }
+        public void setDoubleValue(Double v) { doubleValue = v; }
     }
 
     // [databind#2101]
@@ -496,7 +502,7 @@ public class JDKScalarsDeserTest
     /**********************************************************
      */
 
-    public void testNullForPrimitives() throws IOException
+    public void testNullForPrimitivesDefault() throws IOException
     {
         // by default, ok to rely on defaults
         PrimitivesBean bean = MAPPER.readValue(
@@ -513,33 +519,20 @@ public class JDKScalarsDeserTest
         assertEquals((byte) 0, bean.byteValue);
         assertEquals(0L, bean.longValue);
         assertEquals(0.0f, bean.floatValue);
+    }
 
-        // but not when enabled
+    public void testNullForPrimitivesNotAllowedInts() throws IOException
+    {
         final ObjectReader reader = MAPPER
                 .readerFor(PrimitivesBean.class)
                 .with(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
-        // boolean
-        try {
-            reader.readValue("{\"booleanValue\":null}");
-            fail("Expected failure for boolean + null");
-        } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type boolean");
-            verifyPath(e, "booleanValue");
-        }
-        // byte/char/short/int/long
+
         try {
             reader.readValue("{\"byteValue\":null}");
             fail("Expected failure for byte + null");
         } catch (MismatchedInputException e) {
             verifyException(e, "Cannot map `null` into type byte");
             verifyPath(e, "byteValue");
-        }
-        try {
-            reader.readValue("{\"charValue\":null}");
-            fail("Expected failure for char + null");
-        } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type char");
-            verifyPath(e, "charValue");
         }
         try {
             reader.readValue("{\"shortValue\":null}");
@@ -553,6 +546,7 @@ public class JDKScalarsDeserTest
             fail("Expected failure for int + null");
         } catch (MismatchedInputException e) {
             verifyException(e, "Cannot coerce `null` to `int` value");
+            // 17-Dec-2020, tatu: A problem, but not sure how/why
 //            verifyPath(e, "intValue");
         }
         try {
@@ -560,9 +554,16 @@ public class JDKScalarsDeserTest
             fail("Expected failure for long + null");
         } catch (MismatchedInputException e) {
             verifyException(e, "Cannot coerce `null` to `long` value");
+            // 17-Dec-2020, tatu: A problem, but not sure how/why
 //            verifyPath(e, "longValue");
         }
+    }
 
+    public void testNullForPrimitivesNotAllowedFP() throws IOException
+    {
+        final ObjectReader reader = MAPPER
+                .readerFor(PrimitivesBean.class)
+                .with(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
         // float/double
         try {
             reader.readValue("{\"floatValue\":null}");
@@ -577,6 +578,28 @@ public class JDKScalarsDeserTest
         } catch (MismatchedInputException e) {
             verifyException(e, "Cannot map `null` into type double");
             verifyPath(e, "doubleValue");
+        }
+    }
+
+    public void testNullForPrimitivesNotAllowedMisc() throws IOException
+    {
+        final ObjectReader reader = MAPPER
+                .readerFor(PrimitivesBean.class)
+                .with(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
+        // boolean
+        try {
+            reader.readValue("{\"booleanValue\":null}");
+            fail("Expected failure for boolean + null");
+        } catch (MismatchedInputException e) {
+            verifyException(e, "Cannot map `null` into type boolean");
+            verifyPath(e, "booleanValue");
+        }
+        try {
+            reader.readValue("{\"charValue\":null}");
+            fail("Expected failure for char + null");
+        } catch (MismatchedInputException e) {
+            verifyException(e, "Cannot map `null` into type char");
+            verifyPath(e, "charValue");
         }
     }
 
