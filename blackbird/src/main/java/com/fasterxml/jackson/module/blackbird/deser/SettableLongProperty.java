@@ -34,12 +34,26 @@ final class SettableLongProperty
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException
     {
-        long v = p.isExpectedNumberIntToken() ? p.getLongValue() : _deserializeLong(p, ctxt);
+        if (!p.isExpectedNumberIntToken()) {
+            delegate.deserializeAndSet(p, ctxt, bean);
+            return;
+        }
+        final long v = p.getLongValue();
         try {
            _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
             _reportProblem(bean, v, e);
         }
+    }
+
+    @Override
+    public Object deserializeSetAndReturn(JsonParser p,
+            DeserializationContext ctxt, Object instance) throws IOException
+    {
+        if (p.isExpectedNumberIntToken()) {
+            return setAndReturn(instance, p.getLongValue());
+        }
+        return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
 
     @Override
@@ -51,13 +65,5 @@ final class SettableLongProperty
         } catch (Throwable e) {
             _reportProblem(bean, v, e);
         }
-    }
-
-    @Override
-    public Object deserializeSetAndReturn(JsonParser p,
-            DeserializationContext ctxt, Object instance) throws IOException
-    {
-        long l = p.isExpectedNumberIntToken() ? p.getLongValue() : _deserializeLong(p, ctxt);
-        return setAndReturn(instance, l);
     }
 }

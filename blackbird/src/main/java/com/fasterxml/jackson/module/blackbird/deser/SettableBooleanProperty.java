@@ -38,19 +38,9 @@ final class SettableBooleanProperty
         } else if (t == JsonToken.VALUE_FALSE) {
             b = false;
         } else {
-            b = _deserializeBoolean(p, ctxt);
+            delegate.deserializeAndSet(p, ctxt, bean);
+            return;
         }
-        try {
-            _optimizedSetter.accept(bean, b);
-        } catch (Throwable e) {
-            _reportProblem(bean, b, e);
-        }
-    }
-
-    @Override
-    public void set(Object bean, Object value) throws IOException {
-        // not optimal (due to boxing), but better than using reflection:
-        final boolean b = ((Boolean) value).booleanValue();
         try {
             _optimizedSetter.accept(bean, b);
         } catch (Throwable e) {
@@ -62,15 +52,24 @@ final class SettableBooleanProperty
     public Object deserializeSetAndReturn(JsonParser p,
             DeserializationContext ctxt, Object instance) throws IOException
     {
-        boolean b;
         JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_TRUE) {
-            b = true;
-        } else if (t == JsonToken.VALUE_FALSE) {
-            b = false;
-        } else {
-            b = _deserializeBoolean(p, ctxt);
+            return setAndReturn(instance, Boolean.TRUE);
         }
-        return setAndReturn(instance, b);
+        if (t == JsonToken.VALUE_FALSE) {
+            return setAndReturn(instance, Boolean.FALSE);
+        }
+        return delegate.deserializeSetAndReturn(p, ctxt, instance);
+    }
+
+    @Override
+    public void set(Object bean, Object value) throws IOException {
+        // not optimal (due to boxing), but better than using reflection:
+        final boolean b = ((Boolean) value).booleanValue();
+        try {
+            _optimizedSetter.accept(bean, b);
+        } catch (Throwable e) {
+            _reportProblem(bean, b, e);
+        }
     }
 }

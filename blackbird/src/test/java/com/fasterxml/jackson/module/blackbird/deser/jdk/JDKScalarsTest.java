@@ -557,10 +557,8 @@ public class JDKScalarsTest
             reader.readValue("{\"longValue\":null}");
             fail("Expected failure for long + null");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot coerce `null` to `long` value");
-
-            // 17-Dec-2020, tatu: A problem, but not sure how/why
-//            verifyPath(e, "longValue");
+            verifyException(e, "Cannot map `null` into type long");
+            verifyPath(e, "longValue");
         }
     }
 

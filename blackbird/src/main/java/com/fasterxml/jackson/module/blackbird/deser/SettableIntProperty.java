@@ -34,18 +34,11 @@ final class SettableIntProperty
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException
     {
-        int v = p.isExpectedNumberIntToken() ? p.getIntValue() : _deserializeInt(p, ctxt);
-        try {
-            _optimizedSetter.accept(bean, v);
-        } catch (Throwable e) {
-            _reportProblem(bean, v, e);
+        if (!p.isExpectedNumberIntToken()) {
+            delegate.deserializeAndSet(p, ctxt, bean);
+            return;
         }
-    }
-
-    @Override
-    public void set(Object bean, Object value) throws IOException {
-        // not optimal (due to boxing), but better than using reflection:
-        int v = ((Number) value).intValue();
+        final int v = p.getIntValue();
         try {
             _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
@@ -58,7 +51,20 @@ final class SettableIntProperty
             DeserializationContext ctxt, Object instance)
         throws IOException
     {
-        int v = p.isExpectedNumberIntToken() ? p.getIntValue() : _deserializeInt(p, ctxt);
-        return setAndReturn(instance, v);
+        if (p.isExpectedNumberIntToken()) {
+            return setAndReturn(instance, p.getIntValue());
+        }
+        return delegate.deserializeSetAndReturn(p, ctxt, instance);
+    }
+
+    @Override
+    public void set(Object bean, Object value) throws IOException {
+        // not optimal (due to boxing), but better than using reflection:
+        int v = ((Number) value).intValue();
+        try {
+            _optimizedSetter.accept(bean, v);
+        } catch (Throwable e) {
+            _reportProblem(bean, v, e);
+        }
     }
 }

@@ -12,6 +12,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.12.1 (not yet released)
+
+#120: Afterburner does not support the new CoercionConfig
+ (reported by Carter K)
+
 2.12.0 (29-Nov-2020)
 
 #85: Add Blackbird module -- alternative for Afterburner that works better with

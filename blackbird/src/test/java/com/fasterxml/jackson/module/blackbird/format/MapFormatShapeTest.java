@@ -144,7 +144,7 @@ public class MapFormatShapeTest extends BlackbirdTestBase
     /**********************************************************
      */
 
-    final private ObjectMapper MAPPER = objectMapper();
+    final private ObjectMapper MAPPER = newBlackbirdMapper();
 
     // for [databind#476]: Maps as POJOs
     public void testSerializeAsPOJOViaClass() throws Exception

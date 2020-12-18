@@ -42,8 +42,7 @@ public class JsonAppendTest extends AfterburnerTestBase
 
     public void testSimpleAppend() throws Exception
     {
-        ObjectMapper mapper = objectMapper();
-//        ObjectMapper mapper = new ObjectMapper();
+        final ObjectMapper mapper = newAfterburnerMapper();
         String json = mapper.writeValueAsString(new Pojo("foo"));
         assertEquals("{\"name\":\"foo\",\"virtual\":\"bar\"}", json);
     }
