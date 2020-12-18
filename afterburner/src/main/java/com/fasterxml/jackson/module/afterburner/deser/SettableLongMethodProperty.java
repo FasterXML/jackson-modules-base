@@ -37,7 +37,7 @@ public final class SettableLongMethodProperty
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException
     {
-        long v = p.hasToken(JsonToken.VALUE_NUMBER_INT) ? p.getLongValue() : _deserializeLong(p, ctxt);
+        long v = p.isExpectedNumberIntToken() ? p.getLongValue() : _deserializeLong(p, ctxt);
         try {
             _propertyMutator.longSetter(bean, _optimizedIndex, v);
         } catch (Throwable e) {
@@ -60,7 +60,7 @@ public final class SettableLongMethodProperty
     public Object deserializeSetAndReturn(JsonParser p,
             DeserializationContext ctxt, Object instance) throws IOException
     {
-        long l = p.hasToken(JsonToken.VALUE_NUMBER_INT) ? p.getLongValue() : _deserializeLong(p, ctxt);
+        long l = p.isExpectedNumberIntToken() ? p.getLongValue() : _deserializeLong(p, ctxt);
         return setAndReturn(instance, l);
     }    
 }

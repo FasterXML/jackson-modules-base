@@ -38,13 +38,16 @@ public final class SettableStringFieldProperty
             Object bean) throws IOException
     {
         String text;
-        if (p.hasToken(JsonToken.VALUE_NULL)) {
+
+        if (p.hasToken(JsonToken.VALUE_STRING)) {
+            text = p.getText();
+        } else if (p.hasToken(JsonToken.VALUE_NULL)) {
             if (_skipNulls) {
                 return;
             }
             text = (String) _nullProvider.getNullValue(ctxt);
         } else {
-             text = p.getValueAsString();
+            text = p.getValueAsString();
             if (text == null) {
                 text = _deserializeString(p, ctxt);
             }
@@ -61,7 +64,10 @@ public final class SettableStringFieldProperty
         throws IOException
     {
         String text;
-        if (p.hasToken(JsonToken.VALUE_NULL)) {
+
+        if (p.hasToken(JsonToken.VALUE_STRING)) {
+            text = p.getText();
+        } else if (p.hasToken(JsonToken.VALUE_NULL)) {
             if (_skipNulls) {
                 return instance;
             }

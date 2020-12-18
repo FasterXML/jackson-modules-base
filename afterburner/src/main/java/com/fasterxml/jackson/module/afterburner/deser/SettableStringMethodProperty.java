@@ -38,7 +38,10 @@ public final class SettableStringMethodProperty
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt, Object bean) throws IOException
     {
         String text;
-        if (p.hasToken(JsonToken.VALUE_NULL)) {
+ 
+        if (p.hasToken(JsonToken.VALUE_STRING)) {
+            text = p.getText();
+        } else if (p.hasToken(JsonToken.VALUE_NULL)) {
             if (_skipNulls) {
                 return;
             }
@@ -60,7 +63,10 @@ public final class SettableStringMethodProperty
     public Object deserializeSetAndReturn(JsonParser p, DeserializationContext ctxt, Object instance) throws IOException
     {
         String text;
-        if (p.hasToken(JsonToken.VALUE_NULL)) {
+
+        if (p.hasToken(JsonToken.VALUE_STRING)) {
+            text = p.getText();
+        } else if (p.hasToken(JsonToken.VALUE_NULL)) {
             if (_skipNulls) {
                 return instance;
             }

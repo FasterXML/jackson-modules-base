@@ -37,7 +37,7 @@ public final class SettableIntMethodProperty
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
             Object bean) throws IOException
     {
-        int v = p.hasToken(JsonToken.VALUE_NUMBER_INT) ? p.getIntValue() : _deserializeInt(p, ctxt);
+        int v = p.isExpectedNumberIntToken() ? p.getIntValue() : _deserializeInt(p, ctxt);
         try {
             _propertyMutator.intSetter(bean, _optimizedIndex, v);
             return;
@@ -62,7 +62,7 @@ public final class SettableIntMethodProperty
             DeserializationContext ctxt, Object instance)
         throws IOException
     {
-        int v = p.hasToken(JsonToken.VALUE_NUMBER_INT) ? p.getIntValue() : _deserializeInt(p, ctxt);
+        int v = p.isExpectedNumberIntToken() ? p.getIntValue() : _deserializeInt(p, ctxt);
         return setAndReturn(instance, v);
     }    
 }
