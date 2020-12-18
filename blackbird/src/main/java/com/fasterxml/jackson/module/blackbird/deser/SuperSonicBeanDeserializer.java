@@ -22,7 +22,11 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
     protected final SerializedString[] _orderedPropertyNames;
 
     /**
+<<<<<<< HEAD
      * Properties matching names in {@code _orderedPropertyNames},
+=======
+     * Properties matching names in {@code #_orderedPropertyNames},
+>>>>>>> 2.12
      * assigned after resolution when property instances are finalized.
      */
     protected SettableBeanProperty[] _orderedProperties;
@@ -193,7 +197,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
     public final Object deserialize(JsonParser p, DeserializationContext ctxt, Object bean)
         throws IOException
     {
-        // [databind#631]: Assign current value, to be accessible by custom serializers
+        // [databind#631]: Assign current value, to be accessible by custom deserializers
         p.setCurrentValue(bean);
         if (_injectables != null) {
             injectValues(ctxt, bean);

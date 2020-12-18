@@ -6,8 +6,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.*;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import com.fasterxml.jackson.module.afterburner.testutil.NoCheckSubTypeValidator;
@@ -186,6 +185,7 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
 
     private static ObjectMapper SHARED_MAPPER;
 
+    @Deprecated
     protected ObjectMapper objectMapper() {
         if (SHARED_MAPPER == null) {
             SHARED_MAPPER = afterburnerMapperBuilder().build();
@@ -193,34 +193,34 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
         return SHARED_MAPPER;
     }
 
-    protected ObjectWriter objectWriter() {
-        return objectMapper().writer();
-    }
-
-    protected ObjectReader objectReader() {
-        return objectMapper().reader();
-    }
-    
-    protected ObjectReader objectReader(Class<?> cls) {
-        return objectMapper().readerFor(cls);
-    }
-
+    // preferred in 3.0:
     protected static ObjectMapper newAfterburnerMapper() {
         return afterburnerMapperBuilder()
                 .build();
     }
 
-    protected static MapperBuilder<?,?> afterburnerMapperBuilder() {
+    // preferred in 3.0:
+    protected static JsonMapper.Builder afterburnerMapperBuilder() {
         return JsonMapper.builder()
                 .polymorphicTypeValidator(new NoCheckSubTypeValidator())
                 .addModule(new AfterburnerModule());
     }
-
+    
     // One withOUT afterburner module
     protected static JsonMapper newVanillaJSONMapper() {
         return new JsonMapper();
     }
 
+    // to deprecate
+    protected static JsonMapper newObjectMapper() {
+        return mapperBuilder().build();
+    }
+
+    // to deprecate
+    protected static JsonMapper.Builder mapperBuilder() {
+        return afterburnerMapperBuilder();
+    }
+    
     /*
     /**********************************************************
     /* Helper methods; assertions

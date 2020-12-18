@@ -8,8 +8,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import com.fasterxml.jackson.module.blackbird.testutil.NoCheckSubTypeValidator;
@@ -191,6 +189,7 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
 
     private static ObjectMapper SHARED_MAPPER;
 
+    @Deprecated
     protected ObjectMapper objectMapper() {
         if (SHARED_MAPPER == null) {
             SHARED_MAPPER = newObjectMapper();
@@ -198,20 +197,16 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
         return SHARED_MAPPER;
     }
 
-    protected ObjectWriter objectWriter() {
-        return objectMapper().writer();
-    }
-
-    protected ObjectReader objectReader() {
-        return objectMapper().reader();
-    }
-
-    protected ObjectReader objectReader(Class<?> cls) {
-        return objectMapper().readerFor(cls);
-    }
-
     protected static JsonMapper newObjectMapper() {
         return mapperBuilder().build();
+    }
+
+    protected static JsonMapper newBlackbirdMapper() {
+        return mapperBuilder().build();
+    }
+
+    protected static JsonMapper.Builder blackbirdMapperBuilder() {
+        return mapperBuilder();
     }
 
     protected static JsonMapper.Builder mapperBuilder() {

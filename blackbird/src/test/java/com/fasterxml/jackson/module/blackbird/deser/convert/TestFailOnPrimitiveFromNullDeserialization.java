@@ -73,7 +73,7 @@ public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBas
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, BooleanBean.class);
             fail();
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type boolean");
+            verifyException(e, "Cannot coerce `null` to `boolean` value");
         }
         try {
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, DoubleBean.class);
