@@ -42,7 +42,7 @@ public class IgnoreCreatorProp1317Test extends BlackbirdTestBase
     }
 
     public void testThatJsonIgnoreWorksWithConstructorProperties() throws Exception {
-        ObjectMapper om = objectMapper();
+        final ObjectMapper om = newBlackbirdMapper();
         Testing testing = new Testing("shouldBeIgnored", "notIgnore");
         String json = om.writeValueAsString(testing);
 //        System.out.println(json);

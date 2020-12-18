@@ -42,8 +42,7 @@ public class JsonAppendTest extends BlackbirdTestBase
 
     public void testSimpleAppend() throws Exception
     {
-        ObjectMapper mapper = objectMapper();
-//        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = newBlackbirdMapper();
         String json = mapper.writeValueAsString(new Pojo("foo"));
         assertEquals("{\"name\":\"foo\",\"virtual\":\"bar\"}", json);
     }

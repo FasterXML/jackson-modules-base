@@ -665,18 +665,15 @@ public class JDKScalarsTest
             reader.readValue("{\"intValue\":null}");
             fail("Expected failure for int + null");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot coerce `null` to `int` value");
-
-            // 17-Dec-2020, tatu: Path doubled for some reason
-//            verifyPath(e, "intValue");
+            verifyException(e, "Cannot map `null` into type int");
+            verifyPath(e, "intValue");
         }
         try {
             reader.readValue("{\"longValue\":null}");
             fail("Expected failure for long + null");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot coerce `null` to `long` value");
-            // 17-Dec-2020, tatu: Path doubled for some reason
-//            verifyPath(e, "longValue");
+            verifyException(e, "Cannot map `null` into type long");
+            verifyPath(e, "longValue");
         }
     }
 

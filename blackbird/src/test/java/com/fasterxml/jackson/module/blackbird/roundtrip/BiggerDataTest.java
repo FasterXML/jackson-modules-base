@@ -78,12 +78,12 @@ public class BiggerDataTest extends BlackbirdTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = objectMapper();
-	
-	public void testReading() throws Exception
-	{
-		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
-				Citm.class);
+    private final ObjectMapper MAPPER = newBlackbirdMapper();
+
+    public void testReading() throws Exception
+    {
+        Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
+                Citm.class);
 
 		byte[] cbor = MAPPER.writeValueAsBytes(citm0);
 

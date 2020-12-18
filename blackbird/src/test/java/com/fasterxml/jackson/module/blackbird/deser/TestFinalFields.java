@@ -40,13 +40,14 @@ public class TestFinalFields extends BlackbirdTestBase
     /**********************************************************
      */
 
+    private final ObjectMapper MAPPER = newBlackbirdMapper();
+    
     public void testFinalFields() throws Exception
     {
-        ObjectMapper mapper = objectMapper();
-        String json = mapper.writeValueAsString(new Organization[] {
+        String json = MAPPER.writeValueAsString(new Organization[] {
                 new Organization(123L, "Corp", new Address(98040, 98021))
         });
-        Organization[] result = mapper.readValue(json, Organization[].class);
+        Organization[] result = MAPPER.readValue(json, Organization[].class);
         assertNotNull(result);
         assertEquals(1, result.length);
         assertNotNull(result[0]);
@@ -60,11 +61,10 @@ public class TestFinalFields extends BlackbirdTestBase
     {
         JsonAddress address = new JsonAddress(-1L, "line1", "line2", "city", "state", "zip", "locale", "timezone");
         JsonOrganization organization = new JsonOrganization(-1L, "name", address);
-        ObjectMapper mapper = objectMapper();
-        String json = mapper.writeValueAsString(organization);
+        String json = MAPPER.writeValueAsString(organization);
         assertNotNull(json);
         
-        JsonOrganization result = mapper.readValue(json, JsonOrganization.class);
+        JsonOrganization result = MAPPER.readValue(json, JsonOrganization.class);
         assertNotNull(result);
     }
  

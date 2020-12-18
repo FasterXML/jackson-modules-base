@@ -78,3 +78,8 @@ Steven Schlansker (stevenschlansker@github)
 * Contributed #85: Add Blackbird module -- alternative for Afterburner that works better with
    new(er) JVMs
  (2.12.0)
+
+Carter Kozak (carterkozak@github)
+
+* Reported #120: Afterburner does not support the new CoercionConfig
+ (2.12.1)

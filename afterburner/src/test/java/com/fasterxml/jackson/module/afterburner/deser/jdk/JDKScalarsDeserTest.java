@@ -663,7 +663,8 @@ public class JDKScalarsDeserTest
             reader.readValue("{\"intValue\":null}");
             fail("Expected failure for int + null");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot coerce `null` to `int` value");
+            verifyException(e, "Cannot map `null` into type int");
+//            verifyException(e, "Cannot coerce `null` to `int` value");
             // 17-Dec-2020, tatu: Path doubled for some reason
 //            verifyPath(e, "intValue");
         }
@@ -671,9 +672,11 @@ public class JDKScalarsDeserTest
             reader.readValue("{\"longValue\":null}");
             fail("Expected failure for long + null");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot coerce `null` to `long` value");
+            verifyException(e, "Cannot map `null` into type long");
+//            verifyException(e, "Cannot coerce `null` to `long` value");
+
             // 17-Dec-2020, tatu: Path doubled for some reason
-//           verifyPath(e, "longValue");
+//            verifyPath(e, "longValue");
         }
     }
 
@@ -711,9 +714,9 @@ public class JDKScalarsDeserTest
             reader.readValue("{\"booleanValue\":null}");
             fail("Expected failure for boolean + null");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot coerce `null` to `boolean` value");
-// 17-Dec-2020, tatu: path is off not sure why
-//            verifyPath(e, "booleanValue");
+//            verifyException(e, "Cannot coerce `null` to `boolean` value");
+            verifyException(e, "Cannot map `null` into type boolean");
+            verifyPath(e, "booleanValue");
         }
         try {
             reader.readValue("{\"charValue\":null}");

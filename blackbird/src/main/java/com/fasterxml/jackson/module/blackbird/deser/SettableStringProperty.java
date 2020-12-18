@@ -34,37 +34,20 @@ final class SettableStringProperty
     @Override
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt, Object bean) throws IOException
     {
-        String text;
-        if (p.hasToken(JsonToken.VALUE_NULL)) {
-            if (_skipNulls) {
-                return;
-            }
-            text = (String) _nullProvider.getNullValue(ctxt);
-        } else {
-            text = p.getValueAsString();
-            if (text == null) {
-                text = _deserializeString(p, ctxt);
-            }
+        if (!p.hasToken(JsonToken.VALUE_STRING)) {
+            delegate.deserializeAndSet(p, ctxt, bean);
+            return;
         }
-        set(bean, text);
+        set(bean, p.getText());
     }
 
     @Override
     public Object deserializeSetAndReturn(JsonParser p, DeserializationContext ctxt, Object instance) throws IOException
     {
-        String text;
-        if (p.hasToken(JsonToken.VALUE_NULL)) {
-            if (_skipNulls) {
-                return instance;
-            }
-            text = (String) _nullProvider.getNullValue(ctxt);
-        } else {
-            text = p.getValueAsString();
-            if (text == null) {
-                text = _deserializeString(p, ctxt);
-            }
+        if (p.hasToken(JsonToken.VALUE_STRING)) {
+            return setAndReturn(instance, p.getText());
         }
-        return setAndReturn(instance, text);
+        return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
 
     @Override
