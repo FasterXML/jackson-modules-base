@@ -531,21 +531,21 @@ public class JDKScalarsDeserTest
             reader.readValue("{\"byteValue\":null}");
             fail("Expected failure for byte + null");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type byte");
+            verifyException(e, "Cannot map `null` into type `byte`");
             verifyPath(e, "byteValue");
         }
         try {
             reader.readValue("{\"shortValue\":null}");
             fail("Expected failure for short + null");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type short");
+            verifyException(e, "Cannot map `null` into type `short`");
             verifyPath(e, "shortValue");
         }
         try {
             reader.readValue("{\"intValue\":null}");
             fail("Expected failure for int + null");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type int");
+            verifyException(e, "Cannot map `null` into type `int`");
 //            verifyException(e, "Cannot coerce `null` to `int` value");
             verifyPath(e, "intValue");
         }
@@ -553,7 +553,7 @@ public class JDKScalarsDeserTest
             reader.readValue("{\"longValue\":null}");
             fail("Expected failure for long + null");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type long");
+            verifyException(e, "Cannot map `null` into type `long`");
 //            verifyException(e, "Cannot coerce `null` to `long` value");
             verifyPath(e, "longValue");
         }
@@ -569,14 +569,14 @@ public class JDKScalarsDeserTest
             reader.readValue("{\"floatValue\":null}");
             fail("Expected failure for float + null");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type float");
+            verifyException(e, "Cannot map `null` into type `float`");
             verifyPath(e, "floatValue");
         }
         try {
             reader.readValue("{\"doubleValue\":null}");
             fail("Expected failure for double + null");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type double");
+            verifyException(e, "Cannot map `null` into type `double`");
             verifyPath(e, "doubleValue");
         }
     }
@@ -592,14 +592,14 @@ public class JDKScalarsDeserTest
             fail("Expected failure for boolean + null");
         } catch (MismatchedInputException e) {
 //            verifyException(e, "Cannot coerce `null` to `boolean` value");
-            verifyException(e, "Cannot map `null` into type boolean");
+            verifyException(e, "Cannot map `null` into type `boolean`");
             verifyPath(e, "booleanValue");
         }
         try {
             reader.readValue("{\"charValue\":null}");
             fail("Expected failure for char + null");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type char");
+            verifyException(e, "Cannot map `null` into type `char`");
             verifyPath(e, "charValue");
         }
     }
@@ -614,7 +614,7 @@ public class JDKScalarsDeserTest
                     .readValue(aposToQuotes("{'a': null}"));
             fail("Expected failure for `int` and `null`");
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type int");
+            verifyException(e, "Cannot map `null` into type `int`");
             verifyPath(e, "a");
         }
     }

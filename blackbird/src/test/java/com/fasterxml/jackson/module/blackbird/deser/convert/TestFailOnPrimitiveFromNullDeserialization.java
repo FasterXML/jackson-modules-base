@@ -60,25 +60,25 @@ public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBas
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, IntBean.class);
             fail();
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type int");
+            verifyException(e, "Cannot map `null` into type `int`");
         }
         try {
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, LongBean.class);
             fail();
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type long");
+            verifyException(e, "Cannot map `null` into type `long`");
         }
         try {
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, BooleanBean.class);
             fail();
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type boolean");
+            verifyException(e, "Cannot map `null` into type `boolean`");
         }
         try {
             FAIL_ON_NULL_MAPPER.readValue(BEAN_WITH_NULL_VALUE, DoubleBean.class);
             fail();
         } catch (MismatchedInputException e) {
-            verifyException(e, "Cannot map `null` into type double");
+            verifyException(e, "Cannot map `null` into type `double`");
         }
     }
 }
