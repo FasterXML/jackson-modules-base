@@ -1,55 +1,58 @@
-package com.fasterxml.jackson.module.blackbird.deser;
+package com.fasterxml.jackson.module.afterburner.deser;
 
 import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
-public class TestSimpleDeserialize extends BlackbirdTestBase
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+public class BasicDeserializeTest extends AfterburnerTestBase
 {
     public enum MyEnum {
         A, B, C;
     }
-
+    
     /* Keep this as package access, since we can't handle private; but
      * public is pretty much always available.
      */
     static class IntBean {
         protected int _x;
-
+        
         void setX(int v) { _x = v; }
     }
 
     @JsonPropertyOrder({"c","a","b","e","d"})
     static class IntsBean {
         protected int _a, _b, _c, _d, _e;
-
+        
         void setA(int v) { _a = v; }
         void setB(int v) { _b = v; }
         void setC(int v) { _c = v; }
         void setD(int v) { _d = v; }
         void setE(int v) { _e = v; }
     }
-
+    
     public static class LongBean {
         protected long _x;
-
+        
         public void setX(long v) { _x = v; }
     }
 
     public static class StringBean {
         protected String _x;
-
+        
         public void setX(String v) { _x = v; }
     }
 
     public static class EnumBean {
         protected MyEnum _x;
-
+        
         public void setX(MyEnum v) { _x = v; }
     }
-
+    
     public static class IntFieldBean {
         @JsonProperty("value") int x;
     }
@@ -76,7 +79,7 @@ public class TestSimpleDeserialize extends BlackbirdTestBase
             _b = b;
         }
     }
-
+    
     @JsonPropertyOrder
     ({"stringField", "string", "intField", "int", "longField", "long", "enumField", "enum"})
     static class MixedBean {
@@ -140,6 +143,23 @@ public class TestSimpleDeserialize extends BlackbirdTestBase
     // for [module-afterburner#60]
     static class Issue60Pojo {
         public List<Object> foos;
+    }    
+
+    // [modules-base#123]: fluent method(s)
+    public static class Model123 {
+        int value = 10;
+
+        protected Model123() { }
+        public Model123(int v) { value = v; }
+
+        public int getValue() {
+            return value;
+        }
+
+        public Model123 setValue(int value) {
+            this.value = value;
+            return this;
+        }
     }
 
     /*
@@ -148,8 +168,8 @@ public class TestSimpleDeserialize extends BlackbirdTestBase
     /**********************************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
-
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
+    
     public void testIntMethod() throws Exception {
         IntBean bean = MAPPER.readValue("{\"x\":13}", IntBean.class);
         assertEquals(13, bean._x);
@@ -163,7 +183,7 @@ public class TestSimpleDeserialize extends BlackbirdTestBase
         assertEquals(1, bean._d);
         assertEquals(-9999, bean._e);
     }
-
+    
     public void testLongMethod() throws Exception {
         LongBean bean = MAPPER.readValue("{\"x\":-1}", LongBean.class);
         assertEquals(-1, bean._x);
@@ -178,7 +198,7 @@ public class TestSimpleDeserialize extends BlackbirdTestBase
         EnumBean bean = MAPPER.readValue("{\"x\":\"A\"}", EnumBean.class);
         assertEquals(MyEnum.A, bean._x);
     }
-
+    
     /*
     /**********************************************************************
     /* Test methods, field access
@@ -215,7 +235,7 @@ public class TestSimpleDeserialize extends BlackbirdTestBase
         assertNotNull(bean);
         assertNull(bean.value);
     }
-
+    
     /*
     /**********************************************************************
     /* Test methods, other
@@ -233,7 +253,7 @@ public class TestSimpleDeserialize extends BlackbirdTestBase
             fail("Round-trip test failed: intermediate JSON = "+jsonAb);
         }
     }
-
+    
     public void testMixed() throws Exception
     {
         MixedBean bean = MAPPER.readValue("{"
@@ -265,7 +285,7 @@ public class TestSimpleDeserialize extends BlackbirdTestBase
         BeanWithNonVoidPropertySetter bean = MAPPER.readValue(json, BeanWithNonVoidPropertySetter.class);
         assertEquals("zoobar", bean.getStringField());
 
-        ObjectMapper abMapper = newObjectMapper();
+        ObjectMapper abMapper = newAfterburnerMapper();
         // current fails with java.lang.NoSuchMethodError
         bean = abMapper.readValue(json, BeanWithNonVoidPropertySetter.class);
         assertEquals("zoobar", bean.getStringField());
@@ -280,7 +300,7 @@ public class TestSimpleDeserialize extends BlackbirdTestBase
         BigBeanWithNonVoidPropertySetter bean = MAPPER.readValue(json, BigBeanWithNonVoidPropertySetter.class);
         assertEquals("zoobar", bean.getStringField());
 
-        ObjectMapper abMapper = newObjectMapper();
+        ObjectMapper abMapper = newAfterburnerMapper();
         // current fails with java.lang.NoSuchMethodError
         bean = abMapper.readValue(json, BigBeanWithNonVoidPropertySetter.class);
         assertEquals("zoobar", bean.getStringField());
@@ -311,7 +331,7 @@ public class TestSimpleDeserialize extends BlackbirdTestBase
 +"}";
 
         // First: read from String directly
-
+        
         Issue60Pojo pojo = MAPPER.readValue(JSON, Issue60Pojo.class);
         assertNotNull(pojo);
         assertNotNull(pojo.foos);
@@ -322,5 +342,15 @@ public class TestSimpleDeserialize extends BlackbirdTestBase
         assertNotNull(pojo);
         assertNotNull(pojo.foos);
         assertEquals(0, pojo.foos.size());
+    }
+
+    // [modules-base#123]
+    public void testFluentMethod() throws Exception
+    {
+        String json = MAPPER.writeValueAsString(new Model123(28));
+
+        Model123 result = MAPPER.readValue(json, Model123.class);
+        assertNotNull(result);
+        assertEquals(28, result.value);
     }
 }

@@ -79,6 +79,11 @@ Steven Schlansker (stevenschlansker@github)
    new(er) JVMs
  (2.12.0)
 
+Marc Magon (GedMarc@github)
+
+* Contributed #116: (jaxb) Jakarta Namespace Support
+ (2.12.0)
+
 Carter Kozak (carterkozak@github)
 
 * Reported #120: Afterburner does not support the new CoercionConfig
