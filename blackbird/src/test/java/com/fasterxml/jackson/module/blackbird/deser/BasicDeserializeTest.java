@@ -1,56 +1,58 @@
-package com.fasterxml.jackson.module.afterburner.deser;
+package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
-public class TestSimpleDeserialize extends AfterburnerTestBase
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+public class BasicDeserializeTest extends BlackbirdTestBase
 {
     public enum MyEnum {
         A, B, C;
     }
-    
+
     /* Keep this as package access, since we can't handle private; but
      * public is pretty much always available.
      */
     static class IntBean {
         protected int _x;
-        
+
         void setX(int v) { _x = v; }
     }
 
     @JsonPropertyOrder({"c","a","b","e","d"})
     static class IntsBean {
         protected int _a, _b, _c, _d, _e;
-        
+
         void setA(int v) { _a = v; }
         void setB(int v) { _b = v; }
         void setC(int v) { _c = v; }
         void setD(int v) { _d = v; }
         void setE(int v) { _e = v; }
     }
-    
+
     public static class LongBean {
         protected long _x;
-        
+
         public void setX(long v) { _x = v; }
     }
 
     public static class StringBean {
         protected String _x;
-        
+
         public void setX(String v) { _x = v; }
     }
 
     public static class EnumBean {
         protected MyEnum _x;
-        
+
         public void setX(MyEnum v) { _x = v; }
     }
-    
+
     public static class IntFieldBean {
         @JsonProperty("value") int x;
     }
@@ -77,7 +79,7 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
             _b = b;
         }
     }
-    
+
     @JsonPropertyOrder
     ({"stringField", "string", "intField", "int", "longField", "long", "enumField", "enum"})
     static class MixedBean {
@@ -141,7 +143,7 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
     // for [module-afterburner#60]
     static class Issue60Pojo {
         public List<Object> foos;
-    }    
+    }
 
     /*
     /**********************************************************************
@@ -150,7 +152,7 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
      */
 
     private final ObjectMapper MAPPER = newObjectMapper();
-    
+
     public void testIntMethod() throws Exception {
         IntBean bean = MAPPER.readValue("{\"x\":13}", IntBean.class);
         assertEquals(13, bean._x);
@@ -164,7 +166,7 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
         assertEquals(1, bean._d);
         assertEquals(-9999, bean._e);
     }
-    
+
     public void testLongMethod() throws Exception {
         LongBean bean = MAPPER.readValue("{\"x\":-1}", LongBean.class);
         assertEquals(-1, bean._x);
@@ -179,7 +181,7 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
         EnumBean bean = MAPPER.readValue("{\"x\":\"A\"}", EnumBean.class);
         assertEquals(MyEnum.A, bean._x);
     }
-    
+
     /*
     /**********************************************************************
     /* Test methods, field access
@@ -216,7 +218,7 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
         assertNotNull(bean);
         assertNull(bean.value);
     }
-    
+
     /*
     /**********************************************************************
     /* Test methods, other
@@ -234,7 +236,7 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
             fail("Round-trip test failed: intermediate JSON = "+jsonAb);
         }
     }
-    
+
     public void testMixed() throws Exception
     {
         MixedBean bean = MAPPER.readValue("{"
@@ -312,7 +314,7 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
 +"}";
 
         // First: read from String directly
-        
+
         Issue60Pojo pojo = MAPPER.readValue(JSON, Issue60Pojo.class);
         assertNotNull(pojo);
         assertNotNull(pojo.foos);
@@ -324,39 +326,4 @@ public class TestSimpleDeserialize extends AfterburnerTestBase
         assertNotNull(pojo.foos);
         assertEquals(0, pojo.foos.size());
     }
-
-    // 28-Sep-2019, tatu: I do not fully understand what this method tried to do;
-    //   it seemed to be a contribution from July 2016. But I noticed that it breaks
-    //   with JDK 12 and unlikely to be allowed so let's comment it out.
-    /*
-
-    static class CheckGeneratedDeserializerName {
-        public String stringField;
-    }
-    
-    @SuppressWarnings("unchecked")
-    public void testGeneratedDeserializerName() throws Exception {
-        MAPPER.readValue("{\"stringField\":\"foo\"}", CheckGeneratedDeserializerName.class);
-        ClassLoader cl = getClass().getClassLoader();
-        Field declaredField = ClassLoader.class.getDeclaredField("classes");
-        declaredField.setAccessible(true);
-        // 06-Sep-2017, tatu: Hmmh. Whatever this code does... is not very robust.
-        //    But has to do for now. OpenJDK 7 had issues with size, increased:
-        Class<?>[] os = new Class[8192];
-        ((Vector<Class<?>>) declaredField.get(cl)).copyInto(os);
-
-        String expectedClassName = TestSimpleDeserialize.class.getCanonicalName()
-                + "$CheckGeneratedDeserializerName$Access4JacksonDeserializer";
-        for (Class<?> clz : os) {
-            if (clz == null) {
-                break;
-            }
-            if (clz.getCanonicalName() != null
-                    && clz.getCanonicalName().startsWith(expectedClassName)) {
-                return;
-            }
-        }
-        fail("Expected class not found:" + expectedClassName);
-    }
-    */
 }
