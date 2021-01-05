@@ -32,7 +32,7 @@ Blackbird is available on Maven Central as of 2.12.0:
 
 ```xml
 <dependency>
-  <groupId>com.fasterxml.jackson.modules</groupId>
+  <groupId>com.fasterxml.jackson.module</groupId>
   <artifactId>jackson-module-blackbird</artifactId>
 </dependency>
 ```
