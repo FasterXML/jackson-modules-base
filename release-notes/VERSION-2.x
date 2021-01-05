@@ -16,6 +16,8 @@ Modules:
 
 #120: Afterburner does not support the new CoercionConfig
  (reported by Carter K)
+#123: BlackBird not support fluent setter
+ (reported by wujimin@github)
 
 2.12.0 (29-Nov-2020)
 
