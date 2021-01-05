@@ -222,7 +222,7 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
                 MethodHandles.lookup(),
                 "accept",
                 MethodType.methodType(iface, thunkType),
-                MethodType.methodType(void.class, Object.class, Object.class),
+                MethodType.methodType(void.class, Object.class, valueType),
                 trampoline,
                 MethodType.methodType(void.class, Object.class, valueType))
             .getTarget().invoke(builtThunk));

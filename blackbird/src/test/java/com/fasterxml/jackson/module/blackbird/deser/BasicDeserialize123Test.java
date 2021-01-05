@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.blackbird.failing;
+package com.fasterxml.jackson.module.blackbird.deser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
