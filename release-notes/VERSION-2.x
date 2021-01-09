@@ -12,7 +12,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.12.1 (not yet released)
+2.12.1 (08-Jan-2021)
 
 #120: Afterburner does not support the new CoercionConfig
  (reported by Carter K)
