@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
-import java.io.IOException;
 import java.util.function.BiConsumer;
 
 import com.fasterxml.jackson.core.*;
@@ -32,7 +31,8 @@ final class SettableStringProperty
 
     // Copied from StdDeserializer.StringDeserializer:
     @Override
-    public void deserializeAndSet(JsonParser p, DeserializationContext ctxt, Object bean) throws IOException
+    public void deserializeAndSet(JsonParser p, DeserializationContext ctxt, Object bean)
+        throws JacksonException
     {
         if (!p.hasToken(JsonToken.VALUE_STRING)) {
             delegate.deserializeAndSet(p, ctxt, bean);
@@ -42,7 +42,8 @@ final class SettableStringProperty
     }
 
     @Override
-    public Object deserializeSetAndReturn(JsonParser p, DeserializationContext ctxt, Object instance) throws IOException
+    public Object deserializeSetAndReturn(JsonParser p, DeserializationContext ctxt, Object instance)
+        throws JacksonException
     {
         if (p.hasToken(JsonToken.VALUE_STRING)) {
             return setAndReturn(instance, p.getText());
@@ -51,7 +52,7 @@ final class SettableStringProperty
     }
 
     @Override
-    public void set(Object bean, Object value) throws IOException {
+    public void set(Object bean, Object value) {
         try {
             _optimizedSetter.accept(bean, (String) value);
         } catch (Throwable e) {

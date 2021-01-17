@@ -2,6 +2,7 @@ package com.fasterxml.jackson.module.afterburner.deser;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -42,13 +43,11 @@ public abstract class OptimizedValueInstantiator
      */
     @Override
     public abstract Object createUsingDefault(DeserializationContext ctxt)
-        throws IOException;
+        throws JacksonException;
 
     /**
      * Helper method needed to allow handling of instantiation exception in
      * case of optimized no-args creator.
-     *
-     * @since 2.9
      */
     protected Object _handleInstantiationProblem(DeserializationContext ctxt, Exception e)
         throws IOException

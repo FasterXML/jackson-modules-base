@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.module.blackbird.deser.filter;
 
-import java.io.IOException;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -37,7 +36,6 @@ public class ProblemHandlerTest extends BlackbirdTestBase
         public Object handleWeirdKey(DeserializationContext ctxt,
                 Class<?> rawKeyType, String keyValue,
                 String failureMsg)
-            throws IOException
         {
             return key;
         }
@@ -56,7 +54,6 @@ public class ProblemHandlerTest extends BlackbirdTestBase
         public Object handleWeirdNumberValue(DeserializationContext ctxt,
                 Class<?> targetType, Number n,
                 String failureMsg)
-            throws IOException
         {
             return value;
         }
@@ -75,7 +72,6 @@ public class ProblemHandlerTest extends BlackbirdTestBase
         public Object handleWeirdStringValue(DeserializationContext ctxt,
                 Class<?> targetType, String v,
                 String failureMsg)
-            throws IOException
         {
             return value;
         }
@@ -93,7 +89,6 @@ public class ProblemHandlerTest extends BlackbirdTestBase
         @Override
         public Object handleInstantiationProblem(DeserializationContext ctxt,
                 Class<?> instClass, Object argument, Throwable t)
-            throws IOException
         {
             return value;
         }
@@ -111,7 +106,6 @@ public class ProblemHandlerTest extends BlackbirdTestBase
         @Override
         public Object handleMissingInstantiator(DeserializationContext ctxt,
                 Class<?> instClass, ValueInstantiator inst, JsonParser p, String msg)
-            throws IOException
         {
             p.skipChildren();
             return value;
@@ -131,7 +125,6 @@ public class ProblemHandlerTest extends BlackbirdTestBase
         public Object handleUnexpectedToken(DeserializationContext ctxt,
                 JavaType targetType, JsonToken t, JsonParser p,
                 String failureMsg)
-            throws IOException
         {
             return value;
         }
@@ -148,7 +141,6 @@ public class ProblemHandlerTest extends BlackbirdTestBase
         public JavaType handleUnknownTypeId(DeserializationContext ctxt,
                 JavaType baseType, String subTypeId, TypeIdResolver idResolver,
                 String failureMsg)
-            throws IOException
         {
             return ctxt.constructType(raw);
         }
@@ -165,7 +157,6 @@ public class ProblemHandlerTest extends BlackbirdTestBase
         public JavaType handleMissingTypeId(DeserializationContext ctxt,
                 JavaType baseType, TypeIdResolver idResolver,
                 String failureMsg)
-            throws IOException
         {
             return ctxt.constructType(raw);
         }

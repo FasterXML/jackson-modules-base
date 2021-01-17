@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
-import java.io.IOException;
 import java.util.*;
 
 import com.fasterxml.jackson.core.*;
@@ -67,7 +66,8 @@ public final class SuperSonicBeanDeserializer
      */
 
     @Override
-    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
+    public Object deserialize(JsonParser p, DeserializationContext ctxt)
+        throws JacksonException
     {
         if (!_vanillaProcessing || (_objectIdReader != null)) {
             // should we ever get here? Just in case
@@ -159,8 +159,8 @@ public final class SuperSonicBeanDeserializer
 
     // much of below is cut'n pasted from BeanSerializer
     @Override
-    public Object deserialize(JsonParser p, DeserializationContext ctxt,
-            Object bean) throws IOException
+    public Object deserialize(JsonParser p, DeserializationContext ctxt, Object bean)
+        throws JacksonException
     {
         // [databind#631]: Assign current value, to be accessible by custom serializers
         p.setCurrentValue(bean);
@@ -235,7 +235,8 @@ public final class SuperSonicBeanDeserializer
 
     // much of below is cut'n pasted from BeanSerializer
     @Override
-    public Object deserializeFromObject(JsonParser p, DeserializationContext ctxt) throws IOException
+    public Object deserializeFromObject(JsonParser p, DeserializationContext ctxt)
+        throws JacksonException
     {
         // See BeanDeserializer.deserializeFromObject [databind#622]
         // Allow Object Id references to come in as JSON Objects as well...

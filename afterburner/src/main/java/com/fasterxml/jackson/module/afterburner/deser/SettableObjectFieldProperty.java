@@ -1,8 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.*;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 
@@ -34,8 +33,8 @@ public final class SettableObjectFieldProperty
      */
 
     @Override
-    public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
-            Object bean) throws IOException
+    public void deserializeAndSet(JsonParser p, DeserializationContext ctxt, Object bean)
+        throws JacksonException
     {
         Object value;
         if (p.hasToken(JsonToken.VALUE_NULL)) {
@@ -64,7 +63,8 @@ public final class SettableObjectFieldProperty
 
     @Override
     public Object deserializeSetAndReturn(JsonParser p,
-            DeserializationContext ctxt, Object instance) throws IOException
+            DeserializationContext ctxt, Object instance)
+        throws JacksonException
     {
         Object value;
         if (p.hasToken(JsonToken.VALUE_NULL)) {
@@ -88,7 +88,8 @@ public final class SettableObjectFieldProperty
     }
 
     @Override
-    public void set(Object bean, Object v) throws IOException {
+    public void set(Object bean, Object v)
+    {
         try {
             _propertyMutator.objectField(bean, _optimizedIndex, v);
         } catch (Throwable e) {

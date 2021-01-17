@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
-import java.io.IOException;
 import java.util.*;
 
 import com.fasterxml.jackson.core.*;
@@ -126,7 +125,8 @@ public abstract class SuperSonicBDBase
 //    public final Object deserializeFromObject(JsonParser p, DeserializationContext ctxt) throws IOException;
 
     protected final Object _deserializeDisordered(JsonParser p, DeserializationContext ctxt,
-            Object bean) throws IOException
+            Object bean)
+        throws JacksonException
     {
         for (int ix = p.currentFieldName(_fieldMatcher); ; ix = p.nextFieldName(_fieldMatcher)) {
             if (ix >= 0) {

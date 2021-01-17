@@ -1,7 +1,5 @@
 package com.fasterxml.jackson.module.blackbird.ser;
 
-import java.io.*;
-
 import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.*;
@@ -22,7 +20,6 @@ public class NullSerializationTest extends BlackbirdTestBase
     {
         @Override
         public void serialize(Object value, JsonGenerator gen, SerializerProvider provider)
-            throws IOException
         {
             gen.writeString("foobar");
         }

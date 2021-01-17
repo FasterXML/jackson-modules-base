@@ -51,7 +51,6 @@ public class TestUnknownPropertyDeserialization
         public boolean handleUnknownProperty(DeserializationContext ctxt,
                 JsonParser jp, JsonDeserializer<?> deserializer,
                 Object bean, String propertyName)
-            throws IOException, JsonProcessingException
         {
             // very simple, just to verify that we do see correct token type
             ((TestBean) bean).markUnknown(propertyName+":"+jp.currentToken().toString());
@@ -275,7 +274,7 @@ public class TestUnknownPropertyDeserialization
         ObjectMapper jsonMapper = mapperBuilder()
                 .addHandler(new DeserializationProblemHandler() {
                 @Override
-                public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer, Object beanOrClass, String propertyName) throws IOException, JsonProcessingException {
+                public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer, Object beanOrClass, String propertyName) {
                     p.skipChildren();
                     return true;
                 }

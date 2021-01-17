@@ -31,7 +31,6 @@ import org.osgi.framework.ServiceReference;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.module.osgi.OsgiJacksonModule;
 
 @RunWith(value = Parameterized.class)
 public class InjectOsgiServiceTest
@@ -92,7 +91,7 @@ public class InjectOsgiServiceTest
 
     }
 
-    private static abstract class VerifyableBean 
+    static abstract class VerifyableBean 
     {
         public String field;
         

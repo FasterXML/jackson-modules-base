@@ -41,9 +41,13 @@ public class TestCreators2 extends BlackbirdTestBase
     static class BytesDeserializer extends JsonDeserializer<byte[]>
     {
         @Override
-        public byte[] deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
+        public byte[] deserialize(JsonParser jp, DeserializationContext ctxt) {
             String str = jp.getText();
-            return str.getBytes("UTF-8");
+            try {
+                return str.getBytes("UTF-8");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

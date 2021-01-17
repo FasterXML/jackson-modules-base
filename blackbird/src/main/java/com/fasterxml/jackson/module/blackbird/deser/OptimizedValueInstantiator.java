@@ -1,15 +1,14 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
-import java.io.IOException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
 
 class OptimizedValueInstantiator extends StdValueInstantiator
 {
-    private static final long serialVersionUID = 1L;
     private final Supplier<?> _optimizedDefaultCreator;
     private final Function<Object[], Object> _optimizedArgsCreator;
 
@@ -31,7 +30,7 @@ class OptimizedValueInstantiator extends StdValueInstantiator
     }
 
     @Override
-    public Object createUsingDefault(DeserializationContext ctxt) throws IOException {
+    public Object createUsingDefault(DeserializationContext ctxt) throws JacksonException {
         if (_optimizedDefaultCreator != null) {
             try {
                 return _optimizedDefaultCreator.get();
@@ -43,7 +42,7 @@ class OptimizedValueInstantiator extends StdValueInstantiator
     }
 
     @Override
-    public Object createFromObjectWith(DeserializationContext ctxt, Object[] args) throws IOException {
+    public Object createFromObjectWith(DeserializationContext ctxt, Object[] args) throws JacksonException {
         if (_optimizedArgsCreator != null) {
             try {
                 return _optimizedArgsCreator.apply(args);

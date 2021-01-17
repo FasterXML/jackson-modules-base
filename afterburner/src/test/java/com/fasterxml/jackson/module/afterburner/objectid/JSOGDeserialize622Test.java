@@ -7,8 +7,6 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
-import java.io.IOException;
-
 /**
  * Unit test(s) for [databind#622], supporting non-scalar-Object-ids,
  * to support things like JSOG.
@@ -83,7 +81,7 @@ public class JSOGDeserialize622Test extends AfterburnerTestBase
     static class JSOGRefDeserializer extends JsonDeserializer<JSOGRef>
     {
         @Override
-        public JSOGRef deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
+        public JSOGRef deserialize(JsonParser p, DeserializationContext ctx) {
             JsonNode node = p.readValueAsTree();
             if (node.isTextual()) {
                 return new JSOGRef(node.asInt());
