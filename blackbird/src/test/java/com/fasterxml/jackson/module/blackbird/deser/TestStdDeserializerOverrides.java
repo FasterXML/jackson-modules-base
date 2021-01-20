@@ -1,7 +1,5 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.*;
@@ -29,8 +27,7 @@ public class TestStdDeserializerOverrides extends BlackbirdTestBase
         public MyStringDeserializer() { super(String.class); }
 
         @Override
-        public String deserialize(JsonParser p, DeserializationContext ctxt)
-                throws IOException, JsonProcessingException {
+        public String deserialize(JsonParser p, DeserializationContext ctxt) {
             return "Foo:"+p.getText();
         }
     }
@@ -45,7 +42,7 @@ public class TestStdDeserializerOverrides extends BlackbirdTestBase
         public DeAmpDeserializer() { super(String.class); }
 
         @Override
-        public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+        public String deserialize(JsonParser p, DeserializationContext ctxt) {
             return p.getText().replaceAll("&amp;", "&");
         }
     }

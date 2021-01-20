@@ -1,13 +1,11 @@
 package com.fasterxml.jackson.module.guice;
 
-import java.io.IOException;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -214,10 +212,9 @@ public class ObjectMapperModuleTest
                     {
                         @Override
                         public void serialize(
-                                Integer integer, JsonGenerator jsonGenerator, SerializerProvider serializerProvider
-                        ) throws IOException, JsonProcessingException
-                        {
-                            jsonGenerator.writeString(new BigInteger(String.valueOf(integer)).toString(16).toUpperCase());
+                                Integer integer, JsonGenerator g, SerializerProvider serializerProvider
+                        ) {
+                            g.writeString(new BigInteger(String.valueOf(integer)).toString(16).toUpperCase());
                         }
                     }
             );

@@ -8,8 +8,9 @@ import java.io.ByteArrayInputStream;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 
@@ -22,10 +23,10 @@ public class DataHandlerJsonDeserializer
     public DataHandlerJsonDeserializer() { super(DataHandler.class); }
 
     @Override
-    public DataHandler deserialize(JsonParser jp, DeserializationContext ctxt)
-        throws IOException, JsonProcessingException
+    public DataHandler deserialize(JsonParser p, DeserializationContext ctxt)
+        throws JacksonException
     {
-        final byte[] value = jp.getBinaryValue();
+        final byte[] value = p.getBinaryValue();
         return new DataHandler(new DataSource() {
             @Override
             public InputStream getInputStream() throws IOException {

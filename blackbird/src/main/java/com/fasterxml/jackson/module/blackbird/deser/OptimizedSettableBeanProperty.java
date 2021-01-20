@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -69,11 +68,11 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      */
 
     @Override
-    public abstract void deserializeAndSet(JsonParser jp, DeserializationContext ctxt,
-            Object arg2) throws IOException;
+    public abstract void deserializeAndSet(JsonParser p, DeserializationContext ctxt, Object arg2)
+        throws JacksonException;
 
     @Override
-    public abstract void set(Object bean, Object value) throws IOException;
+    public abstract void set(Object bean, Object value);
 
     /*
     /**********************************************************************
@@ -92,12 +91,13 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      */
 
     @Override
-    public abstract Object deserializeSetAndReturn(JsonParser jp,
-            DeserializationContext ctxt, Object instance) throws IOException;
+    public abstract Object deserializeSetAndReturn(JsonParser p,
+            DeserializationContext ctxt, Object instance)
+        throws JacksonException;
 
 
     @Override
-    public Object setAndReturn(Object instance, Object value) throws IOException {
+    public Object setAndReturn(Object instance, Object value) {
         return delegate.setAndReturn(instance, value);
     }
 
@@ -110,11 +110,9 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     /**
      * Helper method called when an exception is throw from mutator, to figure
      * out what to do.
-     *
-     * @since 2.9
      */
     protected void _reportProblem(Object bean, Object value, Throwable e)
-        throws IOException
+        throws JacksonException
     {
         if ((e instanceof IllegalAccessError)
                 || (e instanceof SecurityException)) {
@@ -132,8 +130,8 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             delegate.set(bean, value);
             return;
         }
-        if (e instanceof IOException) {
-            throw (IOException) e;
+        if (e instanceof JacksonException) {
+            throw (JacksonException) e;
         }
         if (e instanceof Error) {
             throw (Error) e;

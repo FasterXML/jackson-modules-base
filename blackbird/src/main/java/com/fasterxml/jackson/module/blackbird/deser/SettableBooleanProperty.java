@@ -1,8 +1,7 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.*;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 
@@ -30,7 +29,9 @@ final class SettableBooleanProperty
      */
 
     @Override
-    public void deserializeAndSet(JsonParser p, DeserializationContext ctxt, Object bean) throws IOException {
+    public void deserializeAndSet(JsonParser p, DeserializationContext ctxt, Object bean)
+        throws JacksonException
+    {
         boolean b;
         JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_TRUE) {
@@ -50,7 +51,8 @@ final class SettableBooleanProperty
 
     @Override
     public Object deserializeSetAndReturn(JsonParser p,
-            DeserializationContext ctxt, Object instance) throws IOException
+            DeserializationContext ctxt, Object instance)
+        throws JacksonException
     {
         JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_TRUE) {
@@ -63,7 +65,8 @@ final class SettableBooleanProperty
     }
 
     @Override
-    public void set(Object bean, Object value) throws IOException {
+    public void set(Object bean, Object value)
+    {
         // not optimal (due to boxing), but better than using reflection:
         final boolean b = ((Boolean) value).booleanValue();
         try {

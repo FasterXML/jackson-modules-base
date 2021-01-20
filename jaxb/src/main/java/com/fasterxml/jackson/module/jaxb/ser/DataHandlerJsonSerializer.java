@@ -7,8 +7,8 @@ import java.io.InputStream;
 import javax.activation.DataHandler;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.exc.WrappedIOException;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
@@ -20,8 +20,8 @@ public class DataHandlerJsonSerializer extends StdSerializer<DataHandler>
     public DataHandlerJsonSerializer() { super(DataHandler.class); }
     
     @Override
-    public void serialize(DataHandler value, JsonGenerator jgen, SerializerProvider provider)
-        throws IOException, JsonProcessingException
+    public void serialize(DataHandler value, JsonGenerator g, SerializerProvider provider)
+        throws JacksonException
     {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         /* for copy-through, a small buffer should suffice: ideally
@@ -33,19 +33,21 @@ public class DataHandlerJsonSerializer extends StdSerializer<DataHandler>
          * that.
          */
         byte[] buffer = new byte[1024 * 4];
-        InputStream in = value.getInputStream();
-        int len = in.read(buffer);
-        while (len > 0) {
-            out.write(buffer, 0, len);
-            len = in.read(buffer);
+
+        try (InputStream in = value.getInputStream()) {
+            int len = in.read(buffer);
+            while (len > 0) {
+                out.write(buffer, 0, len);
+                len = in.read(buffer);
+            }
+        } catch (IOException e) {
+            throw WrappedIOException.construct(e);
         }
-        in.close();
-        jgen.writeBinary(out.toByteArray());
+        g.writeBinary(out.toByteArray());
     }
 
     @Override
     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType typeHint)
-        throws JsonMappingException
     {
         if (visitor != null) {
             JsonArrayFormatVisitor v2 = visitor.expectArrayFormat(typeHint);

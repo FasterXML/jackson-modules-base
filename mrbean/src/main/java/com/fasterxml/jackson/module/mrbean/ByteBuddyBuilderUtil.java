@@ -25,7 +25,7 @@ final class ByteBuddyBuilderUtil {
         /**
          * Create a map with the field name as the map key and the field value as the map value
          */
-        private static HashMap<String, Object> toMap(Object o, Field[] fields) throws IllegalAccessException {
+        static HashMap<String, Object> toMap(Object o, Field[] fields) throws IllegalAccessException {
             final HashMap<String, Object> result = new HashMap<String, Object>();
             for (Field field : fields) {
                 field.setAccessible(true);

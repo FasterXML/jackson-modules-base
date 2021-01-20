@@ -1,9 +1,9 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
-import java.io.IOException;
 import java.util.function.ObjIntConsumer;
 
 import com.fasterxml.jackson.core.*;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 
@@ -31,8 +31,8 @@ final class SettableIntProperty
      */
 
     @Override
-    public void deserializeAndSet(JsonParser p, DeserializationContext ctxt,
-            Object bean) throws IOException
+    public void deserializeAndSet(JsonParser p, DeserializationContext ctxt, Object bean)
+        throws JacksonException
     {
         if (!p.isExpectedNumberIntToken()) {
             delegate.deserializeAndSet(p, ctxt, bean);
@@ -49,7 +49,7 @@ final class SettableIntProperty
     @Override
     public Object deserializeSetAndReturn(JsonParser p,
             DeserializationContext ctxt, Object instance)
-        throws IOException
+        throws JacksonException
     {
         if (p.isExpectedNumberIntToken()) {
             return setAndReturn(instance, p.getIntValue());
@@ -58,7 +58,7 @@ final class SettableIntProperty
     }
 
     @Override
-    public void set(Object bean, Object value) throws IOException {
+    public void set(Object bean, Object value) {
         // not optimal (due to boxing), but better than using reflection:
         int v = ((Number) value).intValue();
         try {

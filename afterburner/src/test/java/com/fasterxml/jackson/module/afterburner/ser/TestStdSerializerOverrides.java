@@ -1,7 +1,5 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.Version;
 
@@ -30,7 +28,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
         @Override
         public void serialize(String value, JsonGenerator gen,
-                SerializerProvider provider) throws IOException {
+                SerializerProvider provider) {
             gen.writeString("Foo:"+value);
         }
     }
@@ -41,7 +39,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
         @Override
         public void serialize(Integer value0, JsonGenerator gen,
-                SerializerProvider provider) throws IOException {
+                SerializerProvider provider) {
             int v = -value0.intValue();
             gen.writeNumber(v);
         }
@@ -53,7 +51,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
         @Override
         public void serialize(Long value0, JsonGenerator gen,
-                SerializerProvider provider) throws IOException {
+                SerializerProvider provider) {
             long v = -value0.longValue();
             gen.writeNumber(v);
         }

@@ -48,14 +48,13 @@ public class TestUnknownPropertyDeserialization
     {
         @Override
         public boolean handleUnknownProperty(DeserializationContext ctxt,
-                JsonParser jp, JsonDeserializer<?> deserializer,
+                JsonParser p, JsonDeserializer<?> deserializer,
                 Object bean, String propertyName)
-            throws IOException, JsonProcessingException
         {
             // very simple, just to verify that we do see correct token type
-            ((TestBean) bean).markUnknown(propertyName+":"+jp.currentToken().toString());
+            ((TestBean) bean).markUnknown(propertyName+":"+p.currentToken().toString());
             // Yup, we are good to go; must skip whatever value we'd have:
-            jp.skipChildren();
+            p.skipChildren();
             return true;
         }
     }
@@ -275,7 +274,7 @@ public class TestUnknownPropertyDeserialization
         ObjectMapper jsonMapper = afterburnerMapperBuilder()
                 .addHandler(new DeserializationProblemHandler() {
                 @Override
-                public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer, Object beanOrClass, String propertyName) throws IOException, JsonProcessingException {
+                public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer, Object beanOrClass, String propertyName) {
                     p.skipChildren();
                     return true;
                 }

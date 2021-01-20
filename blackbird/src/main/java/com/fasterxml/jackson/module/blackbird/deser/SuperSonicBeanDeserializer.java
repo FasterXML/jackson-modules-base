@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
-import java.io.IOException;
 import java.util.*;
 
 import com.fasterxml.jackson.core.*;
@@ -22,11 +21,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
     protected final SerializedString[] _orderedPropertyNames;
 
     /**
-<<<<<<< HEAD
      * Properties matching names in {@code _orderedPropertyNames},
-=======
-     * Properties matching names in {@code #_orderedPropertyNames},
->>>>>>> 2.12
      * assigned after resolution when property instances are finalized.
      */
     protected SettableBeanProperty[] _orderedProperties;
@@ -133,7 +128,8 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
     }
 
     @Override
-    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
+    public Object deserialize(JsonParser p, DeserializationContext ctxt)
+        throws JacksonException
     {
         if (!_vanillaProcessing || (_objectIdReader != null)) {
             // should we ever get here? Just in case
@@ -195,7 +191,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
     // much of below is cut'n pasted from BeanSerializer
     @Override
     public final Object deserialize(JsonParser p, DeserializationContext ctxt, Object bean)
-        throws IOException
+        throws JacksonException
     {
         // [databind#631]: Assign current value, to be accessible by custom deserializers
         p.setCurrentValue(bean);
@@ -251,7 +247,8 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
 
     // much of below is cut'n pasted from BeanSerializer
     @Override
-    public final Object deserializeFromObject(JsonParser p, DeserializationContext ctxt) throws IOException
+    public final Object deserializeFromObject(JsonParser p, DeserializationContext ctxt)
+        throws JacksonException
     {
         // See BeanDeserializer.deserializeFromObject [databind#622]
         // Allow Object Id references to come in as JSON Objects as well...

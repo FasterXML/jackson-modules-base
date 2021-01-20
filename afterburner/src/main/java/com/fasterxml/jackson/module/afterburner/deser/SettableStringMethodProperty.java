@@ -1,7 +1,5 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
@@ -35,7 +33,8 @@ public final class SettableStringMethodProperty
 
     // Copied from StdDeserializer.StringDeserializer:
     @Override
-    public void deserializeAndSet(JsonParser p, DeserializationContext ctxt, Object bean) throws IOException
+    public void deserializeAndSet(JsonParser p, DeserializationContext ctxt, Object bean)
+        throws JacksonException
     {
         if (!p.hasToken(JsonToken.VALUE_STRING)) {
             delegate.deserializeAndSet(p, ctxt, bean);
@@ -50,7 +49,8 @@ public final class SettableStringMethodProperty
     }
 
     @Override
-    public Object deserializeSetAndReturn(JsonParser p, DeserializationContext ctxt, Object instance) throws IOException
+    public Object deserializeSetAndReturn(JsonParser p, DeserializationContext ctxt, Object instance)
+        throws JacksonException
     {
         if (p.hasToken(JsonToken.VALUE_STRING)) {
             return setAndReturn(instance, p.getText());
@@ -59,7 +59,8 @@ public final class SettableStringMethodProperty
     }
 
     @Override
-    public void set(Object bean, Object value) throws IOException {
+    public void set(Object bean, Object value)
+    {
         final String text = (String) value;
         try {
             _propertyMutator.stringSetter(bean, _optimizedIndex, text);
