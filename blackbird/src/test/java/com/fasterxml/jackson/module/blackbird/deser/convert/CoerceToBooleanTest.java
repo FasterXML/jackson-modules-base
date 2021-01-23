@@ -167,8 +167,7 @@ public class CoerceToBooleanTest extends BlackbirdTestBase
             verifyException(e, " to `");
             verifyException(e, "` value");
 
-            assertNotNull(e.getProcessor());
-            assertSame(p, e.getProcessor());
+            assertSame(p, e.processor());
 
             assertToken(JsonToken.VALUE_STRING, p.currentToken());
             assertEquals(unquotedValue, p.getText());
@@ -398,7 +397,7 @@ public class CoerceToBooleanTest extends BlackbirdTestBase
     {
         verifyException(e, "Cannot coerce ", "Cannot deserialize value of type ");
 
-        JsonParser p = (JsonParser) e.getProcessor();
+        JsonParser p = (JsonParser) e.processor();
 
         assertToken(tokenType, p.currentToken());
 

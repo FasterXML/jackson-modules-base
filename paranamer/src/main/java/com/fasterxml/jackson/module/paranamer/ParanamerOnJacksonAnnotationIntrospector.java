@@ -53,7 +53,7 @@ public class ParanamerOnJacksonAnnotationIntrospector
     }
 
     @Override
-    public String findImplicitPropertyName(AnnotatedMember param) {
+    public String findImplicitPropertyName(MapperConfig<?> config, AnnotatedMember param) {
         if (param instanceof AnnotatedParameter) {
             return _paranamer.findParameterName((AnnotatedParameter) param);
         }
