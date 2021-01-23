@@ -3,8 +3,9 @@ package com.fasterxml.jackson.module.mrbean;
 import java.util.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
 public class TestSimpleTypes extends BaseTest
@@ -58,7 +59,7 @@ public class TestSimpleTypes extends BaseTest
         try {
             MAPPER.readValue("{}", JustGetAndSet.class);
             fail("Should not pass");
-        } catch (JsonMappingException e) {
+        } catch (InvalidDefinitionException e) {
             verifyException(e, "Unrecognized abstract method");
         }
 

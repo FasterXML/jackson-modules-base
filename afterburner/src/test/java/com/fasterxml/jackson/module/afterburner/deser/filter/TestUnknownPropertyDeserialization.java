@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 /**
@@ -135,7 +136,8 @@ public class TestUnknownPropertyDeserialization
     {
         try {
             MAPPER.readValue(new StringReader(JSON_UNKNOWN_FIELD), TestBean.class);
-        } catch (JsonMappingException jex) {
+            fail("Should not pass");
+        } catch (UnrecognizedPropertyException jex) {
             verifyException(jex, "Unrecognized property \"foo\"");
         }
     }
@@ -179,12 +181,7 @@ public class TestUnknownPropertyDeserialization
         final ObjectMapper mapper = afterburnerMapperBuilder()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .build();
-        TestBean result = null;
-        try {
-            result = mapper.readValue(new StringReader(JSON_UNKNOWN_FIELD), TestBean.class);
-        } catch (JsonMappingException jex) {
-            fail("Did not expect a problem, got: "+jex.getMessage());
-        }
+        TestBean result = mapper.readValue(new StringReader(JSON_UNKNOWN_FIELD), TestBean.class);
         assertNotNull(result);
         assertEquals(1, result._a);
         assertNull(result._unknown);
@@ -242,7 +239,8 @@ public class TestUnknownPropertyDeserialization
         // but "d" is not defined, so should still error
         try {
             MAPPER.readValue("{\"a\":1,\"b\":2,\"c\":3,\"d\":4 }", ImplicitIgnores.class);            
-        } catch (JsonMappingException e) {
+            fail("Should not pass");
+        } catch (UnrecognizedPropertyException e) {
             verifyException(e, "Unrecognized property \"d\"");
         }
     }

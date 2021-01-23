@@ -2,8 +2,8 @@ package com.fasterxml.jackson.module.mrbean;
 
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.util.ClassUtil;
@@ -61,6 +61,7 @@ public class TestSimpleMaterializedInterfaces
     }
 
     public interface BeanWithDefaultForOtherInterface extends Bean, OtherInterface {
+        @Override
         public default boolean anyValuePresent() {
             return getX() > 0 || getA() != null;
         }
@@ -243,7 +244,7 @@ public class TestSimpleMaterializedInterfaces
         try {
             mapper.readValue("{\"x\":3}", NonPublicBean.class);
             fail("Should have thrown an exception");
-        } catch (JsonMappingException e) {
+        } catch (InvalidDefinitionException e) {
             verifyException(e, "is not public");
         }
     }

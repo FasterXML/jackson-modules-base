@@ -718,7 +718,7 @@ public class JaxbAnnotationIntrospector
 
     @Override
     public JavaType refineSerializationType(final MapperConfig<?> config,
-            final Annotated a, final JavaType baseType) throws JsonMappingException
+            final Annotated a, final JavaType baseType)
     {
         Class<?> serClass = _getTypeFromXmlElement(a);
         if (serClass == null) {
@@ -741,7 +741,7 @@ public class JaxbAnnotationIntrospector
             try {
                 return tf.constructGeneralizedType(baseType, serClass);
             } catch (IllegalArgumentException iae) {
-                throw new JsonMappingException(null,
+                throw DatabindException.from((JsonParser) null,
                         String.format("Failed to widen type %s with annotation (value %s), from '%s': %s",
                                 baseType, serClass.getName(), a.getName(), iae.getMessage()),
                                 iae);
@@ -761,7 +761,7 @@ public class JaxbAnnotationIntrospector
                     try {
                        contentType = tf.constructGeneralizedType(contentType, serClass);
                     } catch (IllegalArgumentException iae) {
-                        throw new JsonMappingException(null,
+                        throw DatabindException.from((JsonParser)null,
                                 String.format("Failed to widen value type of %s with concrete-type annotation (value %s), from '%s': %s",
                                         baseType, serClass.getName(), a.getName(), iae.getMessage()),
                                         iae);
@@ -952,7 +952,7 @@ public class JaxbAnnotationIntrospector
 
     @Override
     public JavaType refineDeserializationType(final MapperConfig<?> config,
-            final Annotated a, final JavaType baseType) throws JsonMappingException
+            final Annotated a, final JavaType baseType)
     {
         Class<?> deserClass = _getTypeFromXmlElement(a);
         if (deserClass == null) {
@@ -973,7 +973,7 @@ public class JaxbAnnotationIntrospector
             try {
                 return tf.constructSpecializedType(baseType, deserClass);
             } catch (IllegalArgumentException iae) {
-                throw new JsonMappingException(null,
+                throw DatabindException.from((JsonParser) null,
                         String.format("Failed to narrow type %s with annotation (value %s), from '%s': %s",
                                 baseType, deserClass.getName(), a.getName(), iae.getMessage()),
                                 iae);
@@ -991,7 +991,7 @@ public class JaxbAnnotationIntrospector
                    contentType = tf.constructSpecializedType(contentType, deserClass);
                    return baseType.withContentType(contentType);
                 } catch (IllegalArgumentException iae) {
-                    throw new JsonMappingException(null,
+                    throw DatabindException.from((JsonParser) null,
                             String.format("Failed to narrow type %s with annotation (value %s), from '%s': %s",
                                     baseType, deserClass.getName(), a.getName(), iae.getMessage()),
                                     iae);

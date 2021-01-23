@@ -10,6 +10,9 @@ import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 /**
@@ -204,7 +207,7 @@ public class TestCreators2 extends BlackbirdTestBase
         try {
             MAPPER.readValue("{}", BustedCtor.class);
             fail("Expected exception");
-        } catch (JsonMappingException e) {
+        } catch (ValueInstantiationException e) {
             verifyException(e, ": foobar");
             // also: should have nested exception
             Throwable t = e.getCause();
@@ -248,9 +251,9 @@ public class TestCreators2 extends BlackbirdTestBase
         try {
             MAPPER.readValue("{ \"name\":\"foobar\" }", BeanFor438.class);
             fail("Should have failed");
-        } catch (Exception e) {
-            if (!(e instanceof JsonMappingException)) {
-                fail("Should have received JsonMappingException, caught "+e.getClass().getName());
+        } catch (JacksonException e) {
+            if (!(e instanceof ValueInstantiationException)) {
+                fail("Should have received ValueInstantiationException, caught "+e.getClass().getName());
             }
             verifyException(e, "don't like that name");
             // Ok: also, let's ensure root cause is directly linked, without other extra wrapping:
@@ -290,7 +293,7 @@ public class TestCreators2 extends BlackbirdTestBase
         try {
             MAPPER.readValue("{\"bar\":\"x\"}", BrokenCreatorBean.class);
             fail("Should have caught duplicate creator parameters");
-        } catch (JsonMappingException e) {
+        } catch (InvalidDefinitionException e) {
             verifyException(e, "duplicate creator property \"bar\"");
         }
     }
@@ -301,13 +304,12 @@ public class TestCreators2 extends BlackbirdTestBase
         assertEquals("foo", value.foo);
     }
 
-    // for [JACKSON-575]
     public void testIgnoredSingleArgCtor() throws Exception
     {
         try {
             MAPPER.readValue(quote("abc"), IgnoredCtor.class);
             fail("Should have caught missing constructor problem");
-        } catch (JsonMappingException e) {
+        } catch (MismatchedInputException e) {
             verifyException(e, "no String-argument constructor/factory method");
         }
     }
@@ -321,7 +323,6 @@ public class TestCreators2 extends BlackbirdTestBase
         assertEquals(Integer.valueOf(3), impl.props.get("a"));
     }
 
-    // [JACKSON-700]
     public void testCreatorProperties() throws Exception
     {
         Issue700Bean value = MAPPER.readValue("{ \"item\" : \"foo\" }", Issue700Bean.class);

@@ -96,7 +96,6 @@ public final class SuperSonicUnrolledDeserializer
 
     @Override
     public void resolve(DeserializationContext ctxt)
-        throws JsonMappingException
     {
         super.resolve(ctxt);
         // 19-Oct-2017, tatu: Not sure why but seems to occur sometimes...

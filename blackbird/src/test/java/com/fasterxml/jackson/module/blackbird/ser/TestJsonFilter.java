@@ -3,6 +3,7 @@ package com.fasterxml.jackson.module.blackbird.ser;
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.*;
 
@@ -94,10 +95,10 @@ public class TestJsonFilter extends BlackbirdTestBase
         try {
             MAPPER.writeValueAsString(new Bean());
             fail("Should have failed without configured filter");
-        } catch (JsonMappingException e) { // should be resolved to a MappingException (internally may be something else)
+        } catch (InvalidDefinitionException e) {
             verifyException(e, "Cannot resolve PropertyFilter with id 'RootFilter'");
         }
-        
+
         // but when changing behavior, should work difference
         SimpleFilterProvider fp = new SimpleFilterProvider().setFailOnUnknownId(false);
         ObjectMapper mapper = mapperBuilder()

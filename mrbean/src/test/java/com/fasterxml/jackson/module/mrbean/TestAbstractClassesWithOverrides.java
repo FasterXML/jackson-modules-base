@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.mrbean;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
 public class TestAbstractClassesWithOverrides
@@ -147,21 +147,21 @@ public class TestAbstractClassesWithOverrides
         try {
             mapper.readValue("{}", StringlessCoffeeBean.class);
             fail("Should not pass");
-        } catch (JsonMappingException e) {
+        } catch (InvalidDefinitionException e) {
             verifyException(e, "Unrecognized abstract method 'toString'");
         }
 
         try {
             mapper.readValue("{}", UnroastableCoffeeBean.class);
             fail("Should not pass");
-        } catch (JsonMappingException e) {
+        } catch (InvalidDefinitionException e) {
             verifyException(e, "Unrecognized abstract method 'roast'");
         }
 
         try {
             mapper.readValue("{}", CoffeeBeanLackingPublicMethod.class);
             fail("Should not pass");
-        } catch (JsonMappingException e) {
+        } catch (InvalidDefinitionException e) {
             verifyException(e, "Unrecognized abstract method 'protectedAbstractMethod'");
         }
     }

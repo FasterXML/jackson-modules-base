@@ -20,6 +20,7 @@ import java.lang.invoke.MethodType;
  * once Jackson targets Java >= 9.
  */
 public class ReflectionHack {
+    @SuppressWarnings("synthetic-access")
     public static Lookup privateLookupIn(Class<?> lookup, MethodHandles.Lookup orig) throws IllegalAccessException {
         if (Java9Up.FACTORY != null) {
             return Java9Up.privateLookupIn(lookup, orig);

@@ -328,9 +328,9 @@ public class PropertyAccessorCollector
 
     private static class MethodAppender<T extends OptimizedBeanPropertyWriter<T>> extends AbstractDelegatingAppender<T> {
 
-        private final TypeDescription beanClassDescription;
-        private final List<T> props;
-        private final MethodReturn methodReturn;
+        final TypeDescription beanClassDescription;
+        final List<T> props;
+        final MethodReturn methodReturn;
 
         MethodAppender(TypeDescription beanClassDescription, List<T> props, MethodReturn methodReturn){
             super(props);

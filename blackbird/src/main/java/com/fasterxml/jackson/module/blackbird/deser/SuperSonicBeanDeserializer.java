@@ -95,7 +95,6 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
      */
     @Override
     public void resolve(DeserializationContext ctxt)
-        throws JsonMappingException
     {
         super.resolve(ctxt);
         // Ok, now; need to find actual property instances to go with order

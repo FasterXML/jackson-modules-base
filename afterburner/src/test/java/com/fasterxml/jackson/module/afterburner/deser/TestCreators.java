@@ -1,14 +1,15 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
+import java.util.HashMap;
+import java.util.TreeMap;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
-import java.util.HashMap;
-import java.util.TreeMap;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 /**
  * Unit tests for verifying that it is possible to annotate
@@ -539,7 +540,8 @@ public class TestCreators extends AfterburnerTestBase
     {
         try {
             /*BrokenBean bean =*/ MAPPER.readValue("{ \"x\" : 42 }", BrokenBean.class);
-        } catch (JsonMappingException je) {
+            fail("Should not pass");
+        } catch (InvalidDefinitionException je) {
             verifyException(je, "has no property name");
         }
     }

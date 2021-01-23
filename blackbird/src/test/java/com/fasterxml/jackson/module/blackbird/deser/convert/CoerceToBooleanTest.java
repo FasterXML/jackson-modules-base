@@ -91,7 +91,7 @@ public class CoerceToBooleanTest extends BlackbirdTestBase
         try {
             reader.readValue(aposToQuotes("{'booleanValue':''}"));
             fail("Expected failure for boolean + empty String");
-        } catch (JsonMappingException e) {
+        } catch (MismatchedInputException e) {
             verifyException(e, "Cannot coerce `null` to `boolean`");
             verifyException(e, "FAIL_ON_NULL_FOR_PRIMITIVES");
         }

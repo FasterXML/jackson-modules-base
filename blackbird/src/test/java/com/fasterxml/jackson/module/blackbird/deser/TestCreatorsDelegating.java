@@ -78,12 +78,7 @@ public class TestCreatorsDelegating extends BlackbirdTestBase
                 .injectableValues(new InjectableValues.Std()
                         .addValue(String.class, "Pooka"))
                 .build();
-        CtorBean711 bean = null;
-        try {
-            bean = mapper.readValue("38", CtorBean711.class);
-        } catch (JsonMappingException e) {
-            fail("Did not expect problems, got: "+e.getMessage());
-        }
+        CtorBean711 bean = mapper.readValue("38", CtorBean711.class);
         assertEquals(38, bean.age);
         assertEquals("Pooka", bean.name);
     }
@@ -94,12 +89,7 @@ public class TestCreatorsDelegating extends BlackbirdTestBase
                 .injectableValues(new InjectableValues.Std()
                         .addValue(String.class, "Fygar"))
                 .build();
-        FactoryBean711 bean = null;
-        try {
-            bean = mapper.readValue("38", FactoryBean711.class);
-        } catch (JsonMappingException e) {
-            fail("Did not expect problems, got: "+e.getMessage());
-        }
+        FactoryBean711 bean = mapper.readValue("38", FactoryBean711.class);
         assertEquals(38, bean.age);
         assertEquals("Fygar", bean.name1);
         assertEquals("Fygar", bean.name2);

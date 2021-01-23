@@ -88,7 +88,7 @@ public abstract class SuperSonicBDBase
      * properties.
      */
     @Override
-    public void resolve(DeserializationContext ctxt) throws JsonMappingException
+    public void resolve(DeserializationContext ctxt)
     {
         super.resolve(ctxt);
         // Ok, now; need to find actual property instances to go with order

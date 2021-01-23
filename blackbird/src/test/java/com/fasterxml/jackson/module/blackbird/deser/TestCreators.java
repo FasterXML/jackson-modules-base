@@ -5,7 +5,7 @@ import java.util.*;
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.databind.*;
-
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 /**
@@ -475,7 +475,8 @@ public class TestCreators extends BlackbirdTestBase
     {
         try {
             /*BrokenBean bean =*/ MAPPER.readValue("{ \"x\" : 42 }", BrokenBean.class);
-        } catch (JsonMappingException je) {
+            fail("Should not pass");
+        } catch (InvalidDefinitionException je) {
             verifyException(je, "has no property name");
         }
     }

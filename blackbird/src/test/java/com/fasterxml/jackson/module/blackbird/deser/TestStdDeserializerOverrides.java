@@ -96,8 +96,7 @@ public class TestStdDeserializerOverrides extends BlackbirdTestBase
                             public JsonDeserializer<?> findBeanDeserializer(
                                     JavaType type,
                                     DeserializationConfig config,
-                                    BeanDescription beanDesc)
-                                    throws JsonMappingException {
+                                    BeanDescription beanDesc) {
                                 if (type.hasRawClass(String.class)) {
                                     return new DeAmpDeserializer();
                                 }
