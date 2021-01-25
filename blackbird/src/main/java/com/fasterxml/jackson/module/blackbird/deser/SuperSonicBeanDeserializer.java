@@ -170,7 +170,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
                 if (p.currentToken() == JsonToken.END_OBJECT) {
                     return bean;
                 }
-                // we likely point to FIELD_NAME, so can just call parent impl
+                // we likely point to PROPERTY_NAME, so can just call parent impl
                 return super.deserialize(p, ctxt, bean);
             }
             p.nextToken(); // skip field, returns value token
@@ -209,7 +209,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
             if (!p.nextFieldName(_orderedPropertyNames[0])) {
                 return super.deserialize(p,  ctxt, bean);
             }
-        } else if (!p.hasToken(JsonToken.FIELD_NAME)
+        } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
                 || !prop.getName().equals(p.currentName())) {
             // no, something funky, use base impl for special cases
             return super.deserialize(p,  ctxt, bean);
@@ -226,7 +226,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
                 if (p.hasToken(JsonToken.END_OBJECT)) {
                     return bean;
                 }
-                // we likely point to FIELD_NAME, so can just call parent impl
+                // we likely point to PROPERTY_NAME, so can just call parent impl
                 return super.deserialize(p, ctxt, bean);
             }
             prop = _orderedProperties[i];
@@ -252,7 +252,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         // See BeanDeserializer.deserializeFromObject [databind#622]
         // Allow Object Id references to come in as JSON Objects as well...
         if ((_objectIdReader != null) && _objectIdReader.maySerializeAsObject()) {
-            if (p.hasTokenId(JsonTokenId.ID_FIELD_NAME)
+            if (p.hasTokenId(JsonTokenId.ID_PROPERTY_NAME)
                     && _objectIdReader.isValidReferencePropertyName(p.currentName(), p)) {
                 return deserializeFromObjectId(p, ctxt);
             }
@@ -288,7 +288,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
             if (!p.nextFieldName(_orderedPropertyNames[0])) {
                 return super.deserialize(p,  ctxt, bean);
             }
-        } else if (!p.hasToken(JsonToken.FIELD_NAME)
+        } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
                 || !prop.getName().equals(p.currentName())) {
             return super.deserialize(p,  ctxt, bean);
         }
@@ -307,7 +307,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
                 if (p.hasToken(JsonToken.END_OBJECT)) {
                     return bean;
                 }
-                // we likely point to FIELD_NAME, so can just call parent impl
+                // we likely point to PROPERTY_NAME, so can just call parent impl
                 return super.deserialize(p, ctxt, bean);
             }
             p.nextToken(); // skip field, returns value token

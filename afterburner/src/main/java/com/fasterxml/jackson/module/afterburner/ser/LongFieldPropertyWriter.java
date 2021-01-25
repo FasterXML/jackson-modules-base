@@ -50,49 +50,51 @@ public final class LongFieldPropertyWriter
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Overrides
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public final void serializeAsField(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
+    public final void serializeAsField(Object bean, JsonGenerator g, SerializerProvider prov)
+        throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsField(bean, gen, prov);
+            fallbackWriter.serializeAsField(bean, g, prov);
             return;
         }
         long value;
         try {
             value = _propertyAccessor.longField(bean, _propertyIndex);
         } catch (Throwable t) {
-            _handleProblem(bean, gen, prov, t, false);
+            _handleProblem(bean, g, prov, t, false);
             return;
         }
         if (!_suppressableSet || _suppressableLong != value) {
-            gen.writeFieldName(_fastName);
-            gen.writeNumber(value);
+            g.writeName(_fastName);
+            g.writeNumber(value);
         }
     }
 
     @Override
-    public final void serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
+    public final void serializeAsElement(Object bean, JsonGenerator g, SerializerProvider prov)
+        throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsElement(bean, gen, prov);
+            fallbackWriter.serializeAsElement(bean, g, prov);
             return;
         }
         long value;
         try {
             value = _propertyAccessor.longField(bean, _propertyIndex);
         } catch (Throwable t) {
-            _handleProblem(bean, gen, prov, t, false);
+            _handleProblem(bean, g, prov, t, false);
             return;
         }
         if (!_suppressableSet || _suppressableLong != value) {
-            gen.writeNumber(value);
+            g.writeNumber(value);
         } else { // important: MUST output a placeholder
-            serializeAsPlaceholder(bean, gen, prov);
+            serializeAsPlaceholder(bean, g, prov);
         }
     }
 }

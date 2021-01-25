@@ -104,23 +104,24 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
     public abstract BeanPropertyWriter withSerializer(JsonSerializer<Object> ser);
 
     @Override
-    public abstract void serializeAsField(Object bean, JsonGenerator jgen, SerializerProvider prov) throws Exception;
+    public abstract void serializeAsField(Object bean, JsonGenerator g, SerializerProvider prov) throws Exception;
 
     @Override
-    public abstract void serializeAsElement(Object bean, JsonGenerator jgen, SerializerProvider prov) throws Exception;
+    public abstract void serializeAsElement(Object bean, JsonGenerator g, SerializerProvider prov) throws Exception;
 
     // note: synchronized used to try to minimize race conditions; also, should NOT
     // be a performance problem
-    protected synchronized void _handleProblem(Object bean, JsonGenerator gen, SerializerProvider prov,
-            Throwable t, boolean element) throws Exception
+    protected synchronized void _handleProblem(Object bean, JsonGenerator g, SerializerProvider prov,
+            Throwable t, boolean element)
+        throws Exception
     {
         if ((t instanceof IllegalAccessError)
                 || (t instanceof SecurityException)) {
             _reportProblem(bean, t);
             if (element) {
-                fallbackWriter.serializeAsElement(bean, gen, prov);
+                fallbackWriter.serializeAsElement(bean, g, prov);
             } else {
-                fallbackWriter.serializeAsField(bean, gen, prov);
+                fallbackWriter.serializeAsField(bean, g, prov);
             }
             return;
         }

@@ -4,7 +4,8 @@ import java.util.*;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.io.SerializedString;
-import com.fasterxml.jackson.core.sym.FieldNameMatcher;
+import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.*;
 import com.fasterxml.jackson.databind.deser.impl.BeanPropertyMap;
@@ -139,10 +140,10 @@ public abstract class SuperSonicBDBase
                 }
                 continue;
             }
-            if (ix == FieldNameMatcher.MATCH_END_OBJECT) {
+            if (ix == PropertyNameMatcher.MATCH_END_OBJECT) {
                 return bean;
             }
-            if (ix != FieldNameMatcher.MATCH_UNKNOWN_NAME) {
+            if (ix != PropertyNameMatcher.MATCH_UNKNOWN_NAME) {
                 return _handleUnexpectedWithin(p, ctxt, bean);
             }
             p.nextToken();

@@ -37,33 +37,34 @@ public final class StringMethodPropertyWriter
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Overrides
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public final void serializeAsField(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
+    public final void serializeAsField(Object bean, JsonGenerator g, SerializerProvider prov)
+        throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsField(bean, gen, prov);
+            fallbackWriter.serializeAsField(bean, g, prov);
             return;
         }
         String value;
         try {
             value = _propertyAccessor.stringGetter(bean, _propertyIndex);
         } catch (Throwable t) {
-            _handleProblem(bean, gen, prov, t, false);
+            _handleProblem(bean, g, prov, t, false);
             return;
         }
         // Null (etc) handling; copied from super-class impl
         if (value == null) {
             if (_nullSerializer != null) {
-                gen.writeFieldName(_fastName);
-                _nullSerializer.serialize(null, gen, prov);
+                g.writeName(_fastName);
+                _nullSerializer.serialize(null, g, prov);
             } else if (!_suppressNulls) {
-                gen.writeFieldName(_fastName);
-                prov.defaultSerializeNullValue(gen);
+                g.writeName(_fastName);
+                prov.defaultSerializeNullValue(g);
             }
             return;
         }
@@ -76,15 +77,16 @@ public final class StringMethodPropertyWriter
                 return;
             }
         }
-        gen.writeFieldName(_fastName);
-        gen.writeString(value);
+        g.writeName(_fastName);
+        g.writeString(value);
     }
 
     @Override
-    public final void serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
+    public final void serializeAsElement(Object bean, JsonGenerator g, SerializerProvider prov)
+        throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsElement(bean, gen, prov);
+            fallbackWriter.serializeAsElement(bean, g, prov);
             return;
         }
 
@@ -92,29 +94,29 @@ public final class StringMethodPropertyWriter
         try {
             value = _propertyAccessor.stringGetter(bean, _propertyIndex);
         } catch (Throwable t) {
-            _handleProblem(bean, gen, prov, t, true);
+            _handleProblem(bean, g, prov, t, true);
             return;
         }
         // Null (etc) handling; copied from super-class impl
         if (value == null) {
             if (_suppressNulls) {
-                serializeAsPlaceholder(bean, gen, prov);
+                serializeAsPlaceholder(bean, g, prov);
             } else {
-                prov.defaultSerializeNullValue(gen);
+                prov.defaultSerializeNullValue(g);
             }
             return;
         }
         if (_suppressableValue != null) {
             if (MARKER_FOR_EMPTY == _suppressableValue) {
                 if (value.length() == 0) {
-                    serializeAsPlaceholder(bean, gen, prov);
+                    serializeAsPlaceholder(bean, g, prov);
                     return;
                 }
             } else if (_suppressableValue.equals(value)) {
-                serializeAsPlaceholder(bean, gen, prov);
+                serializeAsPlaceholder(bean, g, prov);
                 return;
             }
         }
-        gen.writeString(value);
+        g.writeString(value);
     }
 }

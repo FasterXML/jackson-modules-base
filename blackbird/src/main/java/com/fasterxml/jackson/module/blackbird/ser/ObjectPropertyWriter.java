@@ -36,33 +36,34 @@ final class ObjectPropertyWriter
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Overrides
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public final void serializeAsField(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
+    public final void serializeAsField(Object bean, JsonGenerator g, SerializerProvider prov)
+        throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsField(bean, gen, prov);
+            fallbackWriter.serializeAsField(bean, g, prov);
             return;
         }
         Object value;
         try {
             value = _acc.apply(bean);
         } catch (Throwable t) {
-            _handleProblem(bean, gen, prov, t, false);
+            _handleProblem(bean, g, prov, t, false);
             return;
         }
         // Null (etc) handling; copied from super-class impl
         if (value == null) {
             if (_nullSerializer != null) {
-                gen.writeFieldName(_fastName);
-                _nullSerializer.serialize(null, gen, prov);
+                g.writeName(_fastName);
+                _nullSerializer.serialize(null, g, prov);
             } else if (!_suppressNulls) {
-                gen.writeFieldName(_fastName);
-                prov.defaultSerializeNullValue(gen);
+                g.writeName(_fastName);
+                prov.defaultSerializeNullValue(g);
             }
             return;
         }
@@ -86,40 +87,41 @@ final class ObjectPropertyWriter
         }
         if (value == bean) {
             // three choices: exception; handled by call; or pass-through
-            if (_handleSelfReference(bean, gen, prov, ser)) {
+            if (_handleSelfReference(bean, g, prov, ser)) {
                 return;
             }
         }
-        gen.writeFieldName(_fastName);
+        g.writeName(_fastName);
         if (_typeSerializer == null) {
-            ser.serialize(value, gen, prov);
+            ser.serialize(value, g, prov);
         } else {
-            ser.serializeWithType(value, gen, prov, _typeSerializer);
+            ser.serializeWithType(value, g, prov, _typeSerializer);
         }
     }
 
     @Override
-    public final void serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
+    public final void serializeAsElement(Object bean, JsonGenerator g, SerializerProvider prov)
+        throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsElement(bean, gen, prov);
+            fallbackWriter.serializeAsElement(bean, g, prov);
             return;
         }
         Object value;
         try {
             value = _acc.apply(bean);
         } catch (Throwable t) {
-            _handleProblem(bean, gen, prov, t, true);
+            _handleProblem(bean, g, prov, t, true);
             return;
         }
         // Null (etc) handling; copied from super-class impl
         if (value == null) {
             if (_nullSerializer != null) {
-                _nullSerializer.serialize(null, gen, prov);
+                _nullSerializer.serialize(null, g, prov);
             } else if (_suppressNulls) {
-                serializeAsPlaceholder(bean, gen, prov);
+                serializeAsPlaceholder(bean, g, prov);
             } else {
-                prov.defaultSerializeNullValue(gen);
+                prov.defaultSerializeNullValue(g);
             }
             return;
         }
@@ -135,24 +137,24 @@ final class ObjectPropertyWriter
         if (_suppressableValue != null) {
             if (MARKER_FOR_EMPTY == _suppressableValue) {
                 if (ser.isEmpty(prov, value)) {
-                    serializeAsPlaceholder(bean, gen, prov);
+                    serializeAsPlaceholder(bean, g, prov);
                     return;
                 }
             } else if (_suppressableValue.equals(value)) {
-                serializeAsPlaceholder(bean, gen, prov);
+                serializeAsPlaceholder(bean, g, prov);
                 return;
             }
         }
         if (value == bean) {
             // three choices: exception; handled by call; or pass-through
-            if (_handleSelfReference(bean, gen, prov, ser)) {
+            if (_handleSelfReference(bean, g, prov, ser)) {
                 return;
             }
         }
         if (_typeSerializer == null) {
-            ser.serialize(value, gen, prov);
+            ser.serialize(value, g, prov);
         } else {
-            ser.serializeWithType(value, gen, prov, _typeSerializer);
+            ser.serializeWithType(value, g, prov, _typeSerializer);
         }
     }
 }

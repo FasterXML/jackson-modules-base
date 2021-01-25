@@ -181,7 +181,7 @@ public final class SuperSonicBeanDeserializer
                     if (!p.nextFieldName(_orderedPropertyNames[0])) {
                         return _deserializeDisordered(p, ctxt, bean);
                     }
-                } else if (!p.hasToken(JsonToken.FIELD_NAME)
+                } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
                         || !prop.getName().equals(p.currentName())) {
                     return _deserializeDisordered(p, ctxt, bean);
                 }
@@ -241,7 +241,7 @@ public final class SuperSonicBeanDeserializer
         // See BeanDeserializer.deserializeFromObject [databind#622]
         // Allow Object Id references to come in as JSON Objects as well...
         if ((_objectIdReader != null) && _objectIdReader.maySerializeAsObject()) {
-            if (p.hasTokenId(JsonTokenId.ID_FIELD_NAME)
+            if (p.hasTokenId(JsonTokenId.ID_PROPERTY_NAME)
                     && _objectIdReader.isValidReferencePropertyName(p.currentName(), p)) {
                 return deserializeFromObjectId(p, ctxt);
             }
@@ -279,7 +279,7 @@ public final class SuperSonicBeanDeserializer
                     if (!p.nextFieldName(_orderedPropertyNames[0])) {
                         return _deserializeDisordered(p, ctxt, bean);
                     }
-                } else if (!p.hasToken(JsonToken.FIELD_NAME)
+                } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
                         || !prop.getName().equals(p.currentName())) {
                     return _deserializeDisordered(p, ctxt, bean);
                 }

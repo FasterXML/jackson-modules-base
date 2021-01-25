@@ -50,49 +50,51 @@ public final class BooleanMethodPropertyWriter
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Overrides
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override
-    public final void serializeAsField(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
+    public final void serializeAsField(Object bean, JsonGenerator g, SerializerProvider prov)
+        throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsField(bean, gen, prov);
+            fallbackWriter.serializeAsField(bean, g, prov);
             return;
         }
         boolean value;
         try {
             value = _propertyAccessor.booleanGetter(bean, _propertyIndex);
         } catch (Throwable t) {
-            _handleProblem(bean, gen, prov, t, false);
+            _handleProblem(bean, g, prov, t, false);
             return;
         }
         if (!_suppressableSet || _suppressableBoolean != value) {
-            gen.writeFieldName(_fastName);
-            gen.writeBoolean(value);
+            g.writeName(_fastName);
+            g.writeBoolean(value);
         }
     }
 
     @Override
-    public final void serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider prov) throws Exception
+    public final void serializeAsElement(Object bean, JsonGenerator g, SerializerProvider prov)
+        throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsElement(bean, gen, prov);
+            fallbackWriter.serializeAsElement(bean, g, prov);
             return;
         }            
         boolean value;
         try {
             value = _propertyAccessor.booleanGetter(bean, _propertyIndex);
         } catch (Throwable t) {
-            _handleProblem(bean, gen, prov, t, true);
+            _handleProblem(bean, g, prov, t, true);
             return;
         }
         if (!_suppressableSet || _suppressableBoolean != value) {
-            gen.writeBoolean(value);
+            g.writeBoolean(value);
         } else { // important: MUST output a placeholder
-            serializeAsPlaceholder(bean, gen, prov);
+            serializeAsPlaceholder(bean, g, prov);
         }
     }
 }
