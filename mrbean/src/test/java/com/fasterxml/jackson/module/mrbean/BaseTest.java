@@ -38,26 +38,22 @@ public abstract class BaseTest
      */
 
     protected JsonParser createParserUsingReader(String input)
-        throws IOException, JsonParseException
     {
         return createParserUsingReader(new JsonFactory(), input);
     }
 
     protected JsonParser createParserUsingReader(JsonFactory f, String input)
-        throws IOException, JsonParseException
     {
         return f.createParser(ObjectReadContext.empty(), new StringReader(input));
     }
 
     protected JsonParser createParserUsingStream(String input, String encoding)
-        throws IOException, JsonParseException
     {
         return createParserUsingStream(new JsonFactory(), input, encoding);
     }
 
     protected JsonParser createParserUsingStream(JsonFactory f,
             String input, String encoding)
-        throws IOException, JsonParseException
     {
 
         /* 23-Apr-2008, tatus: UTF-32 is not supported by JDK, have to
@@ -69,7 +65,11 @@ public abstract class BaseTest
         if (encoding.equalsIgnoreCase("UTF-32")) {
             data = encodeInUTF32BE(input);
         } else {
-            data = input.getBytes(encoding);
+            try {
+                data = input.getBytes(encoding);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         InputStream is = new ByteArrayInputStream(data);
         return f.createParser(ObjectReadContext.empty(), is);
@@ -123,7 +123,6 @@ public abstract class BaseTest
      * returning them
      */
     protected String getAndVerifyText(JsonParser p)
-        throws IOException, JsonParseException
     {
         // Ok, let's verify other accessors
         int actLen = p.getTextLength();

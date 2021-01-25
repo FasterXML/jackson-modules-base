@@ -253,35 +253,33 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
      * available methods, and ensures results are consistent, before
      * returning them
      */
-    protected String getAndVerifyText(JsonParser jp)
-        throws IOException, JsonParseException
+    protected String getAndVerifyText(JsonParser p)
     {
         // Ok, let's verify other accessors
-        int actLen = jp.getTextLength();
-        char[] ch = jp.getTextCharacters();
-        String str2 = new String(ch, jp.getTextOffset(), actLen);
-        String str = jp.getText();
+        int actLen = p.getTextLength();
+        char[] ch = p.getTextCharacters();
+        String str2 = new String(ch, p.getTextOffset(), actLen);
+        String str = p.getText();
 
         if (str.length() !=  actLen) {
-            fail("Internal problem (jp.token == "+jp.currentToken()+"): jp.getText().length() ['"+str+"'] == "+str.length()+"; jp.getTextLength() == "+actLen);
+            fail("Internal problem (p.token == "+p.currentToken()+"): p.getText().length() ['"+str+"'] == "+str.length()+"; p.getTextLength() == "+actLen);
         }
         assertEquals("String access via getText(), getTextXxx() must be the same", str, str2);
 
         return str;
     }
 
-    protected void verifyFieldName(JsonParser jp, String expName)
-        throws IOException
+    protected void verifyFieldName(JsonParser p, String expName)
     {
-        assertEquals(expName, jp.getText());
-        assertEquals(expName, jp.currentName());
+        assertEquals(expName, p.getText());
+        assertEquals(expName, p.currentName());
     }
 
-    protected void verifyIntValue(JsonParser jp, long expValue)
+    protected void verifyIntValue(JsonParser p, long expValue)
         throws IOException
     {
         // First, via textual
-        assertEquals(String.valueOf(expValue), jp.getText());
+        assertEquals(String.valueOf(expValue), p.getText());
     }
 
     protected void verifyException(Throwable e, String... matches)

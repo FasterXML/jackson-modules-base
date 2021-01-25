@@ -163,7 +163,7 @@ public final class SuperSonicUnrolledDeserializer
         }
         final Object bean = _valueInstantiator.createUsingDefault(ctxt);
         // [databind#631]: Assign current value, to be accessible by custom serializers
-        p.setCurrentValue(bean);
+        p.assignCurrentValue(bean);
         if (p.canReadObjectId()) {
             Object id = p.getObjectId();
             if (id != null) {
@@ -246,7 +246,7 @@ public final class SuperSonicUnrolledDeserializer
         throws JacksonException
     {
         // [databind#631]: Assign current value, to be accessible by custom serializers
-        p.setCurrentValue(bean);
+        p.assignCurrentValue(bean);
         if (_injectables != null) {
             injectValues(ctxt, bean);
         }
@@ -362,7 +362,7 @@ public final class SuperSonicUnrolledDeserializer
         }
         final Object bean = _valueInstantiator.createUsingDefault(ctxt);
         // [databind#631]: Assign current value, to be accessible by custom serializers
-        p.setCurrentValue(bean);
+        p.assignCurrentValue(bean);
         if (p.canReadObjectId()) {
             Object id = p.getObjectId();
             if (id != null) {
