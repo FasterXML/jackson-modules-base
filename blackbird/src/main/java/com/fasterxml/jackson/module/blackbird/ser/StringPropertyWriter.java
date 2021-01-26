@@ -42,11 +42,11 @@ final class StringPropertyWriter
      */
 
     @Override
-    public final void serializeAsField(Object bean, JsonGenerator g, SerializerProvider prov)
+    public final void serializeAsProperty(Object bean, JsonGenerator g, SerializerProvider prov)
         throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsField(bean, g, prov);
+            fallbackWriter.serializeAsProperty(bean, g, prov);
             return;
         }
         String value;
@@ -99,7 +99,7 @@ final class StringPropertyWriter
         // Null (etc) handling; copied from super-class impl
         if (value == null) {
             if (_suppressNulls) {
-                serializeAsPlaceholder(bean, g, prov);
+                serializeAsOmittedElement(bean, g, prov);
             } else {
                 prov.defaultSerializeNullValue(g);
             }
@@ -108,11 +108,11 @@ final class StringPropertyWriter
         if (_suppressableValue != null) {
             if (MARKER_FOR_EMPTY == _suppressableValue) {
                 if (value.length() == 0) {
-                    serializeAsPlaceholder(bean, g, prov);
+                    serializeAsOmittedElement(bean, g, prov);
                     return;
                 }
             } else if (_suppressableValue.equals(value)) {
-                serializeAsPlaceholder(bean, g, prov);
+                serializeAsOmittedElement(bean, g, prov);
                 return;
             }
         }

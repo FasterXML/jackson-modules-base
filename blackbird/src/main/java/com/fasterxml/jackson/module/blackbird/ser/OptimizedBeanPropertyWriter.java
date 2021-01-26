@@ -93,7 +93,7 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
     public abstract BeanPropertyWriter withSerializer(JsonSerializer<Object> ser);
 
     @Override
-    public abstract void serializeAsField(Object bean, JsonGenerator g, SerializerProvider prov) throws Exception;
+    public abstract void serializeAsProperty(Object bean, JsonGenerator g, SerializerProvider prov) throws Exception;
 
     @Override
     public abstract void serializeAsElement(Object bean, JsonGenerator g, SerializerProvider prov) throws Exception;
@@ -109,7 +109,7 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
             if (element) {
                 fallbackWriter.serializeAsElement(bean, g, prov);
             } else {
-                fallbackWriter.serializeAsField(bean, g, prov);
+                fallbackWriter.serializeAsProperty(bean, g, prov);
             }
             return;
         }

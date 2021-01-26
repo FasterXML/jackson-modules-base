@@ -56,11 +56,11 @@ public final class LongFieldPropertyWriter
      */
 
     @Override
-    public final void serializeAsField(Object bean, JsonGenerator g, SerializerProvider prov)
+    public final void serializeAsProperty(Object bean, JsonGenerator g, SerializerProvider prov)
         throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsField(bean, g, prov);
+            fallbackWriter.serializeAsProperty(bean, g, prov);
             return;
         }
         long value;
@@ -94,7 +94,7 @@ public final class LongFieldPropertyWriter
         if (!_suppressableSet || _suppressableLong != value) {
             g.writeNumber(value);
         } else { // important: MUST output a placeholder
-            serializeAsPlaceholder(bean, g, prov);
+            serializeAsOmittedElement(bean, g, prov);
         }
     }
 }

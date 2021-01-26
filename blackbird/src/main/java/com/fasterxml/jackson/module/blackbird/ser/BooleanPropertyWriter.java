@@ -53,11 +53,11 @@ final class BooleanPropertyWriter
      */
 
     @Override
-    public final void serializeAsField(Object bean, JsonGenerator g, SerializerProvider prov)
+    public final void serializeAsProperty(Object bean, JsonGenerator g, SerializerProvider prov)
         throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsField(bean, g, prov);
+            fallbackWriter.serializeAsProperty(bean, g, prov);
             return;
         }
         boolean value;
@@ -91,7 +91,7 @@ final class BooleanPropertyWriter
         if (!_suppressableSet || _suppressableBoolean != value) {
             g.writeBoolean(value);
         } else { // important: MUST output a placeholder
-            serializeAsPlaceholder(bean, g, prov);
+            serializeAsOmittedElement(bean, g, prov);
         }
     }
 }

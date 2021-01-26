@@ -32,9 +32,9 @@ public abstract class SuperSonicBDBase
     protected SettableBeanProperty[] _orderedProperties;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle, construction, initialization
-    /**********************************************************
+    /**********************************************************************
      */
 
     public SuperSonicBDBase(BeanDeserializer src,
@@ -79,9 +79,9 @@ public abstract class SuperSonicBDBase
     //protected BeanDeserializerBase asArrayDeserializer()
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* BenaDeserializer overrides
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -129,10 +129,10 @@ public abstract class SuperSonicBDBase
             Object bean)
         throws JacksonException
     {
-        for (int ix = p.currentNameMatch(_fieldMatcher); ; ix = p.nextNameMatch(_fieldMatcher)) {
+        for (int ix = p.currentNameMatch(_propNameMatcher); ; ix = p.nextNameMatch(_propNameMatcher)) {
             if (ix >= 0) {
                 p.nextToken();
-                SettableBeanProperty prop = _fieldsByIndex[ix];
+                SettableBeanProperty prop = _propsByIndex[ix];
                 try {
                     prop.deserializeAndSet(p, ctxt, bean);
                 } catch (Exception e) {

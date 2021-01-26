@@ -56,11 +56,11 @@ public final class IntFieldPropertyWriter
      */
 
     @Override
-    public final void serializeAsField(Object bean, JsonGenerator g, SerializerProvider prov)
+    public final void serializeAsProperty(Object bean, JsonGenerator g, SerializerProvider prov)
         throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsField(bean, g, prov);
+            fallbackWriter.serializeAsProperty(bean, g, prov);
             return;
         }
         int value;
@@ -94,7 +94,7 @@ public final class IntFieldPropertyWriter
         if (!_suppressableSet || (_suppressableInt != value)) {
             g.writeNumber(value);
         } else { // important: MUST output a placeholder
-            serializeAsPlaceholder(bean, g, prov);
+            serializeAsOmittedElement(bean, g, prov);
         }
     }
 }
