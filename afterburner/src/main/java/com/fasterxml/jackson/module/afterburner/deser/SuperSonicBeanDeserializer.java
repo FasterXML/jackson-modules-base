@@ -108,18 +108,18 @@ public final class SuperSonicBeanDeserializer
         SettableBeanProperty prop = _orderedProperties[0];
         do {
             try {
-                if (p.nextFieldName(_orderedPropertyNames[0])) {
+                if (p.nextName(_orderedPropertyNames[0])) {
                     p.nextToken();
                     prop.deserializeAndSet(p, ctxt, bean);
-                    if (p.nextFieldName(_orderedPropertyNames[1])) {
+                    if (p.nextName(_orderedPropertyNames[1])) {
                         prop = _orderedProperties[1];
                         p.nextToken();
                         prop.deserializeAndSet(p, ctxt, bean);
-                        if (p.nextFieldName(_orderedPropertyNames[2])) {
+                        if (p.nextName(_orderedPropertyNames[2])) {
                             prop = _orderedProperties[2];
                             p.nextToken();
                             prop.deserializeAndSet(p, ctxt, bean);
-                            if (p.nextFieldName(_orderedPropertyNames[3])) {
+                            if (p.nextName(_orderedPropertyNames[3])) {
                                 prop = _orderedProperties[3];
                                 p.nextToken();
                                 prop.deserializeAndSet(p, ctxt, bean);
@@ -136,7 +136,7 @@ public final class SuperSonicBeanDeserializer
 
         for (int i = 4, len = _orderedProperties.length; i < len; ++i) {
             prop = _orderedProperties[i];
-            if (!p.nextFieldName(_orderedPropertyNames[i])) { // miss...
+            if (!p.nextName(_orderedPropertyNames[i])) { // miss...
                 if (p.currentToken() == JsonToken.END_OBJECT) {
                     return bean;
                 }
@@ -178,7 +178,7 @@ public final class SuperSonicBeanDeserializer
         do {
             try {
                 if (p.isExpectedStartObjectToken()) {
-                    if (!p.nextFieldName(_orderedPropertyNames[0])) {
+                    if (!p.nextName(_orderedPropertyNames[0])) {
                         return _deserializeDisordered(p, ctxt, bean);
                     }
                 } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
@@ -187,15 +187,15 @@ public final class SuperSonicBeanDeserializer
                 }
                 p.nextToken();
                 prop.deserializeAndSet(p, ctxt, bean);
-                if (p.nextFieldName(_orderedPropertyNames[1])) {
+                if (p.nextName(_orderedPropertyNames[1])) {
                     prop = _orderedProperties[1];
                     p.nextToken();
                     prop.deserializeAndSet(p, ctxt, bean);
-                    if (p.nextFieldName(_orderedPropertyNames[2])) {
+                    if (p.nextName(_orderedPropertyNames[2])) {
                         prop = _orderedProperties[2];
                         p.nextToken();
                         prop.deserializeAndSet(p, ctxt, bean);
-                        if (p.nextFieldName(_orderedPropertyNames[3])) {
+                        if (p.nextName(_orderedPropertyNames[3])) {
                             prop = _orderedProperties[3];
                             p.nextToken();
                             prop.deserializeAndSet(p, ctxt, bean);
@@ -211,7 +211,7 @@ public final class SuperSonicBeanDeserializer
 
         // then rest of properties
         for (int i = 4, len = _orderedProperties.length; i < len; ++i) {
-            if (!p.nextFieldName(_orderedPropertyNames[i])) { // miss...
+            if (!p.nextName(_orderedPropertyNames[i])) { // miss...
                 if (p.hasToken(JsonToken.END_OBJECT)) {
                     return bean;
                 }
@@ -276,7 +276,7 @@ public final class SuperSonicBeanDeserializer
         do {
             try {
                 if (p.isExpectedStartObjectToken()) {
-                    if (!p.nextFieldName(_orderedPropertyNames[0])) {
+                    if (!p.nextName(_orderedPropertyNames[0])) {
                         return _deserializeDisordered(p, ctxt, bean);
                     }
                 } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
@@ -285,15 +285,15 @@ public final class SuperSonicBeanDeserializer
                 }
                 p.nextToken();
                 prop.deserializeAndSet(p, ctxt, bean);
-                if (p.nextFieldName(_orderedPropertyNames[1])) {
+                if (p.nextName(_orderedPropertyNames[1])) {
                     prop = _orderedProperties[1];
                     p.nextToken();
                     prop.deserializeAndSet(p, ctxt, bean);
-                    if (p.nextFieldName(_orderedPropertyNames[2])) {
+                    if (p.nextName(_orderedPropertyNames[2])) {
                         prop = _orderedProperties[2];
                         p.nextToken();
                         prop.deserializeAndSet(p, ctxt, bean);
-                        if (p.nextFieldName(_orderedPropertyNames[3])) {
+                        if (p.nextName(_orderedPropertyNames[3])) {
                             prop = _orderedProperties[3];
                             p.nextToken();
                             prop.deserializeAndSet(p, ctxt, bean);
@@ -309,7 +309,7 @@ public final class SuperSonicBeanDeserializer
 
         // then rest of properties
         for (int i = 4, len = _orderedProperties.length; i < len; ++i) {
-            if (!p.nextFieldName(_orderedPropertyNames[i])) { // miss...
+            if (!p.nextName(_orderedPropertyNames[i])) { // miss...
                 if (p.hasToken(JsonToken.END_OBJECT)) {
                     return bean;
                 }

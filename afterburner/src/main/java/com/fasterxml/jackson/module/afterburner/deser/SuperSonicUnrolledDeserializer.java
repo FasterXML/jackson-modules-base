@@ -180,7 +180,7 @@ public final class SuperSonicUnrolledDeserializer
             default:
             //case 6:
                 prop = _prop1;
-                if (!p.nextFieldName(_name1)) {
+                if (!p.nextName(_name1)) {
                     break;
                 }
                 p.nextToken();
@@ -188,7 +188,7 @@ public final class SuperSonicUnrolledDeserializer
                 // fall through
             case 5:
                 prop = _prop2;
-                if (!p.nextFieldName(_name2)) {
+                if (!p.nextName(_name2)) {
                     break;
                 }
                 p.nextToken();
@@ -196,7 +196,7 @@ public final class SuperSonicUnrolledDeserializer
                 // fall through
             case 4:
                 prop = _prop3;
-                if (!p.nextFieldName(_name3)) {
+                if (!p.nextName(_name3)) {
                     break;
                 }
                 p.nextToken();
@@ -204,7 +204,7 @@ public final class SuperSonicUnrolledDeserializer
                 // fall through
             case 3:
                 prop = _prop4;
-                if (!p.nextFieldName(_name4)) {
+                if (!p.nextName(_name4)) {
                     break;
                 }
                 p.nextToken();
@@ -212,7 +212,7 @@ public final class SuperSonicUnrolledDeserializer
                 // fall through
             case 2:
                 prop = _prop5;
-                if (!p.nextFieldName(_name5)) {
+                if (!p.nextName(_name5)) {
                     break;
                 }
                 p.nextToken();
@@ -220,7 +220,7 @@ public final class SuperSonicUnrolledDeserializer
                 // fall through
             case 1:
                 prop = _prop6;
-                if (!p.nextFieldName(_name6)) {
+                if (!p.nextName(_name6)) {
                     break;
                 }
                 p.nextToken();
@@ -259,7 +259,7 @@ public final class SuperSonicUnrolledDeserializer
         SettableBeanProperty prop = _orderedProperties[0];
         // First: verify that first name is expected
         if (p.isExpectedStartObjectToken()) {
-            if (!p.nextFieldName(_orderedPropertyNames[0])) {
+            if (!p.nextName(_orderedPropertyNames[0])) {
                 return super.deserialize(p,  ctxt, bean);
             }
         } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
@@ -279,7 +279,7 @@ public final class SuperSonicUnrolledDeserializer
             default:
             //case 6:
                 prop = _prop2;
-                if (!p.nextFieldName(_name2)) {
+                if (!p.nextName(_name2)) {
                     break;
                 }
                 p.nextToken();
@@ -287,7 +287,7 @@ public final class SuperSonicUnrolledDeserializer
                 // fall through
             case 5:
                 prop = _prop3;
-                if (!p.nextFieldName(_name3)) {
+                if (!p.nextName(_name3)) {
                     break;
                 }
                 p.nextToken();
@@ -295,7 +295,7 @@ public final class SuperSonicUnrolledDeserializer
                 // fall through
             case 4:
                 prop = _prop4;
-                if (!p.nextFieldName(_name4)) {
+                if (!p.nextName(_name4)) {
                     break;
                 }
                 p.nextToken();
@@ -303,7 +303,7 @@ public final class SuperSonicUnrolledDeserializer
                 // fall through
             case 3:
                 prop = _prop5;
-                if (!p.nextFieldName(_name5)) {
+                if (!p.nextName(_name5)) {
                     break;
                 }
                 p.nextToken();
@@ -311,7 +311,7 @@ public final class SuperSonicUnrolledDeserializer
                 // fall through
             case 2:
                 prop = _prop6;
-                if (!p.nextFieldName(_name6)) {
+                if (!p.nextName(_name6)) {
                     break;
                 }
                 p.nextToken();
@@ -375,7 +375,7 @@ public final class SuperSonicUnrolledDeserializer
         SettableBeanProperty prop = _orderedProperties[0];
         // First: verify that first name is expected
         if (p.isExpectedStartObjectToken()) {
-            if (!p.nextFieldName(_orderedPropertyNames[0])) {
+            if (!p.nextName(_orderedPropertyNames[0])) {
                 return _deserializeDisordered(p, ctxt, bean);
             }
         } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
@@ -396,7 +396,7 @@ public final class SuperSonicUnrolledDeserializer
             default:
             //case 6:
                 prop = _prop2;
-                if (!p.nextFieldName(_name2)) {
+                if (!p.nextName(_name2)) {
                     break;
                 }
                 p.nextToken();
@@ -404,7 +404,7 @@ public final class SuperSonicUnrolledDeserializer
                 // fall through
             case 5:
                 prop = _prop3;
-                if (!p.nextFieldName(_name3)) {
+                if (!p.nextName(_name3)) {
                     break;
                 }
                 p.nextToken();
@@ -412,7 +412,7 @@ public final class SuperSonicUnrolledDeserializer
                 // fall through
             case 4:
                 prop = _prop4;
-                if (!p.nextFieldName(_name4)) {
+                if (!p.nextName(_name4)) {
                     break;
                 }
                 p.nextToken();
@@ -420,7 +420,7 @@ public final class SuperSonicUnrolledDeserializer
                 // fall through
             case 3:
                 prop = _prop5;
-                if (!p.nextFieldName(_name5)) {
+                if (!p.nextName(_name5)) {
                     break;
                 }
                 p.nextToken();
@@ -428,7 +428,7 @@ public final class SuperSonicUnrolledDeserializer
                 // fall through
             case 2:
                 prop = _prop6;
-                if (!p.nextFieldName(_name6)) {
+                if (!p.nextName(_name6)) {
                     break;
                 }
                 p.nextToken();

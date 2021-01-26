@@ -166,7 +166,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         }
         for (int i = 0, len = _orderedProperties.length; i < len; ++i) {
             SettableBeanProperty prop = _orderedProperties[i];
-            if (!p.nextFieldName(_orderedPropertyNames[i])) { // miss...
+            if (!p.nextName(_orderedPropertyNames[i])) { // miss...
                 if (p.currentToken() == JsonToken.END_OBJECT) {
                     return bean;
                 }
@@ -206,7 +206,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         SettableBeanProperty prop = _orderedProperties[0];
         // First: verify that first name is expected
         if (p.isExpectedStartObjectToken()) {
-            if (!p.nextFieldName(_orderedPropertyNames[0])) {
+            if (!p.nextName(_orderedPropertyNames[0])) {
                 return super.deserialize(p,  ctxt, bean);
             }
         } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
@@ -222,7 +222,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         }
         // then rest of properties
         for (int i = 1, len = _orderedProperties.length; i < len; ++i) {
-            if (!p.nextFieldName(_orderedPropertyNames[i])) { // miss...
+            if (!p.nextName(_orderedPropertyNames[i])) { // miss...
                 if (p.hasToken(JsonToken.END_OBJECT)) {
                     return bean;
                 }
@@ -285,7 +285,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         SettableBeanProperty prop = _orderedProperties[0];
         // First: verify that first name is expected
         if (p.isExpectedStartObjectToken()) {
-            if (!p.nextFieldName(_orderedPropertyNames[0])) {
+            if (!p.nextName(_orderedPropertyNames[0])) {
                 return super.deserialize(p,  ctxt, bean);
             }
         } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
@@ -303,7 +303,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         // then rest of properties
         for (int i = 1, len = _orderedProperties.length; i < len; ++i) {
             prop = _orderedProperties[i];
-            if (!p.nextFieldName(_orderedPropertyNames[i])) { // miss...
+            if (!p.nextName(_orderedPropertyNames[i])) { // miss...
                 if (p.hasToken(JsonToken.END_OBJECT)) {
                     return bean;
                 }

@@ -129,7 +129,7 @@ public abstract class SuperSonicBDBase
             Object bean)
         throws JacksonException
     {
-        for (int ix = p.currentFieldName(_fieldMatcher); ; ix = p.nextFieldName(_fieldMatcher)) {
+        for (int ix = p.currentNameMatch(_fieldMatcher); ; ix = p.nextNameMatch(_fieldMatcher)) {
             if (ix >= 0) {
                 p.nextToken();
                 SettableBeanProperty prop = _fieldsByIndex[ix];
