@@ -15,6 +15,6 @@ module com.fasterxml.jackson.module.jaxb {
     // expose main level, but leave out "ser", "deser" impl
     exports com.fasterxml.jackson.module.jaxb;
 
-    provides com.fasterxml.jackson.databind.Module with
+    provides com.fasterxml.jackson.databind.JacksonModule with
         com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 }

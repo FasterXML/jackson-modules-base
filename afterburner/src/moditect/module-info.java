@@ -15,7 +15,6 @@ module com.fasterxml.jackson.module.afterburner {
 //    exports com.fasterxml.jackson.module.afterburner.ser;
 //    exports com.fasterxml.jackson.module.afterburner.util;
 
-    provides com.fasterxml.jackson.databind.Module with
+    provides com.fasterxml.jackson.databind.JacksonModule with
         com.fasterxml.jackson.module.afterburner.AfterburnerModule;
-
 }

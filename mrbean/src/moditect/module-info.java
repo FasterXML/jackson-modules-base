@@ -5,6 +5,6 @@ module com.fasterxml.jackson.module.mrbean {
 
     exports com.fasterxml.jackson.module.mrbean;
 
-    provides com.fasterxml.jackson.databind.Module with
+    provides com.fasterxml.jackson.databind.JacksonModule with
         com.fasterxml.jackson.module.mrbean.MrBeanModule;
 }

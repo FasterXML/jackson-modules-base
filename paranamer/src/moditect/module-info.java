@@ -4,6 +4,6 @@ module com.fasterxml.jackson.module.paranamer {
     requires com.fasterxml.jackson.databind;
     requires paranamer;
 
-    provides com.fasterxml.jackson.databind.Module with
+    provides com.fasterxml.jackson.databind.JacksonModule with
         com.fasterxml.jackson.module.paranamer.ParanamerModule;
 }
