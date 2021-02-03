@@ -40,7 +40,7 @@ public class ParanamerModule
     }
     
     @Override
-    public void setupModule(com.fasterxml.jackson.databind.Module.SetupContext context)
+    public void setupModule(com.fasterxml.jackson.databind.JacksonModule.SetupContext context)
     {
         super.setupModule(context);
         // Append after other introspectors (instead of before) since

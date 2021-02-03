@@ -1,11 +1,11 @@
 package com.fasterxml.jackson.module.afterburner;
 
 import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.JacksonModule;
 import com.fasterxml.jackson.module.afterburner.ser.ABSerializerModifier;
 import com.fasterxml.jackson.module.afterburner.deser.ABDeserializerModifier;
 
-public class AfterburnerModule extends Module
+public class AfterburnerModule extends JacksonModule
     implements java.io.Serializable
 {
     private static final long serialVersionUID = 1L;

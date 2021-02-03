@@ -3,7 +3,7 @@ package com.fasterxml.jackson.module.osgi;
 import org.osgi.framework.BundleContext;
 
 import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.JacksonModule;
 
 /**
  * Jackson Module to inject OSGI services in deserialized objects.
@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.Module;
  *
  * @see OsgiInjectableValues
  */
-public class OsgiJacksonModule extends Module
+public class OsgiJacksonModule extends JacksonModule
 {
     private final BundleContext bundleContext;
 

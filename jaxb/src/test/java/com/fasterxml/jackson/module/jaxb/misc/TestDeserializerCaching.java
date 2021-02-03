@@ -15,7 +15,7 @@ public class TestDeserializerCaching extends BaseJaxbTest
     /**********************************************************
      */
 
-    static class MyBeanModule extends com.fasterxml.jackson.databind.Module {
+    static class MyBeanModule extends com.fasterxml.jackson.databind.JacksonModule {
         @Override public String getModuleName() {
             return "MyBeanModule";
         }

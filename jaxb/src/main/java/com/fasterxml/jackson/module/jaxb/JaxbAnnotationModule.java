@@ -14,7 +14,7 @@ import com.fasterxml.jackson.core.Version;
  * (by default, JAXB annotations are used as {@link Priority#PRIMARY}
  * annotations).
  */
-public class JaxbAnnotationModule extends com.fasterxml.jackson.databind.Module
+public class JaxbAnnotationModule extends com.fasterxml.jackson.databind.JacksonModule
 {
     /**
      * Enumeration that defines how we use JAXB Annotations: either

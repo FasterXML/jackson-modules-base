@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
-import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.JacksonModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
@@ -20,8 +20,8 @@ import com.google.inject.binder.ScopedBindingBuilder;
 
 public class ObjectMapperModule implements com.google.inject.Module
 {
-  private final List<Module> modulesToAdd = new ArrayList<Module>();
-  private final List<Key<? extends Module>> modulesToInject = new ArrayList<Key<? extends Module>>();
+  private final List<JacksonModule> modulesToAdd = new ArrayList<JacksonModule>();
+  private final List<Key<? extends JacksonModule>> modulesToInject = new ArrayList<Key<? extends JacksonModule>>();
   private final Key<ObjectMapper> objectMapperKey;
 
   private ObjectMapper objectMapper;
@@ -54,28 +54,28 @@ public class ObjectMapperModule implements com.google.inject.Module
     return this;
   }
 
-  public ObjectMapperModule registerModule(Module module)
+  public ObjectMapperModule registerModule(JacksonModule module)
   {
     modulesToAdd.add(module);
     return this;
   }
 
-  public ObjectMapperModule registerModule(Class<? extends Module> clazz)
+  public ObjectMapperModule registerModule(Class<? extends JacksonModule> clazz)
   {
     return registerModule(Key.get(clazz));
   }
 
-  public ObjectMapperModule registerModule(Class<? extends Module> clazz, Class<? extends Annotation> annotation)
+  public ObjectMapperModule registerModule(Class<? extends JacksonModule> clazz, Class<? extends Annotation> annotation)
   {
     return registerModule(Key.get(clazz, annotation));
   }
 
-  public ObjectMapperModule registerModule(Class<? extends Module> clazz, Annotation annotation)
+  public ObjectMapperModule registerModule(Class<? extends JacksonModule> clazz, Annotation annotation)
   {
     return registerModule(Key.get(clazz, annotation));
   }
 
-  public ObjectMapperModule registerModule(Key<? extends Module> key)
+  public ObjectMapperModule registerModule(Key<? extends JacksonModule> key)
   {
     modulesToInject.add(key);
     return this;
@@ -103,26 +103,26 @@ public class ObjectMapperModule implements com.google.inject.Module
 
   private static class ObjectMapperProvider implements Provider<ObjectMapper>
   {
-    private final List<Key<? extends Module>> modulesToInject;
-    private final List<Module> modulesToAdd;
+    private final List<Key<? extends JacksonModule>> modulesToInject;
+    private final List<JacksonModule> modulesToAdd;
 
-    private final List<Provider<? extends Module>> providedModules;
+    private final List<Provider<? extends JacksonModule>> providedModules;
     private Injector injector;
     private final ObjectMapper objectMapper;
 
-    public ObjectMapperProvider(List<Key<? extends Module>> modulesToInject,
-        List<Module> modulesToAdd, ObjectMapper mapper)
+    public ObjectMapperProvider(List<Key<? extends JacksonModule>> modulesToInject,
+        List<JacksonModule> modulesToAdd, ObjectMapper mapper)
     {
       this.modulesToInject = modulesToInject;
       this.modulesToAdd = modulesToAdd;
       objectMapper = mapper;
-      this.providedModules = new ArrayList<Provider<? extends Module>>();
+      this.providedModules = new ArrayList<Provider<? extends JacksonModule>>();
     }
 
     @Inject
     public void configure(Injector inj) {
       injector = inj;
-      for (Key<? extends Module> key : modulesToInject) {
+      for (Key<? extends JacksonModule> key : modulesToInject) {
         providedModules.add(injector.getProvider(key));
       }
     }
@@ -138,7 +138,7 @@ public class ObjectMapperModule implements com.google.inject.Module
                     .injectableValues(new GuiceInjectableValues(injector))
                     .annotationIntrospector(new AnnotationIntrospectorPair(guiceIntrospector, defaultAI))
                     .addModules(modulesToAdd);
-            for (Provider<? extends Module> provider : providedModules) {
+            for (Provider<? extends JacksonModule> provider : providedModules) {
                 builder = builder.addModule(provider.get());
             }
             mapper = builder.build();

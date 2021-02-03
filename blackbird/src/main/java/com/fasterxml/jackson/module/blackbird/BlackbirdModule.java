@@ -6,11 +6,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.JacksonModule;
 import com.fasterxml.jackson.module.blackbird.deser.BBDeserializerModifier;
 import com.fasterxml.jackson.module.blackbird.ser.BBSerializerModifier;
 
-public class BlackbirdModule extends Module
+public class BlackbirdModule extends JacksonModule
 {
     private Function<Class<?>, Lookup> _lookups;
 
