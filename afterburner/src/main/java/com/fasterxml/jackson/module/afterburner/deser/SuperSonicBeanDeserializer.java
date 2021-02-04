@@ -6,7 +6,8 @@ import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.*;
-import com.fasterxml.jackson.databind.deser.impl.BeanPropertyMap;
+import com.fasterxml.jackson.databind.deser.bean.BeanDeserializer;
+import com.fasterxml.jackson.databind.deser.bean.BeanPropertyMap;
 import com.fasterxml.jackson.databind.deser.impl.UnwrappedPropertyHandler;
 import com.fasterxml.jackson.databind.util.NameTransformer;
 

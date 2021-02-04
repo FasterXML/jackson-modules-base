@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.deser.*;
+import com.fasterxml.jackson.databind.deser.bean.BeanDeserializer;
 
 class SuperSonicDeserializerBuilder extends BeanDeserializerBuilder
 {

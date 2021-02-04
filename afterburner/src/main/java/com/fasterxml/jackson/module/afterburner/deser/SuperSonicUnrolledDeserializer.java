@@ -7,7 +7,8 @@ import com.fasterxml.jackson.core.io.SerializedString;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.*;
-import com.fasterxml.jackson.databind.deser.impl.BeanPropertyMap;
+import com.fasterxml.jackson.databind.deser.bean.BeanDeserializer;
+import com.fasterxml.jackson.databind.deser.bean.BeanPropertyMap;
 import com.fasterxml.jackson.databind.deser.impl.UnwrappedPropertyHandler;
 import com.fasterxml.jackson.databind.util.NameTransformer;
 
@@ -40,11 +41,11 @@ public final class SuperSonicUnrolledDeserializer
 
     protected SerializedString _name6;
     protected SettableBeanProperty _prop6;
-    
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life-cycle, construction, initialization
-    /**********************************************************
+    /**********************************************************************
      */
 
     public SuperSonicUnrolledDeserializer(BeanDeserializer src, List<SettableBeanProperty> props)
@@ -130,9 +131,9 @@ public final class SuperSonicUnrolledDeserializer
     //protected BeanDeserializerBase asArrayDeserializer()
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Deserialization method implementations
-    /**********************************************************
+    /**********************************************************************
      */
 
     @Override

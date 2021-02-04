@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
-import com.fasterxml.jackson.databind.ser.impl.*;
+import com.fasterxml.jackson.databind.ser.std.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.std.SimpleFilterProvider;
 
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
