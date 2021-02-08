@@ -49,7 +49,7 @@ public class TestUnknownPropertyDeserialization
     {
         @Override
         public boolean handleUnknownProperty(DeserializationContext ctxt,
-                JsonParser p, JsonDeserializer<?> deserializer,
+                JsonParser p, ValueDeserializer<?> deserializer,
                 Object bean, String propertyName)
         {
             // very simple, just to verify that we do see correct token type
@@ -272,7 +272,7 @@ public class TestUnknownPropertyDeserialization
         ObjectMapper jsonMapper = afterburnerMapperBuilder()
                 .addHandler(new DeserializationProblemHandler() {
                 @Override
-                public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, JsonDeserializer<?> deserializer, Object beanOrClass, String propertyName) {
+                public boolean handleUnknownProperty(DeserializationContext ctxt, JsonParser p, ValueDeserializer<?> deserializer, Object beanOrClass, String propertyName) {
                     p.skipChildren();
                     return true;
                 }

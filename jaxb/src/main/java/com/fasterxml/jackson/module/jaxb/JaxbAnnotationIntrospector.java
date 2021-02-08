@@ -80,7 +80,7 @@ public class JaxbAnnotationIntrospector
 
     protected final String _jaxbPackageName;
     protected final JsonSerializer<?> _dataHandlerSerializer;
-    protected final JsonDeserializer<?> _dataHandlerDeserializer;
+    protected final ValueDeserializer<?> _dataHandlerDeserializer;
 
     protected final boolean _ignoreXmlIDREF;
 
@@ -116,7 +116,7 @@ public class JaxbAnnotationIntrospector
         _jaxbPackageName = XmlElement.class.getPackage().getName();
 
         JsonSerializer<?> dataHandlerSerializer = null;
-        JsonDeserializer<?> dataHandlerDeserializer = null;
+        ValueDeserializer<?> dataHandlerDeserializer = null;
         // Data handlers included dynamically, to try to prevent issues on platforms
         // with less than complete support for JAXB API
         try {

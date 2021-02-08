@@ -53,7 +53,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
     }
 
     @Override
-    public JsonDeserializer<Object> unwrappingDeserializer(DeserializationContext ctxt,
+    public ValueDeserializer<Object> unwrappingDeserializer(DeserializationContext ctxt,
             NameTransformer transformer)
     {
         // 17-Dec-2020, tatu: Was like so:

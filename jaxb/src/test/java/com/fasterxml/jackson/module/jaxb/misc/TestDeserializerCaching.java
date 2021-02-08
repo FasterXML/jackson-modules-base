@@ -50,8 +50,8 @@ public class TestDeserializerCaching extends BaseJaxbTest
         static int count = 0;
 
         @Override
-        public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config,
-                BeanDescription beanDesc, JsonDeserializer<?> deserializer)
+        public ValueDeserializer<?> modifyDeserializer(DeserializationConfig config,
+                BeanDescription beanDesc, ValueDeserializer<?> deserializer)
         {
             if (MyType.class.isAssignableFrom(beanDesc.getBeanClass())) {
                 count++;

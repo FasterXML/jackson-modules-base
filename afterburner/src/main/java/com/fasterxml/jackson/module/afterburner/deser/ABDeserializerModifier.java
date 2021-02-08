@@ -173,7 +173,7 @@ public class ABDeserializerModifier extends ValueDeserializerModifier
      * deserializer implementation: this is necessary to avoid overriding other
      * kinds of deserializers.
      */
-    protected boolean isDefaultDeserializer(JsonDeserializer<?> deser) {
+    protected boolean isDefaultDeserializer(ValueDeserializer<?> deser) {
         return ClassUtil.isJacksonStdImpl(deser)
                 // 07-May-2018, tatu: Probably can't happen but just in case
                 || (deser instanceof SuperSonicBeanDeserializer);

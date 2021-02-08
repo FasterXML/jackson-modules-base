@@ -41,7 +41,7 @@ public class TestCreators2 extends BlackbirdTestBase
         }
     }
 
-    static class BytesDeserializer extends JsonDeserializer<byte[]>
+    static class BytesDeserializer extends ValueDeserializer<byte[]>
     {
         @Override
         public byte[] deserialize(JsonParser jp, DeserializationContext ctxt) {

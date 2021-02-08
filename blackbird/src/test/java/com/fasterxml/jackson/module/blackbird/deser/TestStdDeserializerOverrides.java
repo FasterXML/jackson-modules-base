@@ -93,7 +93,7 @@ public class TestStdDeserializerOverrides extends BlackbirdTestBase
                 context.addDeserializers(
                         new Deserializers.Base() {
                             @Override
-                            public JsonDeserializer<?> findBeanDeserializer(
+                            public ValueDeserializer<?> findBeanDeserializer(
                                     JavaType type,
                                     DeserializationConfig config,
                                     BeanDescription beanDesc) {

@@ -78,7 +78,7 @@ public class JSOGDeserialize622Test extends AfterburnerTestBase
     /**
      * The reference deserializer
      */
-    static class JSOGRefDeserializer extends JsonDeserializer<JSOGRef>
+    static class JSOGRefDeserializer extends ValueDeserializer<JSOGRef>
     {
         @Override
         public JSOGRef deserialize(JsonParser p, DeserializationContext ctx) {

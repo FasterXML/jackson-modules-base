@@ -51,7 +51,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 
     // But value deserializer handling needs some more care
     @Override
-    public final SettableBeanProperty withValueDeserializer(JsonDeserializer<?> deser) {
+    public final SettableBeanProperty withValueDeserializer(ValueDeserializer<?> deser) {
         SettableBeanProperty newDelegate = delegate.withValueDeserializer(deser);
         if (newDelegate == delegate) {
             return this;
@@ -171,7 +171,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      * deserializer implementation: this is necessary to avoid overriding custom
      * deserializers.
      */
-    protected boolean _isDefaultDeserializer(JsonDeserializer<?> deser) {
+    protected boolean _isDefaultDeserializer(ValueDeserializer<?> deser) {
         return (deser == null)
                 || (deser instanceof SuperSonicBeanDeserializer)
                 || ClassUtil.isJacksonStdImpl(deser);

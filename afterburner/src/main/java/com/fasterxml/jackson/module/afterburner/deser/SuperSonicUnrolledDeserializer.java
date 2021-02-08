@@ -76,7 +76,7 @@ public final class SuperSonicUnrolledDeserializer
     }
 
     @Override
-    public JsonDeserializer<Object> unwrappingDeserializer(DeserializationContext ctxt,
+    public ValueDeserializer<Object> unwrappingDeserializer(DeserializationContext ctxt,
             NameTransformer transformer)
     {
         // NOTE: copied verbatim from `BeanDeserializer`
