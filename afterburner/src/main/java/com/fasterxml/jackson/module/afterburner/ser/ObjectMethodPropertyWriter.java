@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ValueSerializer;
 import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
@@ -13,7 +13,7 @@ public final class ObjectMethodPropertyWriter
     private static final long serialVersionUID = 1L;
 
     public ObjectMethodPropertyWriter(BeanPropertyWriter src, BeanPropertyAccessor acc, int index,
-            JsonSerializer<Object> ser) {
+            ValueSerializer<Object> ser) {
         super(src, acc, index, ser);
     }
 
@@ -27,7 +27,7 @@ public final class ObjectMethodPropertyWriter
     }
 
     @Override
-    public BeanPropertyWriter withSerializer(JsonSerializer<Object> ser) {
+    public BeanPropertyWriter withSerializer(ValueSerializer<Object> ser) {
         return new ObjectMethodPropertyWriter(this, _propertyAccessor, _propertyIndex, ser);
     }
 
@@ -69,7 +69,7 @@ public final class ObjectMethodPropertyWriter
             }
             return;
         }
-        JsonSerializer<Object> ser = _serializer;
+        ValueSerializer<Object> ser = _serializer;
         if (ser == null) {
             Class<?> cls = value.getClass();
             PropertySerializerMap map = _dynamicSerializers;
@@ -127,7 +127,7 @@ public final class ObjectMethodPropertyWriter
             }
             return;
         }
-        JsonSerializer<Object> ser = _serializer;
+        ValueSerializer<Object> ser = _serializer;
         if (ser == null) {
             Class<?> cls = value.getClass();
             PropertySerializerMap map = _dynamicSerializers;

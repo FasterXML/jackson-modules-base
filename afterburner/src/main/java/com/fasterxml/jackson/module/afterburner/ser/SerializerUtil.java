@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
-import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ValueSerializer;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 
@@ -17,7 +17,7 @@ class SerializerUtil
      * serializer implementation: this is necessary to avoid overriding other
      * kinds of serializers.
      */
-    public static boolean isDefaultSerializer(JsonSerializer<?> ser)
+    public static boolean isDefaultSerializer(ValueSerializer<?> ser)
     {
         if (ser == null) {
             return true;

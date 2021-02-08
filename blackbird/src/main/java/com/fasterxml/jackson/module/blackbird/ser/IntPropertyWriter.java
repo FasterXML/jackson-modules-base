@@ -3,7 +3,7 @@ package com.fasterxml.jackson.module.blackbird.ser;
 import java.util.function.ToIntFunction;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ValueSerializer;
 import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
@@ -18,7 +18,7 @@ final class IntPropertyWriter
 
     private final ToIntFunction<Object> _acc;
 
-    public IntPropertyWriter(BeanPropertyWriter src, ToIntFunction<Object> acc, JsonSerializer<Object> ser) {
+    public IntPropertyWriter(BeanPropertyWriter src, ToIntFunction<Object> acc, ValueSerializer<Object> ser) {
         super(src, ser);
         _acc = acc;
 
@@ -44,7 +44,7 @@ final class IntPropertyWriter
     }
 
     @Override
-    public BeanPropertyWriter withSerializer(JsonSerializer<Object> ser) {
+    public BeanPropertyWriter withSerializer(ValueSerializer<Object> ser) {
         return new IntPropertyWriter(this, _acc, ser);
     }
 

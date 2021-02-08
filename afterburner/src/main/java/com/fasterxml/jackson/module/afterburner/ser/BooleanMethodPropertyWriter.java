@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ValueSerializer;
 import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
@@ -15,7 +15,7 @@ public final class BooleanMethodPropertyWriter
     private final boolean _suppressableBoolean;
 
     public BooleanMethodPropertyWriter(BeanPropertyWriter src, BeanPropertyAccessor acc, int index,
-            JsonSerializer<Object> ser) {
+            ValueSerializer<Object> ser) {
         super(src, acc, index, ser);
 
         if (_suppressableValue instanceof Boolean) {
@@ -39,7 +39,7 @@ public final class BooleanMethodPropertyWriter
     }
 
     @Override
-    public BeanPropertyWriter withSerializer(JsonSerializer<Object> ser) {
+    public BeanPropertyWriter withSerializer(ValueSerializer<Object> ser) {
         return new BooleanMethodPropertyWriter(this, _propertyAccessor, _propertyIndex, ser);
     }
     

@@ -79,7 +79,7 @@ public class JaxbAnnotationIntrospector
     protected final static JsonFormat.Value FORMAT_INT = new JsonFormat.Value().withShape(JsonFormat.Shape.NUMBER_INT);
 
     protected final String _jaxbPackageName;
-    protected final JsonSerializer<?> _dataHandlerSerializer;
+    protected final ValueSerializer<?> _dataHandlerSerializer;
     protected final ValueDeserializer<?> _dataHandlerDeserializer;
 
     protected final boolean _ignoreXmlIDREF;
@@ -115,7 +115,7 @@ public class JaxbAnnotationIntrospector
         _ignoreXmlIDREF = ignoreXmlIDREF;
         _jaxbPackageName = XmlElement.class.getPackage().getName();
 
-        JsonSerializer<?> dataHandlerSerializer = null;
+        ValueSerializer<?> dataHandlerSerializer = null;
         ValueDeserializer<?> dataHandlerDeserializer = null;
         // Data handlers included dynamically, to try to prevent issues on platforms
         // with less than complete support for JAXB API
@@ -650,7 +650,7 @@ public class JaxbAnnotationIntrospector
      */
 
     @Override
-    public JsonSerializer<?> findSerializer(MapperConfig<?> config, Annotated am)
+    public ValueSerializer<?> findSerializer(MapperConfig<?> config, Annotated am)
     {
         final Class<?> type = _rawSerializationType(am);
         // Add support for additional core XML types needed by JAXB

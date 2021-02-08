@@ -3,7 +3,7 @@ package com.fasterxml.jackson.module.blackbird.ser;
 import java.util.function.ToLongFunction;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ValueSerializer;
 import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
@@ -18,7 +18,7 @@ final class LongPropertyWriter
 
     private final ToLongFunction<Object> _acc;
 
-    public LongPropertyWriter(BeanPropertyWriter src, ToLongFunction<Object> acc, JsonSerializer<Object> ser) {
+    public LongPropertyWriter(BeanPropertyWriter src, ToLongFunction<Object> acc, ValueSerializer<Object> ser) {
         super(src, ser);
         _acc = acc;
 
@@ -44,7 +44,7 @@ final class LongPropertyWriter
     }
 
     @Override
-    public BeanPropertyWriter withSerializer(JsonSerializer<Object> ser) {
+    public BeanPropertyWriter withSerializer(ValueSerializer<Object> ser) {
         return new LongPropertyWriter(this, _acc, ser);
     }
 

@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ValueSerializer;
 import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
@@ -12,7 +12,7 @@ public final class StringFieldPropertyWriter
     private static final long serialVersionUID = 1L;
 
     public StringFieldPropertyWriter(BeanPropertyWriter src, BeanPropertyAccessor acc, int index,
-            JsonSerializer<Object> ser) {
+            ValueSerializer<Object> ser) {
         super(src, acc, index, ser);
     }
 
@@ -26,7 +26,7 @@ public final class StringFieldPropertyWriter
     }
     
     @Override
-    public BeanPropertyWriter withSerializer(JsonSerializer<Object> ser) {
+    public BeanPropertyWriter withSerializer(ValueSerializer<Object> ser) {
         return new StringFieldPropertyWriter(this, _propertyAccessor, _propertyIndex, ser);
     }
 

@@ -29,7 +29,7 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
     // Not volatile to prevent overhead, worst case is we trip the exception a few extra times
     protected boolean broken = false;
 
-    protected OptimizedBeanPropertyWriter(BeanPropertyWriter src, JsonSerializer<Object> ser)
+    protected OptimizedBeanPropertyWriter(BeanPropertyWriter src, ValueSerializer<Object> ser)
     {
         super(src);
         this.fallbackWriter = unwrapFallbackWriter(src);
@@ -70,7 +70,7 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
     }
 
     @Override
-    public void assignSerializer(JsonSerializer<Object> ser) {
+    public void assignSerializer(ValueSerializer<Object> ser) {
         super.assignSerializer(ser);
         if (fallbackWriter != null) {
             fallbackWriter.assignSerializer(ser);
@@ -83,14 +83,14 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
     }
 
     @Override
-    public void assignNullSerializer(JsonSerializer<Object> nullSer) {
+    public void assignNullSerializer(ValueSerializer<Object> nullSer) {
         super.assignNullSerializer(nullSer);
         if (fallbackWriter != null) {
             fallbackWriter.assignNullSerializer(nullSer);
         }
     }
 
-    public abstract BeanPropertyWriter withSerializer(JsonSerializer<Object> ser);
+    public abstract BeanPropertyWriter withSerializer(ValueSerializer<Object> ser);
 
     @Override
     public abstract void serializeAsProperty(Object bean, JsonGenerator g, SerializerProvider prov) throws Exception;

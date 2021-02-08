@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.blackbird.ser;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ValueSerializer;
 import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
@@ -16,7 +16,7 @@ final class BooleanPropertyWriter
 
     private final ToBooleanFunction _acc;
 
-    public BooleanPropertyWriter(BeanPropertyWriter src, ToBooleanFunction acc, JsonSerializer<Object> ser) {
+    public BooleanPropertyWriter(BeanPropertyWriter src, ToBooleanFunction acc, ValueSerializer<Object> ser) {
         super(src, ser);
         _acc = acc;
 
@@ -42,7 +42,7 @@ final class BooleanPropertyWriter
     }
 
     @Override
-    public BeanPropertyWriter withSerializer(JsonSerializer<Object> ser) {
+    public BeanPropertyWriter withSerializer(ValueSerializer<Object> ser) {
         return new BooleanPropertyWriter(this, _acc, ser);
     }
 

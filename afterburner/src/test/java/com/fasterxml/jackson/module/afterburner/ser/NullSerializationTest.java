@@ -16,7 +16,7 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 // Copied from [com.fasterxml.jackson.databind.ser.filter]
 public class NullSerializationTest extends AfterburnerTestBase
 {
-    static class NullSerializer extends JsonSerializer<Object>
+    static class NullSerializer extends ValueSerializer<Object>
     {
         @Override
         public void serialize(Object value, JsonGenerator gen, SerializerProvider provider)
@@ -66,7 +66,7 @@ public class NullSerializationTest extends AfterburnerTestBase
         }
 
         @Override
-        public JsonSerializer<Object> findNullValueSerializer(BeanProperty property)
+        public ValueSerializer<Object> findNullValueSerializer(BeanProperty property)
         {
             if ("name".equals(property.getName())) {
                 return new NullSerializer();
