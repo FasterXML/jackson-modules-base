@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
 
-public class ABDeserializerModifier extends BeanDeserializerModifier
+public class ABDeserializerModifier extends ValueDeserializerModifier
 {
     /**
      * Class loader to use for generated classes; if null, will try to

@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.module.blackbird.util.ReflectionHack;
 
-public class BBDeserializerModifier extends BeanDeserializerModifier
+public class BBDeserializerModifier extends ValueDeserializerModifier
 {
     private static final MethodHandle TRAMPOLINE, BOOLEAN_TRAMPOLINE, LONG_TRAMPOLINE, INT_TRAMPOLINE;
 

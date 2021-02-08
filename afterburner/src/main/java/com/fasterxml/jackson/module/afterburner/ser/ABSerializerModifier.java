@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ser.*;
 
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
 
-public class ABSerializerModifier extends BeanSerializerModifier
+public class ABSerializerModifier extends ValueSerializerModifier
 {
     /**
      * Class loader to use for generated classes; if null, will try to

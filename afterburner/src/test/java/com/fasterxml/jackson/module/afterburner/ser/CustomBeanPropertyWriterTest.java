@@ -7,7 +7,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.fasterxml.jackson.databind.ser.ValueSerializerModifier;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 // for [afterburner#52]
@@ -26,7 +26,7 @@ public class CustomBeanPropertyWriterTest extends AfterburnerTestBase
         }
     }
 
-    static class Only2BeanSerializerModifier extends BeanSerializerModifier {
+    static class Only2BeanSerializerModifier extends ValueSerializerModifier {
         @Override
         public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc, List<BeanPropertyWriter> props)
         {

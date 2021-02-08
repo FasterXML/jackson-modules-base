@@ -23,7 +23,7 @@ import com.fasterxml.jackson.module.blackbird.util.Unchecked;
 
 import static java.lang.invoke.MethodType.*;
 
-public class BBSerializerModifier extends BeanSerializerModifier
+public class BBSerializerModifier extends ValueSerializerModifier
 {
     private final Function<Class<?>, Lookup> _lookups;
 
