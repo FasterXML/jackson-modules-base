@@ -14,7 +14,7 @@ Modules:
 
 2.13.0 (not yet released)
 
-No changes since 2.12
+- Update `jakarta.xml.bind-api` dep (2.3.2 -> 2.3.3)
 
 2.12.1 (08-Jan-2021)
 
