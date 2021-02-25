@@ -29,7 +29,7 @@ data-binding.
       -->
     <osgi.import>javax.activation;resolution:=optional,*</osgi.import>
 
-    <version.jaxb.impl>2.3.2</version.jaxb.impl>
+    <version.jaxb.impl>2.3.3</version.jaxb.impl>
   </properties>
   <dependencies>
     <!-- Extends Jackson core and mapper; minor dep on annotations too (JsonInclude) -->
