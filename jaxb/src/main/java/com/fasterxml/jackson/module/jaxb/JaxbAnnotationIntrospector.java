@@ -65,7 +65,8 @@ import com.fasterxml.jackson.module.jaxb.ser.DataHandlerJsonSerializer;
  */
 public class JaxbAnnotationIntrospector
     extends AnnotationIntrospector
-    implements Versioned
+    implements AnnotationIntrospector.XmlExtensions,
+        Versioned
 {
     private static final long serialVersionUID = -1L;
 
@@ -181,13 +182,13 @@ public class JaxbAnnotationIntrospector
 
     /*
     /**********************************************************************
-    /* Extended API (XmlAnnotationIntrospector)
+    /* Extended API: AnnotationIntrospector.XmlExtensions
     /**********************************************************************
      */
 
-    // From XmlAnnotationIntrospector
-    // @Override
-    public String findNamespace(Annotated ann) {
+    @Override // AnnotationIntrospector.XmlExtensions
+    public String findNamespace(MapperConfig<?> config, Annotated ann)
+    {
         String ns = null;
         if (ann instanceof AnnotatedClass) {
             // For classes, it must be @XmlRootElement. Also, we do
@@ -216,15 +217,14 @@ public class JaxbAnnotationIntrospector
         return ns;
     }
 
-    // From XmlAnnotationIntrospector
-    // @Override
     /**
      * Here we assume fairly simple logic; if there is <code>XmlAttribute</code> to be found,
      * we consider it an attribute; if <code>XmlElement</code>, not-an-attribute; and otherwise
      * we will consider there to be no information.
      * Caller is likely to default to considering things as elements.
      */
-    public Boolean isOutputAsAttribute(Annotated ann) {
+    @Override // AnnotationIntrospector.XmlExtensions
+    public Boolean isOutputAsAttribute(MapperConfig<?> config, Annotated ann) {
         XmlAttribute attr = findAnnotation(XmlAttribute.class, ann, false, false, false);
         if (attr != null) {
             return Boolean.TRUE;
@@ -236,16 +236,21 @@ public class JaxbAnnotationIntrospector
         return null;
     }
 
-    // From XmlAnnotationIntrospector
-    // @Override
-    public Boolean isOutputAsText(Annotated ann) {
+    @Override // AnnotationIntrospector.XmlExtensions
+    public Boolean isOutputAsText(MapperConfig<?> config, Annotated ann) {
         XmlValue attr = findAnnotation(XmlValue.class, ann, false, false, false);
         if (attr != null) {
            return Boolean.TRUE;
        }
        return null;
     }
-    
+
+    @Override // AnnotationIntrospector.XmlExtensions
+    public Boolean isOutputAsCData(MapperConfig<?> config, Annotated ann) {
+        // JAXB has nothing for this one?
+        return null;
+    }
+
     /*
     /**********************************************************************
     /* General annotations (for classes, properties)
