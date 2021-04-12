@@ -17,6 +17,7 @@ Modules:
 - Make `JaxbAnnotationIntrospector` implement `AnnotationIntrospector.XmlExtensions`
 - Update `jakarta.xml.bind-api` dep (2.3.2 -> 2.3.3)
 
+2.12.3 (12-Apr-2021)
 2.12.2 (03-Mar-2021)
 
 No changes since 2.12.1
