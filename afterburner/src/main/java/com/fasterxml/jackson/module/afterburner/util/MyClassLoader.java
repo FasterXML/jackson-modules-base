@@ -48,17 +48,20 @@ public class MyClassLoader extends ClassLoader
                 return false;
             }
             String pname = beanPackage.getName();
-            /* 14-Aug-2014, tatu: java.* we do not want to touch, but
-             *    javax is bit trickier. For now let's 
-             */
+            // 14-Aug-2014, tatu: java.* we do not want to touch, but
+            //    javax is bit trickier.
             if (pname.startsWith("java.")
-                    || pname.startsWith("javax.security.")) {
+                    || pname.startsWith("javax.security.")
+                    // 23-Apr-2021, tatu: [modules-base#131] "sun.misc"
+                    //    problematic too
+                    || pname.startsWith("sun.misc")
+            ) {
                 return false;
             }
         }
         return true;
     }
-    
+
     /**
      * @param className Interface or abstract class that class to load should extend or 
      *   implement
