@@ -23,7 +23,13 @@ public class BlackbirdModule extends JacksonModule
     }
 
     public BlackbirdModule(Supplier<MethodHandles.Lookup> lookup) {
-        this(c -> c.getName().startsWith("java") ? null : lookup.get());
+        this(c -> {
+            final String className = c.getName();
+            return (className.startsWith("java.")
+                    // 23-Apr-2021, tatu: [modules-base#131] "sun.misc" problematic too
+                    || className.startsWith("sun.misc."))
+                ? null : lookup.get();
+        });
     }
 
     @Override
