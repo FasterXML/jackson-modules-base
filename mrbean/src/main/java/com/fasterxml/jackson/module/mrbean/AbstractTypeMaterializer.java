@@ -285,6 +285,8 @@ public class AbstractTypeMaterializer
                 || (cls == CharSequence.class) || (cls == Iterable.class) || (cls == Iterator.class)
                 // 06-Feb-2019, tatu: [modules-base#74] and:
                 || (cls == java.io.Serializable.class)
+                // 23-Apr-2021, tatu: [modules-base#132] minimal patch
+                || (cls == java.util.TimeZone.class)
         ) {
             return false;
         }
