@@ -1,6 +1,4 @@
 module com.fasterxml.jackson.module.jaxb {
-    requires java.logging;
-    requires java.xml;
     requires static java.xml.bind;
     requires static jakarta.xml.bind;
 
