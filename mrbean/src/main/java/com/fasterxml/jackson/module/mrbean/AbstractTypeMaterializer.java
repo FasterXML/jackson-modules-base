@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.module.mrbean;
 
 import java.lang.reflect.Modifier;
-import java.util.*;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.Versioned;
@@ -94,16 +93,15 @@ public class AbstractTypeMaterializer
     protected String _defaultPackage = DEFAULT_PACKAGE_FOR_GENERATED;
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Construction, configuration
-    /**********************************************************
+    /**********************************************************************
      */
     
     public AbstractTypeMaterializer() {
         this(null);
     }
 
-    
     /**
      * @param parentClassLoader Class loader to use for generated classes; if
      *   null, will use class loader that loaded materializer itself.
@@ -168,11 +166,11 @@ public class AbstractTypeMaterializer
         }
         _defaultPackage = defPkg;
     }
-    
+
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Public API
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -195,29 +193,6 @@ public class AbstractTypeMaterializer
             materializedType = materializeGenericType(config, type);
         } else {
             materializedType = materializeRawType(config, beanDesc.getClassInfo());
-        }
-        return config.constructType(materializedType);
-    }
-    
-    /**
-     * Older variant of {@link #resolveAbstractType(DeserializationConfig, BeanDescription)},
-     * obsoleted in 2.7. Kept around in 2.7 for backwards compatibility.
-     *<p>
-     * TODO: remove from 2.9
-     */
-    @Override
-    @Deprecated
-    public JavaType resolveAbstractType(DeserializationConfig config, JavaType type)
-    {
-        if (!_suitableType(type)) {
-            return null;
-        }
-        Class<?> materializedType;
-        if (type.hasGenericTypes()) {
-            materializedType = materializeGenericType(config, type);
-        } else {
-            materializedType = materializeRawType(config,
-                    AnnotatedClassResolver.resolve(config, type, config));
         }
         return config.constructType(materializedType);
     }
@@ -267,8 +242,27 @@ public class AbstractTypeMaterializer
     protected Class<?> _loadAndResolve(String className, byte[] bytecode, Class<?> rawType) {
         return _classLoader.loadAndResolve(className, bytecode, rawType);
     }
-    
-    // private until 2.9.9
+
+    /**
+     * Overridable helper method called to check if given non-concrete type
+     * should be materialized.
+     *<p>
+     * Default implementation will blocks all
+     *<ul>
+     * <li>primitive types</li>
+     * <li>{@code Enums}</li>
+     * <li>Container types (Collections, Maps; as per Jackson "container type")</li>
+     * <li>Reference types (Jackson definition</li>
+     *</ul>
+     *<p>
+     * Jackson 2.12 and earlier enumerated a small set of other types under
+     * {@link java.lang} and {@link java.util}: 2.13 and later simply block
+     * all types in {@code java.*}.
+     *
+     * @param type Type that we are asked to materialize
+     *
+     * @return True if materialization should proceed; {@code false} if not.
+     */
     protected boolean _suitableType(JavaType type)
     {
         // Future plans may include calling of this method for all kinds of abstract types.
@@ -278,16 +272,21 @@ public class AbstractTypeMaterializer
                 || type.isEnumType() || type.isPrimitive()) {
             return false;
         }
-        Class<?> cls = type.getRawClass();
+        final Class<?> cls = type.getRawClass();
+
+        // In Jackson 2.12 we had:
+        /*
         if ((cls == Number.class)
                 // 22-Jun-2016, tatu: As per [#12], avoid these too
                 || (cls == Date.class) || (cls == Calendar.class)
                 || (cls == CharSequence.class) || (cls == Iterable.class) || (cls == Iterator.class)
                 // 06-Feb-2019, tatu: [modules-base#74] and:
                 || (cls == java.io.Serializable.class)
-                // 23-Apr-2021, tatu: [modules-base#132] minimal patch
-                || (cls == java.util.TimeZone.class)
-        ) {
+                || (cls == java.util.TimeZone.class)) {
+                ) {
+                */
+        // 23-Apr-2021, tatu: Jackson 2.13, as per [modules-base#132], do this:
+        if (cls.getName().startsWith("java.")) {
             return false;
         }
 
@@ -303,9 +302,9 @@ public class AbstractTypeMaterializer
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Helper classes
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -331,7 +330,7 @@ public class AbstractTypeMaterializer
             if (old != null && targetClass.isAssignableFrom(old)) {
                 return old;
             }
-            
+
             Class<?> impl;
             try {
                 impl = defineClass(className, byteCode, 0, byteCode.length);
