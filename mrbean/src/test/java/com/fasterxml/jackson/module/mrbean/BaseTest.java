@@ -158,7 +158,7 @@ public abstract class BaseTest
         return result;
     }
 
-    public String quote(String str) {
+    public String q(String str) {
         return '"'+str+'"';
     }
 }

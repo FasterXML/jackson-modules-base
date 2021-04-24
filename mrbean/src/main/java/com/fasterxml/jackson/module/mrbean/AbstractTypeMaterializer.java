@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.module.mrbean;
 
 import java.lang.reflect.Modifier;
-import java.util.*;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.Versioned;
@@ -103,16 +102,15 @@ public class AbstractTypeMaterializer
     protected String _defaultPackage = DEFAULT_PACKAGE_FOR_GENERATED;
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Construction, configuration
-    /**********************************************************
+    /**********************************************************************
      */
     
     public AbstractTypeMaterializer() {
         this(null);
     }
 
-    
     /**
      * @param parentClassLoader Class loader to use for generated classes; if
      *   null, will use class loader that loaded materializer itself.
@@ -183,9 +181,9 @@ public class AbstractTypeMaterializer
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Public API
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -262,11 +260,31 @@ public class AbstractTypeMaterializer
         return _loadAndResolve(nameToUse, bytecode, rawType);
     }
 
-    // @since 2.12
     protected Class<?> _loadAndResolve(String className, byte[] bytecode, Class<?> rawType) {
         return _classLoader.loadAndResolve(className, bytecode, rawType);
     }
 
+    /**
+     * Overridable helper method called to check if given non-concrete type
+     * should be materialized.
+     *<p>
+     * Default implementation will block:
+     *<ul>
+     * <li>primitive types</li>
+     * <li>{@code Enums}</li>
+     * <li>Container types (Collections, Maps; as per Jackson "container type")</li>
+     * <li>Reference types (Jackson definition</li>
+     * <li>Anything under {@code java.*} (overlaps with much of above)</li>
+     *</ul>
+     *<p>
+     * Jackson 2.12 and earlier enumerated a small set of other types under
+     * {@link java.lang} and {@link java.util}: 2.13 and later simply block
+     * all types in {@code java.*}.
+     *
+     * @param type Type that we are asked to materialize
+     *
+     * @return True if materialization should proceed; {@code false} if not.
+     */
     protected boolean _suitableType(JavaType type)
     {
         // Future plans may include calling of this method for all kinds of abstract types.
@@ -276,14 +294,10 @@ public class AbstractTypeMaterializer
                 || type.isEnumType() || type.isPrimitive()) {
             return false;
         }
-        Class<?> cls = type.getRawClass();
-        if ((cls == Number.class)
-                // 22-Jun-2016, tatu: As per [#12], avoid these too
-                || (cls == Date.class) || (cls == Calendar.class)
-                || (cls == CharSequence.class) || (cls == Iterable.class) || (cls == Iterator.class)
-                // 06-Feb-2019, tatu: [modules-base#74] and:
-                || (cls == java.io.Serializable.class)
-        ) {
+        final Class<?> cls = type.getRawClass();
+
+        // 23-Apr-2021, tatu: Jackson 2.13, as per [modules-base#132], do this:
+        if (cls.getName().startsWith("java.")) {
             return false;
         }
 
@@ -299,9 +313,9 @@ public class AbstractTypeMaterializer
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Helper classes
-    /**********************************************************
+    /**********************************************************************
      */
 
     /**
@@ -327,7 +341,7 @@ public class AbstractTypeMaterializer
             if (old != null && targetClass.isAssignableFrom(old)) {
                 return old;
             }
-            
+
             Class<?> impl;
             try {
                 impl = defineClass(className, byteCode, 0, byteCode.length);
