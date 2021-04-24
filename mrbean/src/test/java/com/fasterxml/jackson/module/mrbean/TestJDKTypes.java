@@ -65,7 +65,7 @@ public class TestJDKTypes extends BaseTest
 
     public void testStringLike() throws Exception
     {
-        CharSequence seq = MAPPER.readValue(quote("abc"), CharSequence.class);
+        CharSequence seq = MAPPER.readValue(q("abc"), CharSequence.class);
         assertEquals("abc", (String) seq);
     }
 
@@ -73,7 +73,7 @@ public class TestJDKTypes extends BaseTest
     public void testSerializable() throws Exception
     {
 //        Serializable value = MAPPER.readValue(quote("abc"), Serializable.class);
-        Serializable value = new ObjectMapper().readValue(quote("abc"), Serializable.class);
+        Serializable value = new ObjectMapper().readValue(q("abc"), Serializable.class);
         assertEquals("abc", (String) value);
     }
 
@@ -90,4 +90,19 @@ public class TestJDKTypes extends BaseTest
         assertEquals(EXP_JSON, VANILLA_MAPPER.writeValueAsString(new Bean117UsingJsonSerialize()));
         assertEquals(EXP_JSON, MAPPER.writeValueAsString(new Bean117UsingJsonSerialize()));
     }
+
+    // [modules-base#132]: Don't block "java.util.TimeZone"
+    public void testUtilTimeZone() throws Exception
+    {
+        final String json = q("PST");
+
+        TimeZone tz1 = VANILLA_MAPPER.readValue(json, TimeZone.class);
+        assertNotNull(tz1);
+
+        TimeZone tz2 = MAPPER.readValue(json, TimeZone.class);
+        assertNotNull(tz2);
+
+        assertEquals(tz1.getID(), tz2.getID());
+    }
 }
+

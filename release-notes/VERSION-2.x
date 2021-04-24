@@ -19,9 +19,10 @@ Modules:
 
 2.12.4 (not yet released
 
-#131: Failing to serialize `Thread` returned by `Thread.currentThread()` when Afterburner
-   or Blackbird registered
+#131: (afterburner) Failing to serialize `Thread` returned by `Thread.currentThread()`
+  when Afterburner or Blackbird registered
  (reported by Liudapeng@github)
+#132: (mrbean) (minimal) Prevent Mr Bean from materializing `java.util.TimeZone`
 
 2.12.3 (12-Apr-2021)
 2.12.2 (03-Mar-2021)
