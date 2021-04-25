@@ -18,11 +18,11 @@ import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class DataHandlerJsonSerializer extends StdSerializer<DataHandler>
+public class DataHandlerSerializer extends StdSerializer<DataHandler>
 {
     private static final long serialVersionUID = 1L;
 
-    public DataHandlerJsonSerializer() { super(DataHandler.class); }
+    public DataHandlerSerializer() { super(DataHandler.class); }
     
     @Override
     public void serialize(DataHandler value, JsonGenerator jgen, SerializerProvider provider)

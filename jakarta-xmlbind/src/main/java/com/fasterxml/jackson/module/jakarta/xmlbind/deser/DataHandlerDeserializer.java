@@ -13,12 +13,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 
-public class DataHandlerJsonDeserializer
+public class DataHandlerDeserializer
     extends StdScalarDeserializer<DataHandler>
 {
     private static final long serialVersionUID = 1L;
 
-    public DataHandlerJsonDeserializer() { super(DataHandler.class); }
+    public DataHandlerDeserializer() { super(DataHandler.class); }
 
     @Override
     public DataHandler deserialize(JsonParser p, DeserializationContext ctxt)

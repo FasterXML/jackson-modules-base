@@ -24,8 +24,8 @@ import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.databind.util.Converter;
-import com.fasterxml.jackson.module.jakarta.xmlbind.deser.DataHandlerJsonDeserializer;
-import com.fasterxml.jackson.module.jakarta.xmlbind.ser.DataHandlerJsonSerializer;
+import com.fasterxml.jackson.module.jakarta.xmlbind.deser.DataHandlerDeserializer;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ser.DataHandlerSerializer;
 
 /**
  * Annotation introspector that uses Jakarta Xml Bind annotations
@@ -138,8 +138,8 @@ public class JakartaXmlBindAnnotationIntrospector
         /// Data handlers included dynamically, to try to prevent issues on
         // platforms with less than complete support for JAXB API
         try {
-            dataHandlerSerializer = (JsonSerializer<?>) DataHandlerJsonSerializer.class.newInstance();
-            dataHandlerDeserializer = (JsonDeserializer<?>) DataHandlerJsonDeserializer.class.newInstance();
+            dataHandlerSerializer = (JsonSerializer<?>) DataHandlerSerializer.class.newInstance();
+            dataHandlerDeserializer = (JsonDeserializer<?>) DataHandlerDeserializer.class.newInstance();
         } catch (Throwable e) {
             //dataHandlers not supported...
         }
