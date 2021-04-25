@@ -7,9 +7,9 @@ import jakarta.xml.bind.annotation.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
-
 import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
 
 public class TestXmlID2 extends BaseJaxbTest
@@ -118,9 +118,10 @@ public class TestXmlID2 extends BaseJaxbTest
                 +"\"department\":{\"id\":9,\"name\":\"department9\",\"employees\":["
                 +"11,{\"id\":22,\"username\":\"22\",\"email\":\"22@test.com\","
                 +"\"department\":9}]}},22,{\"id\":33,\"username\":\"33\",\"email\":\"33@test.com\",\"department\":null}]";
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonMapper.builder()
         // true -> ignore XmlIDREF annotation
-        mapper.setAnnotationIntrospector(new JakartaXmlBindAnnotationIntrospector(true));
+                .annotationIntrospector(new JakartaXmlBindAnnotationIntrospector(true))
+                .build();
         
         // first, with default settings (first NOT as id)
         List<User> users = getUserList();
@@ -136,9 +137,10 @@ public class TestXmlID2 extends BaseJaxbTest
     
     public void testIdWithJaxbRules() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonMapper.builder()
         // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
-        mapper.setAnnotationIntrospector(new JakartaXmlBindAnnotationIntrospector());
+                .annotationIntrospector(new JakartaXmlBindAnnotationIntrospector())
+                .build();
         List<User> users = getUserList();
         final String json = mapper.writeValueAsString(users);
         String expected = "[{\"id\":11,\"username\":\"11\",\"email\":\"11@test.com\",\"department\":9}"

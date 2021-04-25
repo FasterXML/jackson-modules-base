@@ -86,23 +86,21 @@ public class TestJaxbTypes
         public void setBean(AbstractBean bean) { this.bean = bean; }
     }
 
-    /**
-     * Unit test for [JACKSON-250]
-     */
     @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include= JsonTypeInfo.As.PROPERTY)
     @JsonTypeName("Name")
     @XmlType    
     static class P2
     {
-    	String id;
-    	public P2(String id) { this.id = id; }
-    	public P2() { }
+        String id;
 
-    	@XmlID
-    	@XmlAttribute(name="id")
-    	public String getId() { return id; }
+        public P2(String id) { this.id = id; }
+        protected P2() { }
 
-    	public void setId(String id) { this.id = id; }
+        @XmlID
+        @XmlAttribute(name="id")
+        public String getId() { return id; }
+
+        public void setId(String id) { this.id = id; }
     }
 
     // 3.0 requires explicit PolymorphicTypeValidator with Default Typing

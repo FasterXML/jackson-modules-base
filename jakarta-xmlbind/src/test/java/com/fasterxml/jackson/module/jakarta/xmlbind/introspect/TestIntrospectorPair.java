@@ -15,9 +15,8 @@ import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
-
 import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
 /**
  * Simple testing that <code>AnnotationIntrospector.Pair</code> works as
@@ -28,15 +27,6 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
 public class TestIntrospectorPair
     extends BaseJaxbTest
 {
-    final static AnnotationIntrospector _jacksonAI = new JacksonAnnotationIntrospector();
-    final static AnnotationIntrospector _jaxbAI = new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance());
-    
-    /*
-    /**********************************************************
-    /* Helper beans
-    /**********************************************************
-     */
-
     /**
      * Simple test bean for verifying basic field detection and property
      * naming annotation handling
@@ -106,30 +96,33 @@ public class TestIntrospectorPair
         public String string;
     }
 
-    // Testing [JACKSON-495]
     static class CreatorBean {
         @JsonCreator
         public CreatorBean(@JsonProperty("name") String name) {
             ;
         }
     }
-    
+
     /*
-    /**********************************************************
-    /* Unit tests
-    /**********************************************************
+    /**********************************************************************
+    /* Test methods
+    /**********************************************************************
      */
 
+    private final static AnnotationIntrospector _jacksonAI = new JacksonAnnotationIntrospector();
+    private final static AnnotationIntrospector _jaxbAI = new JakartaXmlBindAnnotationIntrospector();
+    
     public void testSimple() throws Exception
     {
         ObjectMapper mapper;
         AnnotationIntrospector pair;
         Map<String,Object> result;
 
-        mapper = new ObjectMapper();
         // first: test with Jackson/Jaxb pair (jackson having precedence)
         pair = new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI);
-        mapper.setAnnotationIntrospector(pair);
+        mapper = objectMapperBuilder()
+                .annotationIntrospector(pair)
+                .build();
 
         result = writeAndMap(mapper, new NamedBean());
         assertEquals(3, result.size());
@@ -138,9 +131,10 @@ public class TestIntrospectorPair
         // jackson one should have priority
         assertEquals("3", result.get("bothJackson"));
 
-        mapper = new ObjectMapper();
         pair = new AnnotationIntrospectorPair(_jaxbAI, _jacksonAI);
-        mapper.setAnnotationIntrospector(pair);
+        mapper = objectMapperBuilder()
+                .annotationIntrospector(pair)
+                .build();
 
         result = writeAndMap(mapper, new NamedBean());
         assertEquals(3, result.size());
@@ -156,10 +150,11 @@ public class TestIntrospectorPair
         AnnotationIntrospector pair;
         Map<String,Object> result;
 
-        mapper = new ObjectMapper();
         // first: test with Jackson/Jaxb pair (jackson having precedence)
         pair = new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI);
-        mapper.setAnnotationIntrospector(pair);
+        mapper = objectMapperBuilder()
+            .annotationIntrospector(pair)
+            .build();
 
         result = writeAndMap(mapper, new NamedBean2());
         assertEquals(2, result.size());
@@ -167,13 +162,13 @@ public class TestIntrospectorPair
         assertEquals("123", result.get("jackson"));
         assertEquals("abc", result.get("jaxb"));
 
-        mapper = new ObjectMapper();
         pair = new AnnotationIntrospectorPair(_jaxbAI, _jacksonAI);
-        mapper.setAnnotationIntrospector(pair);
+        mapper = objectMapperBuilder()
+                .annotationIntrospector(pair)
+                .build();
 
         result = writeAndMap(mapper, new NamedBean2());
-        /* Hmmh. Not 100% sure what JAXB would dictate.... thus...
-         */
+        // Hmmh. Not 100% sure what JAXB would dictate.... thus...
         assertEquals(2, result.size());
         assertEquals("abc", result.get("jaxb"));
         //assertEquals("123", result.get("jackson"));
@@ -189,8 +184,9 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
 
         // Then JAXB only
-        mapper = new ObjectMapper();
-        mapper.setAnnotationIntrospector(_jaxbAI);
+        mapper = objectMapperBuilder()
+                .annotationIntrospector(_jaxbAI)
+                .build();
 
         // jackson one should have priority
         result = writeAndMap(mapper, new IgnoreBean());
@@ -199,16 +195,18 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
 
         // then both, Jackson first
-        mapper = new ObjectMapper();
-        mapper.setAnnotationIntrospector(new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI));
+        mapper = objectMapperBuilder()
+                .annotationIntrospector(new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI))
+                .build();
 
         result = writeAndMap(mapper, new IgnoreBean());
         assertEquals(1, result.size());
         assertEquals(Boolean.TRUE, result.get("any"));
 
         // then both, JAXB first
-        mapper = new ObjectMapper();
-        mapper.setAnnotationIntrospector(new AnnotationIntrospectorPair(_jaxbAI, _jacksonAI));
+        mapper = objectMapperBuilder()
+                .annotationIntrospector(new AnnotationIntrospectorPair(_jaxbAI, _jacksonAI))
+                .build();
 
         result = writeAndMap(mapper, new IgnoreBean());
         assertEquals(1, result.size());
@@ -227,8 +225,9 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
 
         // Then JAXB only
-        mapper = new ObjectMapper();
-        mapper.setAnnotationIntrospector(_jaxbAI);
+        mapper = objectMapperBuilder()
+                .annotationIntrospector(_jaxbAI)
+                .build();
 
         // jackson one should have priority
         result = writeAndMap(mapper, new IgnoreFieldBean());
@@ -237,16 +236,18 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
 
         // then both, Jackson first
-        mapper = new ObjectMapper();
-        mapper.setAnnotationIntrospector(new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI));
+        mapper = objectMapperBuilder()
+                .annotationIntrospector(new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI))
+                .build();
 
         result = writeAndMap(mapper, new IgnoreFieldBean());
         assertEquals(1, result.size());
         assertEquals(Boolean.TRUE, result.get("any"));
 
         // then both, JAXB first
-        mapper = new ObjectMapper();
-        mapper.setAnnotationIntrospector(new AnnotationIntrospectorPair(_jaxbAI, _jacksonAI));
+        mapper = objectMapperBuilder()
+                .annotationIntrospector(new AnnotationIntrospectorPair(_jaxbAI, _jacksonAI))
+                .build();
 
         result = writeAndMap(mapper, new IgnoreFieldBean());
         assertEquals(1, result.size());
@@ -257,13 +258,16 @@ public class TestIntrospectorPair
     {
         // first: test with Jackson/Jaxb pair (jackson having precedence)
         AnnotationIntrospector pair = new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI);
-        ObjectMapper mapper = new ObjectMapper()
-            .setAnnotationIntrospector(pair);
+        ObjectMapper mapper = objectMapperBuilder()
+            .annotationIntrospector(pair)
+            .build();
         TypeFactory tf = mapper.getTypeFactory();
 
-        assertNull(pair.findRootName(AnnotatedClassResolver.resolve(mapper.getSerializationConfig(),
+        assertNull(pair.findRootName(mapper.serializationConfig(),
+                AnnotatedClassResolver.resolve(mapper.serializationConfig(),
                 tf.constructType(NamedBean.class), null)));
-        PropertyName name = pair.findRootName(AnnotatedClassResolver.resolve(mapper.getSerializationConfig(),
+        PropertyName name = pair.findRootName(mapper.serializationConfig(),
+                AnnotatedClassResolver.resolve(mapper.serializationConfig(),
                 tf.constructType(NamespaceBean.class), null));
         assertNotNull(name);
         assertEquals("test", name.getSimpleName());
@@ -271,11 +275,13 @@ public class TestIntrospectorPair
 
         // then reverse; should make no difference
         pair = new AnnotationIntrospectorPair(_jaxbAI, _jacksonAI);
-        name = pair.findRootName(AnnotatedClassResolver.resolve(mapper.getSerializationConfig(),
+        name = pair.findRootName(mapper.serializationConfig(),
+                AnnotatedClassResolver.resolve(mapper.serializationConfig(),
                 tf.constructType(NamedBean.class), null));
         assertNull(name);
         
-        name = pair.findRootName(AnnotatedClassResolver.resolve(mapper.getSerializationConfig(),
+        name = pair.findRootName(mapper.serializationConfig(),
+                AnnotatedClassResolver.resolve(mapper.serializationConfig(),
                 tf.constructType(NamespaceBean.class), null));
         assertEquals("test", name.getSimpleName());
         assertEquals("urn:whatever", name.getNamespace());
@@ -287,8 +293,9 @@ public class TestIntrospectorPair
      */
     public void testIssue495() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setAnnotationIntrospector(new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI));
+        ObjectMapper mapper = objectMapperBuilder()
+                .annotationIntrospector(new AnnotationIntrospectorPair(_jacksonAI, _jaxbAI))
+                .build();
         CreatorBean bean = mapper.readValue("{\"name\":\"foo\"}", CreatorBean.class);
         assertNotNull(bean);
     }

@@ -7,10 +7,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
-
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
 
 /**
  * Unit tests to ensure that handling of writing of null properties (or not)
@@ -19,13 +18,7 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
 public class TestJaxbNullProperties
     extends BaseJaxbTest
 {
-    /*
-    /**********************************************************
-    /* Helper beans
-    /**********************************************************
-     */
-
-    public static class Bean
+    static class Bean
     {
        public String empty;
 
@@ -76,8 +69,9 @@ public class TestJaxbNullProperties
 
     public void testNullProps() throws Exception
     {
-        ObjectMapper mapper = getJaxbMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        ObjectMapper mapper = getJaxbMapperBuilder()
+                .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL))
+                .build();
         assertEquals("{\"x\":\"y\"}", mapper.writeValueAsString(new Bean()));
     }
 
@@ -89,13 +83,12 @@ public class TestJaxbNullProperties
         assertEquals("{\"z\":3}", mapper.writeValueAsString(new NonNillableZ(3)));
 
         // but we can change that...
-        mapper = new ObjectMapper()
-            .registerModule(new JakartaXmlBindAnnotationModule()
-                .setNonNillableInclusion(JsonInclude.Include.NON_NULL)
-                );
-        mapper.setAnnotationIntrospector(new JakartaXmlBindAnnotationIntrospector(mapper.getTypeFactory())
-            .setNonNillableInclusion(JsonInclude.Include.NON_NULL)
-        );
+        mapper = getJaxbMapperBuilder()
+                .annotationIntrospector(new JakartaXmlBindAnnotationIntrospector()
+                        .setNonNillableInclusion(JsonInclude.Include.NON_NULL)
+                    )
+                .addModule(new JakartaXmlBindAnnotationModule().setNonNillableInclusion(JsonInclude.Include.NON_NULL))
+                .build();
         assertEquals("{}", mapper.writeValueAsString(new NonNillableZ()));
         assertEquals("{\"z\":3}", mapper.writeValueAsString(new NonNillableZ(3)));
     }

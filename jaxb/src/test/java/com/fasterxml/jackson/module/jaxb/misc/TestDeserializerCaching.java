@@ -8,13 +8,7 @@ import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 
 public class TestDeserializerCaching extends BaseJaxbTest
 {
-    /*
-    /**********************************************************
-    /* Helper beans
-    /**********************************************************
-     */
-
-    static class MyBeanModule extends com.fasterxml.jackson.databind.JacksonModule {
+    static class MyBeanModule extends JacksonModule {
         @Override public String getModuleName() {
             return "MyBeanModule";
         }

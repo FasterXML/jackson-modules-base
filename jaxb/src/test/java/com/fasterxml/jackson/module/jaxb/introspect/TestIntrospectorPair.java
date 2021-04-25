@@ -23,15 +23,6 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 public class TestIntrospectorPair
     extends BaseJaxbTest
 {
-    final static AnnotationIntrospector _jacksonAI = new JacksonAnnotationIntrospector();
-    final static AnnotationIntrospector _jaxbAI = new JaxbAnnotationIntrospector();
-    
-    /*
-    /**********************************************************
-    /* Helper beans
-    /**********************************************************
-     */
-
     /**
      * Simple test bean for verifying basic field detection and property
      * naming annotation handling
@@ -108,12 +99,15 @@ public class TestIntrospectorPair
             ;
         }
     }
-    
+
     /*
-    /**********************************************************
-    /* Unit tests
-    /**********************************************************
+    /**********************************************************************
+    /* Test methods
+    /**********************************************************************
      */
+
+    private final static AnnotationIntrospector _jacksonAI = new JacksonAnnotationIntrospector();
+    private final static AnnotationIntrospector _jaxbAI = new JaxbAnnotationIntrospector();
 
     public void testSimple() throws Exception
     {

@@ -9,12 +9,6 @@ import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 
 public class TestRootName extends BaseJaxbTest
 {
-    /*
-    /**********************************************************
-    /* Helper beans
-    /**********************************************************
-     */
-
     @XmlRootElement(name="rooty")
     static class MyType
     {
@@ -22,9 +16,9 @@ public class TestRootName extends BaseJaxbTest
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Unit tests
-    /**********************************************************
+    /**********************************************************************
      */
     
     public void testRootName() throws Exception

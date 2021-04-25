@@ -7,9 +7,8 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
-
 import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
 public class TestUnwrapping extends BaseJaxbTest
 {
@@ -47,23 +46,23 @@ public class TestUnwrapping extends BaseJaxbTest
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Unit tests
-    /**********************************************************
+    /**********************************************************************
      */
-    
+
     // not asserting anything
     public void testXmlElementAndXmlElementRefs() throws Exception
     {
         Bean<A> bean = new Bean<A>();
         bean.r = new A(12);
         bean.name = "test";
-        ObjectMapper mapper = new ObjectMapper();
         AnnotationIntrospector pair = new AnnotationIntrospectorPair(
                 new JacksonAnnotationIntrospector(),
-                new JakartaXmlBindAnnotationIntrospector(mapper.getTypeFactory())
-        );
-        mapper.setAnnotationIntrospector(pair);
+                new JakartaXmlBindAnnotationIntrospector());
+        ObjectMapper mapper = objectMapperBuilder()
+                .annotationIntrospector(pair)
+                .build();
             
 //            mapper.setAnnotationIntrospector(new JacksonAnnotationIntrospector());
             // mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector());

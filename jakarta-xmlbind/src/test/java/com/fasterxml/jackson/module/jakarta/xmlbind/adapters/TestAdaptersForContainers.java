@@ -7,7 +7,6 @@ import jakarta.xml.bind.annotation.*;
 import jakarta.xml.bind.annotation.adapters.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
 import com.fasterxml.jackson.module.jakarta.xmlbind.introspect.TestJaxbAnnotationIntrospector.KeyValuePair;
@@ -153,7 +152,6 @@ public class TestAdaptersForContainers extends BaseJaxbTest
     public void testAdapterForBeanWithMap() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
         ParentJAXBBean parentJaxbBean = new ParentJAXBBean();
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("sampleKey", "sampleValue");
@@ -168,5 +166,4 @@ public class TestAdaptersForContainers extends BaseJaxbTest
          ParentJAXBBean readEx = mapper.readValue(json, ParentJAXBBean.class);
          assertEquals("sampleValue", readEx.getParams().get("sampleKey"));
     }
-    
 }

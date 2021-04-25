@@ -6,28 +6,21 @@ import java.util.Map;
 
 import jakarta.xml.bind.annotation.*;
 
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-
-import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
 /**
  * Tests for verifying auto-detection settings with JAXB annotations.
- *
- * @author Tatu Saloranta
  */
 public class TestJaxbAutoDetect extends BaseJaxbTest
 {
-    /*
-    /**********************************************************
-    /* Helper beans
-    /**********************************************************
-     */
-
     /* Bean for testing problem [JACKSON-183]: with normal
      * auto-detect enabled, 2 fields visible; if disabled, just 1.
      * NOTE: should NOT include "XmlAccessorType", since it will
@@ -80,24 +73,10 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
         }
     }
 
-    @SuppressWarnings("serial")
-    public static class DualAnnotationObjectMapper extends ObjectMapper {
-
-        public DualAnnotationObjectMapper() {
-            super();
-            AnnotationIntrospector primary = new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance());
-            AnnotationIntrospector secondary = new JacksonAnnotationIntrospector();
-
-            // make de/serializer use JAXB annotations first, then jackson ones
-            AnnotationIntrospector pair = new AnnotationIntrospectorPair(primary, secondary);
-            setAnnotationIntrospector(pair);
-        }
-    }
-
     /*
-    /**********************************************************
-    /* Unit tests
-    /**********************************************************
+    /**********************************************************************
+    /* Test methods
+    /**********************************************************************
      */
 
     public void testAutoDetectDisable() throws IOException
@@ -114,8 +93,8 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
 
         // But when disabling auto-detection, just one
         mapper = getJaxbMapperBuilder()
-              .configure(MapperFeature.AUTO_DETECT_GETTERS, false)
-              .build();
+                .changeDefaultVisibility(vc -> vc.withVisibility(PropertyAccessor.GETTER, Visibility.NONE))
+                .build();
         result = writeAndMap(mapper, bean);
         assertEquals(1, result.size());
         assertNull(result.get("a"));
@@ -133,8 +112,15 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
     // [JACKSON-556]
     public void testJaxbAnnotatedObject() throws Exception
     {
+        AnnotationIntrospector primary = new JakartaXmlBindAnnotationIntrospector();
+        AnnotationIntrospector secondary = new JacksonAnnotationIntrospector();
+        AnnotationIntrospector pair = new AnnotationIntrospectorPair(primary, secondary);
+        ObjectMapper mapper = objectMapperBuilder()
+                .annotationIntrospector(pair)
+                .build();
+
         JaxbAnnotatedObject original = new JaxbAnnotatedObject("123");
-        ObjectMapper mapper = new DualAnnotationObjectMapper();
+        
         String json = mapper.writeValueAsString(original);
         assertFalse("numberString field in JSON", json.contains("numberString")); // kinda hack-y :)
         JaxbAnnotatedObject result = mapper.readValue(json, JaxbAnnotatedObject.class);

@@ -26,14 +26,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 public class TestJaxbAnnotationIntrospector
     extends BaseJaxbTest
 {
-    /*
-    /****************************************************
-    /* Helper beans
-    /****************************************************
-     */
-
     public static enum EnumExample {
-
         @XmlEnumValue("Value One")
         VALUE1
     }
@@ -206,9 +199,9 @@ public class TestJaxbAnnotationIntrospector
     }
 
     /*
-    /****************************************************
-    /* Unit tests
-    /****************************************************
+    /**********************************************************************
+    /* Test methods
+    /**********************************************************************
      */
 
     private final ObjectMapper MAPPER = getJaxbMapper();

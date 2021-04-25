@@ -22,12 +22,6 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
  */
 public class TestJaxbAutoDetect extends BaseJaxbTest
 {
-    /*
-    /**********************************************************
-    /* Helper beans
-    /**********************************************************
-     */
-
     /* Bean for testing problem [JACKSON-183]: with normal
      * auto-detect enabled, 2 fields visible; if disabled, just 1.
      * NOTE: should NOT include "XmlAccessorType", since it will
@@ -81,9 +75,9 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
     }
 
     /*
-    /**********************************************************
-    /* Unit tests
-    /**********************************************************
+    /**********************************************************************
+    /* Test methods
+    /**********************************************************************
      */
 
     public void testAutoDetectDisable() throws IOException

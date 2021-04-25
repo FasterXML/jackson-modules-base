@@ -12,18 +12,11 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 /**
  * Unit tests to ensure that handling of writing of null properties (or not)
  * works when using JAXB annotation introspector.
- * Mostly to test out [JACKSON-309].
  */
 public class TestJaxbNullProperties
     extends BaseJaxbTest
 {
-    /*
-    /**********************************************************
-    /* Helper beans
-    /**********************************************************
-     */
-
-    public static class Bean
+    static class Bean
     {
        public String empty;
 

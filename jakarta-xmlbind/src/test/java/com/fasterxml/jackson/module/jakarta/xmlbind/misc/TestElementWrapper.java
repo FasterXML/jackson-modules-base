@@ -15,13 +15,6 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
  */
 public class TestElementWrapper extends BaseJaxbTest
 {
-    /*
-    /**********************************************************
-    /* Helper beans
-    /**********************************************************
-     */
-
-    // Beans for [JACKSON-436]
     static class Person {
         @XmlElementWrapper(name="phones")
         @XmlElement(type=Phone.class)

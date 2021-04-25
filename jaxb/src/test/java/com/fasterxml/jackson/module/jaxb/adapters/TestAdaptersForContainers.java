@@ -165,5 +165,4 @@ public class TestAdaptersForContainers extends BaseJaxbTest
          ParentJAXBBean readEx = mapper.readValue(json, ParentJAXBBean.class);
          assertEquals("sampleValue", readEx.getParams().get("sampleKey"));
     }
-    
 }

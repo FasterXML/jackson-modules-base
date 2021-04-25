@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
-// Reproduction of [Issue-9]
 public class TestXmlID2 extends BaseJaxbTest
 {
     @XmlRootElement(name = "department")

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
 
@@ -87,29 +88,38 @@ public class TestJaxbTypes
         public void setBean(AbstractBean bean) { this.bean = bean; }
     }
 
-    /**
-     * Unit test for [JACKSON-250]
-     */
     @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include= JsonTypeInfo.As.PROPERTY)
     @JsonTypeName("Name")
     @XmlType    
     static class P2
     {
-    	String id;
-    	public P2(String id) { this.id = id; }
-    	public P2() { }
+        String id;
 
-    	@XmlID
-    	@XmlAttribute(name="id")
-    	public String getId() { return id; }
+        public P2(String id) { this.id = id; }
+        protected P2() { }
 
-    	public void setId(String id) { this.id = id; }
+        @XmlID
+        @XmlAttribute(name="id")
+        public String getId() { return id; }
+
+        public void setId(String id) { this.id = id; }
+    }
+
+    // 3.0 requires explicit PolymorphicTypeValidator with Default Typing
+    public final class NoCheckSubTypeValidator
+        extends PolymorphicTypeValidator.Base
+    {
+        private static final long serialVersionUID = 1L;
+        @Override
+        public Validity validateBaseType(DatabindContext ctxt, JavaType baseType) {
+            return Validity.ALLOWED;
+        }
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Unit tests
-    /**********************************************************
+    /**********************************************************************
      */
 
     public void testXmlElementTypeDeser() throws Exception

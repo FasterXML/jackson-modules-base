@@ -9,12 +9,6 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
 
 public class TestRootName extends BaseJaxbTest
 {
-    /*
-    /**********************************************************
-    /* Helper beans
-    /**********************************************************
-     */
-
     @XmlRootElement(name="rooty")
     static class MyType
     {
@@ -22,15 +16,17 @@ public class TestRootName extends BaseJaxbTest
     }
     
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Unit tests
-    /**********************************************************
+    /**********************************************************************
      */
     
     public void testRootName() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
-        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
-        assertEquals("{\"rooty\":{\"value\":37}}", mapper.writeValueAsString(new MyType()));
+        assertEquals("{\"rooty\":{\"value\":37}}",
+                mapper.writer()
+                    .with(SerializationFeature.WRAP_ROOT_VALUE)
+                    .writeValueAsString(new MyType()));
     }
 }

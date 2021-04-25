@@ -14,9 +14,8 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
 import com.fasterxml.jackson.databind.introspect.AnnotatedField;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
-
 import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
 /**
  * Tests for verifying that JAXB annotation based introspector
@@ -25,14 +24,7 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
 public class TestJaxbAnnotationIntrospector
     extends BaseJaxbTest
 {
-    /*
-    /****************************************************
-    /* Helper beans
-    /****************************************************
-     */
-
     public static enum EnumExample {
-
         @XmlEnumValue("Value One")
         VALUE1
     }
@@ -187,27 +179,27 @@ public class TestJaxbAnnotationIntrospector
     }
     
     public static class KeyValuePair {
-    	private String key;
-    	private String value;
-    	public KeyValuePair() {}
-    	public String getKey() {
-    	    return key;
-    	}
-    	public void setKey(String key) {
-    	    this.key = key;
-    	}
-    	public String getValue() {
-    	    return value;
-    	}
-    	public void setValue(String value) {
-    	    this.value = value;
-    	}
+        private String key;
+        private String value;
+        public KeyValuePair() {}
+        public String getKey() {
+            return key;
+        }
+        public void setKey(String key) {
+            this.key = key;
+        }
+        public String getValue() {
+            return value;
+        }
+        public void setValue(String value) {
+            this.value = value;
+        }
     }
 
     /*
-    /****************************************************
-    /* Unit tests
-    /****************************************************
+    /**********************************************************************
+    /* Test methods
+    /**********************************************************************
      */
 
     private final ObjectMapper MAPPER = getJaxbMapper();
@@ -237,7 +229,6 @@ public class TestJaxbAnnotationIntrospector
                 .enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME)
                 .build();
         
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
         JaxbExample ex = new JaxbExample();
         QName qname = new QName("urn:hi", "hello");
         ex.setQname(qname);
@@ -279,26 +270,29 @@ public class TestJaxbAnnotationIntrospector
 
     public void testRootNameAccess() throws Exception
     {
-        final TypeFactory tf = TypeFactory.defaultInstance();
-        AnnotationIntrospector ai = new JakartaXmlBindAnnotationIntrospector(tf);
+        final TypeFactory tf = MAPPER.getTypeFactory();
+        AnnotationIntrospector ai = new JakartaXmlBindAnnotationIntrospector();
         // If no @XmlRootElement, should get null (unless pkg has etc)
-        assertNull(ai.findRootName(AnnotatedClassResolver.resolve(MAPPER.getSerializationConfig(),
+        assertNull(ai.findRootName(MAPPER.serializationConfig(),
+                AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
                 tf.constructType(SimpleBean.class), null)));
         // With @XmlRootElement, but no name, empty String
-        PropertyName rootName = ai.findRootName(AnnotatedClassResolver.resolve(MAPPER.getSerializationConfig(),
+        PropertyName rootName = ai.findRootName(MAPPER.serializationConfig(),
+                AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
                 tf.constructType(NamespaceBean.class), null));
         assertNotNull(rootName);
         assertEquals("", rootName.getSimpleName());
         assertEquals("urn:class", rootName.getNamespace());
 
         // and otherwise explicit name
-        rootName = ai.findRootName(AnnotatedClassResolver.resolve(MAPPER.getSerializationConfig(),
+        rootName = ai.findRootName(MAPPER.serializationConfig(),
+                AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
                 tf.constructType(RootNameBean.class), null));
         assertNotNull(rootName);
         assertEquals("test", rootName.getSimpleName());
         assertNull(rootName.getNamespace());
     }
-    
+
     // JAXB can specify that properties are to be written in alphabetic order...
     public void testSerializationAlphaOrdering() throws Exception
     {
@@ -308,20 +302,18 @@ public class TestJaxbAnnotationIntrospector
     /**
      * Additional simple tests to ensure we will retain basic namespace information
      * now that it can be included
-     * 
-     * @since 2.1
      */
     public void testNamespaces() throws Exception
     {
-        final TypeFactory tf = TypeFactory.defaultInstance();
-        JakartaXmlBindAnnotationIntrospector ai = new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance());
-        AnnotatedClass ac = AnnotatedClassResolver.resolve(MAPPER.getSerializationConfig(),
+        final TypeFactory tf = MAPPER.getTypeFactory();
+        JakartaXmlBindAnnotationIntrospector ai = new JakartaXmlBindAnnotationIntrospector();
+        AnnotatedClass ac = AnnotatedClassResolver.resolve(MAPPER.serializationConfig(),
                 tf.constructType(NamespaceBean.class), null);
         AnnotatedField af = _findField(ac, "string");
         assertNotNull(af);
-        PropertyName pn = ai.findNameForDeserialization(af);
+        PropertyName pn = ai.findNameForDeserialization(MAPPER.serializationConfig(), af);
         assertNotNull(pn);
-        
+
         // JAXB seems to assert field name instead of giving "use default"...
         assertEquals("", pn.getSimpleName());
         assertEquals("urn:method", pn.getNamespace());
