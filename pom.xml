@@ -15,10 +15,16 @@ not datatype, data format, or JAX-RS provider modules.
   </description>
 
   <modules>
+    <module>jaxb</module>
+    <module>jakarta-xmlbind</module>
+
     <module>afterburner</module>
     <module>blackbird</module>
     <module>guice</module>
+<!--
     <module>jaxb</module>
+    <module>jakarta-xmlbind</module>
+-->
     <module>mrbean</module>
     <module>osgi</module>
     <module>paranamer</module>
