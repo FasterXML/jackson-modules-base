@@ -20,20 +20,20 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.databind.util.Converter;
-import com.fasterxml.jackson.module.jaxb.deser.DataHandlerJsonDeserializer;
-import com.fasterxml.jackson.module.jaxb.ser.DataHandlerJsonSerializer;
+import com.fasterxml.jackson.module.jaxb.deser.DataHandlerDeserializer;
+import com.fasterxml.jackson.module.jaxb.ser.DataHandlerSerializer;
 
 /**
  * Annotation introspector that leverages JAXB annotations where applicable to JSON mapping.
  * As of Jackson 2.0, most JAXB annotations are supported at least to some degree.
  * Ones that are NOT yet supported are:
  * <ul>
- * <li>{@link XmlAnyAttribute} not yet used (as of 1.5) but may be in future (as an alias for @JsonAnySetter?)
- * <li>{@link XmlAnyElement} not yet used, may be as per [JACKSON-253]
+ * <li>{@link XmlAnyAttribute} not yet used but may be in future (as an alias for @JsonAnySetter?)
+ * <li>{@link XmlAnyElement} not yet used
  * <li>{@link javax.xml.bind.annotation.XmlAttachmentRef}: JSON does not support external attachments
  * <li>{@link XmlElementDecl}
  * <li>{@link XmlElementRefs} because Jackson doesn't have any support for 'named' collection items -- however,
- *    this may become partially supported as per [JACKSON-253].
+ *    this may become partially supported in future
  * <li>{@link javax.xml.bind.annotation.XmlInlineBinaryData} since the underlying concepts
  *    (like XOP) do not exist in JSON -- Jackson will always use inline base64 encoding as the method
  * <li>{@link javax.xml.bind.annotation.XmlList} because JSON does not have (or necessarily need)
@@ -44,14 +44,14 @@ import com.fasterxml.jackson.module.jaxb.ser.DataHandlerJsonSerializer;
  * <li>{@link XmlSchema} not used, unlikely to be used
  * <li>{@link XmlSchemaType} not used, unlikely to be used
  * <li>{@link XmlSchemaTypes} not used, unlikely to be used
- * <li>{@link XmlSeeAlso} not yet supported, but [ISSUE-1] filed to use it, so may be supported.
+ * <li>{@link XmlSeeAlso} not yet supported
  * </ul>
  *
  * Note also the following limitations:
  *
  * <ul>
  * <li>Any property annotated with {@link XmlValue} will have implicit property named 'value' on
- *    its JSON object; although (as of 2.4) it should be possible to override this name
+ *    its JSON object; although it should be possible to override this name
  *   </li>
  * </ul>
  *<p>
@@ -121,8 +121,8 @@ public class JaxbAnnotationIntrospector
         // Data handlers included dynamically, to try to prevent issues on platforms
         // with less than complete support for JAXB API
         try {
-            dataHandlerSerializer = ClassUtil.createInstance(DataHandlerJsonSerializer.class, false);
-            dataHandlerDeserializer = ClassUtil.createInstance(DataHandlerJsonDeserializer.class, false);
+            dataHandlerSerializer = ClassUtil.createInstance(DataHandlerSerializer.class, false);
+            dataHandlerDeserializer = ClassUtil.createInstance(DataHandlerDeserializer.class, false);
         } catch (Throwable e) {
             //dataHandlers not supported...
         }

@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.jaxb.deser;
+package com.fasterxml.jackson.module.jakarta.xmlbind.deser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,13 +14,10 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 
-/**
- * @author Ryan Heaton
- */
-public class DataHandlerJsonDeserializer
+public class DataHandlerDeserializer
     extends StdScalarDeserializer<DataHandler>
 {
-    public DataHandlerJsonDeserializer() { super(DataHandler.class); }
+    public DataHandlerDeserializer() { super(DataHandler.class); }
 
     @Override
     public DataHandler deserialize(JsonParser p, DeserializationContext ctxt)

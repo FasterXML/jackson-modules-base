@@ -12,7 +12,7 @@
     <version>3.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-module-jaxb-annotations</artifactId>
-  <name>Jackson module: JAXB Annotations</name>
+  <name>Jackson module: Old JAXB Annotations (javax.xml.bind)</name>
   <packaging>bundle</packaging>
 
   <description>Support for using JAXB annotations as an alternative to "native" Jackson annotations, for configuring

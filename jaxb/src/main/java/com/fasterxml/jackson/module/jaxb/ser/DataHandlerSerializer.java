@@ -15,9 +15,9 @@ import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 
-public class DataHandlerJsonSerializer extends StdSerializer<DataHandler>
+public class DataHandlerSerializer extends StdSerializer<DataHandler>
 {
-    public DataHandlerJsonSerializer() { super(DataHandler.class); }
+    public DataHandlerSerializer() { super(DataHandler.class); }
     
     @Override
     public void serialize(DataHandler value, JsonGenerator g, SerializerProvider provider)

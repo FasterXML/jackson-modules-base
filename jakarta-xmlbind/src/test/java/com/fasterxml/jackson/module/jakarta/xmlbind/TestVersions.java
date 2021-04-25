@@ -3,15 +3,11 @@ package com.fasterxml.jackson.module.jakarta.xmlbind;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.Versioned;
 
-import com.fasterxml.jackson.databind.type.TypeFactory;
-
-import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
-
 public class TestVersions extends BaseJaxbTest
 {
     public void testVersions()
     {
-        assertVersion(new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance()));
+        assertVersion(new JakartaXmlBindAnnotationIntrospector());
     }
 
     /*

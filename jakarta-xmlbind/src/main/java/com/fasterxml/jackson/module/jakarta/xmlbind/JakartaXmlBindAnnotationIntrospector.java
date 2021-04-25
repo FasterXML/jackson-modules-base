@@ -19,13 +19,12 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
-import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.databind.util.Converter;
-import com.fasterxml.jackson.module.jakarta.xmlbind.deser.DataHandlerJsonDeserializer;
-import com.fasterxml.jackson.module.jakarta.xmlbind.ser.DataHandlerJsonSerializer;
+
+import com.fasterxml.jackson.module.jakarta.xmlbind.deser.DataHandlerDeserializer;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ser.DataHandlerSerializer;
 
 /**
  * Annotation introspector that uses Jakarta Xml Bind annotations
@@ -75,14 +74,11 @@ public class JakartaXmlBindAnnotationIntrospector
     protected final static String MARKER_FOR_DEFAULT = "##default";
 
     protected final static JsonFormat.Value FORMAT_STRING = new JsonFormat.Value().withShape(JsonFormat.Shape.STRING);
-
     protected final static JsonFormat.Value FORMAT_INT = new JsonFormat.Value().withShape(JsonFormat.Shape.NUMBER_INT);
 
     protected final String _jaxbPackageName;
-    protected final JsonSerializer<?> _dataHandlerSerializer;
-    protected final JsonDeserializer<?> _dataHandlerDeserializer;
-
-    protected final TypeFactory _typeFactory;
+    protected final ValueSerializer<?> _dataHandlerSerializer;
+    protected final ValueDeserializer<?> _dataHandlerDeserializer;
 
     protected final boolean _ignoreXmlIDREF;
 
@@ -100,46 +96,30 @@ public class JakartaXmlBindAnnotationIntrospector
      * {@code null}; this is typically changed to either
      * {@link com.fasterxml.jackson.annotation.JsonInclude.Include#NON_NULL}
      * or {@link com.fasterxml.jackson.annotation.JsonInclude.Include#NON_EMPTY}.
-     *
-     * @since 2.7
      */
     protected JsonInclude.Include _nonNillableInclusion = null;
-    
-    /**
-     * @deprecated Since 2.1, use constructor that takes TypeFactory.
-     */
-    @Deprecated
+
     public JakartaXmlBindAnnotationIntrospector() {
-        this(TypeFactory.defaultInstance());
-    }
-
-    public JakartaXmlBindAnnotationIntrospector(MapperConfig<?> config) {
-        this(config.getTypeFactory());
-    }
-
-    public JakartaXmlBindAnnotationIntrospector(TypeFactory typeFactory) {
-        this(typeFactory, DEFAULT_IGNORE_XMLIDREF);
+        this(DEFAULT_IGNORE_XMLIDREF);
     }
 
     /**
-     * @param typeFactory Type factory used for resolving type information
      * @param ignoreXmlIDREF Whether {@link XmlIDREF} annotation should be processed
      *   JAXB style (meaning that references are always serialized using id), or
      *   not (first reference as full POJO, others as ids)
      */
-    public JakartaXmlBindAnnotationIntrospector(TypeFactory typeFactory, boolean ignoreXmlIDREF)
+    public JakartaXmlBindAnnotationIntrospector(boolean ignoreXmlIDREF)
     {
-        _typeFactory = (typeFactory == null)? TypeFactory.defaultInstance() : typeFactory;
         _ignoreXmlIDREF = ignoreXmlIDREF;
         _jaxbPackageName = XmlElement.class.getPackage().getName();
 
-        JsonSerializer<?> dataHandlerSerializer = null;
-        JsonDeserializer<?> dataHandlerDeserializer = null;
-        /// Data handlers included dynamically, to try to prevent issues on
-        // platforms with less than complete support for JAXB API
+        ValueSerializer<?> dataHandlerSerializer = null;
+        ValueDeserializer<?> dataHandlerDeserializer = null;
+        // Data handlers included dynamically, to try to prevent issues on platforms
+        // with less than complete support for JAXB API
         try {
-            dataHandlerSerializer = (JsonSerializer<?>) DataHandlerJsonSerializer.class.newInstance();
-            dataHandlerDeserializer = (JsonDeserializer<?>) DataHandlerJsonDeserializer.class.newInstance();
+            dataHandlerSerializer = ClassUtil.createInstance(DataHandlerSerializer.class, false);
+            dataHandlerDeserializer = ClassUtil.createInstance(DataHandlerDeserializer.class, false);
         } catch (Throwable e) {
             //dataHandlers not supported...
         }
@@ -168,6 +148,8 @@ public class JakartaXmlBindAnnotationIntrospector
      * note that setting it to <code>null</code> will actually avoid
      * name override, and name will instead be derived from underlying
      * method name using standard bean name introspection.
+     * 
+     * @since 2.5
      */
     public void setNameUsedForXmlValue(String name) {
         _xmlValueName = name;
@@ -185,25 +167,19 @@ public class JakartaXmlBindAnnotationIntrospector
      * Method to call to change inclusion criteria used for property annotated
      * with {@link XmlElement} or {@link XmlElementWrapper}, with <code>nillable</code>
      * set as <code>false</code>.
-     *
-     * @since 2.7
      */
     public JakartaXmlBindAnnotationIntrospector setNonNillableInclusion(JsonInclude.Include incl) {
         _nonNillableInclusion = incl;
         return this;
     }
 
-    /**
-     * @since 2.7
-     */
     public JsonInclude.Include getNonNillableInclusion() {
         return _nonNillableInclusion;
     }
 
     /*
     /**********************************************************************
-    /* Extended API: since 2.13, AnnotationIntrospector.XmlExtensions
-     * (before 2.13: XmlAnnotationIntrospector)
+    /* Extended API: AnnotationIntrospector.XmlExtensions
     /**********************************************************************
      */
 
@@ -279,11 +255,12 @@ public class JakartaXmlBindAnnotationIntrospector
      */
     
     @Override
-    public ObjectIdInfo findObjectIdInfo(Annotated ann)
+    public ObjectIdInfo findObjectIdInfo(MapperConfig<?> config, Annotated ann)
     {
-        // To work in the way that works with JAXB and Jackson,
-        // we need to do things in bit of round-about way, starting
-        // with AnnotatedClass, locating @XmlID property, if any.
+        /* To work in the way that works with JAXB and Jackson,
+         * we need to do things in bit of round-about way, starting
+         * with AnnotatedClass, locating @XmlID property, if any.
+         */
         if (!(ann instanceof AnnotatedClass)) {
             return null;
         }
@@ -336,14 +313,13 @@ public class JakartaXmlBindAnnotationIntrospector
     }
 
     @Override
-    public ObjectIdInfo findObjectReferenceInfo(Annotated ann, ObjectIdInfo base)
+    public ObjectIdInfo findObjectReferenceInfo(MapperConfig<?> config, 
+            Annotated ann, ObjectIdInfo base)
     {
         if (!_ignoreXmlIDREF) {
             XmlIDREF idref = ann.getAnnotation(XmlIDREF.class);
-            /* JAXB makes XmlIDREF mean "always as id", as far as I know.
-             * May need to make it configurable in future, but for not that
-             * is fine...
-             */
+            // JAXB makes XmlIDREF mean "always as id", as far as I know.
+            // May need to make it configurable in future, but for now that is fine...
             if (idref != null) {
                 if (base == null) {
                     base = ObjectIdInfo.empty();
@@ -361,7 +337,7 @@ public class JakartaXmlBindAnnotationIntrospector
      */
 
     @Override
-    public PropertyName findRootName(AnnotatedClass ac)
+    public PropertyName findRootName(MapperConfig<?> config, AnnotatedClass ac)
     {
         XmlRootElement elem = findRootElementAnnotation(ac);
         if (elem != null) {
@@ -370,17 +346,31 @@ public class JakartaXmlBindAnnotationIntrospector
         return null;
     }
 
-    // 28-Jul-2020, tatu: two parts; by-name ignorals have no counterpart in JAXB;
-    //   although "ignore unknown" could map (by default this is what JAXB does).
-    //   But without annotation changing that, not much we can map here
+    /*
+    @Override
+    public String[] findPropertiesToIgnore(MapperConfig<?> config, Annotated a) {
+        // nothing in JAXB for this?
+        return null;
+    }
+    */
+
+    /* 08-Nov-2009, tatus: This is bit trickier: by default JAXB
+     * does actually ignore all unknown properties.
+     * But since there is no annotation to
+     * specify or change this, it seems wrong to claim such setting
+     * is in effect. May need to revisit this issue in future
+     */
+    /*
+    @Override
+    public Boolean findIgnoreUnknownProperties(MapperConfig<?> config, AnnotatedClass ac);
 
     /*
     @Override
-    public JsonIgnoreProperties.Value findPropertyIgnoralByName(MapperConfig<?> config, Annotated ann)
+    public JsonIgnoreProperties.Value findPropertyIgnorals(MapperConfig<?> config, Annotated ac);
     */
 
     @Override
-    public Boolean isIgnorableType(AnnotatedClass ac) {
+    public Boolean isIgnorableType(MapperConfig<?> config, AnnotatedClass ac) {
         // Does JAXB have any such indicators? No?
         return null;
     }
@@ -392,7 +382,7 @@ public class JakartaXmlBindAnnotationIntrospector
      */
 
     @Override
-    public boolean hasIgnoreMarker(AnnotatedMember m) {
+    public boolean hasIgnoreMarker(MapperConfig<?> config, AnnotatedMember m) {
         return m.getAnnotation(XmlTransient.class) != null;
     }
 
@@ -408,14 +398,14 @@ public class JakartaXmlBindAnnotationIntrospector
     
     /*
     @Override
-    public boolean hasAnySetterAnnotation(AnnotatedMethod am) { }
+    public boolean hasAnySetterAnnotation(MapperConfig<?> config, AnnotatedMethod am) { }
     
     @Override
-    public boolean hasAnySetterAnnotation(AnnotatedMethod am)
+    public boolean hasAnySetterAnnotation(MapperConfig<?> config, AnnotatedMethod am)
     */
 
     @Override
-    public Boolean hasRequiredMarker(AnnotatedMember m) {
+    public Boolean hasRequiredMarker(MapperConfig<?> config, AnnotatedMember m) {
         // 17-Oct-2017, tatu: [modules-base#32]
         //   Before 2.9.3, was handling `true` correctly,
         //   but otherwise used confusing logic (probably in attempt to try to avoid
@@ -432,13 +422,14 @@ public class JakartaXmlBindAnnotationIntrospector
     }
 
     @Override
-    public PropertyName findWrapperName(Annotated ann)
+    public PropertyName findWrapperName(MapperConfig<?> config, Annotated ann)
     {
         XmlElementWrapper w = findAnnotation(XmlElementWrapper.class, ann, false, false, false);
         if (w != null) {
-            // 18-Sep-2013, tatu: As per [jaxb-annotations#24], need to take special care with empty
-            //  String, as that should indicate here "use underlying unmodified
-            //   property name" (that is, one NOT overridden by @JsonProperty)
+            /* 18-Sep-2013, tatu: As per [jaxb-annotations#24], need to take special care with empty
+             *   String, as that should indicate here "use underlying unmodified
+             *   property name" (that is, one NOT overridden by @JsonProperty)
+             */
             PropertyName name =  _combineNames(w.name(), w.namespace(), "");
             // clumsy, yes, but has to do:
             if (!name.hasSimpleName()) {
@@ -462,7 +453,7 @@ public class JakartaXmlBindAnnotationIntrospector
     }
 
     @Override
-    public String findImplicitPropertyName(AnnotatedMember m) {
+    public String findImplicitPropertyName(MapperConfig<?> config, AnnotatedMember m) {
         XmlValue valueInfo = m.getAnnotation(XmlValue.class);
         if (valueInfo != null) {
             return _xmlValueName;
@@ -471,8 +462,10 @@ public class JakartaXmlBindAnnotationIntrospector
     }
 
     @Override
-    public JsonFormat.Value findFormat(Annotated m) {
-        // Use @XmlEnum value (Class) to indicate format, iff it makes sense
+    public JsonFormat.Value findFormat(MapperConfig<?> config, Annotated m) {
+        /* [jaxb-annotations#33]: Use @XmlEnum value (Class) to indicate format,
+         *   iff it makes sense
+         */
         if (m instanceof AnnotatedClass) {
             XmlEnum ann = m.getAnnotation(XmlEnum.class);
             if (ann != null) {
@@ -495,17 +488,15 @@ public class JakartaXmlBindAnnotationIntrospector
      */
     
     @Override
-    public VisibilityChecker<?> findAutoDetectVisibility(AnnotatedClass ac,
-        VisibilityChecker<?> checker)
+    public VisibilityChecker findAutoDetectVisibility(MapperConfig<?> config,
+            AnnotatedClass ac, VisibilityChecker checker)
     {
         XmlAccessType at = findAccessType(ac);
         if (at == null) {
-            /* JAXB default is "PUBLIC_MEMBER"; however, here we should not
-             * override settings if there is no annotation -- that would mess
-             * up global baseline. Fortunately Jackson defaults are very close
-             * to JAXB 'PUBLIC_MEMBER' settings (considering that setters and
-             * getters must come in pairs)
-             */
+            // JAXB default is "PUBLIC_MEMBER"; however, here we should not override
+            // settings if there is no annotation -- that would mess up global
+            // baseline. Fortunately Jackson defaults are very close to JAXB 'PUBLIC_MEMBER'
+            // settings (considering that setters and getters must come in pairs)
             return checker;
         }
         
@@ -553,63 +544,41 @@ public class JakartaXmlBindAnnotationIntrospector
     
     /*
     /**********************************************************************
-    /* Class annotations for Polymorphic type handling
+    /* Class annotations for PM type handling
     /**********************************************************************
      */
-    
-    @Override
-    public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config,
-            AnnotatedClass ac, JavaType baseType)
-    {
-        // no per-class type resolvers, right?
-        return null;
-    }
 
     @Override
-    public TypeResolverBuilder<?> findPropertyTypeResolver(MapperConfig<?> config,
-            AnnotatedMember am, JavaType baseType)
+    public JsonTypeInfo.Value findPolymorphicTypeInfo(MapperConfig<?> config, Annotated ann)
     {
-        // First: @XmlElements and @XmlElementRefs only applies type for immediate property, if it
-        // is NOT a structured type.
-        if (baseType.isContainerType()) return null;
-        return _typeResolverFromXmlElements(am);
-    }
+        // If simple type, @XmlElements and @XmlElementRefs are applicable.
+        // Note: @XmlElement and @XmlElementRef are NOT handled here, since they
+        // are handled specifically as non-polymorphic indication
+        // of the actual type
+        XmlElements elems = findAnnotation(XmlElements.class, ann, false, false, false);
 
-    @Override
-    public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config,
-            AnnotatedMember am, JavaType containerType)
-    {
-        // First: let's ensure property is a container type: caller should have
-        // verified but just to be sure
-        if (containerType.getContentType() == null) {
-            throw new IllegalArgumentException("Must call method with a container or reference type (got "+containerType+")");
+        if (elems == null) {
+            XmlElementRefs elemRefs = findAnnotation(XmlElementRefs.class, ann, false, false, false);
+            if (elemRefs == null) {
+                return null;
+            }
         }
-        return _typeResolverFromXmlElements(am);
-    }
-
-    protected TypeResolverBuilder<?> _typeResolverFromXmlElements(AnnotatedMember am)
-    {
-        /* If simple type, @XmlElements and @XmlElementRefs are applicable.
-         * Note: @XmlElement and @XmlElementRef are NOT handled here, since they
-         * are handled specifically as non-polymorphic indication
-         * of the actual type
-         */
-        XmlElements elems = findAnnotation(XmlElements.class, am, false, false, false);
-        XmlElementRefs elemRefs = findAnnotation(XmlElementRefs.class, am, false, false, false);
-        if (elems == null && elemRefs == null) {
-            return null;
-        }
-
+        // JAXB always uses type name as id; let's consider WRAPPER_OBJECT to be canonical inclusion method
+        // (TODO: should it be possible to merge such annotations in AnnotationIntrospector pair?)
+        return JsonTypeInfo.Value.construct(JsonTypeInfo.Id.NAME, JsonTypeInfo.As.WRAPPER_OBJECT,
+                "", null, false);
+/*// in 2.0 we had:
         TypeResolverBuilder<?> b = new StdTypeResolverBuilder();
         // JAXB always uses type name as id
         b = b.init(JsonTypeInfo.Id.NAME, null);
         // and let's consider WRAPPER_OBJECT to be canonical inclusion method
         b = b.inclusion(JsonTypeInfo.As.WRAPPER_OBJECT);
-        return b;        
+        return b;
+*/
     }
     
     @Override
-    public List<NamedType> findSubtypes(Annotated a)
+    public List<NamedType> findSubtypes(MapperConfig<?> config, Annotated a)
     {
         // No package/superclass defaulting (only used with fields, methods)
         XmlElements elems = findAnnotation(XmlElements.class, a, false, false, false);
@@ -667,7 +636,7 @@ public class JakartaXmlBindAnnotationIntrospector
     }
 
     @Override
-    public String findTypeName(AnnotatedClass ac) {
+    public String findTypeName(MapperConfig<?> config, AnnotatedClass ac) {
         XmlType type = findAnnotation(XmlType.class, ac, false, false, false);
         if (type != null) {
             String name = type.name();
@@ -683,28 +652,9 @@ public class JakartaXmlBindAnnotationIntrospector
      */
 
     @Override
-    public JsonSerializer<?> findSerializer(Annotated am)
+    public ValueSerializer<?> findSerializer(MapperConfig<?> config, Annotated am)
     {
         final Class<?> type = _rawSerializationType(am);
-
-        /*
-        // As per [JACKSON-722], more checks for structured types
-        XmlAdapter<Object,Object> adapter = findAdapter(am, true, type);
-        if (adapter != null) {
-            boolean fromClass = !(am instanceof AnnotatedMember);
-            // Ugh. Must match to see if adapter's bounded type (result to map to) matches property type
-            if (isContainerType(type)) {
-                Class<?> bt = findAdapterBoundType(adapter);
-                if (bt.isAssignableFrom(type)) {
-                    return new XmlAdapterJsonSerializer(adapter, fromClass);
-                }
-                // Note: if used for value type, handled in different place
-            } else {
-                return new XmlAdapterJsonSerializer(adapter, fromClass);
-            }
-        }
-        */
-
         // Add support for additional core XML types needed by JAXB
         if (type != null) {
             if (_dataHandlerSerializer != null && isDataHandler(type)) {
@@ -728,26 +678,12 @@ public class JakartaXmlBindAnnotationIntrospector
     }
 
     @Override
-    public Object findContentSerializer(Annotated a) {
+    public Object findContentSerializer(MapperConfig<?> config, Annotated a) {
         return null;
     }
 
     @Override
-    @Deprecated // since 2.7
-    public Class<?> findSerializationType(Annotated a)
-    {
-        Class<?> allegedType = _getTypeFromXmlElement(a);
-        if (allegedType != null){
-            Class<?> rawPropType = _rawSerializationType(a);
-            if (!isContainerType(rawPropType)) {
-                return allegedType;
-            }
-        }
-        return null;
-    }
-
-    @Override // @since 2.7
-    public JsonInclude.Value findPropertyInclusion(Annotated a)
+    public JsonInclude.Value findPropertyInclusion(MapperConfig<?> config, Annotated a)
     {
         JsonInclude.Include incl = _serializationInclusion(a, null);
         if (incl == null) {
@@ -782,9 +718,9 @@ public class JakartaXmlBindAnnotationIntrospector
         return defValue;
     }
 
-    @Override // @since 2.7
+    @Override
     public JavaType refineSerializationType(final MapperConfig<?> config,
-            final Annotated a, final JavaType baseType) throws JsonMappingException
+            final Annotated a, final JavaType baseType)
     {
         Class<?> serClass = _getTypeFromXmlElement(a);
         if (serClass == null) {
@@ -807,7 +743,7 @@ public class JakartaXmlBindAnnotationIntrospector
             try {
                 return tf.constructGeneralizedType(baseType, serClass);
             } catch (IllegalArgumentException iae) {
-                throw new JsonMappingException(null,
+                throw DatabindException.from((JsonParser) null,
                         String.format("Failed to widen type %s with annotation (value %s), from '%s': %s",
                                 baseType, serClass.getName(), a.getName(), iae.getMessage()),
                                 iae);
@@ -827,7 +763,7 @@ public class JakartaXmlBindAnnotationIntrospector
                     try {
                        contentType = tf.constructGeneralizedType(contentType, serClass);
                     } catch (IllegalArgumentException iae) {
-                        throw new JsonMappingException(null,
+                        throw DatabindException.from((JsonParser)null,
                                 String.format("Failed to widen value type of %s with concrete-type annotation (value %s), from '%s': %s",
                                         baseType, serClass.getName(), a.getName(), iae.getMessage()),
                                         iae);
@@ -846,7 +782,7 @@ public class JakartaXmlBindAnnotationIntrospector
      */
 
     @Override
-    public String[] findSerializationPropertyOrder(AnnotatedClass ac)
+    public String[] findSerializationPropertyOrder(MapperConfig<?> config, AnnotatedClass ac)
     {
         // @XmlType.propOrder fits the bill here:
         XmlType type = findAnnotation(XmlType.class, ac, true, true, true);
@@ -861,7 +797,7 @@ public class JakartaXmlBindAnnotationIntrospector
     }
 
     @Override
-    public Boolean findSerializationSortAlphabetically(Annotated ann) {
+    public Boolean findSerializationSortAlphabetically(MapperConfig<?> config, Annotated ann) {
         return _findAlpha(ann);
     }
 
@@ -871,26 +807,26 @@ public class JakartaXmlBindAnnotationIntrospector
     }
     
     @Override
-    public Object findSerializationConverter(Annotated a)
+    public Object findSerializationConverter(MapperConfig<?> config, Annotated a)
     {
         Class<?> serType = _rawSerializationType(a);
         // Can apply to both container and regular type; no difference yet here
-        XmlAdapter<?,?> adapter = findAdapter(a, true, serType);
+        XmlAdapter<?,?> adapter = findAdapter(config, a, true, serType);
         if (adapter != null) {
-            return _converter(adapter, true);
+            return _converter(config, adapter, true);
         }
         return null;
     }
 
     @Override
-    public Object findSerializationContentConverter(AnnotatedMember a)
+    public Object findSerializationContentConverter(MapperConfig<?> config, AnnotatedMember a)
     {
         // But this one only applies to structured (container) types:
         Class<?> serType = _rawSerializationType(a);
         if (isContainerType(serType)) {
-            XmlAdapter<?,?> adapter = _findContentAdapter(a, true);
+            XmlAdapter<?,?> adapter = _findContentAdapter(config, a, true);
             if (adapter != null) {
-                return _converter(adapter, true);
+                return _converter(config, adapter, true);
             }
         }
         return null;
@@ -903,7 +839,7 @@ public class JakartaXmlBindAnnotationIntrospector
      */
 
     @Override
-    public PropertyName findNameForSerialization(Annotated a)
+    public PropertyName findNameForSerialization(MapperConfig<?> config, Annotated a)
     {
         // 16-Sep-2016, tatu: Prior to 2.9 logic her more complicated, on assumption
         //    that visibility rules may require return of "" if method/field visible;
@@ -926,12 +862,13 @@ public class JakartaXmlBindAnnotationIntrospector
     // As per above, nothing to detect here either...?
     /*
     @Override
-    public Boolean findAsValueAnnotation(Annotated a) {
+    public Boolean findAsValueAnnotation(MapperConfig<?> config, Annotated a) {
     }
     */
 
-    @Override // since 2.7
-    public String[] findEnumValues(Class<?> enumType, Enum<?>[] enumValues, String[] names) {
+    @Override
+    public String[] findEnumValues(MapperConfig<?> config, 
+            Class<?> enumType, Enum<?>[] enumValues, String[] names) {
         HashMap<String,String> expl = null;
         for (Field f : enumType.getDeclaredFields()) {
             if (!f.isEnumConstant()) {
@@ -968,11 +905,12 @@ public class JakartaXmlBindAnnotationIntrospector
     /* Deserialization: general annotations
     /**********************************************************************
      */
-
+    
     @Override
-    public Object findDeserializer(Annotated am)
+    public Object findDeserializer(MapperConfig<?> config, Annotated am)
     {
         final Class<?> type = _rawDeserializationType(am);
+
         // [JACKSON-150]: add support for additional core XML types needed by JAXB
         if (type != null) {
             if (_dataHandlerDeserializer != null && isDataHandler(type)) {
@@ -984,13 +922,13 @@ public class JakartaXmlBindAnnotationIntrospector
     }
 
     @Override
-    public Object findKeyDeserializer(Annotated am) {
+    public Object findKeyDeserializer(MapperConfig<?> config, Annotated am) {
         // Is there something like this in JAXB?
         return null;
     }
 
     @Override
-    public Object findContentDeserializer(Annotated a) {
+    public Object findContentDeserializer(MapperConfig<?> config, Annotated a) {
         return null;
     }
 
@@ -1014,10 +952,9 @@ public class JakartaXmlBindAnnotationIntrospector
         return null;
     }
 
-    // @since 2.7
     @Override
     public JavaType refineDeserializationType(final MapperConfig<?> config,
-            final Annotated a, final JavaType baseType) throws JsonMappingException
+            final Annotated a, final JavaType baseType)
     {
         Class<?> deserClass = _getTypeFromXmlElement(a);
         if (deserClass == null) {
@@ -1038,7 +975,7 @@ public class JakartaXmlBindAnnotationIntrospector
             try {
                 return tf.constructSpecializedType(baseType, deserClass);
             } catch (IllegalArgumentException iae) {
-                throw new JsonMappingException(null,
+                throw DatabindException.from((JsonParser) null,
                         String.format("Failed to narrow type %s with annotation (value %s), from '%s': %s",
                                 baseType, deserClass.getName(), a.getName(), iae.getMessage()),
                                 iae);
@@ -1056,7 +993,7 @@ public class JakartaXmlBindAnnotationIntrospector
                    contentType = tf.constructSpecializedType(contentType, deserClass);
                    return baseType.withContentType(contentType);
                 } catch (IllegalArgumentException iae) {
-                    throw new JsonMappingException(null,
+                    throw DatabindException.from((JsonParser) null,
                             String.format("Failed to narrow type %s with annotation (value %s), from '%s': %s",
                                     baseType, deserClass.getName(), a.getName(), iae.getMessage()),
                                     iae);
@@ -1073,7 +1010,7 @@ public class JakartaXmlBindAnnotationIntrospector
      */
 
     @Override
-    public PropertyName findNameForDeserialization(Annotated a)
+    public PropertyName findNameForDeserialization(MapperConfig<?> config, Annotated a)
     {
         // 16-Sep-2016, tatu: Prior to 2.9 logic her more complicated, on assumption
         //    that visibility rules may require return of "" if method/fied visible;
@@ -1096,33 +1033,26 @@ public class JakartaXmlBindAnnotationIntrospector
     }
 
     @Override
-    public Object findDeserializationConverter(Annotated a)
+    public Object findDeserializationConverter(MapperConfig<?> config, Annotated a)
     {
         // One limitation: for structured types this is done later on
         Class<?> deserType = _rawDeserializationType(a);
-        if (isContainerType(deserType)) {
-            XmlAdapter<?,?> adapter = findAdapter(a, true, deserType);
-            if (adapter != null) {
-                return _converter(adapter, false);
-            }
-        } else {
-            XmlAdapter<?,?> adapter = findAdapter(a, true, deserType);
-            if (adapter != null) {
-                return _converter(adapter, false);
-            }
+        XmlAdapter<?,?> adapter = findAdapter(config, a, true, deserType);
+        if (adapter != null) {
+            return _converter(config, adapter, false);
         }
         return null;
     }
 
     @Override
-    public Object findDeserializationContentConverter(AnnotatedMember a)
+    public Object findDeserializationContentConverter(MapperConfig<?> config, AnnotatedMember a)
     {
         // conversely, here we only apply this to container types:
         Class<?> deserType = _rawDeserializationType(a);
         if (isContainerType(deserType)) {
-            XmlAdapter<?,?> adapter = _findContentAdapter(a, false);
+            XmlAdapter<?,?> adapter = _findContentAdapter(config, a, false);
             if (adapter != null) {
-                return _converter(adapter, false);
+                return _converter(config, adapter, false);
             }
         }
         return null;
@@ -1347,8 +1277,8 @@ public class JakartaXmlBindAnnotationIntrospector
      * 
      * @return The adapter, or null if none.
      */
-    private XmlAdapter<Object,Object> findAdapter(Annotated am, boolean forSerialization,
-            Class<?> type)
+    private XmlAdapter<Object,Object> findAdapter(MapperConfig<?> config, Annotated am,
+            boolean forSerialization, Class<?> type)
     {
         // First of all, are we looking for annotations for class?
         if (am instanceof AnnotatedClass) {
@@ -1357,7 +1287,7 @@ public class JakartaXmlBindAnnotationIntrospector
         // Otherwise for a member. First, let's figure out type of property
         XmlJavaTypeAdapter adapterInfo = findAnnotation(XmlJavaTypeAdapter.class, am, true, false, false);
         if (adapterInfo != null) {
-            XmlAdapter<Object,Object> adapter = checkAdapter(adapterInfo, type, forSerialization);
+            XmlAdapter<Object,Object> adapter = checkAdapter(config, adapterInfo, type, forSerialization);
             if (adapter != null) {
                 return adapter;
             }
@@ -1365,7 +1295,7 @@ public class JakartaXmlBindAnnotationIntrospector
         XmlJavaTypeAdapters adapters = findAnnotation(XmlJavaTypeAdapters.class, am, true, false, false);
         if (adapters != null) {
             for (XmlJavaTypeAdapter info : adapters.value()) {
-                XmlAdapter<Object,Object> adapter = checkAdapter(info, type, forSerialization);
+                XmlAdapter<Object,Object> adapter = checkAdapter(config, info, type, forSerialization);
                 if (adapter != null) {
                     return adapter;
                 }
@@ -1375,15 +1305,15 @@ public class JakartaXmlBindAnnotationIntrospector
     }
     
     @SuppressWarnings("unchecked")
-    private final XmlAdapter<Object,Object> checkAdapter(XmlJavaTypeAdapter adapterInfo, Class<?> typeNeeded,
-            boolean forSerialization)
+    private final XmlAdapter<Object,Object> checkAdapter(MapperConfig<?> config, XmlJavaTypeAdapter adapterInfo,
+            Class<?> typeNeeded, boolean forSerialization)
     {
         // if annotation has no type, it's applicable; if it has, must match
         Class<?> adaptedType = adapterInfo.type();
         
         if (adaptedType == XmlJavaTypeAdapter.DEFAULT.class) {
-            JavaType type = _typeFactory.constructType(adapterInfo.value());
-            JavaType[] params = _typeFactory.findTypeParameters(type, XmlAdapter.class);
+            JavaType type = config.constructType(adapterInfo.value());
+            JavaType[] params = config.getTypeFactory().findTypeParameters(type, XmlAdapter.class);
             adaptedType = params[1].getRawClass();
         }
         if (adaptedType.isAssignableFrom(typeNeeded)) {
@@ -1413,10 +1343,6 @@ public class JakartaXmlBindAnnotationIntrospector
         return null;
     }
 
-    protected final TypeFactory getTypeFactory() {
-        return _typeFactory;
-    }
-    
     /**
      * Helper method used to distinguish structured types (arrays, Lists, Maps),
      * which with JAXB use different rules for defining content types.
@@ -1427,24 +1353,7 @@ public class JakartaXmlBindAnnotationIntrospector
             || Map.class.isAssignableFrom(raw);
     }
 
-    private boolean adapterTypeMatches(XmlAdapter<?,?> adapter, Class<?> targetType)
-    {
-        return findAdapterBoundType(adapter).isAssignableFrom(targetType);
-    }
-
-    private Class<?> findAdapterBoundType(XmlAdapter<?,?> adapter)
-    {
-        TypeFactory tf = getTypeFactory();
-        JavaType adapterType = tf.constructType(adapter.getClass());
-        JavaType[] params = tf.findTypeParameters(adapterType, XmlAdapter.class);
-        // should not happen, except if our type resolution has a flaw, but:
-        if (params == null || params.length < 2) {
-            return Object.class;
-        }
-        return params[1].getRawClass();
-    }
-
-    protected XmlAdapter<?,?> _findContentAdapter(Annotated ann,
+    protected XmlAdapter<?,?> _findContentAdapter(MapperConfig<?> config, Annotated ann,
             boolean forSerialization)
     {
         Class<?> rawType = forSerialization ?
@@ -1456,14 +1365,25 @@ public class JakartaXmlBindAnnotationIntrospector
             JavaType fullType = forSerialization ?
                 _fullSerializationType(member) : _fullDeserializationType(member);
             Class<?> contentType = fullType.getContentType().getRawClass();
-            XmlAdapter<Object,Object> adapter = findAdapter(member, forSerialization, contentType);
-            if (adapter != null && adapterTypeMatches(adapter, contentType)) {
+            XmlAdapter<Object,Object> adapter = findAdapter(config, member, forSerialization, contentType);
+            if ((adapter != null) && adapterTypeMatches(config, adapter, contentType)) {
                 return adapter;
             }
         }
         return null;
     }
-    
+
+    private boolean adapterTypeMatches(MapperConfig<?> config, XmlAdapter<?,?> adapter,
+            Class<?> targetType)
+    {
+        JavaType adapterType = config.constructType(adapter.getClass());
+        JavaType[] params = config.getTypeFactory().findTypeParameters(adapterType, XmlAdapter.class);
+        // should not happen, except if our type resolution has a flaw, but:
+        Class<?> boundType = (params == null || params.length < 2) ? Object.class
+                : params[1].getRawClass();
+        return boundType.isAssignableFrom(targetType);
+    }
+
     protected String _propertyNameToString(PropertyName n)
     {
         return (n == null) ? null : n.getSimpleName();
@@ -1505,9 +1425,10 @@ public class JakartaXmlBindAnnotationIntrospector
         return am.getType();
     }
 
-    protected Converter<Object,Object> _converter(XmlAdapter<?,?> adapter, boolean forSerialization)
+    protected Converter<Object,Object> _converter(MapperConfig<?> config,
+            XmlAdapter<?,?> adapter, boolean forSerialization)
     {
-        TypeFactory tf = getTypeFactory();
+        TypeFactory tf = config.getTypeFactory();
         JavaType adapterType = tf.constructType(adapter.getClass());
         JavaType[] pt = tf.findTypeParameters(adapterType, XmlAdapter.class);
         // Order of type parameters for Converter is reverse between serializer, deserializer,
@@ -1537,12 +1458,12 @@ public class JakartaXmlBindAnnotationIntrospector
     }
 
     /*
-    /**********************************************************************
+    /**********************************************************
     /* Name-mangling support extracted from jackson-databind as of
     /* 2.12 (due to databind refactoring).
     /* Somewhat simplified, always use "standard" bean name mangling
     /* and do not allow alternate prefixes
-    /**********************************************************************
+    /**********************************************************
      */
 
     protected String _okNameForGetter(AnnotatedMethod am) {

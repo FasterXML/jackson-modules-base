@@ -120,7 +120,7 @@ public class TestXmlID2 extends BaseJaxbTest
                 +"\"department\":9}]}},22,{\"id\":33,\"username\":\"33\",\"email\":\"33@test.com\",\"department\":null}]";
         ObjectMapper mapper = new ObjectMapper();
         // true -> ignore XmlIDREF annotation
-        mapper.setAnnotationIntrospector(new JakartaXmlBindAnnotationIntrospector(mapper.getTypeFactory(), true));
+        mapper.setAnnotationIntrospector(new JakartaXmlBindAnnotationIntrospector(true));
         
         // first, with default settings (first NOT as id)
         List<User> users = getUserList();
@@ -138,7 +138,7 @@ public class TestXmlID2 extends BaseJaxbTest
     {
         ObjectMapper mapper = new ObjectMapper();
         // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
-        mapper.setAnnotationIntrospector(new JakartaXmlBindAnnotationIntrospector(mapper.getTypeFactory()));
+        mapper.setAnnotationIntrospector(new JakartaXmlBindAnnotationIntrospector());
         List<User> users = getUserList();
         final String json = mapper.writeValueAsString(users);
         String expected = "[{\"id\":11,\"username\":\"11\",\"email\":\"11@test.com\",\"department\":9}"

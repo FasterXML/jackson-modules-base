@@ -1,7 +1,9 @@
 package com.fasterxml.jackson.module.jaxb;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.JacksonModule;
 
 /**
  * Module that can be registered to add support for JAXB annotations.
@@ -14,7 +16,8 @@ import com.fasterxml.jackson.core.Version;
  * (by default, JAXB annotations are used as {@link Priority#PRIMARY}
  * annotations).
  */
-public class JaxbAnnotationModule extends com.fasterxml.jackson.databind.JacksonModule
+public class JaxbAnnotationModule
+    extends JacksonModule
 {
     /**
      * Enumeration that defines how we use JAXB Annotations: either
@@ -57,15 +60,13 @@ public class JaxbAnnotationModule extends com.fasterxml.jackson.databind.Jackson
      * Value to pass to
      * {@link JaxbAnnotationIntrospector#setNameUsedForXmlValue}
      * if introspector constructed by the module.
-     *
-     * @since 2.12
      */
     protected String _nameUsedForXmlValue = JaxbAnnotationIntrospector.DEFAULT_NAME_FOR_XML_VALUE;
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Life cycle
-    /**********************************************************
+    /**********************************************************************
      */
 
     public JaxbAnnotationModule() { }

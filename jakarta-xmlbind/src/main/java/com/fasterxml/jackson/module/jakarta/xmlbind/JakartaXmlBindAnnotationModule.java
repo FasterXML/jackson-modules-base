@@ -1,7 +1,10 @@
 package com.fasterxml.jackson.module.jakarta.xmlbind;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import com.fasterxml.jackson.core.Version;
+
+import com.fasterxml.jackson.databind.JacksonModule;
 
 /**
  * Module that can be registered to add support for JAXB annotations.
@@ -15,7 +18,7 @@ import com.fasterxml.jackson.core.Version;
  * annotations).
  */
 public class JakartaXmlBindAnnotationModule
-    extends com.fasterxml.jackson.databind.Module
+    extends JacksonModule
 {
     /**
      * Enumeration that defines how we use JAXB Annotations: either
@@ -27,8 +30,9 @@ public class JakartaXmlBindAnnotationModule
      * Default choice is <b>PRIMARY</b>
      *<p>
      * Note that if you want to use JAXB annotations as the only annotations,
-     * you must directly set annotation introspector by calling 
-     * {@link com.fasterxml.jackson.databind.ObjectMapper#setAnnotationIntrospector}.
+     * you must directly set annotation introspector by constructing
+     * {@code ObjectMapper} via builder and assign {@link JakartaXmlBindAnnotationIntrospector}
+     * as the only introspector (instead of inserting or appending).
      */
     public enum Priority {
         PRIMARY, SECONDARY;
@@ -96,7 +100,7 @@ public class JakartaXmlBindAnnotationModule
     {
         JakartaXmlBindAnnotationIntrospector intr = _introspector;
         if (intr == null) {
-            intr = new JakartaXmlBindAnnotationIntrospector(context.getTypeFactory());
+            intr = new JakartaXmlBindAnnotationIntrospector();
             if (_nonNillableInclusion != null) {
                 intr.setNonNillableInclusion(_nonNillableInclusion);
             }

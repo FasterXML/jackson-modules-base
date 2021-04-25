@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.jakarta.xmlbind.deser;
+package com.fasterxml.jackson.module.jaxb.deser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,21 +8,23 @@ import java.io.ByteArrayInputStream;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 
-public class DataHandlerJsonDeserializer
+/**
+ * @author Ryan Heaton
+ */
+public class DataHandlerDeserializer
     extends StdScalarDeserializer<DataHandler>
 {
-    private static final long serialVersionUID = 1L;
-
-    public DataHandlerJsonDeserializer() { super(DataHandler.class); }
+    public DataHandlerDeserializer() { super(DataHandler.class); }
 
     @Override
     public DataHandler deserialize(JsonParser p, DeserializationContext ctxt)
-        throws IOException, JsonProcessingException
+        throws JacksonException
     {
         final byte[] value = p.getBinaryValue();
         return new DataHandler(new DataSource() {

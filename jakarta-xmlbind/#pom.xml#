@@ -12,7 +12,8 @@
     <version>3.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
-  <name>Jackson module: Jakarta XML Bind Annotations (jakarta.xml.bind)</name>
+  <name>
+  Jackson module: Jakarta Xml Bind (JAXB)  Annotations</name>
   <packaging>bundle</packaging>
 
   <description>Support for using Jakarta Xml Bind (aka JAXB 3.0) annotations as an alternative
