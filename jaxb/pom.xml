@@ -15,8 +15,8 @@
   <name>Jackson module: JAXB Annotations (javax.xml.bind)</name>
   <packaging>bundle</packaging>
 
-  <description>Support for using JAXB annotations as an alternative to "native" Jackson annotations, for configuring
-data-binding.
+  <description>Support for using JAXB annotations as an alternative to "native" Jackson annotations,
+ for configuring data-binding.
   </description>
   <url>https://github.com/FasterXML/jackson-modules-base</url>
 
