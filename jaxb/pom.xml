@@ -15,8 +15,8 @@
   <name>Jackson module: Old JAXB Annotations (javax.xml.bind)</name>
   <packaging>bundle</packaging>
 
-  <description>Support for using JAXB annotations as an alternative to "native" Jackson annotations, for configuring
-data-binding.
+  <description>Support for using JAXB annotations as an alternative to "native" Jackson annotations,
+for configuring data-binding.
   </description>
   <url>https://github.com/FasterXML/jackson-modules-base</url>
 
@@ -55,20 +55,6 @@ data-binding.
 
     <!-- 14-Mar-2019, tatu: Looks like this is needed for JDK11 and later
       -->
-    <!-- 05-May-2019, tatu: Apparently these ain't it...
-    <dependency>
-      <groupId>javax.activation</groupId>
-      <artifactId>javax.activation-api</artifactId>
-      <version>1.2.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-          <groupId>com.jwebmp.thirdparty</groupId>
-          <artifactId>javax.activation</artifactId>
-          <version>0.67.0.5</version>
-          <scope>provided</scope>
-    </dependency>
--->
     <dependency>
       <groupId>jakarta.activation</groupId>
       <artifactId>jakarta.activation-api</artifactId>
@@ -103,39 +89,6 @@ data-binding.
         </configuration>
       </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>jakarta</id>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <shadedArtifactAttached>true</shadedArtifactAttached>
-              <shadedClassifierName>jakarta</shadedClassifierName>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-              <artifactSet>
-                <includes>
-                  <include>${project.groupId}:${project.artifactId}</include>
-                </includes>
-              </artifactSet>
-              <relocations>
-                <relocation>
-                  <pattern>javax.xml.bind</pattern>
-                  <shadedPattern>jakarta.xml.bind</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>javax.activation</pattern>
-                  <shadedPattern>jakarta.activation</shadedPattern>
-                </relocation>
-              </relocations>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 </project>
