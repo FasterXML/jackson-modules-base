@@ -29,7 +29,7 @@
       -->
     <osgi.import>javax.activation;resolution:=optional,*</osgi.import>
 
-    <version.xmlbind.api>3.0.0</version.xmlbind.api>
+    <version.xmlbind.api>3.0.1</version.xmlbind.api>
   </properties>
   <dependencies>
     <!-- Extends Jackson core and mapper; minor dep on annotations too (JsonInclude) -->

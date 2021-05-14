@@ -9,6 +9,6 @@ module com.fasterxml.jackson.module.jakarta.xmlbind {
     // expose main level, but leave out "ser", "deser" impl
     exports com.fasterxml.jackson.module.jakarta.xmlbind;
 
-    provides com.fasterxml.jackson.databind.Module with
+    provides com.fasterxml.jackson.databind.JacksonModule with
         com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindModule;
 }
