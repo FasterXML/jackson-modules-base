@@ -47,6 +47,9 @@ for configuring data-binding.
     </dependency>
 
     <!--  and actual JAXB annotations, types -->
+    <!-- NOTE! Despite groupId, this is "old" JAXB, not Jakarta
+         (3.x is real Jakarta one)
+      -->
     <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
