@@ -13,7 +13,7 @@ Currently included are:
 * [Guice](guice/)
 * Java XML Binding Annotation compatibility
     * "Old" (`java.xml.bind`) annotations: [JAXB Annotations](jaxb/)
-    * New "Jakarta" (`jakarta.xml.bind`): [Jakarta XML Bind Annotations(jakarta-xmlbind/) (added in 2.13)
+    * New "Jakarta" (`jakarta.xml.bind`): [Jakarta XML Bind Annotations](jakarta-xmlbind/) (added in 2.13)
 * [Mr Bean](mrbean/)
 * [OSGi](osgi/)
 * [Paranamer](paranamer/)
