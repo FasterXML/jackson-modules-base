@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.util.LRUMap;
 
 import sun.reflect.ReflectionFactory;
 
+@SuppressWarnings("restriction")
 public class ReflectionUtil
 {
     // Limit max number of generated Constructors cached

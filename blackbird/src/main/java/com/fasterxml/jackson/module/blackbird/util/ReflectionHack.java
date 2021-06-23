@@ -28,7 +28,7 @@ public class ReflectionHack {
     }
 
     static class Java9Up {
-        private static final MethodHandle FACTORY;
+        static final MethodHandle FACTORY;
 
         static {
             FACTORY = init();

@@ -10,33 +10,25 @@ import java.util.Arrays;
 public class BasicNoConstructorTest extends TestCase
 {
     static class BeanWithoutDefaultConstructor {
-        private String value;
+        public String value;
 
         public BeanWithoutDefaultConstructor(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
             this.value = value;
         }
     }
 
     static class BeanWithDefaultConstructor {
-        private String value;
+        public String value;
 
-        public BeanWithDefaultConstructor() {
-        }
+        public BeanWithDefaultConstructor() { }
+    }
 
-        public String getValue() {
-            return value;
-        }
+    static class BeanWithoutDefault2 {
+        public int x, y;
 
-        public void setValue(String value) {
-            this.value = value;
+        public BeanWithoutDefault2(int x, int y) {
+            this.x = x;
+            this.y = y;
         }
     }
 
@@ -50,7 +42,7 @@ public class BasicNoConstructorTest extends TestCase
 
     public void testReadValueWithoutDefaultConstructor() throws Exception
     {
-        byte[] json = MAPPER.writeValueAsBytes(new BeanWithoutDefaultConstructor("test"));
+        String json = MAPPER.writeValueAsString(new BeanWithoutDefaultConstructor("test"));
 
         // First, test default behavior without module (should fail)
         ObjectMapper objectMapper = new JsonMapper();
@@ -60,28 +52,33 @@ public class BasicNoConstructorTest extends TestCase
         } catch (Exception e) {
             verifyException(e, "Cannot construct instance");
         }
-
         // And then with module added:
         BeanWithoutDefaultConstructor result = MAPPER.readValue(json,
                 BeanWithoutDefaultConstructor.class);
         assertNotNull(result);
-        assertEquals("test", result.getValue());
+        assertEquals("test", result.value);
 
+        // Also test a 2-property one
+        json = MAPPER.writeValueAsString(new BeanWithoutDefault2(3, 7));
+        BeanWithoutDefault2 result2 =  MAPPER.readValue(json,
+                BeanWithoutDefault2.class);
+        assertEquals(3, result2.x);
+        assertEquals(7, result2.y);
     }
 
     public void testReadValueWithDefaultConstructor() throws Exception {
         BeanWithDefaultConstructor bean = new BeanWithDefaultConstructor();
-        bean.setValue("test");
+        bean.value = "test";
         byte[] bytes = MAPPER.writeValueAsBytes(bean);
 
         BeanWithDefaultConstructor result = MAPPER.readValue(bytes, BeanWithDefaultConstructor.class);
         assertNotNull(result);
-        assertEquals("test", result.getValue());
+        assertEquals("test", result.value);
 
         ObjectMapper objectMapper = new ObjectMapper();
         BeanWithDefaultConstructor result2 = objectMapper.readValue(bytes, BeanWithDefaultConstructor.class);
         assertNotNull(result2);
-        assertEquals("test", result2.getValue());
+        assertEquals("test", result2.value);
     }
 
     public static void verifyException(Throwable e, String... matches) {

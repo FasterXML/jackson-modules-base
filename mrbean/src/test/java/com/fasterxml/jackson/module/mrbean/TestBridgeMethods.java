@@ -38,6 +38,7 @@ public class TestBridgeMethods extends BaseTest
     }
 
     public interface CoffeeHolder extends DrinkHolder {
+        @Override
         Coffee getDrink();
     }
 
@@ -46,6 +47,7 @@ public class TestBridgeMethods extends BaseTest
     }
 
     public interface SpecificCoffeeHolder extends GenericHolder<Coffee> {
+        @Override
         @JsonProperty("drink")
         Coffee getObject();
     }
