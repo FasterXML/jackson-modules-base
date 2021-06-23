@@ -1,13 +1,14 @@
-package com.fasterxml.jackson.module.enhance.deser;
+package com.fasterxml.jackson.module.noctordeser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+
 import junit.framework.TestCase;
 
 import java.util.Arrays;
 
-public class EnhanceDeserTestBase extends TestCase {
-
+public class BasicNoConstructorTest extends TestCase
+{
     static class BeanWithoutDefaultConstructor {
         private String value;
 
@@ -41,27 +42,31 @@ public class EnhanceDeserTestBase extends TestCase {
 
     protected static ObjectMapper newObjectMapper() {
         return JsonMapper.builder()
-                .addModule(new EnhanceDeserModule())
+                .addModule(new NoCtorModule())
                 .build();
     }
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
-    public void testReadValueWithoutDefaultConstructor() throws Exception {
-        BeanWithoutDefaultConstructor bean = new BeanWithoutDefaultConstructor("test");
-        byte[] bytes = MAPPER.writeValueAsBytes(bean);
+    public void testReadValueWithoutDefaultConstructor() throws Exception
+    {
+        byte[] json = MAPPER.writeValueAsBytes(new BeanWithoutDefaultConstructor("test"));
 
-        BeanWithoutDefaultConstructor result = MAPPER.readValue(bytes, BeanWithoutDefaultConstructor.class);
-        assertNotNull(result);
-        assertEquals("test", result.getValue());
-
-        ObjectMapper objectMapper = new ObjectMapper();
+        // First, test default behavior without module (should fail)
+        ObjectMapper objectMapper = new JsonMapper();
         try {
-            objectMapper.readValue(bytes, BeanWithoutDefaultConstructor.class);
+            objectMapper.readValue(json, BeanWithoutDefaultConstructor.class);
             fail("should not pass");
         } catch (Exception e) {
             verifyException(e, "Cannot construct instance");
         }
+
+        // And then with module added:
+        BeanWithoutDefaultConstructor result = MAPPER.readValue(json,
+                BeanWithoutDefaultConstructor.class);
+        assertNotNull(result);
+        assertEquals("test", result.getValue());
+
     }
 
     public void testReadValueWithDefaultConstructor() throws Exception {

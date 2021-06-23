@@ -1,18 +1,18 @@
-package com.fasterxml.jackson.module.enhance.deser.util;
-
-import sun.reflect.ReflectionFactory;
+package com.fasterxml.jackson.module.noctordeser.util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class ReflectionUtil {
+import com.fasterxml.jackson.databind.util.LRUMap;
 
-    private static final Map<Class<?>, Constructor<?>> constructorCache =
-            new ConcurrentHashMap<>();
+import sun.reflect.ReflectionFactory;
 
-    public static Object newConstructorAndCreateInstance(Class<?> classToInstantiate) {
+public class ReflectionUtil
+{
+    // Limit max number of generated Constructors cached
+    private final LRUMap<Class<?>, Constructor<?>> constructorCache = new LRUMap<>(20, 100);
+
+    public Object newConstructorAndCreateInstance(Class<?> classToInstantiate) {
         if (classToInstantiate.isInterface() || Modifier.isAbstract(classToInstantiate.getModifiers())) {
             return null;
         }

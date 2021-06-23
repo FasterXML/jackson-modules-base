@@ -1,1 +1,1 @@
-com.fasterxml.jackson.module.enhance.deser.EnhanceDeserModule
+com.fasterxml.jackson.module.noctordeser.NoCtoreDeserModule

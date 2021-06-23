@@ -12,24 +12,20 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>jackson-module-enhance-deser</artifactId>
-    <name>Jackson module: Enhance deser</name>
+    <artifactId>jackson-module-no-ctor-deser</artifactId>
+    <name>Jackson module: No-constructor Deserilization</name>
     <packaging>bundle</packaging>
 
-    <description>Support deserialize the class without default constructor by new contructor</description>
+    <description>Support deserialization of POJO classes without default constructor</description>
     <url>https://github.com/FasterXML/jackson-modules-base</url>
 
     <properties>
         <!-- Generate PackageVersion.java into this directory. -->
-        <packageVersion.dir>com/fasterxml/jackson/module/enhance/deser</packageVersion.dir>
-        <packageVersion.package>com.fasterxml.jackson.module.enhance.deser</packageVersion.package>
+        <packageVersion.dir>com/fasterxml/jackson/module/noctordeser</packageVersion.dir>
+        <packageVersion.package>com.fasterxml.jackson.module.noctordeser</packageVersion.package>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
