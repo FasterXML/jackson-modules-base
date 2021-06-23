@@ -61,8 +61,8 @@ ${project.groupId}.mrbean.*;version=${project.version}
   <build>
     <plugins>
       <plugin>
-	<groupId>com.google.code.maven-replacer-plugin</groupId>
-	<artifactId>replacer</artifactId>
+        <groupId>com.google.code.maven-replacer-plugin</groupId>
+        <artifactId>replacer</artifactId>
       </plugin>
 
       <plugin>

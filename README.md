@@ -2,19 +2,20 @@
 
 This is a multi-module umbrella project for [Jackson](../../../jackson)
 modules that are considered foundational, building on core databind, but
-not including datatype or data format modules, or JAX-RS providers.
+not including datatype or data format modules, or JAX-/Jakarta-RS providers.
 Not all "general" modules are included here; this grouping is to be used
 for more mature (and generally slower moving, stable) modules.
 
 Currently included are:
 
-* [Afterburner](afterburner/)
-* [Blackbird](blackbird/) (NEW in 2.12!)
+* [Afterburner](afterburner/) -- 
+* [Blackbird](blackbird/) (NEW in 2.12 -- to eventually replace Afterburner)
 * [Guice](guice/)
 * Java XML Binding Annotation compatibility
     * "Old" (`java.xml.bind`) annotations: [JAXB Annotations](jaxb/)
     * New "Jakarta" (`jakarta.xml.bind`): [Jakarta XML Bind Annotations](jakarta-xmlbind/) (added in 2.13)
 * [Mr Bean](mrbean/)
+* [No-Constructor-Deserialization](no-ctor-deser/) (added in 2.13)
 * [OSGi](osgi/)
 * [Paranamer](paranamer/)
 

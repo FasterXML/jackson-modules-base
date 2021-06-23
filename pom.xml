@@ -23,6 +23,9 @@ not datatype, data format, or JAX-RS provider modules.
       -->
     <module>jaxb</module>
     <module>mrbean</module>
+    <!-- since 2.13, do we keep for 3.0? -->
+    <module>no-ctor-deser</module>
+
     <module>osgi</module>
 <!-- 29-Jan-2018, tatu: No need for this, with Java 8
     <module>paranamer</module>

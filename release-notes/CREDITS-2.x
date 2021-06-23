@@ -5,8 +5,9 @@ Base modules
 
 Authors:
 
-Tatu Saloranta, tatu.saloranta@iki.fi: author
-Steven Schlansker (stevenschlansker@github):  author of Blackbird module (2.12)
+Tatu Saloranta (tatu.saloranta@iki.fi): author
+Steven Schlansker (stevenschlansker@github): author of Blackbird module (2.12)
+LinJunhua (linlinnn@github): author of No-constructor-deserialization module (2.13)
 
 Other contributors:
 
@@ -88,3 +89,10 @@ Carter Kozak (carterkozak@github)
 
 * Reported #120: Afterburner does not support the new CoercionConfig
  (2.12.1)
+
+LinJunhua (linlinnn@github)
+
+* Contributed #140: Add new module jackson-module-no-ctor-deser which supports
+  no-default-constructor POJOs
+ (2.13.0)
+

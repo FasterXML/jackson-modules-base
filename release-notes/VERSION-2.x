@@ -3,8 +3,10 @@ Modules:
   jackson-module-afterburner
   jackson-module-blackbird (2.12)
   jackson-module-guice
+  jackson-module-jakarta-xmlbind-annotations (2.13)
   jackson-module-jaxb
   jackson-module-mrbean
+  jackson-module-no-ctor-deser (2.13)
   jackson-module-osgi
   jackson-module-paranamer
 
@@ -16,6 +18,9 @@ Modules:
 
 #130: Add Jakarta-variant of "JAXB" annotation introspector, module
   (`jackson-module-jakarta-xmlbind-annotations`)
+#140: Add new module jackson-module-no-ctor-deser which supports
+  no-default-constructor POJOs
+ (contributed by linlinnn@github)
 - Make `JaxbAnnotationIntrospector` implement `AnnotationIntrospector.XmlExtensions`
 - Update `jakarta.xml.bind-api` dep (2.3.2 -> 2.3.3)
 - Remove "jakarta" classfier from `jackson-module-jaxb-annotations` (due to new

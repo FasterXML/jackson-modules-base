@@ -1,0 +1,53 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- This module was also published with a richer model, Gradle metadata,  -->
+    <!-- which should be used instead. Do not delete the following line which  -->
+    <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+    <!-- that they should prefer consuming it instead. -->
+    <!-- do_not_remove: published-with-gradle-metadata -->
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-modules-base</artifactId>
+        <version>3.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>jackson-module-no-ctor-deser</artifactId>
+    <name>Jackson module: No-constructor Deserialization</name>
+    <packaging>bundle</packaging>
+
+    <description>Support deserialization of POJO classes without default constructor</description>
+    <url>https://github.com/FasterXML/jackson-modules-base</url>
+
+    <properties>
+        <!-- Generate PackageVersion.java into this directory. -->
+        <packageVersion.dir>com/fasterxml/jackson/module/noctordeser</packageVersion.dir>
+        <packageVersion.package>com.fasterxml.jackson.module.noctordeser</packageVersion.package>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- Inherited from oss-base. Generate PackageVersion.java.-->
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.moditect</groupId>
+                <artifactId>moditect-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
