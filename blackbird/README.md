@@ -39,7 +39,7 @@ Blackbird is available on Maven Central as of 2.12.0:
 
 ### Registering module
 
-To use the the Module in Jackson, simply register it with the ObjectMapper instance:
+To use the Module in Jackson, simply register it with the ObjectMapper instance:
 
 ```java
 ObjectMapper mapper = JsonMapper.builder()

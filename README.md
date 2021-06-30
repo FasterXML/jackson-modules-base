@@ -55,7 +55,7 @@ by specifying classifier like so:
 
 ```
 <dependency>
-    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+    <groupId>com.fasterxml.jackson.module</groupId>
     <artifactId>jackson-module-jaxb-annotations</artifactId>
     <classifier>jakarta</classifier>
 </dependency>

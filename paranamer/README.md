@@ -6,13 +6,6 @@ Functionality consists of two `AnnotationIntrospector` implementations:
 * `ParanamerAnnotationIntrospector` is a stand-alone introspector to be used with other `AnnotationIntrospectors` (usually using `AnnotationIntrospectorPair`)
 * `ParanamerOnJacksonAnnotationIntrospector` is a sub-class of `JacksonAnnotationIntrospector` that can be used instead of default introspector
 
-## Status
-
-Module is considered stable and has been used in production environments since version 2.3.
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-paranamer/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-paranamer/)
-[![Javadoc](https://javadoc-emblem.rhcloud.com/doc/com.fasterxml.jackson.module/jackson-module-paranamer/badge.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-paranamer)
-
 ## Usage
 
 Functionality can be used either by directly overriding `AnnotationIntrospector` that `ObjectMapper` uses
