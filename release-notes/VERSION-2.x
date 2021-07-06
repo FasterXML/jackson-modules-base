@@ -12,7 +12,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.12.4 (not yet released
+2.12.4 (06-Jul-2021)
 
 #131: (afterburner) Failing to serialize `Thread` returned by `Thread.currentThread()`
   when Afterburner or Blackbird registered
