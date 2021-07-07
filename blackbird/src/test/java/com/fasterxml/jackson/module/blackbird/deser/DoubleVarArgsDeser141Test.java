@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.blackbird.failing;
+package com.fasterxml.jackson.module.blackbird.deser;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 // [modules-base#141]
-public class DoubleArrayDeser141Test extends BlackbirdTestBase
+public class DoubleVarArgsDeser141Test extends BlackbirdTestBase
 {
     // [modules-base#141]
     static class Foo141 {

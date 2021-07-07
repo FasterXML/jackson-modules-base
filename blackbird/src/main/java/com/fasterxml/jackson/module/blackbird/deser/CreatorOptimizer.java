@@ -107,7 +107,10 @@ public class CreatorOptimizer
             Stream.of(element)
                 .filter(Constructor.class::isInstance)
                 .map(Constructor.class::cast)
-                .filter(c -> !Modifier.isPrivate(c.getModifiers()))
+                .filter(c -> !Modifier.isPrivate(c.getModifiers())
+                        // 07-Jul-2021, ckozak: modules-base#141Avoid attempting to optimize varargs
+                        // methods due to class-cast edge cases
+                        && !c.isVarArgs())
                 .flatMap(t -> {
                     try {
                         return Stream.of(_lookup.unreflectConstructor(t));
@@ -120,7 +123,10 @@ public class CreatorOptimizer
                 .map(Method.class::cast)
                 .filter(m -> {
                     int mods = m.getModifiers();
-                    return Modifier.isStatic(mods) && !Modifier.isPrivate(mods);
+                    return Modifier.isStatic(mods) && !Modifier.isPrivate(mods)
+                            // 07-Jul-2021, ckozak: modules-base#141Avoid attempting to optimize varargs
+                            // methods due to class-cast edge cases
+                            && !m.isVarArgs();
                 })
                 .flatMap(t -> {
                     try {
