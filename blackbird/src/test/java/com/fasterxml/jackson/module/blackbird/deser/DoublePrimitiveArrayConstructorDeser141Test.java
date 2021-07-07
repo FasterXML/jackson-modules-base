@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
-public class DoubleArrayDeserTest extends BlackbirdTestBase
+public class DoublePrimitiveArrayConstructorDeser141Test extends BlackbirdTestBase
 {
     static class Foo141 {
         @JsonProperty("bar")

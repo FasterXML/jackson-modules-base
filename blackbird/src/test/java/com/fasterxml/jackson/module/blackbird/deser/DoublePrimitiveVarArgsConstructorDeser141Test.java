@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 // [modules-base#141]
-public class DoubleVarArgsDeser141Test extends BlackbirdTestBase
+public class DoublePrimitiveVarArgsConstructorDeser141Test extends BlackbirdTestBase
 {
     // [modules-base#141]
     static class Foo141 {
