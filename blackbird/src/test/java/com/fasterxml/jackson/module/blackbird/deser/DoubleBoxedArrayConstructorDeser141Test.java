@@ -2,30 +2,26 @@ package com.fasterxml.jackson.module.blackbird.deser;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
-// [modules-base#141]
-public class DoublePrimitiveVarArgsConstructorDeser141Test extends BlackbirdTestBase
+public class DoubleBoxedArrayConstructorDeser141Test extends BlackbirdTestBase
 {
-    // [modules-base#141]
     static class Foo141 {
         @JsonProperty("bar")
-        double[] bar;
+        Double[] bar;
 
         @JsonCreator
-        public Foo141(@JsonProperty("bar") double... bar) {
+        public Foo141(@JsonProperty("bar") Double[] bar) {
           this.bar = bar;
         }
     }
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
-    // [modules-base#141]
-    public void testDoubleVarargsCreator() throws Exception
+    public void testBoxedDoubleArrayCreator()
     {
-        Foo141 foo = new Foo141(new double[] { 2.0, 0.25 });
+        Foo141 foo = new Foo141(new Double[] { 2.0, 0.25 });
         String serialized = MAPPER.writeValueAsString(foo);
         Foo141 foo2 = MAPPER.readValue(serialized, Foo141.class);
 

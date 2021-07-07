@@ -32,7 +32,7 @@ public class ObjectArrayDeserTest extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
-    public void testDoubleArrayViaCreator()
+    public void objectArrayCreator()
     {
         Foo141 foo = new Foo141(new Bar[] {new Bar("a"), new Bar("b")});
         String serialized = MAPPER.writeValueAsString(foo);
