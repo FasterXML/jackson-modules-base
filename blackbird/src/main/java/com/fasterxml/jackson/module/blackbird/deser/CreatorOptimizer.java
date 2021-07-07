@@ -59,25 +59,25 @@ public class CreatorOptimizer
             // avoid creating megamorphic code paths and hope that code inlining covers up our reflective sins.
             MethodHandle argsCreatorHandle = directHandle(argsCreator.getAnnotated());
             if (argsCreatorHandle != null) {
-                    optimizedArgsCreator = Unchecked.supplier(() ->
-                        (Function<Object[], Object>) LambdaMetafactory.metafactory(
-                            _lookup,
-                            "apply",
-                            methodType(Function.class, MethodHandle.class),
-                            methodType(Object.class, Object.class),
-                            lookup().findStatic(
-                                CreatorOptimizer.class,
-                                "invokeTrampoline",
-                                methodType(Object.class, MethodHandle.class, Object[].class)),
-                            methodType(Object.class, Object[].class))
-                        .getTarget().invokeExact(
-                            argsCreatorHandle
-                                .asFixedArity()
-                                .asSpreader(
-                                    Object[].class,
-                                    argsCreatorHandle.type().parameterCount())
-                                .asType(methodType(Object.class, Object[].class))))
-                        .get();
+                optimizedArgsCreator = Unchecked.supplier(() ->
+                    (Function<Object[], Object>) LambdaMetafactory.metafactory(
+                        _lookup,
+                        "apply",
+                        methodType(Function.class, MethodHandle.class),
+                        methodType(Object.class, Object.class),
+                        lookup().findStatic(
+                            CreatorOptimizer.class,
+                            "invokeTrampoline",
+                            methodType(Object.class, MethodHandle.class, Object[].class)),
+                        methodType(Object.class, Object[].class))
+                    .getTarget().invokeExact(
+                        argsCreatorHandle
+                            .asFixedArity()
+                            .asSpreader(
+                                Object[].class,
+                                argsCreatorHandle.type().parameterCount())
+                            .asType(methodType(Object.class, Object[].class))))
+                    .get();
             }
         }
 
@@ -106,32 +106,32 @@ public class CreatorOptimizer
 
     private MethodHandle directHandle(AnnotatedElement element) {
         return Stream.concat(
-            Stream.of(element)
-                .filter(Constructor.class::isInstance)
-                .map(Constructor.class::cast)
-                .filter(c -> !Modifier.isPrivate(c.getModifiers()))
-                .flatMap(t -> {
-                    try {
-                        return Stream.of(_lookup.unreflectConstructor(t));
-                    } catch (IllegalAccessException e) {
-                        return Stream.empty();
-                    }
-                }),
-            Stream.of(element)
-                .filter(Method.class::isInstance)
-                .map(Method.class::cast)
-                .filter(m -> {
-                    int mods = m.getModifiers();
-                    return Modifier.isStatic(mods) && !Modifier.isPrivate(mods);
-                })
-                .flatMap(t -> {
-                    try {
-                        return Stream.of(_lookup.unreflect(t));
-                    } catch (IllegalAccessException e) {
-                        return Stream.empty();
-                    }
-                }))
-        .findFirst().orElse(null);
+                Stream.of(element)
+                    .filter(Constructor.class::isInstance)
+                    .map(Constructor.class::cast)
+                    .filter(c -> !Modifier.isPrivate(c.getModifiers()))
+                    .flatMap(t -> {
+                        try {
+                            return Stream.of(_lookup.unreflectConstructor(t));
+                        } catch (IllegalAccessException e) {
+                            return Stream.empty();
+                        }
+                    }),
+                Stream.of(element)
+                    .filter(Method.class::isInstance)
+                    .map(Method.class::cast)
+                    .filter(m -> {
+                        int mods = m.getModifiers();
+                        return Modifier.isStatic(mods) && !Modifier.isPrivate(mods);
+                    })
+                    .flatMap(t -> {
+                        try {
+                            return Stream.of(_lookup.unreflect(t));
+                        } catch (IllegalAccessException e) {
+                            return Stream.empty();
+                        }
+                    }))
+            .findFirst().orElse(null);
     }
 
     public static Object invokeTrampoline(MethodHandle delegate, Object[] args) throws Throwable {
