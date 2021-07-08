@@ -73,6 +73,8 @@ Steven Schlansker (stevenschlansker@github)
 * Contributed #85: Add Blackbird module -- alternative for Afterburner that works better with
    new(er) JVMs
  (2.12.0)
+* Fixed #141: Blackbird fails to deserialize varargs array
+ (2.13.0)
 
 Marc Magon (GedMarc@github)
 
