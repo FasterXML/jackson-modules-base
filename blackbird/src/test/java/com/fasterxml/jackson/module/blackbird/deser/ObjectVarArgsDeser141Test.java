@@ -34,7 +34,7 @@ public class ObjectVarArgsDeser141Test extends BlackbirdTestBase
     private final ObjectMapper MAPPER = newObjectMapper();
 
     // [modules-base#141]
-    public void objectVarargsCreator()
+    public void testObjectVarargsCreator() throws Exception
     {
         Foo141 foo = new Foo141(new Bar("a"), new Bar("b"));
         String serialized = MAPPER.writeValueAsString(foo);

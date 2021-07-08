@@ -19,7 +19,7 @@ public class DoubleBoxedArrayConstructorDeser141Test extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
-    public void testBoxedDoubleArrayCreator()
+    public void testBoxedDoubleArrayCreator() throws Exception
     {
         Foo141 foo = new Foo141(new Double[] { 2.0, 0.25 });
         String serialized = MAPPER.writeValueAsString(foo);

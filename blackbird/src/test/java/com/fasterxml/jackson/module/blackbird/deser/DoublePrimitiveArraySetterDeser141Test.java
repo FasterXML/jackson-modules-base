@@ -7,7 +7,7 @@ import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 public class DoublePrimitiveArraySetterDeser141Test extends BlackbirdTestBase
 {
     static class Foo141 {
-        private double[] bar;
+        double[] bar;
 
         public double[] getBar() {
             return bar;
@@ -21,7 +21,7 @@ public class DoublePrimitiveArraySetterDeser141Test extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
-    public void testDoubleArraySetter()
+    public void testDoubleArraySetter() throws Exception
     {
         Foo141 foo = new Foo141().setBar(new double[] { 2.0, 0.25 });
         String serialized = MAPPER.writeValueAsString(foo);

@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,7 +10,7 @@ public class DoubleBoxedVarArgsSetterDeser141Test extends BlackbirdTestBase
 {
     // [modules-base#141]
     static class Foo141 {
-        private Double[] bar;
+        Double[] bar;
 
         public Foo141 setBar(@JsonProperty("bar") Double... bar) {
             this.bar = bar;
