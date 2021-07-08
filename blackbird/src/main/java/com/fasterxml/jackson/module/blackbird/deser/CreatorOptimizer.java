@@ -71,7 +71,11 @@ public class CreatorOptimizer
                                 methodType(Object.class, MethodHandle.class, Object[].class)),
                             methodType(Object.class, Object[].class))
                         .getTarget().invokeExact(
-                            argsCreatorHandle.asSpreader(
+                            argsCreatorHandle
+                                // 08-Jul-2021, tatu: backported fix for [modules-base#141]
+                                //   to support varags
+                                .asFixedArity()
+                                .asSpreader(
                                     Object[].class,
                                     argsCreatorHandle.type().parameterCount())
                                 .asType(methodType(Object.class, Object[].class))))

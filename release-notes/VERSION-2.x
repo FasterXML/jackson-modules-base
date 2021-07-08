@@ -12,6 +12,10 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+Not yet released
+
+#141: (blackbird) Blackbird fails to deserialize varargs array
+
 2.12.4 (06-Jul-2021)
 
 #131: (afterburner) Failing to serialize `Thread` returned by `Thread.currentThread()`
