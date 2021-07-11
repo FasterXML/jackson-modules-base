@@ -32,7 +32,7 @@ public class ReflectionUtil
                 constructorCache.put(classToInstantiate, constructor);
             }
         } catch (Exception e) {
-            ctxt.reportBadDefinition(classToInstantiate,
+            return ctxt.reportBadDefinition(classToInstantiate,
 "No-Constructor-Deserialization module failed to force generation of virtual constructor: "
                     +e.getMessage());
         }
@@ -40,11 +40,9 @@ public class ReflectionUtil
         try {
             return constructor.newInstance();
         } catch (Exception e) {
-            ctxt.reportBadDefinition(classToInstantiate,
+            return ctxt.reportBadDefinition(classToInstantiate,
 "No-Constructor-Deserialization module failed to forcibly instantiate "
 +ClassUtil.nameOf(classToInstantiate)+": " +e.getMessage());
         }
-        // never gets here
-        return null;
     }
 }
