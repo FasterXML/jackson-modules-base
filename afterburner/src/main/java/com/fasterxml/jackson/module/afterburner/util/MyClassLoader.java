@@ -239,9 +239,9 @@ public class MyClassLoader extends ClassLoader
         // naive; for now has to do
         main_loop:
         for (int end = byteCode.length - matchLength; i <= end; ) {
-            if (byteCode[i++] == fromB[0]) {
+            if (byteCode[i++] == fromB[0]) { // 
                 for (int j = 1; j < matchLength; ++j) {
-                    if (fromB[j] != byteCode[i+j-1]) {
+                    if (fromB[j] != byteCode[i+j-1]) { // lgtm [java/index-out-of-bounds]
                         continue main_loop;
                     }
                 }
