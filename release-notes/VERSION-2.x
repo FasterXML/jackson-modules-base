@@ -21,7 +21,6 @@ Modules:
 #140: Add new module jackson-module-no-ctor-deser which supports
   no-default-constructor POJOs
  (contributed by linlinnn@github)
-#141: (blackbird) Blackbird fails to deserialize varargs array
 - Make `JaxbAnnotationIntrospector` implement `AnnotationIntrospector.XmlExtensions`
 - Update `jakarta.xml.bind-api` dep (2.3.2 -> 2.3.3)
 - Remove "jakarta" classfier from `jackson-module-jaxb-annotations` (due to new
@@ -29,7 +28,7 @@ Modules:
 
 2.12.5 (27-Aug-2021)
 
-No changes since 2.12.4
+#141: (blackbird) Blackbird fails to deserialize varargs array
 
 2.12.4 (06-Jul-2021)
 
