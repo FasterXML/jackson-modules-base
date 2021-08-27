@@ -12,7 +12,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-Not yet released
+2.12.5 (27-Aug-2021)
 
 #141: (blackbird) Blackbird fails to deserialize varargs array
 
