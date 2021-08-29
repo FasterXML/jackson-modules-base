@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
-@JsonPropertyOrder({ "id", "email","department" })
 
 public class TestXmlID2 extends BaseJaxbTest
 {
@@ -143,6 +142,10 @@ public class TestXmlID2 extends BaseJaxbTest
                 .annotationIntrospector(new JaxbAnnotationIntrospector())
                 .build();
         List<User> users = getUserList();
+        System.out.println("XXXXXXXXXXXXXXXXXHHHHHHHHHHHHHHHHHHHXXXXXXXXXXX");
+        for(int i = 0; i < users.length(); i ++) {
+            System.out.println(users[i]);
+        }
         
         final String json = mapper.writeValueAsString(users);
 
