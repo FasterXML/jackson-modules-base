@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
+@JsonPropertyOrder({ "id", "email","department" })
 
 public class TestXmlID2 extends BaseJaxbTest
 {
@@ -118,7 +119,7 @@ public class TestXmlID2 extends BaseJaxbTest
                 +"11,{\"id\":22,\"username\":\"22\",\"email\":\"22@test.com\","
                 +"\"department\":9}]}},22,{\"id\":33,\"username\":\"33\",\"email\":\"33@test.com\",\"department\":null}]";
         ObjectMapper mapper = JsonMapper.builder()
-         @JsonPropertyOrder({ "id", "email","department" })
+        
         // true -> ignore XmlIDREF annotation
                 .annotationIntrospector(new JaxbAnnotationIntrospector(true))
                 .build();
