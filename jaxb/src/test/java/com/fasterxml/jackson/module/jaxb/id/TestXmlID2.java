@@ -46,6 +46,7 @@ public class TestXmlID2 extends BaseJaxbTest
     
     @XmlRootElement(name = "user")
     @XmlAccessorType(XmlAccessType.FIELD)
+    @JsonPropertyOrder({"id", "username", "email", "department"})
     static class User
     {
         @XmlElement @XmlID
@@ -142,10 +143,10 @@ public class TestXmlID2 extends BaseJaxbTest
                 .annotationIntrospector(new JaxbAnnotationIntrospector())
                 .build();
         List<User> users = getUserList();
-        System.out.println("XXXXXXXXXXXXXXXXXHHHHHHHHHHHHHHHHHHHXXXXXXXXXXX");
-        for(int i = 0; i < users.length; i ++) {
-            System.out.println(users[i]);
-        }
+        
+        // for(int i = 0; i < users.length; i ++) {
+        //     System.out.println(users[i]);
+        // }
         
         final String json = mapper.writeValueAsString(users);
 
