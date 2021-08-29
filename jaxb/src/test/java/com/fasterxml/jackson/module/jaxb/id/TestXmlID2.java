@@ -142,12 +142,13 @@ public class TestXmlID2 extends BaseJaxbTest
         List<User> users = getUserList();
         
         final String json = mapper.writeValueAsString(users);
+        System.out.println("!#$#R%WTEYREWQTYWQWQRTQRTQRTQRT$W#@!@!%EYT$#%@!%ETRYW#$Q@EWRTYWQRTWQRTWQRTWQRFS");
         System.out.println(json);
         String expected = "[{\"id\":11,\"username\":\"11\",\"email\":\"11@test.com\",\"department\":9}"
                 +",{\"id\":22,\"username\":\"22\",\"email\":\"22@test.com\",\"department\":9}"
                 +",{\"id\":33,\"username\":\"33\",\"email\":\"33@test.com\",\"department\":null}]";
         
-        assertEquals(expected, expected);
+        assertEquals(expected, json);
 
         // However, there is no way to resolve those back, without some external mechanism...
     }
