@@ -85,31 +85,24 @@ public class TestXmlID2 extends BaseJaxbTest
 
         User user1, user2, user3;
         Department dep;
+        user1 = new User(11L);
+        user1.setUsername("11");
+        user1.setEmail("11@test.com");
+        user2 = new User(22L);
+        user2.setUsername("22");
+        user2.setEmail("22@test.com");
+        user3 = new User(33L);
+        user3.setUsername("33");
+        user3.setEmail("33@test.com");
 
         dep = new Department(9L);
-
-        user1 = new User(11L);
-        user2 = new User(22L);
-        user3 = new User(33L);
         dep.setName("department9");
         user1.setDepartment(dep);
         users.add(user1);
         user2.setDepartment(dep);
         users.add(user2);
 
-        
-        user1.setUsername("11");
-        user1.setEmail("11@test.com");
-        
-        user2.setUsername("22");
-        user2.setEmail("22@test.com");
-        
-        user3.setUsername("33");
-        user3.setEmail("33@test.com");
-
-
-
-        dep.setEmployees(users);
+        // dep.setEmployees(users);
         resultList.clear();
         resultList.add(user1);
         resultList.add(user2);
