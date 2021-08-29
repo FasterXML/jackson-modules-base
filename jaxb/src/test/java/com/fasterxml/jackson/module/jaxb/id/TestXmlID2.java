@@ -143,7 +143,7 @@ public class TestXmlID2 extends BaseJaxbTest
                 .build();
         List<User> users = getUserList();
         System.out.println("XXXXXXXXXXXXXXXXXHHHHHHHHHHHHHHHHHHHXXXXXXXXXXX");
-        for(int i = 0; i < users.length(); i ++) {
+        for(int i = 0; i < users.length; i ++) {
             System.out.println(users[i]);
         }
         
