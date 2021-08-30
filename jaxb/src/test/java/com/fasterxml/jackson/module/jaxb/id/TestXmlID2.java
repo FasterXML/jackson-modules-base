@@ -45,7 +45,7 @@ public class TestXmlID2 extends BaseJaxbTest
     
     
     @XmlRootElement(name = "user")
-    @XmlAccessorType(XmlAccessType.FIELD)
+    // @XmlAccessorType(XmlAccessType.FIELD)
     @JsonPropertyOrder({"id", "username", "email", "department"})
     static class User
     {
