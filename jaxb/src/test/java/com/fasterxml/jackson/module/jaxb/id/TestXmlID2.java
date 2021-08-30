@@ -140,7 +140,7 @@ public class TestXmlID2 extends BaseJaxbTest
         //ObjectMapper mapper = new ObjectMapper();
         ObjectMapper mapper = JsonMapper.builder()
         // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
-                .annotationIntrospector(new JaxbAnnotationIntrospector())
+                .annotationIntrospector(new JaxbAnnotationIntrospector(true))
                 .build();
         List<User> users = getUserList();
         // System.out.println("XXXXXXXXXXXXXXXXXHHHHHHHHHHHHHHHHHHHXXXXXXXXXXX");
