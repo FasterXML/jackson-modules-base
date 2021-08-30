@@ -46,7 +46,7 @@ public class TestXmlID2 extends BaseJaxbTest
     
     //@XmlRootElement(name = "user")
     // @XmlAccessorType(XmlAccessType.FIELD)
-    @JsonPropertyOrder({"username", "email", "department"})
+    @JsonPropertyOrder({"id","username", "email", "department"})
     static class User
     {
         //@XmlElement @XmlID
@@ -98,9 +98,9 @@ public class TestXmlID2 extends BaseJaxbTest
 
         dep = new Department(9L);
         dep.setName("department9");
-        //user1.setDepartment(dep);
+        user1.setDepartment(dep);
         users.add(user1);
-        //user2.setDepartment(dep);
+        user2.setDepartment(dep);
         users.add(user2);
 
         // dep.setEmployees(users);
