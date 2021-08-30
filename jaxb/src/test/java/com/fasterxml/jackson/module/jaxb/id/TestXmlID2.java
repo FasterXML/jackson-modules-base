@@ -51,8 +51,9 @@ public class TestXmlID2 extends BaseJaxbTest
     {
         @XmlElement @XmlID
         public Long id;
-
+        @XmlElement
         public String username;
+        @XmlElement
         public String email;
 
         @XmlIDREF
