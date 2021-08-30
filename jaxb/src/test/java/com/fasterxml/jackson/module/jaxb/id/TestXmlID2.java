@@ -49,12 +49,12 @@ public class TestXmlID2 extends BaseJaxbTest
     @JsonPropertyOrder({"username", "email", "department"})
     static class User
     {
-        @XmlElement @XmlID
+        //@XmlElement @XmlID
         public Long id;
         public String username;
         public String email;
 
-        @XmlIDREF
+        //@XmlIDREF
         public Department department;
 
         protected User() { }
@@ -137,10 +137,11 @@ public class TestXmlID2 extends BaseJaxbTest
     
     public void testIdWithJaxbRules() throws Exception
     {
-        ObjectMapper mapper = JsonMapper.builder()
-        // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
-                .annotationIntrospector(new JaxbAnnotationIntrospector())
-                .build();
+        ObjectMapper mapper = new ObjectMapper();
+        // ObjectMapper mapper = JsonMapper.builder()
+        // // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
+        //         .annotationIntrospector(new JaxbAnnotationIntrospector())
+        //         .build();
         List<User> users = getUserList();
         // System.out.println("XXXXXXXXXXXXXXXXXHHHHHHHHHHHHHHHHHHHXXXXXXXXXXX");
         // for(int i = 0; i < users.length(); i ++) {
