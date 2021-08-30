@@ -10,13 +10,11 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 public class TestXmlID2 extends BaseJaxbTest
 {
     @XmlRootElement(name = "department")
     @XmlAccessorType(XmlAccessType.FIELD)
-    @JsonPropertyOrder({"id"})
     static class Department {
         @XmlElement
         @XmlID
@@ -48,8 +46,7 @@ public class TestXmlID2 extends BaseJaxbTest
     
     @XmlRootElement(name = "user")
     @XmlAccessorType(XmlAccessType.FIELD)
-    @JsonPropertyOrder({"id","username", "email", "department"})
-    @JsonIgnoreProperties(ignoreUnknown = true)
+    // @JsonPropertyOrder({"id","username", "email", "department"})
     static class User
     {
         @XmlElement @XmlID
@@ -140,11 +137,11 @@ public class TestXmlID2 extends BaseJaxbTest
     
     public void testIdWithJaxbRules() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
-        // ObjectMapper mapper = JsonMapper.builder()
-        // // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
-        //         .annotationIntrospector(new JaxbAnnotationIntrospector())
-        //         .build();
+        //ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonMapper.builder()
+        // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
+                .annotationIntrospector(new JaxbAnnotationIntrospector(true))
+                .build();
         List<User> users = getUserList();
         // System.out.println("XXXXXXXXXXXXXXXXXHHHHHHHHHHHHHHHHHHHXXXXXXXXXXX");
         // for(int i = 0; i < users.length(); i ++) {
