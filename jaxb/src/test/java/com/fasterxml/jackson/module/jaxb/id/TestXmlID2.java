@@ -45,12 +45,12 @@ public class TestXmlID2 extends BaseJaxbTest
     }
     
     
-    // @XmlRootElement(name = "user")
-    // @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlRootElement(name = "user")
+    @XmlAccessorType(XmlAccessType.FIELD)
     @JsonPropertyOrder({"id", "username", "email", "department"})
     static class User
     {
-        // @XmlElement @XmlID
+        @XmlElement @XmlID
         public Long id;
 
         public String username;
