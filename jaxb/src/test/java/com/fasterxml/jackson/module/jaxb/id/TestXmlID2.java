@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
 public class TestXmlID2 extends BaseJaxbTest
 {
     @XmlRootElement(name = "department")
@@ -140,6 +140,16 @@ public class TestXmlID2 extends BaseJaxbTest
                 .annotationIntrospector(new JaxbAnnotationIntrospector())
                 .build();
         List<User> users = getUserList();
+
+        ObjectMapper mapper1 = new ObjectMapper(); 
+        mapper1.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
+
+
+        mapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true); 
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true); 
+
+        System.out.println(mapper.writeValueAsString(pojo));
+
         final String json = mapper.writeValueAsString(users);
         String expected = "[{\"id\":11,\"username\":\"11\",\"email\":\"11@test.com\",\"department\":9}"
                 +",{\"id\":22,\"username\":\"22\",\"email\":\"22@test.com\",\"department\":9}"
