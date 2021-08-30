@@ -99,9 +99,9 @@ public class TestXmlID2 extends BaseJaxbTest
 
         dep = new Department(9L);
         dep.setName("department9");
-        user1.setDepartment(dep.name);
+        user1.setDepartment(dep);
         users.add(user1);
-        user2.setDepartment(dep.name);
+        user2.setDepartment(dep);
         users.add(user2);
 
         // dep.setEmployees(users);
@@ -138,10 +138,11 @@ public class TestXmlID2 extends BaseJaxbTest
     
     public void testIdWithJaxbRules() throws Exception
     {
-        ObjectMapper mapper = JsonMapper.builder()
-        // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
-                .annotationIntrospector(new JaxbAnnotationIntrospector())
-                .build();
+        // ObjectMapper mapper = JsonMapper.builder()
+        // // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
+        //         .annotationIntrospector(new JaxbAnnotationIntrospector())
+        //         .build();
+        ObjectMapper mapper = new ObjectMapper();
         List<User> users = getUserList();
         // System.out.println("XXXXXXXXXXXXXXXXXHHHHHHHHHHHHHHHHHHHXXXXXXXXXXX");
         // for(int i = 0; i < users.length(); i ++) {
