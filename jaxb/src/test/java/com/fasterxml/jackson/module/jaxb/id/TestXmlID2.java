@@ -103,7 +103,7 @@ public class TestXmlID2 extends BaseJaxbTest
         user2.setDepartment(dep);
         users.add(user2);
 
-        // dep.setEmployees(users);
+        dep.setEmployees(users);
         resultList.clear();
         resultList.add(user1);
         resultList.add(user2);
