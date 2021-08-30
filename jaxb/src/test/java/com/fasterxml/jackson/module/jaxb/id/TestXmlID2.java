@@ -49,7 +49,7 @@ public class TestXmlID2 extends BaseJaxbTest
     //@JsonPropertyOrder({"email", "username", "department"})
     static class User
     {
-        //@XmlElement @XmlID
+        @XmlElement @XmlID
         public Long id;
         public String username;
         public String email;
