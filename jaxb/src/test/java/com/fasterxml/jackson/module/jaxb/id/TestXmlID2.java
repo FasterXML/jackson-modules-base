@@ -120,7 +120,7 @@ public class TestXmlID2 extends BaseJaxbTest
         ObjectMapper mapper = JsonMapper.builder()
         
         // true -> ignore XmlIDREF annotation
-                .annotationIntrospector(new JaxbAnnotationIntrospector(true))
+                .annotationIntrospector(new JaxbAnnotationIntrospector())
                 .build();
         
         // first, with default settings (first NOT as id)
