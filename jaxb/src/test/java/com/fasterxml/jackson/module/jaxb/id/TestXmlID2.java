@@ -46,15 +46,17 @@ public class TestXmlID2 extends BaseJaxbTest
     
     @XmlRootElement(name = "user")
     @XmlAccessorType(XmlAccessType.FIELD)
-    //@JsonPropertyOrder({"id","username", "email", "department"})
+    @JsonPropertyOrder({"id","username", "email", "department"})
     static class User
     {
-        //@XmlElement @XmlID
+        @XmlElement @XmlID @XmlElement(name="id")
         public Long id;
+        @XmlElement(name="username")
         public String username;
+        @XmlElement(name="email")
         public String email;
 
-        @XmlIDREF
+        @XmlIDREF @XmlElement(name="department")
         public Department department;
 
         protected User() { }
@@ -137,34 +139,20 @@ public class TestXmlID2 extends BaseJaxbTest
     
     public void testIdWithJaxbRules() throws Exception
     {
-        String expected = "[{\"id\":11,\"username\":\"11\",\"email\":\"11@test.com\","
-                +"\"department\":{\"id\":9,\"name\":\"department9\",\"employees\":["
-                +"11,{\"id\":22,\"username\":\"22\",\"email\":\"22@test.com\","
-                +"\"department\":9}]}},22,{\"id\":33,\"username\":\"33\",\"email\":\"33@test.com\",\"department\":null}]";
+        //ObjectMapper mapper = new ObjectMapper();
         ObjectMapper mapper = JsonMapper.builder()
-        
-        // true -> ignore XmlIDREF annotation
-                .annotationIntrospector(new JaxbAnnotationIntrospector(true))
+        // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
+                .annotationIntrospector(new JaxbAnnotationIntrospector())
                 .build();
-        
-        // first, with default settings (first NOT as id)
         List<User> users = getUserList();
-        String json = mapper.writeValueAsString(users);
-        assertEquals(expected, json);
-        // //ObjectMapper mapper = new ObjectMapper();
-        // ObjectMapper mapper = JsonMapper.builder()
-        // // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
-        //         .annotationIntrospector(new JaxbAnnotationIntrospector())
-        //         .build();
-        // List<User> users = getUserList();
-        // final String json = mapper.writeValueAsString(users);
+        final String json = mapper.writeValueAsString(users);
 
-        // String expected = "[{\"id\":11,\"username\":\"11\",\"email\":\"11@test.com\",\"department\":9}"
-        //         +",{\"id\":22,\"username\":\"22\",\"email\":\"22@test.com\",\"department\":9}"
-        //         +",{\"id\":33,\"username\":\"33\",\"email\":\"33@test.com\",\"department\":null}]";
+        String expected = "[{\"id\":11,\"username\":\"11\",\"email\":\"11@test.com\",\"department\":9}"
+                +",{\"id\":22,\"username\":\"22\",\"email\":\"22@test.com\",\"department\":9}"
+                +",{\"id\":33,\"username\":\"33\",\"email\":\"33@test.com\",\"department\":null}]";
         
-        // assertEquals(expected, json);
+        assertEquals(expected, json);
 
-        // // However, there is no way to resolve those back, without some external mechanism...
+        // However, there is no way to resolve those back, without some external mechanism...
     }
 }
