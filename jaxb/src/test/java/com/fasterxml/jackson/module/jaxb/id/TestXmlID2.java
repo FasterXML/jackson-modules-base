@@ -45,8 +45,8 @@ public class TestXmlID2 extends BaseJaxbTest
     
     
     //@XmlRootElement(name = "user")
-    //@XmlAccessorType(XmlAccessType.FIELD)
-    //@JsonPropertyOrder({"email", "username", "department"})
+    // @XmlAccessorType(XmlAccessType.FIELD)
+    @JsonPropertyOrder({"email", "username", "department"})
     static class User
     {
         @XmlElement @XmlID
@@ -87,28 +87,23 @@ public class TestXmlID2 extends BaseJaxbTest
         List<User> users = new java.util.ArrayList<User>();
 
         User user1, user2, user3;
-        Department dep,dep2;
-        dep = new Department(9L);
-        dep2 = new Department(9L);
-        dep.setName("department9");
-        dep2.setName("department9");
-
+        Department dep;
         user1 = new User(11L);
         user1.setUsername("11");
         user1.setEmail("11@test.com");
-        user1.setDepartment(dep);
         user2 = new User(22L);
         user2.setUsername("22");
         user2.setEmail("22@test.com");
-        user2.setDepartment(dep2);
         user3 = new User(33L);
         user3.setUsername("33");
         user3.setEmail("33@test.com");
 
-        //user1.setDepartment(dep);
-        //users.add(user1);
-        //user2.setDepartment(dep2);
-        //users.add(user2);
+        dep = new Department(9L);
+        dep.setName("department9");
+        user1.setDepartment(dep);
+        users.add(user1);
+        user2.setDepartment(dep);
+        users.add(user2);
 
         // dep.setEmployees(users);
         resultList.clear();
