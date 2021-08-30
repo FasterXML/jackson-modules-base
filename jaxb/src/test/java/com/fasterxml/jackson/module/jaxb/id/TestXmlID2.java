@@ -142,6 +142,7 @@ public class TestXmlID2 extends BaseJaxbTest
         // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
                 .annotationIntrospector(new JaxbAnnotationIntrospector())
                 .build();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
         List<User> users = getUserList();
         // System.out.println("XXXXXXXXXXXXXXXXXHHHHHHHHHHHHHHHHHHHXXXXXXXXXXX");
         // for(int i = 0; i < users.length(); i ++) {
