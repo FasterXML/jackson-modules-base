@@ -145,7 +145,7 @@ public class TestXmlID2 extends BaseJaxbTest
         //ObjectMapper mapper = new ObjectMapper();
         ObjectMapper mapper = JsonMapper.builder()
         // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
-                .annotationIntrospector(new JaxbAnnotationIntrospector(true))
+                .annotationIntrospector(new JaxbAnnotationIntrospector())
                 .build();
         List<User> users = getUserList();
         final String json = mapper.writeValueAsString(users);
@@ -159,3 +159,9 @@ public class TestXmlID2 extends BaseJaxbTest
         // However, there is no way to resolve those back, without some external mechanism...
     }
 }
+// //expected
+// [{"id":11,"[username":"11","email":"11@test.com","department":9},
+//  {"id":22,"username":"22","email":"22@test.com","department":9},
+//  {"id":33,"username":"33","email":"33@test.com","department":null]}]
+
+// but was:<[{"id":11,"[department":{"id":9,"employees":[11,{"id":22,"department":9,"username":"22","email":"22@test.com"}],"name":"department9"},"username":"11","email":"11@test.com"},22,{"id":33,"department":null,"username":"33","email":"33@test.com"]}]>
