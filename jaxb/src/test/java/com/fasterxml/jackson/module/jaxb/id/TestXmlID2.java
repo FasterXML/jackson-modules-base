@@ -47,19 +47,19 @@ public class TestXmlID2 extends BaseJaxbTest
     
     @XmlRootElement(name = "user")
     @XmlAccessorType(XmlAccessType.FIELD)
-    // @JsonPropertyOrder({"id","username", "email", "department"})
+    //@JsonPropertyOrder({"id","username", "email", "department"})
     static class User
     {
         @XmlID
-        @XmlElement(name = "id")
+        @XmlElement
         public Long id;
-        @XmlElement(name = "username")
+        //@XmlElement(name = "username")
         public String username;
-        @XmlElement(name = "email")
+        //@XmlElement(name = "email")
         public String email;
 
         @XmlIDREF
-        @XmlElement(name = "department")
+        //@XmlElement(name = "department")
         public Department department;
 
         protected User() { }
@@ -153,7 +153,7 @@ public class TestXmlID2 extends BaseJaxbTest
         String expected = "[{\"id\":11,\"username\":\"11\",\"email\":\"11@test.com\",\"department\":9}"
                 +",{\"id\":22,\"username\":\"22\",\"email\":\"22@test.com\",\"department\":9}"
                 +",{\"id\":33,\"username\":\"33\",\"email\":\"33@test.com\",\"department\":null}]";
- 
+
         assertEquals(expected, json);
 
         // However, there is no way to resolve those back, without some external mechanism...
