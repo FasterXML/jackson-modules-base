@@ -15,7 +15,6 @@ public class TestXmlID2 extends BaseJaxbTest
 {
     @XmlRootElement(name = "department")
     @XmlAccessorType(XmlAccessType.FIELD)
-    //@JsonPropertyOrder({})
     static class Department {
         @XmlElement
         @XmlID
@@ -23,7 +22,7 @@ public class TestXmlID2 extends BaseJaxbTest
 
         public String name;
 
-        // @XmlIDREF
+        @XmlIDREF
         public List<User> employees = new ArrayList<User>();
 
         protected Department() { }
@@ -45,18 +44,18 @@ public class TestXmlID2 extends BaseJaxbTest
     }
     
     
-    @XmlRootElement(name = "user")
-    @XmlAccessorType(XmlAccessType.FIELD)
+    // @XmlRootElement(name = "user")
+    // @XmlAccessorType(XmlAccessType.FIELD)
     @JsonPropertyOrder({"id", "username", "email", "department"})
     static class User
     {
-        @XmlElement @XmlID
+        // @XmlElement @XmlID
         public Long id;
 
         public String username;
         public String email;
 
-        @XmlIDREF
+        // @XmlIDREF
         public Department department;
 
         protected User() { }
@@ -139,11 +138,11 @@ public class TestXmlID2 extends BaseJaxbTest
     
     public void testIdWithJaxbRules() throws Exception
     {   
-        ObjectMapper mapper = new ObjectMapper();
-        // ObjectMapper mapper = ObjectMapper.builder()
-        // // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
-        //         .annotationIntrospector(new JaxbAnnotationIntrospector())
-        //         .build();
+ 
+        ObjectMapper mapper = ObjectMapper.builder()
+        // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
+                .annotationIntrospector(new JaxbAnnotationIntrospector())
+                .build();
         List<User> users = getUserList();
         // System.out.println("XXXXXXXXXXXXXXXXXHHHHHHHHHHHHHHHHHHHXXXXXXXXXXX");
         // for(int i = 0; i < users.length(); i ++) {
