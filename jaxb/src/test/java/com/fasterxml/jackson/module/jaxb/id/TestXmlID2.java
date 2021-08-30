@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class TestXmlID2 extends BaseJaxbTest
 {
@@ -100,9 +99,9 @@ public class TestXmlID2 extends BaseJaxbTest
 
         dep = new Department(9L);
         dep.setName("department9");
-        user1.setDepartment(dep);
+        user1.setDepartment(dep.name);
         users.add(user1);
-        user2.setDepartment(dep);
+        user2.setDepartment(dep.name);
         users.add(user2);
 
         // dep.setEmployees(users);
@@ -143,7 +142,6 @@ public class TestXmlID2 extends BaseJaxbTest
         // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
                 .annotationIntrospector(new JaxbAnnotationIntrospector())
                 .build();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
         List<User> users = getUserList();
         // System.out.println("XXXXXXXXXXXXXXXXXHHHHHHHHHHHHHHHHHHHXXXXXXXXXXX");
         // for(int i = 0; i < users.length(); i ++) {
