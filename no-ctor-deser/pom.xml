@@ -12,7 +12,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jackson-module-no-ctor-deser</artifactId>
-    <name>Jackson module: No-constructor Deserilization</name>
+    <name>Jackson module: No-constructor Deserialization</name>
     <packaging>bundle</packaging>
 
     <description>Support deserialization of POJO classes without default constructor</description>

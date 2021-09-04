@@ -4,8 +4,11 @@ import java.util.*;
 
 import javax.xml.bind.annotation.*;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
@@ -41,10 +44,10 @@ public class TestXmlID2 extends BaseJaxbTest
             this.employees = employees;
         }
     }
-    
-    
+
     @XmlRootElement(name = "user")
     @XmlAccessorType(XmlAccessType.FIELD)
+    @JsonPropertyOrder({ "id", "username","email","department" })
     static class User
     {
         @XmlElement @XmlID
@@ -116,9 +119,11 @@ public class TestXmlID2 extends BaseJaxbTest
                 +"\"department\":{\"id\":9,\"name\":\"department9\",\"employees\":["
                 +"11,{\"id\":22,\"username\":\"22\",\"email\":\"22@test.com\","
                 +"\"department\":9}]}},22,{\"id\":33,\"username\":\"33\",\"email\":\"33@test.com\",\"department\":null}]";
-        ObjectMapper mapper = new ObjectMapper();
-        // true -> ignore XmlIDREF annotation
-        mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(mapper.getTypeFactory(), true));
+        ObjectMapper mapper = JsonMapper.builder()
+                // true -> ignore XmlIDREF annotation
+                .annotationIntrospector(new JaxbAnnotationIntrospector(TypeFactory.defaultInstance(),
+                        true))
+                .build();
         
         // first, with default settings (first NOT as id)
         List<User> users = getUserList();
@@ -134,9 +139,12 @@ public class TestXmlID2 extends BaseJaxbTest
     
     public void testIdWithJaxbRules() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
         // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
-        mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(mapper.getTypeFactory()));
+        ObjectMapper mapper = JsonMapper.builder()
+                // true -> ignore XmlIDREF annotation
+                .annotationIntrospector(new JaxbAnnotationIntrospector(TypeFactory.defaultInstance(),
+                        false))
+                .build();
         List<User> users = getUserList();
         final String json = mapper.writeValueAsString(users);
         String expected = "[{\"id\":11,\"username\":\"11\",\"email\":\"11@test.com\",\"department\":9}"
