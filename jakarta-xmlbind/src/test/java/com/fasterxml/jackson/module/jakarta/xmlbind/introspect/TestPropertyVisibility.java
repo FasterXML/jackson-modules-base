@@ -8,10 +8,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import com.fasterxml.jackson.databind.*;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 public class TestPropertyVisibility
-    extends BaseJaxbTest
+    extends ModuleTestBase
 {
     @XmlAccessorType(XmlAccessType.NONE)
     protected static class Bean354

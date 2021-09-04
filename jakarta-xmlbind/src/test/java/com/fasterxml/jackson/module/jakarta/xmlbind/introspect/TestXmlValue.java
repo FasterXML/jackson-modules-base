@@ -8,9 +8,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.databind.*;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
-public class TestXmlValue extends BaseJaxbTest
+public class TestXmlValue extends ModuleTestBase
 {
     static class WithXmlValueNoOverride
     {

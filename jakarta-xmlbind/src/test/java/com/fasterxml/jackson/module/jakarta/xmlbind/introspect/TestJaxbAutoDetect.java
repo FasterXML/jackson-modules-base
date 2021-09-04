@@ -13,14 +13,14 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Tests for verifying auto-detection settings with JAXB annotations.
  *
  * @author Tatu Saloranta
  */
-public class TestJaxbAutoDetect extends BaseJaxbTest
+public class TestJaxbAutoDetect extends ModuleTestBase
 {
     /*
     /**********************************************************

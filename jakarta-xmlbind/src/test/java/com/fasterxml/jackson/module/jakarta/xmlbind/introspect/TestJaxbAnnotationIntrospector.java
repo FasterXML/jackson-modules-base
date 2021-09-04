@@ -16,14 +16,14 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Tests for verifying that JAXB annotation based introspector
  * implementation works as expected
  */
 public class TestJaxbAnnotationIntrospector
-    extends BaseJaxbTest
+    extends ModuleTestBase
 {
     /*
     /****************************************************

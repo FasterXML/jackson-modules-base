@@ -8,13 +8,13 @@ import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Tests for verifying JAXB adapter handling for {@link java.util.Map}
  * types.
  */
-public class TestAdaptedMapType extends BaseJaxbTest
+public class TestAdaptedMapType extends ModuleTestBase
 {
     static class ObjectContainingAMap
     {

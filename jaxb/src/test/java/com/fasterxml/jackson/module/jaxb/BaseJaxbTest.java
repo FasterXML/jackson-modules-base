@@ -114,7 +114,7 @@ public abstract class BaseJaxbTest
         return '"'+str+'"';
     }
 
-    protected static String aposToQuotes(String json) {
+    protected static String a2q(String json) {
         return json.replace("'", "\"");
     }
 }

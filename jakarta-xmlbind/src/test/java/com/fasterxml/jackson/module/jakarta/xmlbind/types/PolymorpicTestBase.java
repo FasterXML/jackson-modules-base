@@ -2,9 +2,9 @@ package com.fasterxml.jackson.module.jakarta.xmlbind.types;
 
 import jakarta.xml.bind.annotation.XmlRootElement;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
-abstract class PolymorpicTestBase extends BaseJaxbTest
+abstract class PolymorpicTestBase extends ModuleTestBase
 {
     static abstract class Animal {
         public String nickname;

@@ -14,13 +14,13 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.ser.VirtualBeanPropertyWriter;
 import com.fasterxml.jackson.databind.util.Annotations;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 //Copied from [com.fasterxml.jackson.databind.ser]
 /**
  * Tests for verifying that one can append virtual properties after regular ones.
  */
-public class TestVirtualProperties extends BaseJaxbTest
+public class TestVirtualProperties extends ModuleTestBase
 {
     @JsonAppend(attrs={ @JsonAppend.Attr("id"),
         @JsonAppend.Attr(value="internal", propName="extra", required=true)

@@ -5,9 +5,9 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
-public class TestRootName extends BaseJaxbTest
+public class TestRootName extends ModuleTestBase
 {
     /*
     /**********************************************************

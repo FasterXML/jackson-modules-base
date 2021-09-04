@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 
-public abstract class BaseJaxbTest
+public abstract class ModuleTestBase
     extends junit.framework.TestCase
 {
     public static class NoCheckSubTypeValidator
@@ -25,7 +25,7 @@ public abstract class BaseJaxbTest
         }
     }
 
-    protected BaseJaxbTest() { }
+    protected ModuleTestBase() { }
 
     /*
     /**********************************************************************

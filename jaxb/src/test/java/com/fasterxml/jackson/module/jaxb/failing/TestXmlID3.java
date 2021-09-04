@@ -60,7 +60,7 @@ public class TestXmlID3 extends BaseJaxbTest
 
 //System.err.println("->\n"+mapper.writeValueAsString(idList));
 
-        assertEquals(aposToQuotes(
+        assertEquals(a2q(
 "{'elements':[{'id':'1','name':'name1'},{'id':'1','name':'name1'}],'parent':{'id':'1','name':'name1'}}"),
                 mapper.writeValueAsString(idList));
     }

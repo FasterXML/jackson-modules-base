@@ -6,13 +6,13 @@ import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Simple testing to verify that XmlID and XMLIDREF handling works
  * to degree we can make it work.
  */
-public class TestXmlID extends BaseJaxbTest
+public class TestXmlID extends ModuleTestBase
 {
     // From sample used in [http://blog.bdoughan.com/2010/10/jaxb-and-shared-references-xmlid-and.html]
     @XmlRootElement

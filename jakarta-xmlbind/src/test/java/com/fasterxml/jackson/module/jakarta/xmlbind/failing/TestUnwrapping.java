@@ -9,9 +9,9 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
-public class TestUnwrapping extends BaseJaxbTest
+public class TestUnwrapping extends ModuleTestBase
 {
     @XmlRootElement
     static class Bean<R>

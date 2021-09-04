@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.jsonschema.JsonSchema;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Test(s) to see that JAXB annotations-based information is properly
@@ -16,7 +16,7 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
  * @author tatu
  */
 @SuppressWarnings("deprecation")
-public class TestSchemaGeneration extends BaseJaxbTest
+public class TestSchemaGeneration extends ModuleTestBase
 {
     @XmlAccessorType(XmlAccessType.FIELD)
     protected static class Person {

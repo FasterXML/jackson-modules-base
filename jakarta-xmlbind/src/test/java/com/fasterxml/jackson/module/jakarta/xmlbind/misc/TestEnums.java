@@ -4,9 +4,9 @@ import jakarta.xml.bind.annotation.XmlEnum;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
-public class TestEnums extends BaseJaxbTest
+public class TestEnums extends ModuleTestBase
 {
     enum Plain { A, B; }
 

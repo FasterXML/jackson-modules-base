@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
-public class TestVersions extends BaseJaxbTest
+public class TestVersions extends ModuleTestBase
 {
     public void testVersions()
     {

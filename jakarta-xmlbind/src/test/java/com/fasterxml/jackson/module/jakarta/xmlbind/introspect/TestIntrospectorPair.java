@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Simple testing that <code>AnnotationIntrospector.Pair</code> works as
@@ -26,7 +26,7 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
  * @author Tatu Saloranta
  */
 public class TestIntrospectorPair
-    extends BaseJaxbTest
+    extends ModuleTestBase
 {
     final static AnnotationIntrospector _jacksonAI = new JacksonAnnotationIntrospector();
     final static AnnotationIntrospector _jaxbAI = new JakartaXmlBindAnnotationIntrospector(TypeFactory.defaultInstance());

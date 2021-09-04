@@ -10,14 +10,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Unit tests to ensure that handling of writing of null properties (or not)
  * works when using JAXB annotation introspector.
  */
 public class TestJaxbNullProperties
-    extends BaseJaxbTest
+    extends ModuleTestBase
 {
     /*
     /**********************************************************

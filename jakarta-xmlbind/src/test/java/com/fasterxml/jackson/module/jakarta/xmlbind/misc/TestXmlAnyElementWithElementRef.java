@@ -6,10 +6,10 @@ import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 public class TestXmlAnyElementWithElementRef
-    extends BaseJaxbTest
+    extends ModuleTestBase
 {
     static class Bean {
         @XmlAnyElement(lax=true)

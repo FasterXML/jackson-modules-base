@@ -4,10 +4,10 @@ import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 public class TestPropertyOrdering
-    extends BaseJaxbTest
+    extends ModuleTestBase
 {
     @XmlType(propOrder = {"cparty", "contacts"})
     @XmlAccessorOrder(XmlAccessOrder.ALPHABETICAL)

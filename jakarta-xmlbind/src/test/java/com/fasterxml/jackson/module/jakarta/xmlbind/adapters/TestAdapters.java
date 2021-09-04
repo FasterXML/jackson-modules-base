@@ -9,13 +9,13 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Unit tests for checking that JAXB type adapters work (to some
  * degree, anyway).
  */
-public class TestAdapters extends BaseJaxbTest
+public class TestAdapters extends ModuleTestBase
 {
     public static class SillyAdapter extends XmlAdapter<String, Date>
     {
