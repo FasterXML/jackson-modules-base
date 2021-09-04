@@ -5,12 +5,12 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Failing unit tests related to Adapter handling.
  */
-public class TestIdentityAdapters extends BaseJaxbTest
+public class TestIdentityAdapters extends ModuleTestBase
 {
     // [Issue-10]: Infinite recursion in "self" adapters
     public static class IdentityAdapter extends XmlAdapter<IdentityAdapterBean, IdentityAdapterBean> {

@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.ValueDeserializerModifier;
 import com.fasterxml.jackson.databind.deser.bean.BeanDeserializer;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
-public class TestDeserializerCaching extends BaseJaxbTest
+public class TestDeserializerCaching extends ModuleTestBase
 {
     static class MyBeanModule extends JacksonModule {
         @Override public String getModuleName() {

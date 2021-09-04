@@ -8,10 +8,10 @@ import jakarta.xml.bind.annotation.XmlID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 // for [modules-base#46]: XmlId semantics can not be supported by Jackson/JAXB-annotation-mapper
-public class TestXmlID3 extends BaseJaxbTest
+public class TestXmlID3 extends ModuleTestBase
 {
     static class HasID
     {

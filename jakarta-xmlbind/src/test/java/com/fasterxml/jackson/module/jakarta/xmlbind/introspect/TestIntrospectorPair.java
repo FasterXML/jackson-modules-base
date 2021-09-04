@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
 /**
@@ -25,7 +25,7 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntr
  * @author Tatu Saloranta
  */
 public class TestIntrospectorPair
-    extends BaseJaxbTest
+    extends ModuleTestBase
 {
     /**
      * Simple test bean for verifying basic field detection and property

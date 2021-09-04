@@ -10,9 +10,9 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
-public class TestXmlID2 extends BaseJaxbTest
+public class TestXmlID2 extends ModuleTestBase
 {
     @XmlRootElement(name = "department")
     @XmlAccessorType(XmlAccessType.FIELD)

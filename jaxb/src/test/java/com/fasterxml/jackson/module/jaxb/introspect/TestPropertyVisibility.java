@@ -113,7 +113,7 @@ public class TestPropertyVisibility
     public void testNoneAccessWithXmlElements() throws Exception
     {
         NoneAccessBean input = new NoneAccessBean(new Foo44());
-        
+
         /* Earlier
         assertEquals(a2q("{'object':{'foo':{'foo':'bar'}},'other':null}"),
                 MAPPER.writeValueAsString(input));

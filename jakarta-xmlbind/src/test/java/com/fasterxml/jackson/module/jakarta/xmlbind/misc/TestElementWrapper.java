@@ -8,12 +8,12 @@ import jakarta.xml.bind.annotation.XmlElementWrapper;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Unit tests to verify handling of @XmlElementWrapper annotation.
  */
-public class TestElementWrapper extends BaseJaxbTest
+public class TestElementWrapper extends ModuleTestBase
 {
     static class Person {
         @XmlElementWrapper(name="phones")

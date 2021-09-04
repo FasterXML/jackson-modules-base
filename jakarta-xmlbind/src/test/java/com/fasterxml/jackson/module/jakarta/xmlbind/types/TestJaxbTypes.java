@@ -11,13 +11,13 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Tests for handling of type-related JAXB annotations 
  */
 public class TestJaxbTypes
-    extends BaseJaxbTest
+    extends ModuleTestBase
 {
     static class AbstractWrapper {
         @XmlElement(type=BeanImpl.class)

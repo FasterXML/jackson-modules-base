@@ -4,13 +4,13 @@ import jakarta.xml.bind.annotation.XmlElement;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Unit test(s) to verify that annotations from super classes and
  * interfaces are properly used (for example, wrt [JACKSON-450])
  */
-public class TestAnnotationPriority extends BaseJaxbTest
+public class TestAnnotationPriority extends ModuleTestBase
 {
     /*
     /**********************************************************

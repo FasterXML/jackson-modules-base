@@ -3,7 +3,7 @@ package com.fasterxml.jackson.module.jakarta.xmlbind;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.Versioned;
 
-public class TestVersions extends BaseJaxbTest
+public class TestVersions extends ModuleTestBase
 {
     public void testVersions()
     {

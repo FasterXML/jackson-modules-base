@@ -6,7 +6,7 @@ import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.*;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Simple unit tests to verify that it is possible to handle
@@ -15,7 +15,7 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
  * trees and DAGs.
  */
 public class TestCyclicTypes
-    extends BaseJaxbTest
+    extends ModuleTestBase
 {
     /*
     /**********************************************************

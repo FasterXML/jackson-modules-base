@@ -3,10 +3,10 @@ package com.fasterxml.jackson.module.jakarta.xmlbind.types;
 import jakarta.xml.bind.annotation.XmlElement;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 // Failing temporarily due to [databind#1023]
-public class TestJaxbTypeCoercion1023 extends BaseJaxbTest
+public class TestJaxbTypeCoercion1023 extends ModuleTestBase
 {
     /*
     /**********************************************************

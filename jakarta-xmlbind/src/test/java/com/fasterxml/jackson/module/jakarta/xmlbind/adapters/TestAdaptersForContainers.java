@@ -8,14 +8,14 @@ import jakarta.xml.bind.annotation.adapters.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 import com.fasterxml.jackson.module.jakarta.xmlbind.introspect.TestJaxbAnnotationIntrospector.KeyValuePair;
 
 /**
  * Unit tests to check that {@link XmlAdapter}s also work with
  * container types (Lists, Maps)
  */
-public class TestAdaptersForContainers extends BaseJaxbTest
+public class TestAdaptersForContainers extends ModuleTestBase
 {
     // Support for Maps
 

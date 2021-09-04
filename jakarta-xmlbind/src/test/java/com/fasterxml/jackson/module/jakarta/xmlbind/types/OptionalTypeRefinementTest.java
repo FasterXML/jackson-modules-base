@@ -4,10 +4,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 // [jaxb-annotations#63]
-public class OptionalTypeRefinementTest extends BaseJaxbTest
+public class OptionalTypeRefinementTest extends ModuleTestBase
 {
     static class Stuff63 {
         public AtomicReference<String> value = new AtomicReference<String>("abc");

@@ -9,9 +9,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
-public class TestSerializationInclusion extends BaseJaxbTest
+public class TestSerializationInclusion extends ModuleTestBase
 {
     static class Data {
         private final List<Object> stuff = new java.util.ArrayList<Object>();

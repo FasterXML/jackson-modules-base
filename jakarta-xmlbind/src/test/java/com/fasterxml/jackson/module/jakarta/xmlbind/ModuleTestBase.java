@@ -9,11 +9,11 @@ import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
-public abstract class BaseJaxbTest
+public abstract class ModuleTestBase
     extends junit.framework.TestCase
 {
-    protected BaseJaxbTest() { }
-    
+    protected ModuleTestBase() { }
+
     /*
     /**********************************************************************
     /* Factory methods
@@ -29,7 +29,7 @@ public abstract class BaseJaxbTest
     {
         return JsonMapper.builder();
     }
-    
+
     protected MapperBuilder<?,?> getJaxbMapperBuilder()
     {
         return JsonMapper.builder()
@@ -59,7 +59,7 @@ public abstract class BaseJaxbTest
     {
         return getJaxbAndJacksonMapperBuilder().build();
     }
-    
+
     /*
     /**********************************************************************
     /* Helper methods

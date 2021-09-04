@@ -13,13 +13,13 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
 /**
  * Tests for verifying auto-detection settings with JAXB annotations.
  */
-public class TestJaxbAutoDetect extends BaseJaxbTest
+public class TestJaxbAutoDetect extends ModuleTestBase
 {
     /* Bean for testing problem [JACKSON-183]: with normal
      * auto-detect enabled, 2 fields visible; if disabled, just 1.

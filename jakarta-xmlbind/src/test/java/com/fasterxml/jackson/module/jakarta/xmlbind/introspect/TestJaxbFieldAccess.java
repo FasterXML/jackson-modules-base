@@ -6,9 +6,9 @@ import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.*;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
-public class TestJaxbFieldAccess extends BaseJaxbTest
+public class TestJaxbFieldAccess extends ModuleTestBase
 {
     /*
     /**********************************************************

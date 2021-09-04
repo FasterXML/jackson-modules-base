@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
 import com.fasterxml.jackson.databind.introspect.AnnotatedField;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
 /**
@@ -22,7 +22,7 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntr
  * implementation works as expected
  */
 public class TestJaxbAnnotationIntrospector
-    extends BaseJaxbTest
+    extends ModuleTestBase
 {
     public static enum EnumExample {
         @XmlEnumValue("Value One")

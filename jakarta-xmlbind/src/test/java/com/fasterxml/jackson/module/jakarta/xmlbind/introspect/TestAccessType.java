@@ -8,13 +8,13 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import com.fasterxml.jackson.databind.*;
 
-import com.fasterxml.jackson.module.jakarta.xmlbind.BaseJaxbTest;
+import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 /**
  * Unit test(s) written for [JACKSON-303]; we should be able to detect setter
  * even though it is not annotated, because there is matching annotated getter.
  */
-public class TestAccessType extends BaseJaxbTest
+public class TestAccessType extends ModuleTestBase
 {
     @XmlRootElement(name = "model")
     @XmlAccessorType(XmlAccessType.NONE)
