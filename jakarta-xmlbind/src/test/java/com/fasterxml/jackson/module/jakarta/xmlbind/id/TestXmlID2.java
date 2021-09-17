@@ -4,6 +4,7 @@ import java.util.*;
 
 import jakarta.xml.bind.annotation.*;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.fasterxml.jackson.databind.*;
@@ -43,10 +44,10 @@ public class TestXmlID2 extends ModuleTestBase
             this.employees = employees;
         }
     }
-    
-    
+
     @XmlRootElement(name = "user")
     @XmlAccessorType(XmlAccessType.FIELD)
+    @JsonPropertyOrder({ "id", "username","email","department" })
     static class User
     {
         @XmlElement @XmlID
@@ -119,7 +120,7 @@ public class TestXmlID2 extends ModuleTestBase
                 +"11,{\"id\":22,\"username\":\"22\",\"email\":\"22@test.com\","
                 +"\"department\":9}]}},22,{\"id\":33,\"username\":\"33\",\"email\":\"33@test.com\",\"department\":null}]";
         ObjectMapper mapper = JsonMapper.builder()
-        // true -> ignore XmlIDREF annotation
+                // true -> ignore XmlIDREF annotation
                 .annotationIntrospector(new JakartaXmlBindAnnotationIntrospector(true))
                 .build();
         
@@ -138,7 +139,7 @@ public class TestXmlID2 extends ModuleTestBase
     public void testIdWithJaxbRules() throws Exception
     {
         ObjectMapper mapper = JsonMapper.builder()
-        // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
+                // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF
                 .annotationIntrospector(new JakartaXmlBindAnnotationIntrospector())
                 .build();
         List<User> users = getUserList();
