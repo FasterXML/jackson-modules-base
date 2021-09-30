@@ -1,0 +1,3 @@
+com.fasterxml.jackson.module.jaxb
+com.fasterxml.jackson.module.jaxb.deser
+com.fasterxml.jackson.module.jaxb.ser
