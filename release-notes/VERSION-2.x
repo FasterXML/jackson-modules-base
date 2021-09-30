@@ -14,7 +14,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.13.0 (not yet released)
+2.13.0 (30-Sep-2021)
 
 #130: Add Jakarta-variant of "JAXB" annotation introspector, module
   (`jackson-module-jakarta-xmlbind-annotations`)
