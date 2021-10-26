@@ -115,10 +115,6 @@ public class TestXmlID2 extends BaseJaxbTest
     
     public void testIdWithJacksonRules() throws Exception
     {
-        String expected = "[{\"id\":11,\"username\":\"11\",\"email\":\"11@test.com\","
-                +"\"department\":{\"id\":9,\"name\":\"department9\",\"employees\":["
-                +"11,{\"id\":22,\"username\":\"22\",\"email\":\"22@test.com\","
-                +"\"department\":9}]}},22,{\"id\":33,\"username\":\"33\",\"email\":\"33@test.com\",\"department\":null}]";
         ObjectMapper mapper = JsonMapper.builder()
                 // true -> ignore XmlIDREF annotation
                 .annotationIntrospector(new JaxbAnnotationIntrospector(TypeFactory.defaultInstance(),
@@ -128,13 +124,24 @@ public class TestXmlID2 extends BaseJaxbTest
         // first, with default settings (first NOT as id)
         List<User> users = getUserList();
         String json = mapper.writeValueAsString(users);
-        assertEquals(expected, json);
     
         List<User> result = mapper.readValue(json, new TypeReference<List<User>>() { });
         assertEquals(3, result.size());
         assertEquals(Long.valueOf(11), result.get(0).id);
+        assertEquals("11", result.get(0).username);
+        assertEquals("11@test.com", result.get(0).email);
+        assertEquals(Long.valueOf(9), result.get(0).department.id);
+        assertEquals("department9", result.get(0).department.name);
+        assertEquals(Long.valueOf(11), result.get(0).department.employees.get(0).id);
+        assertEquals(Long.valueOf(22), result.get(0).department.employees.get(1).id);
         assertEquals(Long.valueOf(22), result.get(1).id);
+        assertEquals("22", result.get(1).username);
+        assertEquals("22@test.com", result.get(1).email);
+        assertEquals(result.get(0).department, result.get(1).department);
         assertEquals(Long.valueOf(33), result.get(2).id);
+        assertEquals("33", result.get(2).username);
+        assertEquals("33@test.com", result.get(2).email);
+        assertEquals(null, result.get(2).department);
     }
     
     public void testIdWithJaxbRules() throws Exception
