@@ -14,6 +14,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.13.1 (not yet released)
+
+#155: (no-ctor-deser) Fix SPI metadata for `jackson-module-no-ctor-deser`
+ (reported by thetric@github)
+
 2.13.0 (30-Sep-2021)
 
 #130: Add Jakarta-variant of "JAXB" annotation introspector, module
