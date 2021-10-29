@@ -16,7 +16,12 @@ Modules:
 
 2.14.0 (not yet released)
 
-* No changes since 2.13.0
+* No changes since 2.13
+
+2.13.1 (not yet released)
+
+#155: (no-ctor-deser) Fix SPI metadata for `jackson-module-no-ctor-deser`
+ (reported by thetric@github)
 
 2.13.0 (30-Sep-2021)
 
