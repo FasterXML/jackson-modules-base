@@ -7,7 +7,6 @@ import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class TestInclusionAnnotations extends BlackbirdTestBase
 {
-    @JsonPropertyOrder({"value", "IntWrapper"})
     static class IntWrapper
     {
         @JsonInclude(JsonInclude.Include.NON_NULL) 
@@ -48,7 +47,7 @@ public class TestInclusionAnnotations extends BlackbirdTestBase
         public NonEmptyStringWrapper2(String v) { value = v; }
     }
     
-    @JsonPropertyOrder({ "name", "wrapped", "AnyWrapper"})
+    @JsonPropertyOrder({ "name", "wrapped"})
     static class AnyWrapper
     {
         public String name = "Foo";

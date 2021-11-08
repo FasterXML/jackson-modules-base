@@ -7,8 +7,6 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 public class TestInclusionAnnotations extends AfterburnerTestBase
 {
-
-    @JsonPropertyOrder({"value", "IntWrapper"})
     static class IntWrapper
     {
         @JsonInclude(JsonInclude.Include.NON_NULL) 
@@ -50,7 +48,7 @@ public class TestInclusionAnnotations extends AfterburnerTestBase
         public NonEmptyStringWrapper2(String v) { value = v; }
     }
 
-    @JsonPropertyOrder({ "name", "wrapped", "AnyWrapper"})
+    @JsonPropertyOrder({ "name", "wrapped"})
     static class AnyWrapper
     {
         public String name = "Foo";
