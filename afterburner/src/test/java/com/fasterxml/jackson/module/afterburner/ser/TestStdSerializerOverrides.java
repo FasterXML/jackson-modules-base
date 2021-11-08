@@ -16,7 +16,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 public class TestStdSerializerOverrides extends AfterburnerTestBase
 {
-
     @JsonPropertyOrder(alphabetic=true)
     static class ClassWithPropOverrides
     {
