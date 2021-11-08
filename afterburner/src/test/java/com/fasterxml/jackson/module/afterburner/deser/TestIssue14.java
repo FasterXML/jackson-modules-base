@@ -5,6 +5,7 @@ import java.util.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -59,6 +60,8 @@ public class TestIssue14 extends AfterburnerTestBase
     }
 }
 
+@JsonPropertyOrder({ "orderId", "userId", "amount", 
+	"status", "items", "createdAt", "updatedAt"})
 class PlaceOrderRequest {
      @JsonProperty("id") public long orderId;
      @JsonProperty("from") public String userId;
@@ -69,6 +72,7 @@ class PlaceOrderRequest {
      @JsonProperty("updated_at") public Date updatedAt;
 }
      
+@JsonPropertyOrder({ "quantity", "data"}) 
 class Item {
       @JsonProperty("product_id") public int productId;
       public int quantity;

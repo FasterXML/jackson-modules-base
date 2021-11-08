@@ -12,8 +12,12 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 public class TestStdSerializerOverrides extends AfterburnerTestBase
 {
+
+    @JsonPropertyOrder(alphabetic=true)
     static class ClassWithPropOverrides
     {
         public String a = "a";
