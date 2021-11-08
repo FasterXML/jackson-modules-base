@@ -10,10 +10,13 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class TestStdSerializerOverrides extends BlackbirdTestBase
 {
+    @JsonPropertyOrder({"a", "b"})
     static class ClassWithPropOverrides
     {
         public String a = "a";

@@ -17,6 +17,7 @@ import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 public class TestJsonFilter extends BlackbirdTestBase
 {
     @JsonFilter("RootFilter")
+    @JsonPropertyOrder({"a", "b"})
     static class Bean {
         public String a = "a";
         public String b = "b";

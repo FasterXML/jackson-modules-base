@@ -65,7 +65,7 @@ public class MapFormatShapeTest extends BlackbirdTestBase
     @JsonPropertyOrder({ "property", "map" })
     static class Map1540Implementation implements Map<Integer, Integer> {
         public int property;
-        public Map<Integer, Integer> map = new HashMap<>();
+        public Map<Integer, Integer> map = new LinkedHashMap<>();
  
         public Map<Integer, Integer> getMap() {
             return map;
@@ -183,8 +183,8 @@ public class MapFormatShapeTest extends BlackbirdTestBase
     {
         Map1540Implementation input = new Map1540Implementation();
         input.property = 55;
-        input.put(12, 45);
         input.put(6, 88);
+        input.put(12, 45);
 
         String json = MAPPER.writeValueAsString(input);
 
