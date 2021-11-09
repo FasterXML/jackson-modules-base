@@ -16,7 +16,8 @@ Modules:
 
 2.14.0 (not yet released)
 
-* No changes since 2.13
+#157: Bumb jakarta.activation-api dependency from 1.2.1 to 1.2.2
+ (contributed by Aleksandr B)
 
 2.13.1 (not yet released)
 
