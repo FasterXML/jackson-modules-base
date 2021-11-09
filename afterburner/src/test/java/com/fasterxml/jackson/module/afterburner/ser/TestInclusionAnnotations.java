@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
@@ -46,7 +47,8 @@ public class TestInclusionAnnotations extends AfterburnerTestBase
         public String value;
         public NonEmptyStringWrapper2(String v) { value = v; }
     }
-    
+
+    @JsonPropertyOrder({ "name", "wrapped"})
     static class AnyWrapper
     {
         public String name = "Foo";

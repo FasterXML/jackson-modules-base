@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.module.blackbird.ser;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
@@ -10,7 +11,6 @@ public class TestInclusionAnnotations extends BlackbirdTestBase
     {
         @JsonInclude(JsonInclude.Include.NON_NULL) 
         public Integer value;
-        
         public IntWrapper(Integer v) { value = v; }
     }
 
@@ -47,6 +47,7 @@ public class TestInclusionAnnotations extends BlackbirdTestBase
         public NonEmptyStringWrapper2(String v) { value = v; }
     }
     
+    @JsonPropertyOrder({ "name", "wrapped"})
     static class AnyWrapper
     {
         public String name = "Foo";

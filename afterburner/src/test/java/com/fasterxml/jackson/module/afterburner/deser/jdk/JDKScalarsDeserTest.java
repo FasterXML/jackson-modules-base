@@ -9,6 +9,7 @@ import org.junit.Assert;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import com.fasterxml.jackson.core.*;
 
@@ -89,6 +90,8 @@ public class JDKScalarsDeserTest
         void setV(int v2) { super.setV(v2+1); }
     }
 
+    @JsonPropertyOrder({"booleanValue", "byteValue", "charValue", 
+    	"shortValue", "intValue", "longValue", "doubleValue"})
     static class PrimitivesBean
     {
         public boolean booleanValue = true;

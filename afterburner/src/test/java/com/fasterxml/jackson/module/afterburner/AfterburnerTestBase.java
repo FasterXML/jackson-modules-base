@@ -3,6 +3,7 @@ package com.fasterxml.jackson.module.afterburner;
 import java.io.IOException;
 import java.util.Arrays;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.*;
 
@@ -101,9 +102,11 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
     /**
      * Sample class from Jackson tutorial ("JacksonInFiveMinutes")
      */
+    @JsonPropertyOrder(alphabetic=true)
     protected static class FiveMinuteUser {
         public enum Gender { MALE, FEMALE };
-
+	
+	@JsonPropertyOrder(alphabetic=true)
         public static class Name
         {
           private String _first, _last;

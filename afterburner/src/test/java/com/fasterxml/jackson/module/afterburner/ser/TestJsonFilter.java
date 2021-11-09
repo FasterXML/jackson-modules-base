@@ -17,6 +17,7 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 public class TestJsonFilter extends AfterburnerTestBase
 {
     @JsonFilter("RootFilter")
+    @JsonPropertyOrder({"a", "b"})
     static class Bean {
         public String a = "a";
         public String b = "b";

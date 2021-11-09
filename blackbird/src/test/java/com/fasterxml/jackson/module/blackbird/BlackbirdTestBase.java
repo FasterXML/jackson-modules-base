@@ -105,9 +105,11 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
     /**
      * Sample class from Jackson tutorial ("JacksonInFiveMinutes")
      */
+    @JsonPropertyOrder(alphabetic=true)
     protected static class FiveMinuteUser {
         public enum Gender { MALE, FEMALE };
 
+	@JsonPropertyOrder(alphabetic=true)
         public static class Name
         {
           private String _first, _last;
