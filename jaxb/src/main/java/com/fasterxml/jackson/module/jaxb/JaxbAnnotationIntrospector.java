@@ -28,23 +28,27 @@ import com.fasterxml.jackson.module.jaxb.ser.DataHandlerJsonSerializer;
  * As of Jackson 2.0, most JAXB annotations are supported at least to some degree.
  * Ones that are NOT yet supported are:
  * <ul>
- * <li>{@link XmlAnyAttribute} not yet used (as of 1.5) but may be in future (as an alias for @JsonAnySetter?)
- * <li>{@link XmlAnyElement} not yet used, may be as per [JACKSON-253]
+ * <li>{@link XmlAnyAttribute} not supported; possible (if unlikely) to be used
+ *    (as an alias for {@code @JsonAnySetter})
+ *  </li>
+ * <li>{@link XmlAnyElement} not supported; unlikely to ever be supported.
+ *   </li>
  * <li>{@link javax.xml.bind.annotation.XmlAttachmentRef}: JSON does not support external attachments
  * <li>{@link XmlElementDecl}
- * <li>{@link XmlElementRefs} because Jackson doesn't have any support for 'named' collection items -- however,
- *    this may become partially supported as per [JACKSON-253].
+ * <li>{@link XmlElementRefs} because Jackson doesn't have any support for 'named' collection items;
+ *    some parts could theoretically be supported
+ *   </li>
  * <li>{@link javax.xml.bind.annotation.XmlInlineBinaryData} since the underlying concepts
  *    (like XOP) do not exist in JSON -- Jackson will always use inline base64 encoding as the method
  * <li>{@link javax.xml.bind.annotation.XmlList} because JSON does not have (or necessarily need)
  *    method of serializing list of values as space-separated Strings
  * <li>{@link javax.xml.bind.annotation.XmlMimeType}
  * <li>{@link javax.xml.bind.annotation.XmlMixed} since JSON has no concept of mixed content
- * <li>{@link XmlRegistry}
- * <li>{@link XmlSchema} not used, unlikely to be used
- * <li>{@link XmlSchemaType} not used, unlikely to be used
- * <li>{@link XmlSchemaTypes} not used, unlikely to be used
- * <li>{@link XmlSeeAlso} not yet supported, but [ISSUE-1] filed to use it, so may be supported.
+ * <li>{@link XmlRegistry} not supported, unlikely to ever be.
+ * <li>{@link XmlSchema} not supported, unlikely to ever be.
+ * <li>{@link XmlSchemaType} not supported, unlikely to ever be.
+ * <li>{@link XmlSchemaTypes} not supported, unlikely to ever be.
+ * <li>{@link XmlSeeAlso} not supported.
  * </ul>
  *
  * Note also the following limitations:
@@ -54,11 +58,6 @@ import com.fasterxml.jackson.module.jaxb.ser.DataHandlerJsonSerializer;
  *    its JSON object; although (as of 2.4) it should be possible to override this name
  *   </li>
  * </ul>
- *<p>
- * A note on compatibility with Jackson XML module: since this module does not depend
- * on Jackson XML module, it is bit difficult to make sure we will properly expose
- * all information. But effort is made (as of version 2.3.3) to expose this information,
- * even without using a specific sub-class from that project.
  *
  * @author Ryan Heaton
  * @author Tatu Saloranta
@@ -702,7 +701,7 @@ public class JaxbAnnotationIntrospector
         final Class<?> type = _rawSerializationType(am);
 
         /*
-        // As per [JACKSON-722], more checks for structured types
+        // more checks for structured types
         XmlAdapter<Object,Object> adapter = findAdapter(am, true, type);
         if (adapter != null) {
             boolean fromClass = !(am instanceof AnnotatedMember);
@@ -996,7 +995,7 @@ public class JaxbAnnotationIntrospector
         final Class<?> type = _rawDeserializationType(am);
 
         /*
-        // As per [JACKSON-722], more checks for structured types
+        // more checks for structured types
         XmlAdapter<Object,Object> adapter = findAdapter(am, true, type);
         if (adapter != null) {
             // Ugh. Must match to see if adapter's bounded type (result to map to) matches property type
@@ -1010,7 +1009,7 @@ public class JaxbAnnotationIntrospector
         }
         */
 
-        // [JACKSON-150]: add support for additional core XML types needed by JAXB
+        // add support for additional core XML types needed by JAXB
         if (type != null) {
             if (_dataHandlerDeserializer != null && isDataHandler(type)) {
                 return _dataHandlerDeserializer;
@@ -1238,7 +1237,7 @@ public class JaxbAnnotationIntrospector
             return annotation;
         }
         Class<?> memberClass = null;
-        /* 13-Feb-2011, tatu: [JACKSON-495] - need to handle AnnotatedParameter
+        /* 13-Feb-2011, tatu: need to handle AnnotatedParameter
          *   bit differently, since there is no JDK counterpart. We can still
          *   access annotations directly, just using different calls.
          */
@@ -1435,7 +1434,7 @@ public class JaxbAnnotationIntrospector
     @SuppressWarnings("unchecked")
     private XmlAdapter<Object,Object> findAdapterForClass(AnnotatedClass ac, boolean forSerialization)
     {
-        /* As per [JACKSON-411], XmlJavaTypeAdapter should not be inherited from super-class.
+        /* XmlJavaTypeAdapter should not be inherited from super-class.
          * It would still be nice to be able to use mix-ins; but unfortunately we seem to lose
          * knowledge of class that actually declared the annotation. Thus, we'll only accept
          * declaration from specific class itself.
