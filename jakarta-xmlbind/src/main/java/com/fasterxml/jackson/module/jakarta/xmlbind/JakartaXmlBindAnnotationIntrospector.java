@@ -33,8 +33,11 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.ser.DataHandlerSerializer;
  * to some degree.
  * Ones that are NOT yet supported are:
  * <ul>
- * <li>{@link XmlAnyAttribute} not yet used but may be in future (as an alias for @JsonAnySetter?)
- * <li>{@link XmlAnyElement} not yet used
+ * <li>{@link XmlAnyAttribute} not supported; possible (if unlikely) to be used
+ *    (as an alias for {@code @JsonAnySetter})
+ *  </li>
+ * <li>{@link XmlAnyElement} not supported; unlikely to ever be supported.
+ *   </li>
  * <li>{@link jakarta.xml.bind.annotation.XmlAttachmentRef}: JSON does not support external attachments
  * <li>{@link XmlElementDecl}
  * <li>{@link XmlElementRefs} because Jackson doesn't have any support for 'named' collection items
@@ -44,11 +47,11 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.ser.DataHandlerSerializer;
  *    method of serializing list of values as space-separated Strings
  * <li>{@link jakarta.xml.bind.annotation.XmlMimeType}
  * <li>{@link jakarta.xml.bind.annotation.XmlMixed} since JSON has no concept of mixed content
- * <li>{@link XmlRegistry}
- * <li>{@link XmlSchema} not used, unlikely to be used
- * <li>{@link XmlSchemaType} not used, unlikely to be used
- * <li>{@link XmlSchemaTypes} not used, unlikely to be used
- * <li>{@link XmlSeeAlso} not yet supported
+ * <li>{@link XmlRegistry} not supported, unlikely to ever be.
+ * <li>{@link XmlSchema} not supported, unlikely to ever be.
+ * <li>{@link XmlSchemaType} not supported, unlikely to ever be.
+ * <li>{@link XmlSchemaTypes} not supported, unlikely to ever be.
+ * <li>{@link XmlSeeAlso} not supported.
  * </ul>
  *
  * Note also the following limitations:
@@ -910,8 +913,7 @@ public class JakartaXmlBindAnnotationIntrospector
     public Object findDeserializer(MapperConfig<?> config, Annotated am)
     {
         final Class<?> type = _rawDeserializationType(am);
-
-        // [JACKSON-150]: add support for additional core XML types needed by JAXB
+        // Add support for additional core XML types needed by JAXB
         if (type != null) {
             if (_dataHandlerDeserializer != null && isDataHandler(type)) {
                 return _dataHandlerDeserializer;
@@ -1131,7 +1133,7 @@ public class JakartaXmlBindAnnotationIntrospector
             return annotation;
         }
         Class<?> memberClass = null;
-        /* 13-Feb-2011, tatu: [JACKSON-495] - need to handle AnnotatedParameter
+        /* 13-Feb-2011, tatu: need to handle AnnotatedParameter
          *   bit differently, since there is no JDK counterpart. We can still
          *   access annotations directly, just using different calls.
          */
@@ -1328,7 +1330,7 @@ public class JakartaXmlBindAnnotationIntrospector
     @SuppressWarnings("unchecked")
     private XmlAdapter<Object,Object> findAdapterForClass(AnnotatedClass ac, boolean forSerialization)
     {
-        /* As per [JACKSON-411], XmlJavaTypeAdapter should not be inherited from super-class.
+        /* XmlJavaTypeAdapter should not be inherited from super-class.
          * It would still be nice to be able to use mix-ins; but unfortunately we seem to lose
          * knowledge of class that actually declared the annotation. Thus, we'll only accept
          * declaration from specific class itself.
