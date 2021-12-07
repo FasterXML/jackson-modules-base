@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.Version;
 /**
  * @since 2.13
  */
-public class NoCtorModule extends com.fasterxml.jackson.databind.Module
+public class NoCtorDeserModule extends com.fasterxml.jackson.databind.Module
 {
     @Override
     public String getModuleName() {

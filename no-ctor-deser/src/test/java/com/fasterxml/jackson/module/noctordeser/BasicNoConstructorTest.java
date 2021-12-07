@@ -34,7 +34,7 @@ public class BasicNoConstructorTest extends TestCase
 
     protected static ObjectMapper newObjectMapper() {
         return JsonMapper.builder()
-                .addModule(new NoCtorModule())
+                .addModule(new NoCtorDeserModule())
                 .build();
     }
 
