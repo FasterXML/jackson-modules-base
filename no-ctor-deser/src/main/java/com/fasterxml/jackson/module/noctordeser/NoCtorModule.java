@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.module.noctordeser;
 
+// To be removed from 2.15 or later
 /**
  * @since 2.13
  *
