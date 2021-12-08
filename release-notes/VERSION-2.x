@@ -23,6 +23,8 @@ Modules:
 
 #155: (no-ctor-deser) Fix SPI metadata for `jackson-module-no-ctor-deser`
  (reported by thetric@github)
+#159: NoCtorDeserModule missing - Do you mean NoCtorModule
+ (reported by hreinn91@github)
 
 2.13.0 (30-Sep-2021)
 
