@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.Version;
 
 import com.fasterxml.jackson.databind.JacksonModule;
 
-public class NoCtorModule extends JacksonModule
+public class NoCtorDeserModule extends JacksonModule
 {
     @Override
     public String getModuleName() {

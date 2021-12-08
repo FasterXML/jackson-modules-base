@@ -15,6 +15,8 @@ current introspector:
 
 ```java
 ObjectMapper mapper = JsonMapper.builder() // or mapper for other dataformats
+    // NOTE! 2.13.0 unfortunately had wrong name "NoCtorModule", proper one added
+    //   in 2.13.1
     .addModule(new NoCtorDeserModule())
     // add other modules, configure, etc
     .build();

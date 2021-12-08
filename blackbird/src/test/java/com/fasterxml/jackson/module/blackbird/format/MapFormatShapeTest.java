@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.module.blackbird.format;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
