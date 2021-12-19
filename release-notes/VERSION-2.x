@@ -14,7 +14,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.13.1 (not yet released)
+2.13.1 (19-Dec-2021)
 
 #155: (no-ctor-deser) Fix SPI metadata for `jackson-module-no-ctor-deser`
  (reported by thetric@github)
