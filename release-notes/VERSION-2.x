@@ -19,7 +19,7 @@ Modules:
 #157: Bumb jakarta.activation-api dependency from 1.2.1 to 1.2.2
  (contributed by Aleksandr B)
 
-2.13.1 (not yet released)
+2.13.1 (19-Dec-2021)
 
 #155: (no-ctor-deser) Fix SPI metadata for `jackson-module-no-ctor-deser`
  (reported by thetric@github)
@@ -37,6 +37,10 @@ Modules:
 - Update `jakarta.xml.bind-api` dep (2.3.2 -> 2.3.3)
 - Remove "jakarta" classfier from `jackson-module-jaxb-annotations` (due to new
   dedicated module)
+
+2.12.6 (15-Dec-2021)
+
+No changes since 2.12.5
 
 2.12.5 (27-Aug-2021)
 
