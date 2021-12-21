@@ -92,3 +92,8 @@ LinJunhua (linlinnn@github)
   no-default-constructor POJOs
  (2.13.0)
 
+Alexey Gavrilov (agavrilov76@github)
+
+* Reported #161: Module name in `jakarta-xmlbind/src/moditect/module-info.java`
+  is invalid
+ (2.13.2)
