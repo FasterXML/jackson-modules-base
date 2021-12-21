@@ -19,6 +19,11 @@ Modules:
 #157: Bumb jakarta.activation-api dependency from 1.2.1 to 1.2.2
  (contributed by Aleksandr B)
 
+2.13.2 (not yet released)
+
+#161: Module name in `jakarta-xmlbind/src/moditect/module-info.java` is invalid
+ (repoted Alexey G)
+
 2.13.1 (19-Dec-2021)
 
 #155: (no-ctor-deser) Fix SPI metadata for `jackson-module-no-ctor-deser`

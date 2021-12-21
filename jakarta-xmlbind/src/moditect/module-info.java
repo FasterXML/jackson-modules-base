@@ -10,5 +10,5 @@ module com.fasterxml.jackson.module.jakarta.xmlbind {
     exports com.fasterxml.jackson.module.jakarta.xmlbind;
 
     provides com.fasterxml.jackson.databind.JacksonModule with
-        com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindModule;
+        com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 }
