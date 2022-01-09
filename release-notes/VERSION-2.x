@@ -9,6 +9,11 @@ Modules:
   jackson-module-no-ctor-deser (2.13)
   jackson-module-osgi
   jackson-module-paranamer
+Active maintainers:
+
+* Steven Schlansker (@stevenschlansker): author of Blackbird, co-author
+  of Afterburner
+* Tatu Saloranta (@cowtowncoder): author or co-author of all other modules
 
 ------------------------------------------------------------------------
 === Releases ===
@@ -16,6 +21,8 @@ Modules:
 
 2.14.0 (not yet released)
 
+#138: (blackbird) Blackbird doesn't work on Java 15+
+ (fix by Steven S)
 #157: Bumb jakarta.activation-api dependency from 1.2.1 to 1.2.2
  (contributed by Aleksandr B)
 
