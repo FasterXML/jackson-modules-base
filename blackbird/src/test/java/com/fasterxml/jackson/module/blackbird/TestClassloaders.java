@@ -9,7 +9,7 @@ import org.junit.Test;
 
 public class TestClassloaders extends BlackbirdTestBase
 {
-    private final String resourceName =
+    protected final String resourceName =
             (TestClassloaders.class.getName() + "$Data")
                 .replace('.', '/').concat(".class");
 
