@@ -7,20 +7,19 @@ import java.lang.reflect.Constructor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-
-public class TestClassloaders {
-    private final String resourceName =
+public class TestClassloaders extends BlackbirdTestBase
+{
+    protected final String resourceName =
             (TestClassloaders.class.getName() + "$Data")
                 .replace('.', '/').concat(".class");
 
     // Note: this test always passes in Java 8, even if the issue is not fixed,
     // so it is duplicated in jackson-jdk11-compat-test for now
     @Test
-    public void loadInChildClassloader() throws Exception {
+    public void testLoadInChildClassloader() throws Exception {
         TestLoader loader = new TestLoader(getClass().getClassLoader());
         Class<?> clazz = Class.forName(Data.class.getName(), true, loader);
-        ObjectMapper mapper = new ObjectMapper().registerModule(new BlackbirdModule());
+        ObjectMapper mapper = newObjectMapper();
         Constructor<?> constructor = clazz.getConstructor(int.class);
         Object data = constructor.newInstance(42);
         assertEquals("{\"field\":42}", mapper.writeValueAsString(data));
