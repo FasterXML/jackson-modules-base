@@ -16,6 +16,8 @@ Modules:
 
 2.13.2 (not yet released)
 
+#138: (blackbird) Blackbird doesn't work on Java 15+
+ (fix by Steven S)
 #161: Module name in `jakarta-xmlbind/src/moditect/module-info.java` is invalid
  (repoted Alexey G)
 
