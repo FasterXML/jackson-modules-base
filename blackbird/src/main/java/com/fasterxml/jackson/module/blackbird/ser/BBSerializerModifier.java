@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
+import java.util.function.UnaryOperator;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JacksonStdImpl;
@@ -26,10 +27,12 @@ import static java.lang.invoke.MethodType.*;
 public class BBSerializerModifier extends BeanSerializerModifier
 {
     private final Function<Class<?>, Lookup> _lookups;
+    private final UnaryOperator<Lookup> _accessGrant;
 
-    public BBSerializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups)
+    public BBSerializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups, UnaryOperator<MethodHandles.Lookup> accessGrant)
     {
-        this._lookups = lookups;
+        _lookups = lookups;
+        _accessGrant = accessGrant;
     }
 
     @Override
@@ -103,6 +106,7 @@ public class BBSerializerModifier extends BeanSerializerModifier
             return;
             //getter = lookup.unreflectGetter((Field) member.getMember());
         }
+        lookup = _accessGrant.apply(lookup);
 
         if (type.isPrimitive()) {
             if (type == Integer.TYPE) {

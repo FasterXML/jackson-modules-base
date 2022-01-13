@@ -35,8 +35,9 @@ public class BlackbirdModule extends Module
     @Override
     public void setupModule(SetupContext context)
     {
-        context.addBeanDeserializerModifier(new BBDeserializerModifier(_lookups));
-        context.addBeanSerializerModifier(new BBSerializerModifier(_lookups));
+        CrossLoaderAccess openSesame = new CrossLoaderAccess();
+        context.addBeanDeserializerModifier(new BBDeserializerModifier(_lookups, openSesame));
+        context.addBeanSerializerModifier(new BBSerializerModifier(_lookups, openSesame));
     }
 
     @Override

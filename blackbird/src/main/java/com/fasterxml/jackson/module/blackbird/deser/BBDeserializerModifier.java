@@ -15,6 +15,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.ObjLongConsumer;
+import java.util.function.UnaryOperator;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.*;
@@ -42,11 +43,13 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             throw new ExceptionInInitializerError(e);
         }
     }
-    private Function<Class<?>, Lookup> _lookups;
+    private final Function<Class<?>, Lookup> _lookups;
+    private final UnaryOperator<Lookup> _accessGrant;
 
-    public BBDeserializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups)
+    public BBDeserializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups, UnaryOperator<MethodHandles.Lookup> accessGrant)
     {
         _lookups = lookups;
+        _accessGrant = accessGrant;
     }
 
     /*
@@ -76,6 +79,7 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
         if (Modifier.isPrivate(beanClass.getModifiers())) { // TODO??
             return builder;
         }
+        lookup = _accessGrant.apply(lookup);
         List<OptimizedSettableBeanProperty<?>> newProps = findOptimizableProperties(
                 lookup, config, builder.getProperties());
         // and if we found any, create mutator proxy, replace property objects
