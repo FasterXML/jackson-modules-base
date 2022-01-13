@@ -9,7 +9,7 @@ import java.lang.invoke.MethodType;
 import java.util.function.UnaryOperator;
 
 class CrossLoaderAccess implements UnaryOperator<MethodHandles.Lookup> {
-    private static final MethodHandle DEFINE_CLASS;
+    private static final MethodHandle DEFINE_CLASS, HAS_FULL_ACCESS;
     private static final String CLASS_NAME = "$$JacksonBlackbirdAccess";
 
     // Pre-compiled Java 8 bytecode:
@@ -66,12 +66,15 @@ class CrossLoaderAccess implements UnaryOperator<MethodHandles.Lookup> {
     };
 
     static {
-        MethodHandle defineClass = null;
+        MethodHandle defineClass = null, hasFullAccess = null;
         try {
             defineClass = MethodHandles.lookup().findVirtual(MethodHandles.Lookup.class, "defineClass",
                     MethodType.methodType(Class.class, byte[].class));
+            hasFullAccess = MethodHandles.lookup().findVirtual(MethodHandles.Lookup.class, "hasFullPrivilegeAccess",
+                    MethodType.methodType(boolean.class));
         } catch (ReflectiveOperationException ign) { }
         DEFINE_CLASS = defineClass;
+        HAS_FULL_ACCESS = hasFullAccess;
     }
 
     @Override
@@ -85,10 +88,20 @@ class CrossLoaderAccess implements UnaryOperator<MethodHandles.Lookup> {
     }
 
     private static MethodHandles.Lookup grantAccess(MethodHandles.Lookup lookup) throws IOException, ReflectiveOperationException {
-        if (DEFINE_CLASS == null) {
+        if (DEFINE_CLASS == null || hasFullAccess(lookup)) {
             return lookup;
         }
         return (MethodHandles.Lookup) accessClassIn(lookup).getField("LOOKUP").get(null);
+    }
+
+    private static boolean hasFullAccess(MethodHandles.Lookup lookup) {
+        try {
+            return HAS_FULL_ACCESS != null && (boolean) HAS_FULL_ACCESS.invokeExact(lookup);
+        } catch (RuntimeException | Error e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static Class<?> accessClassIn(MethodHandles.Lookup lookup) throws IOException, ReflectiveOperationException {
