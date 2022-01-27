@@ -53,10 +53,11 @@
       <version>${version.xmlbind.api}</version>
     </dependency>
 
+    <!-- 15-Jan-2022, tatu: as per [modules-base#152] -->
     <dependency>
-      <groupId>jakarta.activation</groupId>
-      <artifactId>jakarta.activation-api</artifactId>
-      <version>1.2.1</version>
+      <groupId>com.sun.activation</groupId>
+      <artifactId>jakarta.activation</artifactId>
+      <version>2.0.1</version>
     </dependency>
 
     <!-- may also need JAXB impl for tests -->
