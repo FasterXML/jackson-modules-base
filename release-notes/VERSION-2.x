@@ -18,6 +18,8 @@ Modules:
 
 #138: (blackbird) Blackbird doesn't work on Java 15+
  (fix by Steven S)
+#152: (jakarta-annotations) jakarta.activation version conflict in 2.13
+ (reported by mkpaz@github)
 #161: Module name in `jakarta-xmlbind/src/moditect/module-info.java` is invalid
  (repoted Alexey G)
 
