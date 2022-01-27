@@ -3,6 +3,7 @@ package com.fasterxml.jackson.module.blackbird.deser;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.*;
 
 class SuperSonicDeserializerBuilder extends BeanDeserializerBuilder
@@ -12,7 +13,7 @@ class SuperSonicDeserializerBuilder extends BeanDeserializerBuilder
     }
 
     @Override
-    public JsonDeserializer<?> build()
+    public JsonDeserializer<?> build() throws JsonMappingException
     {
         BeanDeserializer deser = (BeanDeserializer) super.build();
         // only create custom one, if existing one is standard deserializer;
