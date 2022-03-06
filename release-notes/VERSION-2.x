@@ -14,7 +14,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.13.2 (not yet released)
+2.13.2 (06-Mar-2022)
 
 #138: (blackbird) Blackbird doesn't work on Java 15+
  (fix by Steven S)
