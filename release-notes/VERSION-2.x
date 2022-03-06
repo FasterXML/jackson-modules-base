@@ -26,7 +26,7 @@ Active maintainers:
 #157: Bumb jakarta.activation-api dependency from 1.2.1 to 1.2.2
  (contributed by Aleksandr B)
 
-2.13.2 (not yet released)
+2.13.2 (06-Mar-2022)
 
 #138: (blackbird) Blackbird doesn't work on Java 15+
  (fix by Steven S)
