@@ -106,27 +106,34 @@ class CrossLoaderAccess implements UnaryOperator<MethodHandles.Lookup> {
 
     private static Class<?> accessClassIn(MethodHandles.Lookup lookup) throws IOException, ReflectiveOperationException {
         Package pkg = lookup.lookupClass().getPackage();
+        String accessClassName = pkg.getName() + "." + CLASS_NAME;
+        ClassLoader lookupClassLoader = lookup.lookupClass().getClassLoader();
         try {
-            return Class.forName(pkg.getName() + "." + CLASS_NAME, true, lookup.lookupClass().getClassLoader());
+            return Class.forName(accessClassName, true, lookupClassLoader);
         } catch (ClassNotFoundException ign) { }
-        String fqcn = pkg.getName()
-                .replace('.', '/')
-            + "/" + CLASS_NAME;
-        ByteArrayOutputStream classBytes = new ByteArrayOutputStream(HEADER.length + FOOTER.length + fqcn.length() + 16);
-        DataOutputStream dataOut = new DataOutputStream(classBytes);
-        for (int b : HEADER) {
-            dataOut.writeByte(b);
-        }
-        dataOut.writeUTF(fqcn);
-        for (int b : FOOTER) {
-            dataOut.writeByte(b);
-        }
-        try {
-            return (Class<?>) DEFINE_CLASS.invokeExact(lookup, classBytes.toByteArray());
-        } catch (RuntimeException | Error | IOException | ReflectiveOperationException e) {
-            throw e;
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
+        synchronized (CrossLoaderAccess.class) {
+            try {
+                return Class.forName(accessClassName, true, lookupClassLoader);
+            } catch (ClassNotFoundException ign) { }
+            String fqcn = pkg.getName()
+                    .replace('.', '/')
+                + "/" + CLASS_NAME;
+            ByteArrayOutputStream classBytes = new ByteArrayOutputStream(HEADER.length + FOOTER.length + fqcn.length() + 16);
+            DataOutputStream dataOut = new DataOutputStream(classBytes);
+            for (int b : HEADER) {
+                dataOut.writeByte(b);
+            }
+            dataOut.writeUTF(fqcn);
+            for (int b : FOOTER) {
+                dataOut.writeByte(b);
+            }
+            try {
+                return (Class<?>) DEFINE_CLASS.invokeExact(lookup, classBytes.toByteArray());
+            } catch (RuntimeException | Error | IOException | ReflectiveOperationException e) {
+                throw e;
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }
