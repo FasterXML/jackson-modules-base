@@ -104,6 +104,18 @@ Alexey Gavrilov (agavrilov76@github)
   is invalid
  (2.13.2)
 
+David Connard (davidconnard@github)
+
+* Reported #169: Blackbird fails with LinkageError when the same class is used
+  across two separate classloaders
+ (2.13.3)
+
+Joe Barnett (josephlbarnett@github)
+
+* Contributed fix for #169: Blackbird fails with LinkageError when the same class
+  is used across two separate classloaders
+ (2.13.3)
+
 Aleksandr Beliakov (bsanchezb@github)
 
 * Contributed #157: Bumb jakarta.activation-api dependency from 1.2.1 to 1.2.2
