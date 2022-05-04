@@ -19,12 +19,18 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+
 2.14.0 (not yet released)
 
 #138: (blackbird) Blackbird doesn't work on Java 15+
  (fix by Steven S)
 #157: Bumb jakarta.activation-api dependency from 1.2.1 to 1.2.2
  (contributed by Aleksandr B)
+
+2.13.3 (not yet released)
+
+#169: Blackbird fails with LinkageError when the same class is used across two separate classloaders
+ (reported by David C; fix contributed by Joe B)
 
 2.13.2 (06-Mar-2022)
 
