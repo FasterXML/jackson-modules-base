@@ -97,3 +97,16 @@ Alexey Gavrilov (agavrilov76@github)
 * Reported #161: Module name in `jakarta-xmlbind/src/moditect/module-info.java`
   is invalid
  (2.13.2)
+
+David Connard (davidconnard@github)
+
+* Reported #169: Blackbird fails with LinkageError when the same class is used
+  across two separate classloaders
+ (2.13.3)
+
+Joe Barnett (josephlbarnett@github)
+
+* Contributed fix for #169: Blackbird fails with LinkageError when the same class
+  is used across two separate classloaders
+ (2.13.3)
+

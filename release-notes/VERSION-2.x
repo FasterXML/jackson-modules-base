@@ -14,6 +14,11 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.13.3 (not yet released)
+
+#169: Blackbird fails with LinkageError when the same class is used across two separate classloaders
+ (reported by David C; fix contributed by Joe B)
+
 2.13.2 (06-Mar-2022)
 
 #138: (blackbird) Blackbird doesn't work on Java 15+
