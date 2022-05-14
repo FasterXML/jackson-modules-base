@@ -14,7 +14,7 @@ Modules:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.13.3 (not yet released)
+2.13.3 (14-May-2022)
 
 #169: Blackbird fails with LinkageError when the same class is used across two separate classloaders
  (reported by David C; fix contributed by Joe B)
