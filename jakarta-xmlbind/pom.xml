@@ -30,6 +30,7 @@
     <osgi.import>javax.activation;resolution:=optional,*</osgi.import>
 
     <version.xmlbind.api>3.0.1</version.xmlbind.api>
+    <version.activation.api>2.0.1</version.activation.api>
   </properties>
   <dependencies>
     <!-- Extends Jackson core and mapper; minor dep on annotations too (JsonInclude) -->
@@ -56,7 +57,7 @@
     <dependency>
       <groupId>jakarta.activation</groupId>
       <artifactId>jakarta.activation-api</artifactId>
-      <version>1.2.2</version>
+      <version>${version.activation.api}</version>
     </dependency>
 
     <!-- may also need JAXB impl for tests -->
