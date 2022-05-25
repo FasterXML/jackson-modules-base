@@ -12,11 +12,11 @@
     <version>3.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
-  <name>Jackson module: Jakarta Annotations (jakarta.xml.bind)</name>
+  <name>Jackson module: Jakarta XML Bind Annotations (jakarta.xml.bind)</name>
   <packaging>bundle</packaging>
 
-  <description>Support for using Jakarta Xml Bind (aka JAXB 3.0) annotations as an alternative
-  to "native" Jackson annotations, for configuring data-binding.
+  <description>Support for using Jakarta XML Bind (aka JAXB 3.0) annotations as an alternative
+ to "native" Jackson annotations, for configuring data-binding.
 </description>
   <url>https://github.com/FasterXML/jackson-modules-base</url>
 
@@ -56,7 +56,7 @@
     <dependency>
       <groupId>jakarta.activation</groupId>
       <artifactId>jakarta.activation-api</artifactId>
-      <version>1.2.1</version>
+      <version>2.1.0</version>
     </dependency>
 
     <!-- may also need JAXB impl for tests -->
