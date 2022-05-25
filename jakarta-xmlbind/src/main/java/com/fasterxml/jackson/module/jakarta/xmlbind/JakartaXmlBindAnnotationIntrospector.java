@@ -668,16 +668,16 @@ public class JakartaXmlBindAnnotationIntrospector
     }
 
     /**
-     * Determines whether the type is assignable to class javax.activation.DataHandler without requiring that class
+     * Determines whether the type is assignable to class jakarta.activation.DataHandler without requiring that class
      * to be on the classpath.
      *
      * @param type The type.
-     * @return Whether the type is assignable to class javax.activation.DataHandler
+     * @return Whether the type is assignable to class jakarta.activation.DataHandler
      */
     private boolean isDataHandler(Class<?> type)
     {
         return type != null && (Object.class != type)
-               && (("javax.activation.DataHandler".equals(type.getName()) || isDataHandler(type.getSuperclass())));
+               && (("jakarta.activation.DataHandler".equals(type.getName()) || isDataHandler(type.getSuperclass())));
     }
 
     @Override
