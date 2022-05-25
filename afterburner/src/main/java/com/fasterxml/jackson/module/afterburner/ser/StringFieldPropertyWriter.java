@@ -67,7 +67,11 @@ public final class StringFieldPropertyWriter
             }
         }
         gen.writeFieldName(_fastName);
-        gen.writeString(value);
+        if (_serializer != null) {
+            _serializer.serialize(value, gen, prov);
+        } else {
+            gen.writeString(value);
+        }
     }
 
     @Override

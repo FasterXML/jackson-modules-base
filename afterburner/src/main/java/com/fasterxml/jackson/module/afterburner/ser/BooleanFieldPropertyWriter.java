@@ -59,7 +59,11 @@ public final class BooleanFieldPropertyWriter
         }
         if (!_suppressableSet || _suppressableBoolean != value) {
             gen.writeFieldName(_fastName);
-            gen.writeBoolean(value);
+            if (_serializer != null) {
+                _serializer.serialize(value, gen, prov);
+            } else {
+                gen.writeBoolean(value);
+            }
         }
     }
 

@@ -59,7 +59,11 @@ public final class LongMethodPropertyWriter
         }
         if (!_suppressableLongSet || _suppressableLong != value) {
             gen.writeFieldName(_fastName);
-            gen.writeNumber(value);
+            if (_serializer != null) {
+                _serializer.serialize(value, gen, prov);
+            } else {
+                gen.writeNumber(value);
+            }
         }
     }
 
