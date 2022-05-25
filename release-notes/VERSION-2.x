@@ -18,6 +18,8 @@ Modules:
 
 #169: Blackbird fails with LinkageError when the same class is used across two separate classloaders
  (reported by David C; fix contributed by Joe B)
+#175: `jackson-module-jakarta-xmlbind-annotations` should use a Jakarta namespaced Activation API
+ (contributed by James P)
 
 2.13.2 (06-Mar-2022)
 

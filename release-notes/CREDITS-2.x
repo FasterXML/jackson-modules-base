@@ -110,3 +110,7 @@ Joe Barnett (josephlbarnett@github)
   is used across two separate classloaders
  (2.13.3)
 
+James R. Perkins (jamezp@github)
+* Contributed fix for #175: `jackson-module-jakarta-xmlbind-annotations` should use
+  a Jakarta namespaced Activation API
+ (2.13.4)
