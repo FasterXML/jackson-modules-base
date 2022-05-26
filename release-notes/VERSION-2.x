@@ -59,6 +59,7 @@ Active maintainers:
 - Remove "jakarta" classfier from `jackson-module-jaxb-annotations` (due to new
   dedicated module)
 
+2.12.7 (26-May-2022)
 2.12.6 (15-Dec-2021)
 
 No changes since 2.12.5
