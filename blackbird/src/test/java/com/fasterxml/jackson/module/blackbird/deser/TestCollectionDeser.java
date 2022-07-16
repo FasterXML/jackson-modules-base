@@ -2,7 +2,7 @@ package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.util.*;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class TestCollectionDeser extends BlackbirdTestBase

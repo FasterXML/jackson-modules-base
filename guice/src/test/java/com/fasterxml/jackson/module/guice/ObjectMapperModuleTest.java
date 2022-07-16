@@ -5,12 +5,12 @@ import java.math.BigInteger;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonGenerator;
 
-import com.fasterxml.jackson.databind.ValueSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.module.SimpleModule;
 
 import com.google.inject.Binder;
 import com.google.inject.Guice;

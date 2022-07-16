@@ -6,7 +6,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 
 // for [modules-base#46]: XmlId semantics can not be supported by Jackson/JAXB-annotation-mapper

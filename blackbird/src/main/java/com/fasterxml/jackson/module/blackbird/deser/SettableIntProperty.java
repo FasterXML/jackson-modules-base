@@ -2,10 +2,10 @@ package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.util.function.ObjIntConsumer;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
+import tools.jackson.databind.*;
+import tools.jackson.databind.deser.SettableBeanProperty;
 
 final class SettableIntProperty
     extends OptimizedSettableBeanProperty<SettableIntProperty>

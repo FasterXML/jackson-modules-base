@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 
 /**
  * Tests stemming from [#12], where `Calendar` fails; however, bit more general

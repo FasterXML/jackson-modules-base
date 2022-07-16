@@ -4,7 +4,7 @@ import java.beans.ConstructorProperties;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class IgnoreCreatorProp1317Test extends BlackbirdTestBase

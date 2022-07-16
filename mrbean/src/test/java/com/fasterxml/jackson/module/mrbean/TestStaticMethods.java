@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.module.mrbean;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Test(s) to ensure that `static` methods are not considered to be

@@ -1,13 +1,13 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.deser.Deserializers;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.*;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.deser.Deserializers;
+import tools.jackson.databind.deser.std.StdDeserializer;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 

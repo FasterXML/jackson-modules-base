@@ -2,10 +2,10 @@ package com.fasterxml.jackson.module.blackbird.deser.merge;
 
 import com.fasterxml.jackson.annotation.JsonMerge;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.*;
+import tools.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ArrayNode;
 
 public class NodeMergeTest extends BlackbirdTestBase
 {

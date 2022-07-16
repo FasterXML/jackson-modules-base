@@ -2,7 +2,7 @@ package com.fasterxml.jackson.module.jaxb.types;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 
 // [jaxb-annotations#63]

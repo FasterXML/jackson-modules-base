@@ -8,8 +8,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+import tools.jackson.databind.*;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 

@@ -4,7 +4,7 @@ import java.util.*;
 
 import jakarta.xml.bind.annotation.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Tests for handling of type-related JAXB annotations with collection (List)

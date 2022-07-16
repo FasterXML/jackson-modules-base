@@ -5,11 +5,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import tools.jackson.databind.*;
+import tools.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
-import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+import tools.jackson.databind.exc.InvalidDefinitionException;
 
 /**
  * Tests to make sure that the new "merging" property of

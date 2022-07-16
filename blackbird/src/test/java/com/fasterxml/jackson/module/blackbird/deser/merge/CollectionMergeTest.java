@@ -4,10 +4,10 @@ import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonMerge;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class CollectionMergeTest extends BlackbirdTestBase

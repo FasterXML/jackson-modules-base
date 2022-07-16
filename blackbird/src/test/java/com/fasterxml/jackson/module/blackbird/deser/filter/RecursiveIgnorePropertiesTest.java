@@ -3,7 +3,7 @@ package com.fasterxml.jackson.module.blackbird.deser.filter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class RecursiveIgnorePropertiesTest extends BlackbirdTestBase

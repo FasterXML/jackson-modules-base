@@ -6,8 +6,8 @@ import jakarta.xml.bind.annotation.XmlElement;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.MapperBuilder;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 

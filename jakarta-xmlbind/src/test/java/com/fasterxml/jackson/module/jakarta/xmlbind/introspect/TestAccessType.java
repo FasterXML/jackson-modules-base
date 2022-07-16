@@ -6,7 +6,7 @@ import jakarta.xml.bind.annotation.*;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 

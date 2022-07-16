@@ -3,7 +3,7 @@ package com.fasterxml.jackson.module.jakarta.xmlbind.adapters;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 

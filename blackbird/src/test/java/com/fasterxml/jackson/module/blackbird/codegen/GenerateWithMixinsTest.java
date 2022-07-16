@@ -3,8 +3,8 @@ package com.fasterxml.jackson.module.blackbird.codegen;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.cfg.MapperBuilder;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.MapperBuilder;
 
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 

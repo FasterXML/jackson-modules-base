@@ -1,14 +1,14 @@
 package com.fasterxml.jackson.module.blackbird.ser;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.Version;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.Version;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.std.StdSerializer;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 

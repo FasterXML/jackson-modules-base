@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 public class TestSingleArgCtors extends BlackbirdTestBase

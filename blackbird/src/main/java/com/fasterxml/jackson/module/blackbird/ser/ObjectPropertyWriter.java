@@ -2,12 +2,12 @@ package com.fasterxml.jackson.module.blackbird.ser;
 
 import java.util.function.Function;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ValueSerializer;
-import com.fasterxml.jackson.databind.PropertyName;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.fasterxml.jackson.databind.ser.impl.PropertySerializerMap;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.PropertyName;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.impl.PropertySerializerMap;
 
 final class ObjectPropertyWriter
     extends OptimizedBeanPropertyWriter<ObjectPropertyWriter>

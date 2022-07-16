@@ -1,8 +1,10 @@
 package com.fasterxml.jackson.module.mrbean;
 
-import com.fasterxml.jackson.core.Version;
+import tools.jackson.core.Version;
 
-public class MrBeanModule extends com.fasterxml.jackson.databind.JacksonModule
+import tools.jackson.databind.JacksonModule;
+
+public class MrBeanModule extends JacksonModule
 {
     /**
      * Configured materializer instance to register with deserializer factory.

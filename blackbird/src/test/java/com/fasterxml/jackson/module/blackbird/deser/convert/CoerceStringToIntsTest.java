@@ -3,11 +3,11 @@ package com.fasterxml.jackson.module.blackbird.deser.convert;
 import java.math.BigInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.cfg.CoercionAction;
-import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import com.fasterxml.jackson.databind.type.LogicalType;
+import tools.jackson.databind.*;
+import tools.jackson.databind.cfg.CoercionAction;
+import tools.jackson.databind.cfg.CoercionInputShape;
+import tools.jackson.databind.exc.MismatchedInputException;
+import tools.jackson.databind.type.LogicalType;
 
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 

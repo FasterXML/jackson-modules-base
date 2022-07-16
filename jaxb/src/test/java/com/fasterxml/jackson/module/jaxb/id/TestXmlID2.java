@@ -6,10 +6,10 @@ import javax.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.*;
+import tools.jackson.databind.json.JsonMapper;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;

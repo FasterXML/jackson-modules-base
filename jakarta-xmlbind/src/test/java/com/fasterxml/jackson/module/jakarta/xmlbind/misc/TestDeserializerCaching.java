@@ -1,10 +1,10 @@
 package com.fasterxml.jackson.module.jakarta.xmlbind.misc;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.deser.ValueDeserializerModifier;
-import com.fasterxml.jackson.databind.deser.bean.BeanDeserializer;
+import tools.jackson.databind.*;
+import tools.jackson.databind.deser.ValueDeserializerModifier;
+import tools.jackson.databind.deser.bean.BeanDeserializer;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 

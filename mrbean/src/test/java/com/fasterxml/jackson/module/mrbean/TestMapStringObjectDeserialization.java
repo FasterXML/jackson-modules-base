@@ -3,8 +3,8 @@ package com.fasterxml.jackson.module.mrbean;
 import java.util.Collections;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 public class TestMapStringObjectDeserialization
     extends BaseTest

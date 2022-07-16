@@ -2,8 +2,8 @@ package com.fasterxml.jackson.module.osgi;
 
 import org.osgi.framework.BundleContext;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.JacksonModule;
+import tools.jackson.core.Version;
+import tools.jackson.databind.JacksonModule;
 
 /**
  * Jackson Module to inject OSGI services in deserialized objects.

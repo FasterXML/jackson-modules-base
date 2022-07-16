@@ -8,14 +8,14 @@ import java.math.BigInteger;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.core.Base64Variants;
-import com.fasterxml.jackson.core.JsonParser;
+import tools.jackson.core.Base64Variants;
+import tools.jackson.core.JsonParser;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-import com.fasterxml.jackson.databind.util.ClassUtil;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectReader;
+import tools.jackson.databind.exc.MismatchedInputException;
+import tools.jackson.databind.util.ClassUtil;
 
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 

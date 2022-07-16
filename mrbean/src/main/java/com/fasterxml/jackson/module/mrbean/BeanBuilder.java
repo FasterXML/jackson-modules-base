@@ -1,10 +1,10 @@
 package com.fasterxml.jackson.module.mrbean;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
-import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.cfg.MapperConfig;
+import tools.jackson.databind.introspect.AnnotatedClass;
+import tools.jackson.databind.introspect.TypeResolutionContext;
+import tools.jackson.databind.type.TypeFactory;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.description.type.TypeDefinition;

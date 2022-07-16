@@ -5,10 +5,10 @@ import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.json.JsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.core.*;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 //import static org.junit.Assert.*;
 

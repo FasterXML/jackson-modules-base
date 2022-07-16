@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import javax.xml.bind.annotation.*;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 

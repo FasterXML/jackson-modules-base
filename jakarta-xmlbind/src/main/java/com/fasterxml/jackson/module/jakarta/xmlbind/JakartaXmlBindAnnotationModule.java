@@ -2,9 +2,9 @@ package com.fasterxml.jackson.module.jakarta.xmlbind;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import com.fasterxml.jackson.core.Version;
+import tools.jackson.core.Version;
 
-import com.fasterxml.jackson.databind.JacksonModule;
+import tools.jackson.databind.JacksonModule;
 
 /**
  * Module that can be registered to add support for JAXB annotations.

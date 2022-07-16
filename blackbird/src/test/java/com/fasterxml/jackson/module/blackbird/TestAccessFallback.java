@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.module.blackbird;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class TestAccessFallback extends BlackbirdTestBase
 {

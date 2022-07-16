@@ -11,15 +11,15 @@ import javax.xml.bind.annotation.adapters.*;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.*;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
-import com.fasterxml.jackson.databind.introspect.*;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.databind.util.ClassUtil;
-import com.fasterxml.jackson.databind.util.Converter;
+import tools.jackson.databind.*;
+import tools.jackson.databind.cfg.MapperConfig;
+import tools.jackson.databind.introspect.*;
+import tools.jackson.databind.jsontype.NamedType;
+import tools.jackson.databind.type.TypeFactory;
+import tools.jackson.databind.util.ClassUtil;
+import tools.jackson.databind.util.Converter;
 import com.fasterxml.jackson.module.jaxb.deser.DataHandlerDeserializer;
 import com.fasterxml.jackson.module.jaxb.ser.DataHandlerSerializer;
 

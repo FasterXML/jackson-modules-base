@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.module.mrbean;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.exc.InvalidDefinitionException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class TestAbstractClassesWithOverrides
     extends BaseTest

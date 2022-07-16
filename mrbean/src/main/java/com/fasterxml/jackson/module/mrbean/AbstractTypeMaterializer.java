@@ -2,15 +2,15 @@ package com.fasterxml.jackson.module.mrbean;
 
 import java.lang.reflect.Modifier;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.core.Versioned;
-import com.fasterxml.jackson.databind.AbstractTypeResolver;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
+import tools.jackson.core.Version;
+import tools.jackson.core.Versioned;
+import tools.jackson.databind.AbstractTypeResolver;
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.DeserializationConfig;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.cfg.MapperConfig;
+import tools.jackson.databind.introspect.AnnotatedClass;
+import tools.jackson.databind.introspect.AnnotatedClassResolver;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.TypeManifestation;
 import net.bytebuddy.description.modifier.Visibility;

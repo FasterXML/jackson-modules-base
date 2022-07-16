@@ -1,9 +1,9 @@
 package com.fasterxml.jackson.module.jaxb.misc;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.deser.ValueDeserializerModifier;
-import com.fasterxml.jackson.databind.deser.bean.BeanDeserializer;
+import tools.jackson.core.*;
+import tools.jackson.databind.*;
+import tools.jackson.databind.deser.ValueDeserializerModifier;
+import tools.jackson.databind.deser.bean.BeanDeserializer;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 
 public class TestDeserializerCaching extends BaseJaxbTest

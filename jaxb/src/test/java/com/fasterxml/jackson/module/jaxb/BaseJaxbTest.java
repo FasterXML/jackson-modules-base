@@ -3,11 +3,11 @@ package com.fasterxml.jackson.module.jaxb;
 import java.io.IOException;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.cfg.MapperBuilder;
-import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.*;
+import tools.jackson.databind.cfg.MapperBuilder;
+import tools.jackson.databind.introspect.AnnotationIntrospectorPair;
+import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import tools.jackson.databind.json.JsonMapper;
 
 public abstract class BaseJaxbTest
     extends junit.framework.TestCase

@@ -2,11 +2,11 @@ package com.fasterxml.jackson.module.mrbean;
 
 import java.util.*;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.exc.InvalidDefinitionException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class TestSimpleTypes extends BaseTest
 {

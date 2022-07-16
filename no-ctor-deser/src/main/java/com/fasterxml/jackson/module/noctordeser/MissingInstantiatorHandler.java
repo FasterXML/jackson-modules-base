@@ -1,12 +1,12 @@
 package com.fasterxml.jackson.module.noctordeser;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParser;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
 
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.ValueDeserializer;
-import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
-import com.fasterxml.jackson.databind.deser.ValueInstantiator;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.deser.DeserializationProblemHandler;
+import tools.jackson.databind.deser.ValueInstantiator;
 
 import com.fasterxml.jackson.module.noctordeser.util.ReflectionUtil;
 

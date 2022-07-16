@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.module.noctordeser;
 
-import com.fasterxml.jackson.core.Version;
+import tools.jackson.core.Version;
 
-import com.fasterxml.jackson.databind.JacksonModule;
+import tools.jackson.databind.JacksonModule;
 
 public class NoCtorDeserModule extends JacksonModule
 {

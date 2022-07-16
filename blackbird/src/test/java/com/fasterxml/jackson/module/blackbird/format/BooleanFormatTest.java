@@ -3,7 +3,7 @@ package com.fasterxml.jackson.module.blackbird.format;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 

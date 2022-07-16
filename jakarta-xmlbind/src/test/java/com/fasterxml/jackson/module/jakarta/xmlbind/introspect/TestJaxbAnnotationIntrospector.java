@@ -8,11 +8,11 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import javax.xml.namespace.QName;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
-import com.fasterxml.jackson.databind.introspect.AnnotatedField;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import tools.jackson.databind.*;
+import tools.jackson.databind.introspect.AnnotatedClass;
+import tools.jackson.databind.introspect.AnnotatedClassResolver;
+import tools.jackson.databind.introspect.AnnotatedField;
+import tools.jackson.databind.type.TypeFactory;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;

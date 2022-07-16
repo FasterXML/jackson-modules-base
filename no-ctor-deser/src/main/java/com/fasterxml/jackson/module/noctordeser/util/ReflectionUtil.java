@@ -3,10 +3,10 @@ package com.fasterxml.jackson.module.noctordeser.util;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.util.ClassUtil;
-import com.fasterxml.jackson.databind.util.SimpleLookupCache;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.util.ClassUtil;
+import tools.jackson.databind.util.SimpleLookupCache;
 
 import sun.reflect.ReflectionFactory;
 

@@ -1,12 +1,12 @@
 package com.fasterxml.jackson.module.mrbean;
 
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.util.ClassUtil;
+import tools.jackson.databind.DeserializationConfig;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.exc.InvalidDefinitionException;
+import tools.jackson.databind.introspect.AnnotatedClassResolver;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.util.ClassUtil;
 
 import static org.junit.Assert.assertArrayEquals;
 

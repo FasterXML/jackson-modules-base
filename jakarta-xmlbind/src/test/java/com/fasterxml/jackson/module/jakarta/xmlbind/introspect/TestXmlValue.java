@@ -6,7 +6,7 @@ import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 

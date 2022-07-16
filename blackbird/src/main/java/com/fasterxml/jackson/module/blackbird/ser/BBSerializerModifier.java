@@ -13,11 +13,11 @@ import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.function.UnaryOperator;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.annotation.JacksonStdImpl;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
-import com.fasterxml.jackson.databind.ser.*;
+import tools.jackson.databind.*;
+import tools.jackson.databind.annotation.JacksonStdImpl;
+import tools.jackson.databind.introspect.AnnotatedMember;
+import tools.jackson.databind.introspect.AnnotatedMethod;
+import tools.jackson.databind.ser.*;
 
 import com.fasterxml.jackson.module.blackbird.util.ReflectionHack;
 import com.fasterxml.jackson.module.blackbird.util.Unchecked;

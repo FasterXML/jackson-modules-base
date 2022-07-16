@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.module.mrbean;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 
 public class RoundTripTest extends BaseTest
 {

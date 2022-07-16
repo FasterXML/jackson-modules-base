@@ -9,9 +9,9 @@ import jakarta.xml.bind.annotation.*;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import tools.jackson.databind.*;
+import tools.jackson.databind.introspect.AnnotationIntrospectorPair;
+import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;

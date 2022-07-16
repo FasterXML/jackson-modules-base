@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.module.guice;
 
 import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
-import com.fasterxml.jackson.databind.introspect.*;
+import tools.jackson.databind.cfg.MapperConfig;
+import tools.jackson.databind.introspect.*;
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Key;
 

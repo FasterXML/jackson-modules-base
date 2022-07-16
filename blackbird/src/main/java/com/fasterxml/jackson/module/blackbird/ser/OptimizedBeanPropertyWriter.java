@@ -3,12 +3,12 @@ package com.fasterxml.jackson.module.blackbird.ser;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.SerializableString;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.SerializableString;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.*;
+import tools.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.databind.ser.BeanPropertyWriter;
 
 /**
  * Intermediate base class that is used for concrete

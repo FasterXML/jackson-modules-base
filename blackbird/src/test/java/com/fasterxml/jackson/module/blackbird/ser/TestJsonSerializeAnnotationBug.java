@@ -5,9 +5,9 @@ import java.math.BigDecimal;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 
 public class TestJsonSerializeAnnotationBug
     extends com.fasterxml.jackson.module.blackbird.BlackbirdTestBase

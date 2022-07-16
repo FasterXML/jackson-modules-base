@@ -6,14 +6,14 @@ import java.io.InputStream;
 
 import javax.activation.DataHandler;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.exc.WrappedIOException;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
+import tools.jackson.core.*;
+import tools.jackson.core.exc.WrappedIOException;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.ser.std.StdSerializer;
+import tools.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 
 public class DataHandlerSerializer extends StdSerializer<DataHandler>
 {

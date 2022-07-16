@@ -2,7 +2,7 @@ package com.fasterxml.jackson.module.jakarta.xmlbind.introspect;
 
 import jakarta.xml.bind.annotation.XmlElement;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 

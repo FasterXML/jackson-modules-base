@@ -8,11 +8,11 @@ import java.io.ByteArrayInputStream;
 import jakarta.activation.DataHandler;
 import jakarta.activation.DataSource;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParser;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
 
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.std.StdScalarDeserializer;
 
 public class DataHandlerDeserializer
     extends StdScalarDeserializer<DataHandler>

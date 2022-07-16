@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.mrbean;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.introspect.TypeResolutionContext;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.introspect.TypeResolutionContext;
 
 import java.lang.reflect.Method;
 

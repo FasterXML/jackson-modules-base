@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.introspect.TestJaxbAnnotationIntrospector.KeyValuePair;
 

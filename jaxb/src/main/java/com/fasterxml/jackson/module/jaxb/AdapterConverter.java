@@ -2,9 +2,9 @@ package com.fasterxml.jackson.module.jaxb;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.databind.util.StdConverter;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.type.TypeFactory;
+import tools.jackson.databind.util.StdConverter;
 
 public class AdapterConverter
     extends StdConverter<Object,Object>

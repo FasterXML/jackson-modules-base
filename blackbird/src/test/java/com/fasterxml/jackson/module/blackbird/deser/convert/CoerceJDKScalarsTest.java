@@ -9,10 +9,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.*;
+import tools.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 // Copied from "jackson-databind" as of 2.12.1

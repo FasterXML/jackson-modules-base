@@ -19,7 +19,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.TypePath;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.mrbean.AbstractTypeMaterializer.MyClassLoader;
 
 // [modules-base#110]: avoid synthetic bridge method generation

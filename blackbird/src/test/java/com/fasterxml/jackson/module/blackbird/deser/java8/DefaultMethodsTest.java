@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.module.blackbird.deser.java8;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 // for [modules-base#30]

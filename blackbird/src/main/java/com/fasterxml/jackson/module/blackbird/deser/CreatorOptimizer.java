@@ -11,9 +11,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.deser.ValueInstantiator;
-import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
-import com.fasterxml.jackson.databind.introspect.AnnotatedWithParams;
+import tools.jackson.databind.deser.ValueInstantiator;
+import tools.jackson.databind.deser.std.StdValueInstantiator;
+import tools.jackson.databind.introspect.AnnotatedWithParams;
 import com.fasterxml.jackson.module.blackbird.util.Unchecked;
 
 import static java.lang.invoke.MethodHandles.lookup;

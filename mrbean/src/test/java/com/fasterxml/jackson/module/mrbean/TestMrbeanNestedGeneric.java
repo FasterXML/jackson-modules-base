@@ -2,8 +2,8 @@ package com.fasterxml.jackson.module.mrbean;
 
 import java.util.List;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.*;
 
 /**
  * Tests to verify whether generic declarations are properly handled by Mr Bean.

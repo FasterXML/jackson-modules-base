@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.module.guice;
 
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.InjectableValues;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.InjectableValues;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 

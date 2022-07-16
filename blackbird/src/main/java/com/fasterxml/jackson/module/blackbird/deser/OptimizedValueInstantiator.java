@@ -3,9 +3,9 @@ package com.fasterxml.jackson.module.blackbird.deser;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.deser.std.StdValueInstantiator;
 
 class OptimizedValueInstantiator extends StdValueInstantiator
 {

@@ -2,9 +2,9 @@ package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.util.*;
 
-import com.fasterxml.jackson.databind.ValueDeserializer;
-import com.fasterxml.jackson.databind.deser.*;
-import com.fasterxml.jackson.databind.deser.bean.BeanDeserializer;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.deser.*;
+import tools.jackson.databind.deser.bean.BeanDeserializer;
 
 class SuperSonicDeserializerBuilder extends BeanDeserializerBuilder
 {

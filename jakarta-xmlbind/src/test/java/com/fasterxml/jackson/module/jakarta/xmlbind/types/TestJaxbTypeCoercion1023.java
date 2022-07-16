@@ -2,7 +2,7 @@ package com.fasterxml.jackson.module.jakarta.xmlbind.types;
 
 import jakarta.xml.bind.annotation.XmlElement;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
 // Failing temporarily due to [databind#1023]
