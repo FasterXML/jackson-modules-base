@@ -13,7 +13,7 @@ import tools.jackson.databind.ser.SerializerCache;
 import tools.jackson.databind.ser.SerializerFactory;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
 
-// Copied from [com.fasterxml.jackson.databind.ser.filter]
+// Copied from [tools.jackson.databind.ser.filter]
 public class NullSerializationTest extends AfterburnerTestBase
 {
     static class NullSerializer extends ValueSerializer<Object>

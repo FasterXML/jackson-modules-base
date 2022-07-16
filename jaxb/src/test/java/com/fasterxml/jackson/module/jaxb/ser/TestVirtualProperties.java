@@ -13,7 +13,7 @@ import tools.jackson.databind.ser.VirtualBeanPropertyWriter;
 import tools.jackson.databind.util.Annotations;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 
-//Copied from [com.fasterxml.jackson.databind.ser]
+//Copied from [tools.jackson.databind.ser]
 /**
  * Tests for verifying that one can append virtual properties after regular ones.
  */

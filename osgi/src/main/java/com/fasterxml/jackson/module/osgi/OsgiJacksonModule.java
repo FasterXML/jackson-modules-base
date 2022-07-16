@@ -8,7 +8,7 @@ import tools.jackson.databind.JacksonModule;
 /**
  * Jackson Module to inject OSGI services in deserialized objects.
  * Note that registration will replace possibly existing default value injector
- * ({@link com.fasterxml.jackson.databind.InjectableValues}).
+ * ({@link tools.jackson.databind.InjectableValues}).
  * If you want a combination, you will need to add bridging functionality between
  * default implementation and {@link OsgiInjectableValues}.
  *

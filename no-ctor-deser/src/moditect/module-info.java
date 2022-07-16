@@ -1,10 +1,10 @@
-module com.fasterxml.jackson.module.noctordeser {
+module tools.jackson.module.noctordeser {
 
-    requires com.fasterxml.jackson.core;
-    requires com.fasterxml.jackson.databind;
+    requires tools.jackson.core;
+    requires tools.jackson.databind;
 
-    exports com.fasterxml.jackson.module.noctordeser;
+    exports tools.jackson.module.noctordeser;
 
-    provides com.fasterxml.jackson.databind.Module with
-        com.fasterxml.jackson.module.noctordeser.NoCtorDeserModule;
+    provides tools.jackson.databind.Module with
+        tools.jackson.module.noctordeser.NoCtorDeserModule;
 }

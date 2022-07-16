@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 // for [databind#1106], [jackson-modules-base#70]
-// Copied from databind's test: com.fasterxml.jackson.databind.struct.ScalarCoercionTest
+// Copied from databind's test: tools.jackson.databind.struct.ScalarCoercionTest
 public class ScalarCoercionTest extends AfterburnerTestBase
 {
     private final ObjectMapper COERCING_MAPPER = afterburnerMapperBuilder()

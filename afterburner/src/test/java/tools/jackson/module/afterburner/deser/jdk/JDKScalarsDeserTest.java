@@ -790,7 +790,7 @@ public class JDKScalarsDeserTest
             assertEquals(1, Array.getLength(ob));
             assertEquals(defValue, Array.get(ob, 0));
 
-            // Note: coercion tests moved to under "com.fasterxml.jackson.databind.convert"
+            // Note: coercion tests moved to under "tools.jackson.databind.convert"
         }
     }
 
