@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.guice;
+package tools.jackson.module.guice;
 
 import java.math.BigInteger;
 
@@ -11,6 +11,7 @@ import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializerProvider;
 import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.module.guice.ObjectMapperModule;
 
 import com.google.inject.Binder;
 import com.google.inject.Guice;

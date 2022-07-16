@@ -5,8 +5,6 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import com.fasterxml.jackson.module.blackbird.PackageVersion;
-
 import tools.jackson.core.Version;
 import tools.jackson.databind.JacksonModule;
 import tools.jackson.module.blackbird.deser.BBDeserializerModifier;

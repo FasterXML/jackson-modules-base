@@ -4,6 +4,7 @@ import java.lang.reflect.Modifier;
 
 import tools.jackson.core.Version;
 import tools.jackson.core.Versioned;
+
 import tools.jackson.databind.AbstractTypeResolver;
 import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.DeserializationConfig;
@@ -11,6 +12,7 @@ import tools.jackson.databind.JavaType;
 import tools.jackson.databind.cfg.MapperConfig;
 import tools.jackson.databind.introspect.AnnotatedClass;
 import tools.jackson.databind.introspect.AnnotatedClassResolver;
+
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.TypeManifestation;
 import net.bytebuddy.description.modifier.Visibility;

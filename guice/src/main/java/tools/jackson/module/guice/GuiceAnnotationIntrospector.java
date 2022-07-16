@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.guice;
+package tools.jackson.module.guice;
 
 import com.fasterxml.jackson.annotation.JacksonInject;
 import tools.jackson.databind.cfg.MapperConfig;

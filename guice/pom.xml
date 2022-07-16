@@ -22,7 +22,7 @@
         <version.guice>[4.0,5.0)</version.guice>
 
         <!-- Generate PackageVersion.java into this directory. -->
-        <packageVersion.dir>com/fasterxml/jackson/module/guice</packageVersion.dir>
+        <packageVersion.dir>tools/jackson/module/guice</packageVersion.dir>
         <packageVersion.package>${project.groupId}.guice</packageVersion.package>
         <!-- default OSGi imports, exports should work fine -->
     </properties>
