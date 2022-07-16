@@ -2,7 +2,7 @@ package com.fasterxml.jackson.module.afterburner;
 
 import java.io.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class AfterburnerModuleJDKSerializabilityTest extends AfterburnerTestBase
 {

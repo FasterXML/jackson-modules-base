@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 public class TestSingleArgCtors extends AfterburnerTestBase

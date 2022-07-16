@@ -3,7 +3,7 @@ package perftest;
 import java.io.IOException;
 import java.util.*;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 
 /**
  * Value class for performance tests

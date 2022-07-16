@@ -3,12 +3,12 @@ package com.fasterxml.jackson.module.afterburner.deser;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.deser.*;
-import com.fasterxml.jackson.databind.deser.impl.NullsConstantProvider;
-import com.fasterxml.jackson.databind.util.ClassUtil;
+import tools.jackson.databind.*;
+import tools.jackson.databind.deser.*;
+import tools.jackson.databind.deser.impl.NullsConstantProvider;
+import tools.jackson.databind.util.ClassUtil;
 
 /**
  * Base class for concrete type-specific {@link SettableBeanProperty}

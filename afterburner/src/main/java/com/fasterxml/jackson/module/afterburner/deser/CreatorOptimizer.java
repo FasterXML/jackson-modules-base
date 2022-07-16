@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
-import com.fasterxml.jackson.databind.deser.ValueInstantiator;
-import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
-import com.fasterxml.jackson.databind.introspect.AnnotatedWithParams;
+import tools.jackson.databind.deser.ValueInstantiator;
+import tools.jackson.databind.deser.std.StdValueInstantiator;
+import tools.jackson.databind.introspect.AnnotatedWithParams;
 import com.fasterxml.jackson.module.afterburner.util.ClassName;
 import com.fasterxml.jackson.module.afterburner.util.DynamicPropertyAccessorBase;
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;

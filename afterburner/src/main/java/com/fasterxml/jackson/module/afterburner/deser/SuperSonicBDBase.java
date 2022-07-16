@@ -2,15 +2,15 @@ package com.fasterxml.jackson.module.afterburner.deser;
 
 import java.util.*;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.io.SerializedString;
-import com.fasterxml.jackson.core.sym.PropertyNameMatcher;
+import tools.jackson.core.*;
+import tools.jackson.core.io.SerializedString;
+import tools.jackson.core.sym.PropertyNameMatcher;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.deser.*;
-import com.fasterxml.jackson.databind.deser.bean.BeanDeserializer;
-import com.fasterxml.jackson.databind.deser.bean.BeanPropertyMap;
-import com.fasterxml.jackson.databind.deser.impl.UnwrappedPropertyHandler;
+import tools.jackson.databind.*;
+import tools.jackson.databind.deser.*;
+import tools.jackson.databind.deser.bean.BeanDeserializer;
+import tools.jackson.databind.deser.bean.BeanPropertyMap;
+import tools.jackson.databind.deser.impl.UnwrappedPropertyHandler;
 
 /**
  * Base class for implementations of bean deserializers that Afterburner

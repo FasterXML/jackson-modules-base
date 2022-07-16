@@ -3,11 +3,11 @@ package com.fasterxml.jackson.module.afterburner.ser;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.fasterxml.jackson.databind.ser.ValueSerializerModifier;
+import tools.jackson.core.*;
+import tools.jackson.databind.*;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.ValueSerializerModifier;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 // for [afterburner#52]

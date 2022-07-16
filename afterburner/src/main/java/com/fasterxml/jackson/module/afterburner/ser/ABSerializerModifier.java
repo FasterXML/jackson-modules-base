@@ -4,10 +4,10 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
-import com.fasterxml.jackson.databind.ser.*;
+import tools.jackson.databind.*;
+import tools.jackson.databind.introspect.AnnotatedMember;
+import tools.jackson.databind.introspect.AnnotatedMethod;
+import tools.jackson.databind.ser.*;
 
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
 

@@ -4,7 +4,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 public class DateFormatTest extends AfterburnerTestBase

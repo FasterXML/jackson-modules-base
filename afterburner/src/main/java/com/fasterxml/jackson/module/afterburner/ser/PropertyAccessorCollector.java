@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
-import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.introspect.AnnotatedMember;
+import tools.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.module.afterburner.deser.PropertyMutatorCollector;
 import com.fasterxml.jackson.module.afterburner.util.ClassName;
 import com.fasterxml.jackson.module.afterburner.util.DynamicPropertyAccessorBase;

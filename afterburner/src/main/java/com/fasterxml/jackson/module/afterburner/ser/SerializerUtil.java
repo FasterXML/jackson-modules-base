@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
-import com.fasterxml.jackson.databind.ValueSerializer;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.fasterxml.jackson.databind.util.ClassUtil;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.ser.std.ToStringSerializer;
+import tools.jackson.databind.util.ClassUtil;
 
 /**
  * Helper class that contains utility methods needed by various other classes

@@ -6,7 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 public class ColletionFormatShapeTest extends AfterburnerTestBase

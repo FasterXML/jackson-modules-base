@@ -27,7 +27,7 @@ field access and method calls
     <!-- 29-Oct-2015, tatu: default export should work fine; but for import may need dynamic/optional
       -->
 
-    <!-- 09-Oct-2011, tatu: should NOT require "com.fasterxml.jackson.databind.deser.impl", but
+    <!-- 09-Oct-2011, tatu: should NOT require "tools.jackson.databind.deser.impl", but
        Maven Bundle plug-in insists for some reason?!?
        (will try to hide via resolution directive)
       -->
@@ -41,11 +41,11 @@ field access and method calls
          Also needs ByteBuddy for bytecode generation (3.0+)
      -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
@@ -103,7 +103,7 @@ field access and method calls
               <relocations>
                 <relocation>
                   <pattern>net.bytebuddy</pattern>
-                  <shadedPattern>com.fasterxml.jackson.module.afterburner.bytebuddy</shadedPattern>
+                  <shadedPattern>tools.jackson.module.afterburner.bytebuddy</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>

@@ -1,8 +1,8 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
+import tools.jackson.core.*;
+import tools.jackson.databind.*;
+import tools.jackson.databind.deser.SettableBeanProperty;
 
 public final class SettableStringMethodProperty
     extends OptimizedSettableBeanProperty<SettableStringMethodProperty>

@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.afterburner;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.JacksonModule;
+import tools.jackson.core.Version;
+import tools.jackson.databind.JacksonModule;
 import com.fasterxml.jackson.module.afterburner.ser.ABSerializerModifier;
 import com.fasterxml.jackson.module.afterburner.deser.ABDeserializerModifier;
 

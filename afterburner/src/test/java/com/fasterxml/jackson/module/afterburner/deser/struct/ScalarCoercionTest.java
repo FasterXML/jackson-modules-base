@@ -1,9 +1,9 @@
 package com.fasterxml.jackson.module.afterburner.deser.struct;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 import java.io.IOException;
 import java.math.BigDecimal;

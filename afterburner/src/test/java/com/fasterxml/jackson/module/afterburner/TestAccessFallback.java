@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.module.afterburner;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class TestAccessFallback extends AfterburnerTestBase
 {

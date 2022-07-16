@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 public class TestConstructors extends AfterburnerTestBase

@@ -2,11 +2,11 @@ package perftest;
 
 import java.io.ByteArrayOutputStream;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.json.JsonFactory;
+import tools.jackson.core.*;
+import tools.jackson.core.json.JsonFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 public final class TestJvmSerPerf

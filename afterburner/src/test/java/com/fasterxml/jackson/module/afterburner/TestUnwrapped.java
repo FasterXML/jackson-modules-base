@@ -2,7 +2,7 @@ package com.fasterxml.jackson.module.afterburner;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class TestUnwrapped extends AfterburnerTestBase
 {

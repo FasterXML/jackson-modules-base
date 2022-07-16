@@ -2,7 +2,7 @@ package com.fasterxml.jackson.module.afterburner.deser;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
+import tools.jackson.databind.deser.SettableBeanProperty;
 
 /**
  * Fallback mutator used as replacement in case a "broken" mutator

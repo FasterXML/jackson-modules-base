@@ -1,13 +1,13 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
-import com.fasterxml.jackson.databind.ser.VirtualBeanPropertyWriter;
-import com.fasterxml.jackson.databind.util.Annotations;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.*;
+import tools.jackson.databind.annotation.JsonAppend;
+import tools.jackson.databind.cfg.MapperConfig;
+import tools.jackson.databind.introspect.AnnotatedClass;
+import tools.jackson.databind.introspect.BeanPropertyDefinition;
+import tools.jackson.databind.ser.VirtualBeanPropertyWriter;
+import tools.jackson.databind.util.Annotations;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 // most for [module-afterburner#57]

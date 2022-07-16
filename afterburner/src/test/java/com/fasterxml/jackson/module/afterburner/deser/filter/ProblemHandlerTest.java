@@ -3,13 +3,13 @@ package com.fasterxml.jackson.module.afterburner.deser.filter;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
-import com.fasterxml.jackson.databind.deser.ValueInstantiator;
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.*;
+import tools.jackson.databind.deser.DeserializationProblemHandler;
+import tools.jackson.databind.deser.ValueInstantiator;
+import tools.jackson.databind.exc.InvalidTypeIdException;
+import tools.jackson.databind.jsontype.TypeIdResolver;
 
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 

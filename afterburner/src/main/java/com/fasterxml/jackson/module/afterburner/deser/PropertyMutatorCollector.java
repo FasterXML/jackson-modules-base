@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
-import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import tools.jackson.databind.deser.SettableBeanProperty;
+import tools.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.module.afterburner.util.ClassName;
 import com.fasterxml.jackson.module.afterburner.util.DynamicPropertyAccessorBase;
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;

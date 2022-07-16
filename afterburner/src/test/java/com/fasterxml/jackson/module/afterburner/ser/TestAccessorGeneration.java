@@ -2,12 +2,12 @@
 
 import java.lang.reflect.Method;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyName;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
-import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.fasterxml.jackson.databind.util.SimpleBeanPropertyDefinition;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.PropertyName;
+import tools.jackson.databind.cfg.MapperConfig;
+import tools.jackson.databind.introspect.AnnotatedMethod;
+import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.util.SimpleBeanPropertyDefinition;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 public class TestAccessorGeneration extends AfterburnerTestBase

@@ -4,13 +4,13 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.deser.*;
-import com.fasterxml.jackson.databind.deser.impl.FieldProperty;
-import com.fasterxml.jackson.databind.deser.impl.MethodProperty;
-import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
-import com.fasterxml.jackson.databind.introspect.*;
-import com.fasterxml.jackson.databind.util.ClassUtil;
+import tools.jackson.databind.*;
+import tools.jackson.databind.deser.*;
+import tools.jackson.databind.deser.impl.FieldProperty;
+import tools.jackson.databind.deser.impl.MethodProperty;
+import tools.jackson.databind.deser.std.StdValueInstantiator;
+import tools.jackson.databind.introspect.*;
+import tools.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.module.afterburner.util.MyClassLoader;
 
 public class ABDeserializerModifier extends ValueDeserializerModifier

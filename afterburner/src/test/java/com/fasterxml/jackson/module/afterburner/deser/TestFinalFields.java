@@ -1,7 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 public class TestFinalFields extends AfterburnerTestBase

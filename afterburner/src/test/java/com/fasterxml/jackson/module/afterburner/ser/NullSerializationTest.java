@@ -1,16 +1,16 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
-import com.fasterxml.jackson.core.*;
+import tools.jackson.core.*;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.cfg.GeneratorSettings;
-import com.fasterxml.jackson.databind.cfg.SerializationContexts;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.ser.SerializationContextExt;
-import com.fasterxml.jackson.databind.ser.SerializerCache;
-import com.fasterxml.jackson.databind.ser.SerializerFactory;
+import tools.jackson.databind.*;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.cfg.GeneratorSettings;
+import tools.jackson.databind.cfg.SerializationContexts;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ser.SerializationContextExt;
+import tools.jackson.databind.ser.SerializerCache;
+import tools.jackson.databind.ser.SerializerFactory;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 // Copied from [com.fasterxml.jackson.databind.ser.filter]
