@@ -5,7 +5,7 @@ import java.io.IOException;
 import tools.jackson.core.json.JsonFactory;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
+import tools.jackson.module.afterburner.AfterburnerModule;
 
 public class TestDeserializePerf
 {

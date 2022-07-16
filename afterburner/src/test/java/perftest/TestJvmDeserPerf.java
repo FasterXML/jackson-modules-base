@@ -62,7 +62,7 @@ public final class TestJvmDeserPerf
         ;
         
         final ObjectMapper jsonMapper = JsonMapper.builder(jsonF)
-                .addModule(new com.fasterxml.jackson.module.afterburner.AfterburnerModule())
+                .addModule(new tools.jackson.module.afterburner.AfterburnerModule())
                 .build();
 
         byte[] json = jsonMapper.writeValueAsBytes(item);
