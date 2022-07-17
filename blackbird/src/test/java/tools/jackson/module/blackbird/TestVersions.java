@@ -3,11 +3,8 @@ package tools.jackson.module.blackbird;
 import java.io.*;
 import java.lang.invoke.MethodHandles;
 
-import com.fasterxml.jackson.module.blackbird.PackageVersion;
-
 import tools.jackson.core.Version;
 import tools.jackson.core.Versioned;
-import tools.jackson.module.blackbird.BlackbirdModule;
 
 /**
  * Tests to verify that version information is properly accessible

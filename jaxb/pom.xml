@@ -22,7 +22,7 @@
 
   <properties>
    <!-- Generate PackageVersion.java into this directory. -->
-    <packageVersion.dir>com/fasterxml/jackson/module/jaxb</packageVersion.dir>
+    <packageVersion.dir>tools/jackson/module/jaxb</packageVersion.dir>
     <packageVersion.package>${project.groupId}.jaxb</packageVersion.package>
     <!-- 22-Mar-2019, tatu: [modules-base#80]: Presence of JAF on the bundle classpath is only necessary
            when ser/deser'ing javax.a.DataHandlers

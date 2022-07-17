@@ -22,7 +22,7 @@ dynamically ("bean materialization"), integrated with Jackson (although usable e
 
   <properties>
     <!-- Generate PackageVersion.java into this directory. -->
-    <packageVersion.dir>com/fasterxml/jackson/module/mrbean</packageVersion.dir>
+    <packageVersion.dir>tools/jackson/module/mrbean</packageVersion.dir>
     <packageVersion.package>${project.groupId}.mrbean</packageVersion.package>
     <!-- not 100% sure this is needed, but due to shading better safe than sorry -->
     <osgi.export>

@@ -21,8 +21,8 @@
 
     <properties>
         <!-- Generate PackageVersion.java into this directory. -->
-        <packageVersion.dir>com/fasterxml/jackson/module/noctordeser</packageVersion.dir>
-        <packageVersion.package>com.fasterxml.jackson.module.noctordeser</packageVersion.package>
+        <packageVersion.dir>tools/jackson/module/noctordeser</packageVersion.dir>
+        <packageVersion.package>tools.jackson.module.noctordeser</packageVersion.package>
     </properties>
 
     <dependencies>

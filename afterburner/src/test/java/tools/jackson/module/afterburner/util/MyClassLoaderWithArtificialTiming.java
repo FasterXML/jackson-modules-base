@@ -2,9 +2,6 @@ package tools.jackson.module.afterburner.util;
 
 import java.util.concurrent.Semaphore;
 
-import tools.jackson.module.afterburner.util.ClassName;
-import tools.jackson.module.afterburner.util.MyClassLoader;
-
 /**
  * An extension of MyClassLoader with controllable blocking behavior of the
  * {@code defineClassOnParent(ClassLoader, String, byte[], int, int)} method,

@@ -21,10 +21,9 @@
     <properties>
         <version.osgi.core>5.0.0</version.osgi.core>
         <version.mockito>1.10.19</version.mockito>
-        <version.junit>4.12</version.junit>
 
         <!-- Generate PackageVersion.java into this directory. -->
-        <packageVersion.dir>com/fasterxml/jackson/module/osgi</packageVersion.dir>
+        <packageVersion.dir>tools/jackson/module/osgi</packageVersion.dir>
         <packageVersion.package>${project.groupId}.osgi</packageVersion.package>
     </properties>
 

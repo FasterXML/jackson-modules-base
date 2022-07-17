@@ -5,11 +5,12 @@ import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import tools.jackson.core.*;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.module.blackbird.BlackbirdModule;
+
 import tools.jackson.module.blackbird.testutil.NoCheckSubTypeValidator;
 
 public abstract class BlackbirdTestBase extends junit.framework.TestCase

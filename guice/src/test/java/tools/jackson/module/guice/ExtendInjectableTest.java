@@ -3,8 +3,8 @@ package tools.jackson.module.guice;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.module.guice.ObjectMapperModule;
 
 import com.google.inject.Binder;
 import com.google.inject.Guice;
