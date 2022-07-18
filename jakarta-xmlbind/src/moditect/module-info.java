@@ -3,12 +3,12 @@ module com.fasterxml.jackson.module.jakarta.xmlbind {
 
     requires static jakarta.activation;
 
-    requires com.fasterxml.jackson.core;
-    requires com.fasterxml.jackson.databind;
+    requires tools.jackson.core;
+    requires tools.jackson.databind;
 
     // expose main level, but leave out "ser", "deser" impl
-    exports com.fasterxml.jackson.module.jakarta.xmlbind;
+    exports tools.jackson.module.jakarta.xmlbind;
 
-    provides com.fasterxml.jackson.databind.JacksonModule with
-        com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
+    provides tools.jackson.databind.JacksonModule with
+        tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 }

@@ -1,10 +1,8 @@
-// Manually composed on 14-Mar-2019 -- Moditect maven plugin failed to generate
+module tools.jackson.module.mrbean {
+    requires transitive tools.jackson.databind;
 
-module com.fasterxml.jackson.module.mrbean {
-    requires transitive com.fasterxml.jackson.databind;
+    exports tools.jackson.module.mrbean;
 
-    exports com.fasterxml.jackson.module.mrbean;
-
-    provides com.fasterxml.jackson.databind.JacksonModule with
-        com.fasterxml.jackson.module.mrbean.MrBeanModule;
+    provides tools.jackson.databind.JacksonModule with
+        tools.jackson.module.mrbean.MrBeanModule;
 }

@@ -1,20 +1,20 @@
 // Generated 14-Mar-2019 using Moditect maven plugin
 
-module com.fasterxml.jackson.module.afterburner {
+module tools.jackson.module.afterburner {
     requires java.logging;
 
-    requires com.fasterxml.jackson.core;
-    requires com.fasterxml.jackson.databind;
+    requires tools.jackson.core;
+    requires tools.jackson.databind;
 
-    exports com.fasterxml.jackson.module.afterburner;
+    exports tools.jackson.module.afterburner;
 // do not expose shaded ByteBuddy
-//    exports com.fasterxml.jackson.module.afterburner.bytebuddy;
+//    exports tools.jackson.module.afterburner.bytebuddy;
 
 // nor internal implementations of sub-packages
-//    exports com.fasterxml.jackson.module.afterburner.deser;
-//    exports com.fasterxml.jackson.module.afterburner.ser;
-//    exports com.fasterxml.jackson.module.afterburner.util;
+//    exports tools.jackson.module.afterburner.deser;
+//    exports tools.jackson.module.afterburner.ser;
+//    exports tools.jackson.module.afterburner.util;
 
-    provides com.fasterxml.jackson.databind.JacksonModule with
-        com.fasterxml.jackson.module.afterburner.AfterburnerModule;
+    provides tools.jackson.databind.JacksonModule with
+        tools.jackson.module.afterburner.AfterburnerModule;
 }

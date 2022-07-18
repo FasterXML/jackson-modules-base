@@ -1,15 +1,15 @@
-module com.fasterxml.jackson.module.jaxb {
+module tools.jackson.module.jaxb {
     requires static java.xml.bind;
 
     // Needed for JDK9+, but optionally only
     requires static java.activation;
 
-    requires com.fasterxml.jackson.core;
-    requires com.fasterxml.jackson.databind;
+    requires tools.jackson.core;
+    requires tools.jackson.databind;
 
     // expose main level, but leave out "ser", "deser" impl
-    exports com.fasterxml.jackson.module.jaxb;
+    exports tools.jackson.module.jaxb;
 
-    provides com.fasterxml.jackson.databind.JacksonModule with
-        com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+    provides tools.jackson.databind.JacksonModule with
+        tools.jackson.module.jaxb.JaxbAnnotationModule;
 }

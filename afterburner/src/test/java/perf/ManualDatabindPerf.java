@@ -1,8 +1,8 @@
 package perf;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
+import tools.jackson.databind.*;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.module.afterburner.AfterburnerModule;
 
 public class ManualDatabindPerf
 {

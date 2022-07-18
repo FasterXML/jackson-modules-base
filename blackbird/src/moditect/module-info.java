@@ -1,13 +1,11 @@
-// Generated 14-Mar-2019 using Moditect maven plugin
-
-module com.fasterxml.jackson.module.blackbird {
+module tools.jackson.module.blackbird {
     requires java.logging;
 
-    requires com.fasterxml.jackson.core;
-    requires com.fasterxml.jackson.databind;
+    requires tools.jackson.core;
+    requires tools.jackson.databind;
 
-    exports com.fasterxml.jackson.module.blackbird;
+    exports tools.jackson.module.blackbird;
 
-    provides com.fasterxml.jackson.databind.JacksonModule with
-        com.fasterxml.jackson.module.blackbird.BlackbirdModule;
+    provides tools.jackson.databind.JacksonModule with
+        tools.jackson.module.blackbird.BlackbirdModule;
 }
