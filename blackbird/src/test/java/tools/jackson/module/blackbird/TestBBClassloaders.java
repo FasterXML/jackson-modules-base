@@ -7,10 +7,10 @@ import java.lang.reflect.Constructor;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
-public class TestClassloaders extends BlackbirdTestBase
+public class TestBBClassloaders extends BlackbirdTestBase
 {
     protected final String resourceName =
-            (TestClassloaders.class.getName() + "$Data")
+            (TestBBClassloaders.class.getName() + "$Data")
                 .replace('.', '/').concat(".class");
 
     // Note: this test always passes in Java 8, even if the issue is not fixed,
