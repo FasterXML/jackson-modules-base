@@ -18,6 +18,14 @@
     <description>Jackson module to inject OSGI services in deserialized beans.</description>
     <url>https://github.com/FasterXML/jackson-modules-base</url>
 
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <properties>
         <version.osgi.core>5.0.0</version.osgi.core>
         <version.mockito>1.10.19</version.mockito>
@@ -57,7 +65,7 @@
         -->
       <plugin>
         <groupId>org.moditect</groupId>
-	<artifactId>moditect-maven-plugin</artifactId>
+        <artifactId>moditect-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
