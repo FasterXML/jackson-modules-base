@@ -18,6 +18,14 @@
     <description>Support deserialization of POJO classes without default constructor</description>
     <url>https://github.com/FasterXML/jackson-modules-base</url>
 
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <properties>
         <!-- Generate PackageVersion.java into this directory. -->
         <packageVersion.dir>com/fasterxml/jackson/module/noctordeser</packageVersion.dir>

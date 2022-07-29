@@ -18,6 +18,14 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
   </description>
   <url>https://github.com/FasterXML/jackson-modules-base</url>
 
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
   <properties>
     <javac.src.version>1.8</javac.src.version>
     <javac.target.version>1.8</javac.target.version>
