@@ -23,7 +23,7 @@ Active maintainers:
 
 #138: (blackbird) Blackbird doesn't work on Java 15+
  (fix by Steven S)
-- Asm version from 9.0 to 9.3
+- Asm version from 9.0 to 9.4
 
 2.13.4 (03-Sep-2022)
 
