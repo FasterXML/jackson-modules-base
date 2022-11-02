@@ -25,6 +25,9 @@ Active maintainers:
 
 #138: (blackbird) Blackbird doesn't work on Java 15+
  (fix by Steven S)
+#187: Remove stack trace from Blackbirds warnings wrt missing `MethodHandles.lookup()`
+  (on Java 8)
+ (requested by René S)
 - Asm version from 9.0 to 9.4
 
 2.13.4 (03-Sep-2022)
