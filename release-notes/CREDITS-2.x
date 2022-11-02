@@ -125,3 +125,9 @@ Aleksandr Beliakov (bsanchezb@github)
 
 * Contributed #157: Bumb jakarta.activation-api dependency from 1.2.1 to 1.2.2
  (2.14.0)
+
+René Scheibe (darxriggs@github)
+
+* Suggested #187: Remove stack trace from Blackbirds warnings wrt missing `MethodHandles.lookup()`
+  (on Java 8)
+ (2.14.0)
