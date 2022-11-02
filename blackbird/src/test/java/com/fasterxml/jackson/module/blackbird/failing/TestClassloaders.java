@@ -1,10 +1,12 @@
-package com.fasterxml.jackson.module.blackbird;
+package com.fasterxml.jackson.module.blackbird.failing;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 
+import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.Test;
 
 public class TestClassloaders extends BlackbirdTestBase
