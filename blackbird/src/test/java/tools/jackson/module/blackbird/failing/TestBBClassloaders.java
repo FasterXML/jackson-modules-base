@@ -1,10 +1,12 @@
-package tools.jackson.module.blackbird;
+package tools.jackson.module.blackbird.failing;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.module.blackbird.BlackbirdTestBase;
+
 import org.junit.Test;
 
 public class TestBBClassloaders extends BlackbirdTestBase
