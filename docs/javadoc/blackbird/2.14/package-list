@@ -1,0 +1,4 @@
+com.fasterxml.jackson.module.blackbird
+com.fasterxml.jackson.module.blackbird.deser
+com.fasterxml.jackson.module.blackbird.ser
+com.fasterxml.jackson.module.blackbird.util
