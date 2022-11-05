@@ -1,0 +1,3 @@
+com.fasterxml.jackson.module.jakarta.xmlbind
+com.fasterxml.jackson.module.jakarta.xmlbind.deser
+com.fasterxml.jackson.module.jakarta.xmlbind.ser
