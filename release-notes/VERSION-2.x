@@ -19,6 +19,10 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.15.0 (not yet released)
+
+-
+
 2.14.0 (05-Nov-2022)
 
 #138: (blackbird) Blackbird doesn't work on Java 15+
