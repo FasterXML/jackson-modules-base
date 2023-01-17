@@ -48,12 +48,14 @@ public final class StringFieldPropertyWriter
         }
         // Null (etc) handling; copied from super-class impl
         if (value == null) {
+            // 20-Jun-2022, tatu: Defer checking of null, see [databind#3481]
+            if ((_suppressableValue != null)
+                    && prov.includeFilterSuppressNulls(_suppressableValue)) {
+                return;
+            }
             if (_nullSerializer != null) {
                 gen.writeFieldName(_fastName);
                 _nullSerializer.serialize(null, gen, prov);
-            } else if (!_suppressNulls) {
-                gen.writeFieldName(_fastName);
-                prov.defaultSerializeNull(gen);
             }
             return;
         }
