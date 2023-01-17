@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.CoercionAction;
 import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
@@ -83,7 +84,7 @@ public class CoerceFloatToIntTest extends AfterburnerTestBase
         _verifyCoerceFail(READER_LEGACY_FAIL, Integer.class, "1.5", "java.lang.Integer");
         _verifyCoerceFail(READER_LEGACY_FAIL, Integer.TYPE, "1.5", "int");
         _verifyCoerceFail(READER_LEGACY_FAIL, IntWrapper.class, "{\"i\":-2.25 }", "int");
-        _verifyCoerceFail(READER_LEGACY_FAIL, int[].class, "[ 2.5 ]", "element of `int[]`");
+        _verifyCoerceFail(READER_LEGACY_FAIL, int[].class, "[ 2.5 ]", "to `int` value");
     }
 
     public void testLegacyFailDoubleToLong() throws Exception
@@ -91,18 +92,18 @@ public class CoerceFloatToIntTest extends AfterburnerTestBase
         _verifyCoerceFail(READER_LEGACY_FAIL, Long.class, "0.5");
         _verifyCoerceFail(READER_LEGACY_FAIL, Long.TYPE, "-2.5");
         _verifyCoerceFail(READER_LEGACY_FAIL, LongWrapper.class, "{\"l\": 7.7 }");
-        _verifyCoerceFail(READER_LEGACY_FAIL, long[].class, "[ -1.35 ]", "element of `long[]`");
+        _verifyCoerceFail(READER_LEGACY_FAIL, long[].class, "[ -1.35 ]", "to `long` value");
     }
 
     public void testLegacyFailDoubleToOther() throws Exception
     {
         _verifyCoerceFail(READER_LEGACY_FAIL, Short.class, "0.5");
         _verifyCoerceFail(READER_LEGACY_FAIL, Short.TYPE, "-2.5");
-        _verifyCoerceFail(READER_LEGACY_FAIL, short[].class, "[ -1.35 ]", "element of `short[]`");
+        _verifyCoerceFail(READER_LEGACY_FAIL, short[].class, "[ -1.35 ]", "to `short` value");
 
         _verifyCoerceFail(READER_LEGACY_FAIL, Byte.class, "0.5");
         _verifyCoerceFail(READER_LEGACY_FAIL, Byte.TYPE, "-2.5");
-        _verifyCoerceFail(READER_LEGACY_FAIL, byte[].class, "[ -1.35 ]", "element of `byte[]`");
+        _verifyCoerceFail(READER_LEGACY_FAIL, byte[].class, "[ -1.35 ]", "to `byte` value");
 
         _verifyCoerceFail(READER_LEGACY_FAIL, BigInteger.class, "25236.256");
 
@@ -286,20 +287,20 @@ public class CoerceFloatToIntTest extends AfterburnerTestBase
         _verifyCoerceFail(MAPPER_TO_FAIL, Integer.class, "1.5");
         _verifyCoerceFail(MAPPER_TO_FAIL, Integer.TYPE, "1.5");
         _verifyCoerceFail(MAPPER_TO_FAIL, IntWrapper.class, "{\"i\":-2.25 }", "int");
-        _verifyCoerceFail(MAPPER_TO_FAIL, int[].class, "[ 2.5 ]", "element of `int[]`");
+        _verifyCoerceFail(MAPPER_TO_FAIL, int[].class, "[ 2.5 ]", "to `int` value");
 
         _verifyCoerceFail(MAPPER_TO_FAIL, Long.class, "0.5");
         _verifyCoerceFail(MAPPER_TO_FAIL, Long.TYPE, "-2.5");
         _verifyCoerceFail(MAPPER_TO_FAIL, LongWrapper.class, "{\"l\": 7.7 }");
-        _verifyCoerceFail(MAPPER_TO_FAIL, long[].class, "[ -1.35 ]", "element of `long[]`");
+        _verifyCoerceFail(MAPPER_TO_FAIL, long[].class, "[ -1.35 ]", "to `long` value");
 
         _verifyCoerceFail(MAPPER_TO_FAIL, Short.class, "0.5");
         _verifyCoerceFail(MAPPER_TO_FAIL, Short.TYPE, "-2.5");
-        _verifyCoerceFail(MAPPER_TO_FAIL, short[].class, "[ -1.35 ]", "element of `short[]`");
+        _verifyCoerceFail(MAPPER_TO_FAIL, short[].class, "[ -1.35 ]", "to `short` value");
 
         _verifyCoerceFail(MAPPER_TO_FAIL, Byte.class, "0.5");
         _verifyCoerceFail(MAPPER_TO_FAIL, Byte.TYPE, "-2.5");
-        _verifyCoerceFail(MAPPER_TO_FAIL, byte[].class, "[ -1.35 ]", "element of `byte[]`");
+        _verifyCoerceFail(MAPPER_TO_FAIL, byte[].class, "[ -1.35 ]", "to `byte` value");
 
         _verifyCoerceFail(MAPPER_TO_FAIL, BigInteger.class, "25236.256");
     }
