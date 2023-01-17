@@ -60,6 +60,14 @@ public class JsonIncludeCustomTest extends BlackbirdTestBase
         public BrokenBean(String v) { value = v; }
     }
 
+    static class BrokenBean2 {
+        @JsonInclude(value=JsonInclude.Include.CUSTOM,
+                valueFilter=BrokenFilter.class)
+        public Map<String, String> value;
+
+        public BrokenBean2(Map<String, String> v) { value = v; }
+    }
+
     // [databind#3481]
     static class CountingFooFilter {
         public final static AtomicInteger counter = new AtomicInteger(0);
@@ -125,11 +133,23 @@ public class JsonIncludeCustomTest extends BlackbirdTestBase
     /* Test methods, fail handling
     /**********************************************************
      */
-    
-    public void testBrokenFilter() throws Exception
+
+    public void testBrokenFilterString() throws Exception
     {
         try {
             String json = MAPPER.writeValueAsString(new BrokenBean(null));
+            fail("Should not pass, produced: "+json);
+        } catch (JsonMappingException e) {
+            // 20-Jun-2022, tatu: Actual message seems to vary across JDKs...
+            verifyException(e, "Problem determining whether filter");
+            verifyException(e, "should filter out `null` values");
+        }
+    }
+
+    public void testBrokenFilterMap() throws Exception
+    {
+        try {
+            String json = MAPPER.writeValueAsString(new BrokenBean2(null));
             fail("Should not pass, produced: "+json);
         } catch (JsonMappingException e) {
             // 20-Jun-2022, tatu: Actual message seems to vary across JDKs...
