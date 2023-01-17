@@ -58,12 +58,14 @@ final class ObjectPropertyWriter
         }
         // Null (etc) handling; copied from super-class impl
         if (value == null) {
+            // 20-Jun-2022, tatu: Defer checking of null, see [databind#3481]
+            if ((_suppressableValue != null)
+                    && prov.includeFilterSuppressNulls(_suppressableValue)) {
+                return;
+            }
             if (_nullSerializer != null) {
                 g.writeName(_fastName);
                 _nullSerializer.serialize(null, g, prov);
-            } else if (!_suppressNulls) {
-                g.writeName(_fastName);
-                prov.defaultSerializeNullValue(g);
             }
             return;
         }
