@@ -94,10 +94,6 @@ for configuring data-binding.
       <plugin>
         <groupId>org.moditect</groupId>
         <artifactId>moditect-maven-plugin</artifactId>
-        <inherited>true</inherited>
-        <configuration>
-          <jvmVersion>11</jvmVersion>
-        </configuration>
       </plugin>
 
     </plugins>
