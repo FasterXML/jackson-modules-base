@@ -21,8 +21,11 @@ Active maintainers:
 
 2.14.3 (not yet released)
 
+#198: fix failing tests in java17 CI run
+ (fix contributed by @pjfanning)
 #199: jaxb and jakarta-xmlbind put module-info in versions/11
  (contributed by @pjfanning)
+- Fix Gradle Module Metadata for Afterburner, Blackbird
 
 2.14.2 (28-Jan-2023)
 2.14.1 (21-Nov-2022)
