@@ -72,4 +72,25 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <!-- And different set up for JDK 17+ -->
+      <id>java17+</id>
+      <activation>
+        <jdk>[17,)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.0.0-M8</version>
+            <configuration>
+              <argLine>--add-opens java.base/javax.security.auth=ALL-UNNAMED</argLine>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
