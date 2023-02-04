@@ -101,6 +101,12 @@
         </plugin>
       </plugins>
     </pluginManagement>
-  </build>
 
+    <plugins>
+      <plugin>
+        <groupId>de.jjohannes</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>
