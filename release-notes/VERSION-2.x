@@ -9,6 +9,7 @@ Modules:
   jackson-module-no-ctor-deser (2.13)
   jackson-module-osgi
   jackson-module-paranamer
+
 Active maintainers:
 
 * Steven Schlansker (@stevenschlansker): author of Blackbird, co-author
@@ -19,7 +20,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.15.0 (not yet released)
+2.15.0-rc1 (18-Mar-2023)
 
 #190: Filter annotated by JsonInclude.Include.CUSTOM does not get called if
   property is null with Afterburner/Blackbird module registered 
