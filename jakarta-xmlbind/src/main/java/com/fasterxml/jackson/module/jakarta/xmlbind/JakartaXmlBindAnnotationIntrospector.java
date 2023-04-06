@@ -734,20 +734,6 @@ public class JakartaXmlBindAnnotationIntrospector
         return null;
     }
 
-    @Override
-    @Deprecated // since 2.7
-    public Class<?> findSerializationType(Annotated a)
-    {
-        Class<?> allegedType = _getTypeFromXmlElement(a);
-        if (allegedType != null){
-            Class<?> rawPropType = _rawSerializationType(a);
-            if (!isContainerType(rawPropType)) {
-                return allegedType;
-            }
-        }
-        return null;
-    }
-
     @Override // @since 2.7
     public JsonInclude.Value findPropertyInclusion(Annotated a)
     {
