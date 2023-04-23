@@ -20,7 +20,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.15.0-rc3 (14-Aprr-2023)
+2.15.0 (23-Aprr-2023)
 
 #190: Filter annotated by JsonInclude.Include.CUSTOM does not get called if
   property is null with Afterburner/Blackbird module registered 
