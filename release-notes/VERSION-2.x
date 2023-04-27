@@ -20,7 +20,12 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.15.0 (23-Aprr-2023)
+2.15.1 (not yet released)
+
+#204: (afterburner, mrbean) Gradle metadata for `jackson-core` `2.15.0` adds
+  dependency on shaded `org.ow2.asm:asm`
+
+2.15.0 (23-Apr-2023)
 
 #190: Filter annotated by JsonInclude.Include.CUSTOM does not get called if
   property is null with Afterburner/Blackbird module registered 
