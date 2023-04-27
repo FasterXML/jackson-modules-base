@@ -73,6 +73,20 @@ ${project.groupId}.mrbean.*;version=${project.version}
         <artifactId>replacer</artifactId>
       </plugin>
 
+     <!-- 27-Apr-2023, tatu: [modules-base#204] GMM plugin needs help -->
+      <plugin>
+        <groupId>de.jjohannes</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+        <configuration>
+          <removedDependencies>
+            <dependency>
+              <groupId>net.bytebuddy</groupId>
+              <artifactId>byte-buddy</artifactId>
+            </dependency>
+          </removedDependencies>
+        </configuration>
+      </plugin>
+
       <plugin>
         <!--  We will shade ByteBuddy, to simplify deployment, avoid version conflicts -->
         <groupId>org.apache.maven.plugins</groupId>
