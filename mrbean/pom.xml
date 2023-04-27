@@ -64,16 +64,18 @@ ${project.groupId}.mrbean.*;version=${project.version}
 	<artifactId>replacer</artifactId>
       </plugin>
 
+      <!-- 27-Apr-2023, tatu: [modules-base#204] GMM plugin needs help -->
       <plugin>
-           <groupId>org.apache.maven.plugins</groupId>
-           <artifactId>maven-compiler-plugin</artifactId>
-           <configuration>
-               <!-- [modules-base#109] Enable testing with Java 8 features,
-                   especially default methods in interfaces
-                 -->
-               <testSource>1.8</testSource>
-               <testTarget>1.8</testTarget>
-           </configuration>
+        <groupId>de.jjohannes</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+        <configuration>
+          <removedDependencies>
+            <dependency>
+              <groupId>org.ow2.asm</groupId>
+              <artifactId>asm</artifactId>
+            </dependency>
+          </removedDependencies>
+        </configuration>
       </plugin>
 
       <plugin>

@@ -77,12 +77,20 @@ field access and method calls
         <!-- Inherited from oss-base. Generate PackageVersion.java.-->
         <groupId>com.google.code.maven-replacer-plugin</groupId>
         <artifactId>replacer</artifactId>
-        <executions>
-          <execution>
-            <id>process-packageVersion</id>
-            <phase>generate-sources</phase>
-          </execution>
-        </executions>
+      </plugin>
+
+      <!-- 27-Apr-2023, tatu: [modules-base#204] GMM plugin needs help -->
+      <plugin>
+        <groupId>de.jjohannes</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+        <configuration>
+          <removedDependencies>
+            <dependency>
+              <groupId>org.ow2.asm</groupId>
+              <artifactId>asm</artifactId>
+            </dependency>
+          </removedDependencies>
+        </configuration>
       </plugin>
 
       <plugin>
