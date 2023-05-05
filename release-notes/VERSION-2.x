@@ -19,7 +19,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.14.3 (not yet released)
+2.14.3 (05-May-2023)
 
 #198: fix failing tests in java17 CI run
  (fix contributed by @pjfanning)
