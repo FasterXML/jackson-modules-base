@@ -30,7 +30,7 @@ Active maintainers:
 #190: Filter annotated by JsonInclude.Include.CUSTOM does not get called if
   property is null with Afterburner/Blackbird module registered 
 
-2.14.3 (not yet released)
+2.14.3 (05-May-2023)
 
 #198: fix failing tests in java17 CI run
  (fix contributed by @pjfanning)
