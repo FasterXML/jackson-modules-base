@@ -20,7 +20,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.15.1 (not yet released)
+2.15.1 (16-May-2023)
 
 #204: (afterburner, mrbean) Gradle metadata for `jackson-core` `2.15.0` adds
   dependency on shaded `org.ow2.asm:asm`
