@@ -35,9 +35,7 @@ field access and method calls
     <!-- 29-Oct-2015, tatu: default export should work fine; but for import may need dynamic/optional
       -->
 
-    <!-- 09-Oct-2011, tatu: should NOT require "com.fasterxml.jackson.databind.deser.impl", but
-       Maven Bundle plug-in insists for some reason?!?
-       Similarly, org.objectweb.asm is shaded... why require?
+    <!-- 09-Oct-2011, tatu: Similarly, org.objectweb.asm is shaded... why require?
        (will try to hide via resolution directive)
       -->
     <osgi.import>org.objectweb.asm;resolution:=optional,
@@ -64,7 +62,7 @@ field access and method calls
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
     </dependency>
-    <dependency> <!--  tests use Jackson annoations -->
+    <dependency> <!-- tests use Jackson annotations -->
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
       <scope>provided</scope>
