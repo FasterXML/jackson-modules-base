@@ -20,6 +20,10 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.15.2 (not yet released)
+
+#207: Mr Bean exposing `Asm` as Maven dependency despite shading
+
 2.15.1 (16-May-2023)
 
 #204: (afterburner, mrbean) Gradle metadata for `jackson-core` `2.15.0` adds
