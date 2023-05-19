@@ -569,7 +569,7 @@ public class JaxbAnnotationIntrospector
         // JAXB always uses type name as id; let's consider WRAPPER_OBJECT to be canonical inclusion method
         // (TODO: should it be possible to merge such annotations in AnnotationIntrospector pair?)
         return JsonTypeInfo.Value.construct(JsonTypeInfo.Id.NAME, JsonTypeInfo.As.WRAPPER_OBJECT,
-                "", null, false);
+                "", null, false, null);
 /*// in 2.0 we had:
         TypeResolverBuilder<?> b = new StdTypeResolverBuilder();
         // JAXB always uses type name as id

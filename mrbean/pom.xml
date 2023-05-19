@@ -98,8 +98,6 @@ ${project.groupId}.mrbean.*;version=${project.version}
               <goal>shade</goal>
             </goals>
             <configuration>
-<shadedArtifactAttached>false</shadedArtifactAttached>
-<shadedArtifactId>foobar-shaded</shadedArtifactId>
               <artifactSet>
                 <includes>
                   <include>net.bytebuddy:byte-buddy</include>
@@ -121,6 +119,33 @@ ${project.groupId}.mrbean.*;version=${project.version}
       <plugin>
         <groupId>org.moditect</groupId>
         <artifactId>moditect-maven-plugin</artifactId>
+      </plugin>
+     <plugin>
+        <groupId>io.github.floverfelt</groupId>
+        <artifactId>find-and-replace-maven-plugin</artifactId>
+        <version>1.1.0</version>
+        <executions>
+          <execution>
+            <id>exec</id>
+            <phase>package</phase>
+            <goals>
+              <goal>find-and-replace</goal>
+            </goals>
+            <configuration>
+              <replacementType>file-contents</replacementType>
+              <baseDir>${basedir}</baseDir>
+              <findRegex><![CDATA[<modelVersion>4.0.0</modelVersion>]]></findRegex>
+              <fileMask>dependency-reduced-pom.xml</fileMask>
+              <replaceValue><![CDATA[  <!-- This module was also published with a richer model, Gradle metadata,  -->
+  <!-- which should be used instead. Do not delete the following line which  -->
+  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+  <!-- that they should prefer consuming it instead. -->
+  <!-- do_not_remove: published-with-gradle-metadata -->
+  <modelVersion>4.0.0</modelVersion>]]></replaceValue>
+              <recursive>false</recursive>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
