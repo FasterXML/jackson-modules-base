@@ -50,7 +50,8 @@ not datatype, data format, or JAX-RS provider modules.
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- 22-Sep-2020, tatu: 7.3.1 -> 9.0 for Jackson 2.12 -->
     <!-- 02-Oct-2022, tatu: 9.0 -> 9.4 for Jackson 2.14 -->
-    <version.asm>9.4</version.asm>
+    <!-- 20-May-2023, tatu: 9.4 -> 9.5 for Jackson 2.15.2 -->
+    <version.asm>9.5</version.asm>
   </properties>
 
   <dependencyManagement>
