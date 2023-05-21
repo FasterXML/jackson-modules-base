@@ -23,6 +23,7 @@ Active maintainers:
 2.15.2 (not yet released)
 
 #207: Mr Bean exposing `Asm` as Maven dependency despite shading
+- (afterburner, mrbean) `org.ow2.asm:asm` updated to 9.5 (from 9.4)
 
 2.15.1 (16-May-2023)
 
