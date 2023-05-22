@@ -3,6 +3,7 @@ Modules:
   jackson-module-afterburner
   jackson-module-blackbird (2.12)
   jackson-module-guice
+  jackson-module-guice7 (2.16)
   jackson-module-jakarta-xmlbind-annotations (2.13)
   jackson-module-jaxb
   jackson-module-mrbean
@@ -19,6 +20,11 @@ Active maintainers:
 ------------------------------------------------------------------------
 === Releases ===
 ------------------------------------------------------------------------
+
+2.16.0 (not yet released)
+
+#209: Add guice7 (jakarta.inject) module
+ (contributed by Joe B)
 
 2.15.2 (not yet released)
 

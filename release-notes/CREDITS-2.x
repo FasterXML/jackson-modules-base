@@ -109,6 +109,8 @@ Joe Barnett (josephlbarnett@github)
 * Contributed fix for #169: Blackbird fails with LinkageError when the same class
   is used across two separate classloaders
  (2.13.3)
+* Contributed #209: Add guice7 (jakarta.inject) module
+ (2.16.0)
 
 James R. Perkins (jamezp@github)
 * Contributed fix for #175: `jackson-module-jakarta-xmlbind-annotations` should use
