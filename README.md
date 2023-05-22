@@ -10,7 +10,9 @@ Currently included are:
 
 * [Afterburner](afterburner/) -- 
 * [Blackbird](blackbird/) (NEW in 2.12 -- to eventually replace Afterburner)
-* [Guice](guice/)
+* Guice
+    * "Old" (`javax.inject`) based versions: [Guice](guice/)
+    * New "Jakarta" (`jakarta.inject`) based versions: [Guice 7](guice7/) (added in 2.16)
 * Java XML Binding Annotation compatibility
     * "Old" (`java.xml.bind`) annotations: [JAXB Annotations](jaxb/)
     * New "Jakarta" (`jakarta.xml.bind`): [Jakarta XML Bind Annotations](jakarta-xmlbind/) (added in 2.13)

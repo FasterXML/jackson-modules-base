@@ -11,11 +11,11 @@
         <artifactId>jackson-modules-base</artifactId>
         <version>2.16.0-SNAPSHOT</version>
     </parent>
-    <artifactId>jackson-module-guice</artifactId>
-    <name>Jackson module: Guice (javax.inject)</name>
+    <artifactId>jackson-module-guice7</artifactId>
+    <name>Jackson module: Guice 7+ (jakarta.inject)</name>
     <packaging>bundle</packaging>
 
-    <description>Stuff to make integration with Guice a bit easier</description>
+    <description>Stuff to make integration with Guice 7+ a bit easier</description>
     <url>https://github.com/FasterXML/jackson-modules-base</url>
 
     <licenses>
@@ -27,11 +27,11 @@
     </licenses>
 
     <properties>
-        <version.guice>[4.0,5.0)</version.guice>
+        <version.guice>7.0.0</version.guice>
 
         <!-- Generate PackageVersion.java into this directory. -->
-        <packageVersion.dir>com/fasterxml/jackson/module/guice</packageVersion.dir>
-        <packageVersion.package>${project.groupId}.guice</packageVersion.package>
+        <packageVersion.dir>com/fasterxml/jackson/module/guice7</packageVersion.dir>
+        <packageVersion.package>${project.groupId}.guice7</packageVersion.package>
         <!-- default OSGi imports, exports should work fine -->
     </properties>
 
