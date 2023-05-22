@@ -1,7 +1,10 @@
-package com.fasterxml.jackson.module.guice7;
+package tools.jackson.module.guice7;
 
 import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.databind.introspect.*;
+
+import tools.jackson.databind.cfg.MapperConfig;
+import tools.jackson.databind.introspect.*;
+
 import com.google.inject.BindingAnnotation;
 import com.google.inject.Key;
 
@@ -13,19 +16,13 @@ public class GuiceAnnotationIntrospector extends NopAnnotationIntrospector
 {
     private static final long serialVersionUID = 1L;
 
-    @Override // since 2.9
-    public JacksonInject.Value findInjectableValue(AnnotatedMember m) {
+    @Override
+    public JacksonInject.Value findInjectableValue(MapperConfig<?> config, AnnotatedMember m) {
         Object id = _findGuiceInjectId(m);
         if (id == null) {
             return null;
         }
         return JacksonInject.Value.forId(id);
-    }
-
-    @Deprecated // since 2.9
-    @Override
-    public Object findInjectableValueId(AnnotatedMember m) {
-        return _findGuiceInjectId(m);
     }
 
     private Object _findGuiceInjectId(AnnotatedMember m)

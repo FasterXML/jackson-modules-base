@@ -7,9 +7,9 @@
   <!-- do_not_remove: published-with-gradle-metadata -->
   <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.fasterxml.jackson.module</groupId>
+        <groupId>tools.jackson.module</groupId>
         <artifactId>jackson-modules-base</artifactId>
-        <version>2.16.0-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>jackson-module-guice7</artifactId>
     <name>Jackson module: Guice 7+ (jakarta.inject)</name>
@@ -30,7 +30,7 @@
         <version.guice>7.0.0</version.guice>
 
         <!-- Generate PackageVersion.java into this directory. -->
-        <packageVersion.dir>com/fasterxml/jackson/module/guice7</packageVersion.dir>
+        <packageVersion.dir>tools/jackson/module/guice7</packageVersion.dir>
         <packageVersion.package>${project.groupId}.guice7</packageVersion.package>
         <!-- default OSGi imports, exports should work fine -->
     </properties>
@@ -42,11 +42,11 @@
             <artifactId>jackson-annotations</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>

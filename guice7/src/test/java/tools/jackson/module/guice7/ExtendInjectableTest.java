@@ -1,9 +1,12 @@
-package com.fasterxml.jackson.module.guice7;
+package tools.jackson.module.guice7;
 
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.module.guice7.ObjectMapperModule;
+
 import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -14,8 +17,6 @@ import org.junit.Test;
 
 import jakarta.inject.Inject;
 
-/**
- */
 public class ExtendInjectableTest
 {
     final ConstructorDependency constructorInjected = new ConstructorDependency();

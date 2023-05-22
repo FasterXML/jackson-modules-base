@@ -1,18 +1,17 @@
-package com.fasterxml.jackson.module.guice7;
+package tools.jackson.module.guice7;
 
-import java.io.IOException;
 import java.math.BigInteger;
 
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
 
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.module.SimpleModule;
 
 import com.google.inject.Binder;
 import com.google.inject.Guice;
@@ -210,12 +209,12 @@ public class ObjectMapperModuleTest
 
             addSerializer(
                     Integer.class,
-                    new JsonSerializer<Integer>()
+                    new ValueSerializer<Integer>()
                     {
                         @Override
                         public void serialize(
                                 Integer integer, JsonGenerator jsonGenerator, SerializerProvider serializerProvider
-                        ) throws IOException, JsonProcessingException
+                        ) throws JacksonException
                         {
                             jsonGenerator.writeString(new BigInteger(String.valueOf(integer)).toString(16).toUpperCase());
                         }

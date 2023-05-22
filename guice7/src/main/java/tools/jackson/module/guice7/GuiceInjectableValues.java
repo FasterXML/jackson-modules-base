@@ -1,8 +1,8 @@
-package com.fasterxml.jackson.module.guice7;
+package tools.jackson.module.guice7;
 
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.InjectableValues;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.InjectableValues;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 
@@ -18,5 +18,11 @@ public class GuiceInjectableValues extends InjectableValues
   )
   {
     return injector.getInstance((Key<?>) valueId);
+  }
+
+  @Override
+  public InjectableValues snapshot() {
+      // 22-May-2023, tatu: Not sure if and how this could work really...
+      return this;
   }
 }

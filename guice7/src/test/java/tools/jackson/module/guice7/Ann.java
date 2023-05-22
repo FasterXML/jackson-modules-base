@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.guice7;
+package tools.jackson.module.guice7;
 
 import com.google.inject.BindingAnnotation;
 
