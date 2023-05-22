@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <!-- This module was also published with a richer model, Gradle metadata,  -->
+  <!-- which should be used instead. Do not delete the following line which  -->
+  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+  <!-- that they should prefer consuming it instead. -->
+  <!-- do_not_remove: published-with-gradle-metadata -->
+  <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-modules-base</artifactId>
+        <version>2.16.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>jackson-module-guice7</artifactId>
+    <name>Jackson module: Guice 7+ (jakarta.inject)</name>
+    <packaging>bundle</packaging>
+
+    <description>Stuff to make integration with Guice 7+ a bit easier</description>
+    <url>https://github.com/FasterXML/jackson-modules-base</url>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+        <version.guice>7.0.0</version.guice>
+
+        <!-- Generate PackageVersion.java into this directory. -->
+        <packageVersion.dir>com/fasterxml/jackson/module/guice7</packageVersion.dir>
+        <packageVersion.package>${project.groupId}.guice7</packageVersion.package>
+        <!-- default OSGi imports, exports should work fine -->
+    </properties>
+
+    <dependencies>
+        <!-- Extends Jackson mapper, but also uses types from core, hence direct dep as well -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>${version.guice}</version>
+        </dependency>
+    </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+	<groupId>com.google.code.maven-replacer-plugin</groupId>
+	<artifactId>replacer</artifactId>
+      </plugin>
+      <!--  14-Mar-2019, tatu: Add rudimentary JDK9+ module info. To build with JDK 8
+	    will have to use `moduleInfoFile` as anything else requires JDK 9+
+        -->
+      <plugin>
+        <groupId>org.moditect</groupId>
+	<artifactId>moditect-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
