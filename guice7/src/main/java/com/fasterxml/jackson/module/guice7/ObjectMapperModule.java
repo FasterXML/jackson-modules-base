@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.guice;
+package com.fasterxml.jackson.module.guice7;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;

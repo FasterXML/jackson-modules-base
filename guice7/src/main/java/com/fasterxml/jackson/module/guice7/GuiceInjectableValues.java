@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.guice;
+package com.fasterxml.jackson.module.guice7;
 
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
