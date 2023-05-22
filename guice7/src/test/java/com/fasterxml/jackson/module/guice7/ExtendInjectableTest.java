@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.guice;
+package com.fasterxml.jackson.module.guice7;
 
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
