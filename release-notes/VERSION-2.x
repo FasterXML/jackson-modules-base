@@ -26,7 +26,7 @@ Active maintainers:
 #209: Add guice7 (jakarta.inject) module
  (contributed by Joe B)
 
-2.15.2 (not yet released)
+2.15.2 (30-May-2023)
 
 #207: Mr Bean exposing `Asm` as Maven dependency despite shading
 - (afterburner, mrbean) `org.ow2.asm:asm` updated to 9.5 (from 9.4)
