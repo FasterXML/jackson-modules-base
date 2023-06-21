@@ -23,6 +23,9 @@ Active maintainers:
 
 2.16.0 (not yet released)
 
+#181: BlackBird proxy object error in Java 17
+ (fix by Steven S)
+
 #209: Add guice7 (jakarta.inject) module
  (contributed by Joe B)
 
