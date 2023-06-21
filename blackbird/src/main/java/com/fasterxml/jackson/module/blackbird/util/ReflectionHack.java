@@ -52,7 +52,13 @@ public class ReflectionHack {
         }
 
         public static Lookup privateLookupIn(Class<?> lookup, Lookup orig) {
-            return Unchecked.supplier(() -> (Lookup) FACTORY.invokeExact(lookup, orig)).get();
+            try {
+                return (Lookup) FACTORY.invokeExact(lookup, orig);
+            } catch (ReflectiveOperationException e) {
+                return orig;
+            } catch (Throwable t) {
+                throw Sneaky.throwAnyway(t);
+            }
         }
     }
 
