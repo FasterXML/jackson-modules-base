@@ -1,5 +1,7 @@
 package tools.jackson.module.blackbird;
 
+import java.lang.reflect.Proxy;
+
 import tools.jackson.databind.ObjectMapper;
 
 public class TestAccessFallback extends BlackbirdTestBase
@@ -68,5 +70,20 @@ public class TestAccessFallback extends BlackbirdTestBase
         // actually try again, to ensure handling works reliably
         MyBean bean2 = abMapper.readValue(BEAN_JSON, MyBean.class);
         assertEquals("a", bean2.getE());
+    }
+
+    public void testProxyAccessIssue181() throws Exception {
+        ObjectMapper om = newObjectMapper();
+        String val = om.writeValueAsString(Proxy.newProxyInstance(TestAccessFallback.class.getClassLoader(), new Class<?>[] { Beany.class }, (p, m, a) -> {
+            if (m.getName().equals("getA")) {
+                return 42;
+            }
+            return null;
+        }));
+        assertEquals("{\"a\":42}", val);
+    }
+
+    public interface Beany {
+        int getA();
     }
 }

@@ -81,6 +81,7 @@ Steven Schlansker (stevenschlansker@github)
  (2.12.0)
 * Fixed #141: Blackbird fails to deserialize varargs array
  (2.13.0)
+... and many, many more (esp. to Afterburner/Blackbird projects)
 
 Marc Magon (GedMarc@github)
 
