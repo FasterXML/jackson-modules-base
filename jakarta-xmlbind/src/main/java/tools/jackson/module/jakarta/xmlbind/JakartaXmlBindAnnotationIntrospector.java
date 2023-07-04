@@ -903,6 +903,36 @@ public class JakartaXmlBindAnnotationIntrospector
         return names;
     }
 
+    /**
+     * @see JacksonAnnotationIntrospector#findEnumValues(MapperConfig, AnnotatedClass, Enum[], String[]) 
+     * @since 2.16
+     */
+    @Override
+    public String[] findEnumValues(MapperConfig<?> config, AnnotatedClass annotatedClass,
+                                   Enum<?>[] enumValues, String[] names)
+    {
+        Map<String, String> enumToPropertyMap = new LinkedHashMap<String, String>();
+        for (AnnotatedField field : annotatedClass.fields()) {
+            XmlEnumValue property = field.getAnnotation(XmlEnumValue.class);
+            if (property != null) {
+                String propValue = property.value();
+                if (propValue != null && !propValue.isEmpty()) {
+                    enumToPropertyMap.put(field.getName(), propValue);
+                }
+            }
+        }
+
+        // and then stitch them together if and as necessary
+        for (int i = 0, end = enumValues.length; i < end; ++i) {
+            String defName = enumValues[i].name();
+            String explValue = enumToPropertyMap.get(defName);
+            if (explValue != null) {
+                names[i] = explValue;
+            }
+        }
+        return names;
+    }
+    
     /*
     /**********************************************************************
     /* Deserialization: general annotations
