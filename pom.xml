@@ -96,6 +96,17 @@ not datatype, data format, or JAX-RS provider modules.
   <build>
     <pluginManagement>
       <plugins>
+	<!-- 12-Jul-2023, tatu: Temporary workaround for
+
+          https://github.com/FasterXML/jackson-modules-base/issues/214
+        -->
+
+        <plugin>
+          <groupId>org.moditect</groupId>
+          <artifactId>moditect-maven-plugin</artifactId>
+          <version>1.0.0.RC1</version>
+        </plugin>
+
 	<plugin>
 	  <!-- Inherited from oss-base. Generate PackageVersion.java.-->
           <groupId>com.google.code.maven-replacer-plugin</groupId>
