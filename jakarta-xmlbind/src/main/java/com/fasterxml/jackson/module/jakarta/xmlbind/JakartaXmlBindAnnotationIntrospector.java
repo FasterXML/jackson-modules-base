@@ -918,6 +918,7 @@ public class JakartaXmlBindAnnotationIntrospector
     }
     */
 
+    @Deprecated // since 2.16
     @Override // since 2.7
     public String[] findEnumValues(Class<?> enumType, Enum<?>[] enumValues, String[] names) {
         HashMap<String,String> expl = null;
@@ -957,7 +958,7 @@ public class JakartaXmlBindAnnotationIntrospector
      */
     @Override
     public String[] findEnumValues(MapperConfig<?> config, AnnotatedClass annotatedClass,
-                                   Enum<?>[] enumValues, String[] names)
+            Enum<?>[] enumValues, String[] names)
     {
         Map<String, String> enumToPropertyMap = new LinkedHashMap<String, String>();
         for (AnnotatedField field : annotatedClass.fields()) {

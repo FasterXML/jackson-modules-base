@@ -60,6 +60,7 @@ public class DataHandlerSerializer extends StdSerializer<DataHandler>
         }
     }
 
+    @Deprecated // since 2.15
     @Override
     public JsonNode getSchema(SerializerProvider provider, Type typeHint)
     {
