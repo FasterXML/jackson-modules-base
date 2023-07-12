@@ -869,47 +869,13 @@ public class JaxbAnnotationIntrospector
     }
     */
 
-    @Override
-    public String[] findEnumValues(MapperConfig<?> config, 
-            Class<?> enumType, Enum<?>[] enumValues, String[] names) {
-        HashMap<String,String> expl = null;
-        for (Field f : enumType.getDeclaredFields()) {
-            if (!f.isEnumConstant()) {
-                continue;
-            }
-            XmlEnumValue enumValue = f.getAnnotation(XmlEnumValue.class);
-            if (enumValue == null) {
-                continue;
-            }
-            String n = enumValue.value();
-            if (n.isEmpty()) {
-                continue;
-            }
-            if (expl == null) {
-                expl = new HashMap<String,String>();
-            }
-            expl.put(f.getName(), n);
-        }
-        // and then stitch them together if and as necessary
-        if (expl != null) {
-            for (int i = 0, end = enumValues.length; i < end; ++i) {
-                String defName = enumValues[i].name();
-                String explValue = expl.get(defName);
-                if (explValue != null) {
-                    names[i] = explValue;
-                }
-            }
-        }
-        return names;
-    }
-
     /**
      * @see JacksonAnnotationIntrospector#findEnumValues(MapperConfig, AnnotatedClass, Enum[], String[])
      * @since 2.16
      */
     @Override
     public String[] findEnumValues(MapperConfig<?> config, AnnotatedClass annotatedClass,
-                                   Enum<?>[] enumValues, String[] names)
+            Enum<?>[] enumValues, String[] names)
     {
         Map<String, String> enumToPropertyMap = new LinkedHashMap<String, String>();
         for (AnnotatedField field : annotatedClass.fields()) {
