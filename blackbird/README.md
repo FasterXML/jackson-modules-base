@@ -17,6 +17,13 @@ implementations, we can write needed adapters as simple Java code and use the me
 to create distinct call sites for every needed access path.  This should allow each accessor to
 have a monomorphic call profile and easily inline for maximum performance.
 
+> **Warning**
+> The Java implementation of lambdas associates each generated lambda object strongly with the
+> ClassLoader of the target class. This means that each Blackbird instance will add dynamic accessors
+> to your classes that cannot be unloaded until the entire ClassLoader is garbage collected.
+> Therefore, Blackbird is not appropriate if you instantiate many ObjectMappers, since 
+> you will eventually run out of class space and OOM.
+
 ## Status
 
 Blackbird is new and not as mature as Afterburner, but has been tested and runs well.
