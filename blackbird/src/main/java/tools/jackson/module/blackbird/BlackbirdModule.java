@@ -12,6 +12,8 @@ import tools.jackson.module.blackbird.ser.BBSerializerModifier;
 
 public class BlackbirdModule extends JacksonModule
 {
+    // TODO: replace with jackson-databind/NativeImageUtil.RUNNING_IN_SVM
+    private static final boolean RUNNING_IN_SVM = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
     private Function<Class<?>, Lookup> _lookups;
 
     public BlackbirdModule() {
@@ -35,6 +37,10 @@ public class BlackbirdModule extends JacksonModule
     @Override
     public void setupModule(SetupContext context)
     {
+        if (RUNNING_IN_SVM)
+        {
+            return;
+        }
         CrossLoaderAccess openSesame = new CrossLoaderAccess();
         context.addDeserializerModifier(new BBDeserializerModifier(_lookups, openSesame));
         context.addSerializerModifier(new BBSerializerModifier(_lookups, openSesame));

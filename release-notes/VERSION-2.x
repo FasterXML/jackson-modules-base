@@ -23,7 +23,9 @@ Active maintainers:
 
 2.16.0 (not yet released)
 
-#181: BlackBird proxy object error in Java 17
+#181: (blackbird) BlackBird proxy object error in Java 17
+ (fix by Steven S)
+#216: (blackbird, afterburner): Disable in native-image
  (fix by Steven S)
 
 #209: Add guice7 (jakarta.inject) module

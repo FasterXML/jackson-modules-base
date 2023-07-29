@@ -10,6 +10,8 @@ import tools.jackson.module.afterburner.ser.ABSerializerModifier;
 public class AfterburnerModule extends JacksonModule
     implements java.io.Serializable
 {
+    // TODO: replace with jackson-databind/NativeImageUtil.RUNNING_IN_SVM
+    private static final boolean RUNNING_IN_SVM = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
     private static final long serialVersionUID = 1L;
 
     /*
@@ -51,6 +53,10 @@ public class AfterburnerModule extends JacksonModule
     @Override
     public void setupModule(SetupContext context)
     {
+        if (RUNNING_IN_SVM)
+        {
+            return;
+        }
         ClassLoader cl = _cfgUseValueClassLoader ? null : getClass().getClassLoader();
         context.addDeserializerModifier(new ABDeserializerModifier(cl,
                 _cfgUseOptimizedBeanDeserializer));
