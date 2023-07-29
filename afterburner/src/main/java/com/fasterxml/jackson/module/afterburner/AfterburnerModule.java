@@ -8,6 +8,8 @@ import com.fasterxml.jackson.module.afterburner.deser.DeserializerModifier;
 public class AfterburnerModule extends Module
     implements java.io.Serializable // is this necessary?
 {
+    // TODO: replace with jackson-databind/NativeImageUtil.RUNNING_IN_SVM
+    private static final boolean RUNNING_IN_SVM = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
     private static final long serialVersionUID = 1L;
 
     /*
@@ -49,6 +51,10 @@ public class AfterburnerModule extends Module
     @Override
     public void setupModule(SetupContext context)
     {
+        if (RUNNING_IN_SVM)
+        {
+            return;
+        }
         ClassLoader cl = _cfgUseValueClassLoader ? null : getClass().getClassLoader();
         context.addBeanDeserializerModifier(new DeserializerModifier(cl,
                 _cfgUseOptimizedBeanDeserializer));
