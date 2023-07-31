@@ -2,14 +2,20 @@ package com.fasterxml.jackson.module.afterburner;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.util.NativeImageUtil;
 import com.fasterxml.jackson.module.afterburner.ser.SerializerModifier;
 import com.fasterxml.jackson.module.afterburner.deser.DeserializerModifier;
 
 public class AfterburnerModule extends Module
     implements java.io.Serializable // is this necessary?
 {
-    // TODO: replace with jackson-databind/NativeImageUtil.RUNNING_IN_SVM
-    private static final boolean RUNNING_IN_SVM = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
+    /**
+     * <a href="https://github.com/FasterXML/jackson-modules-base/issues/191">[modules-base#191] Native image detection</a>
+     * 
+     * @since 2.16
+     */
+    private static final boolean RUNNING_IN_SVM = NativeImageUtil.isRunningInNativeImage();
+    
     private static final long serialVersionUID = 1L;
 
     /*
