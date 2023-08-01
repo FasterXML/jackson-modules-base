@@ -13,13 +13,6 @@ import com.fasterxml.jackson.module.blackbird.ser.BBSerializerModifier;
 
 public class BlackbirdModule extends Module
 {
-    /**
-     * <a href="https://github.com/FasterXML/jackson-modules-base/issues/191">[modules-base#191] Native image detection</a>
-     * 
-     * @since 2.16
-     */
-    private static final boolean RUNNING_IN_SVM = NativeImageUtil.isRunningInNativeImage();
-    
     private Function<Class<?>, Lookup> _lookups;
 
     public BlackbirdModule() {
@@ -43,7 +36,8 @@ public class BlackbirdModule extends Module
     @Override
     public void setupModule(SetupContext context)
     {
-        if (RUNNING_IN_SVM)
+        // [modules-base#191] Since 2.16, Native image detection 
+        if (NativeImageUtil.isRunningInNativeImage())
         {
             return;
         }

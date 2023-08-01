@@ -9,13 +9,6 @@ import com.fasterxml.jackson.module.afterburner.deser.DeserializerModifier;
 public class AfterburnerModule extends Module
     implements java.io.Serializable // is this necessary?
 {
-    /**
-     * <a href="https://github.com/FasterXML/jackson-modules-base/issues/191">[modules-base#191] Native image detection</a>
-     * 
-     * @since 2.16
-     */
-    private static final boolean RUNNING_IN_SVM = NativeImageUtil.isRunningInNativeImage();
-    
     private static final long serialVersionUID = 1L;
 
     /*
@@ -57,7 +50,8 @@ public class AfterburnerModule extends Module
     @Override
     public void setupModule(SetupContext context)
     {
-        if (RUNNING_IN_SVM)
+        // [modules-base#191] Since 2.16, Native image detection 
+        if (NativeImageUtil.isRunningInNativeImage())
         {
             return;
         }
