@@ -37,7 +37,7 @@ public class BlackbirdModule extends Module
     public void setupModule(SetupContext context)
     {
         // [modules-base#191] Since 2.16, Native image detection 
-        if (NativeImageUtil.isRunningInNativeImage())
+        if (NativeImageUtil.isInSVM())
         {
             return;
         }
