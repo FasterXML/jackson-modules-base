@@ -1,5 +1,6 @@
 package com.fasterxml.jackson.module.blackbird;
 
+import com.fasterxml.jackson.databind.util.NativeImageUtil;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.util.function.Function;
@@ -12,8 +13,6 @@ import com.fasterxml.jackson.module.blackbird.ser.BBSerializerModifier;
 
 public class BlackbirdModule extends Module
 {
-    // TODO: replace with jackson-databind/NativeImageUtil.RUNNING_IN_SVM
-    private static final boolean RUNNING_IN_SVM = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
     private Function<Class<?>, Lookup> _lookups;
 
     public BlackbirdModule() {
@@ -37,7 +36,8 @@ public class BlackbirdModule extends Module
     @Override
     public void setupModule(SetupContext context)
     {
-        if (RUNNING_IN_SVM)
+        // [modules-base#191] Since 2.16, Native image detection 
+        if (NativeImageUtil.isInNativeImage())
         {
             return;
         }
