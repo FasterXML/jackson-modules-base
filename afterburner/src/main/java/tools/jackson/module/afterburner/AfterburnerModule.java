@@ -1,8 +1,8 @@
 package tools.jackson.module.afterburner;
 
 import tools.jackson.core.Version;
-
 import tools.jackson.databind.JacksonModule;
+import tools.jackson.databind.util.NativeImageUtil;
 
 import tools.jackson.module.afterburner.deser.ABDeserializerModifier;
 import tools.jackson.module.afterburner.ser.ABSerializerModifier;
@@ -10,8 +10,6 @@ import tools.jackson.module.afterburner.ser.ABSerializerModifier;
 public class AfterburnerModule extends JacksonModule
     implements java.io.Serializable
 {
-    // TODO: replace with jackson-databind/NativeImageUtil.RUNNING_IN_SVM
-    private static final boolean RUNNING_IN_SVM = System.getProperty("org.graalvm.nativeimage.imagecode") != null;
     private static final long serialVersionUID = 1L;
 
     /*
@@ -53,7 +51,8 @@ public class AfterburnerModule extends JacksonModule
     @Override
     public void setupModule(SetupContext context)
     {
-        if (RUNNING_IN_SVM)
+        // [modules-base#191] Since 2.16, Native image detection 
+        if (NativeImageUtil.isInNativeImage())
         {
             return;
         }
