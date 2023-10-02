@@ -27,6 +27,7 @@ Active maintainers:
  (fix by Steven S)
 #216: (blackbird, afterburner): Disable in native-image
  (fix by Steven S)
+- Update `asm` version 9.5 -> 9.6
 
 #209: Add guice7 (jakarta.inject) module
  (contributed by Joe B)
