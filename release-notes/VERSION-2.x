@@ -27,6 +27,9 @@ Active maintainers:
  (fix by Steven S)
 #216: (blackbird, afterburner): Disable in native-image
  (fix by Steven S)
+#219: (jakarta-xmlbind) Using `jackson-module-jakarta-xmlbind-annotations`
+  2.15.2 fails in OSGi Environment with JAXB 4
+ (fix contributed by Marco D)
 - Update `asm` version 9.5 -> 9.6
 
 #209: Add guice7 (jakarta.inject) module
