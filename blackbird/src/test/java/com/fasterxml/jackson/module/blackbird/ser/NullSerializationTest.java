@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.cfg.CacheProvider;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import com.fasterxml.jackson.databind.ser.SerializerFactory;
@@ -44,6 +45,11 @@ public class NullSerializationTest extends BlackbirdTestBase
         @Override
         public DefaultSerializerProvider copy() {
             return this;
+        }
+
+        @Override // @since 2.16
+        public DefaultSerializerProvider withCaches(CacheProvider cacheProvider) {
+            throw new UnsupportedOperationException("No cache configuration supported");
         }
         
         @Override
