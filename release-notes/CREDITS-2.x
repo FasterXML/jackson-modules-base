@@ -128,3 +128,9 @@ René Scheibe (darxriggs@github)
 * Suggested #187: Remove stack trace from Blackbirds warnings wrt missing `MethodHandles.lookup()`
   (on Java 8)
  (2.14.0)
+
+Marco Descher (@col-panic)
+
+* Contributed fix for #219: (jakarta-xmlbind) Using `jackson-module-jakarta-xmlbind-annotations`
+  2.15.2 fails in OSGi Environment with JAXB 4
+ (2.16.0)

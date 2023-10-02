@@ -33,9 +33,15 @@
     <packageVersion.dir>com/fasterxml/jackson/module/jakarta/xmlbind</packageVersion.dir>
     <packageVersion.package>${project.groupId}.jakarta.xmlbind</packageVersion.package>
     <!-- 22-Mar-2019, tatu: [modules-base#80]: Presence of JAF on the bundle classpath is only necessary
-           when ser/deser'ing javax.a.DataHandlers
+           when ser/deser'ing javax.activation.DataHandlers
       -->
-    <osgi.import>javax.activation;resolution:=optional,*</osgi.import>
+    <!-- 02-Oct-2023, tatu: [modules-base#219]: Need to relax constraints for bind-annotations
+      -->
+    <osgi.import>javax.activation;resolution:=optional,
+      jakarta.xml.bind;version="[3.0,4.0.100)",
+      jakarta.xml.bind.*;version="[3.0,4.0.100)",
+      *
+    </osgi.import>
 
     <version.xmlbind.api>3.0.1</version.xmlbind.api>
   </properties>
