@@ -20,6 +20,10 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.15.3 (12-Oct-2023)
+
+No changes since 2.15.2
+
 2.15.2 (30-May-2023)
 
 #207: Mr Bean exposing `Asm` as Maven dependency despite shading
