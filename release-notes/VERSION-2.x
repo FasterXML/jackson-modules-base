@@ -25,6 +25,8 @@ Active maintainers:
 
 #181: (blackbird) BlackBird proxy object error in Java 17
  (fix by Steven S)
+#209: Add guice7 (jakarta.inject) module
+ (contributed by Joe B)
 #216: (blackbird, afterburner): Disable in native-image
  (fix by Steven S)
 #219: (jakarta-xmlbind) Using `jackson-module-jakarta-xmlbind-annotations`
@@ -32,8 +34,9 @@ Active maintainers:
  (fix contributed by Marco D)
 - Update `asm` version 9.5 -> 9.6
 
-#209: Add guice7 (jakarta.inject) module
- (contributed by Joe B)
+2.15.3 (12-Oct-2023)
+
+No changes since 2.15.2
 
 2.15.2 (30-May-2023)
 
