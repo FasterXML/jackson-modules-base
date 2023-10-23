@@ -6,8 +6,7 @@ import tools.jackson.module.afterburner.AfterburnerTestBase;
 // for [modules-base#30]
 public class DefaultMethodsTest extends AfterburnerTestBase
 {
-    // NOTE: can only be enabled for Jackson 3.x
-    /*
+    // With Java 8 can use this:
     public interface Typed {
         default String getType() {
             return "bogus";
@@ -24,22 +23,6 @@ public class DefaultMethodsTest extends AfterburnerTestBase
         public void internalSet(String value) {
             x = value;
         }
-    }
-    */
-
-    // for Jackson 2.x:
-    public interface Typed {
-        public String getType();
-        public void setType(String t);
-    }
-
-    static class Model implements Typed {
-        String x;
-
-        @Override
-        public String getType() { return "bogus"; }
-        @Override
-        public void setType(String t) { x = t; }
     }
 
     /*
