@@ -6,8 +6,6 @@ import tools.jackson.module.blackbird.BlackbirdTestBase;
 // for [modules-base#30]
 public class DefaultMethodsTest extends BlackbirdTestBase
 {
-    // NOTE: can only be enabled for Jackson 3.x
-    /*
     public interface Typed {
         default String getType() {
             return "bogus";
@@ -24,22 +22,6 @@ public class DefaultMethodsTest extends BlackbirdTestBase
         public void internalSet(String value) {
             x = value;
         }
-    }
-    */
-
-    // for Jackson 2.x:
-    public interface Typed {
-        public String getType();
-        public void setType(String t);
-    }
-
-    static class Model implements Typed {
-        String x;
-
-        @Override
-        public String getType() { return "bogus"; }
-        @Override
-        public void setType(String t) { x = t; }
     }
 
     /*
