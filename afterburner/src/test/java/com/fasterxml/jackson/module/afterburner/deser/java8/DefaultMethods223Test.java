@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.afterburner.failing;
+package com.fasterxml.jackson.module.afterburner.deser.java8;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
