@@ -58,7 +58,7 @@ not datatype, data format, or JAX-RS provider modules.
     <!-- 17-Oct-2017, tatu: MrBean and Afterburner will use Byte Buddy instead of raw ASM
           starting with 3.0
       -->
-    <version.bytebuddy>1.14.8</version.bytebuddy>
+    <version.bytebuddy>1.14.9</version.bytebuddy>
   </properties>
 
   <dependencyManagement>
@@ -124,7 +124,7 @@ not datatype, data format, or JAX-RS provider modules.
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
             <excludes>
-              <exclude>tools/jackson/**/failing/*.java</exclude>
+              <exclude>tools/jackson/module/**/failing/*.java</exclude>
             </excludes>
           </configuration>
 	</plugin>
