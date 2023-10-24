@@ -293,7 +293,7 @@ public class PropertyMutatorCollector
         // to fix [Issue-5] (don't assume return type is 'void'), we need to:
         Type returnType = Type.getType(method.getReturnType());
 
-        boolean isInterface = method.getDeclaringClass().isInterface();
+        boolean isInterface = isInterfaceMethod(method);
         mv.visitMethodInsn(isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
                 beanClassName, method.getName(), "("+type+")"+returnType, isInterface);
         mv.visitInsn(RETURN);
@@ -318,7 +318,7 @@ public class PropertyMutatorCollector
             if (mustCast) {
                 mv.visitTypeInsn(CHECKCAST, type.getInternalName());
             }
-            isInterface = method.getDeclaringClass().isInterface();
+            isInterface = isInterfaceMethod(method);
             mv.visitMethodInsn(isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
                     beanClassName, method.getName(), "("+type+")"+returnType, isInterface);
             mv.visitInsn(RETURN);
@@ -348,7 +348,7 @@ public class PropertyMutatorCollector
             if (mustCast) {
                 mv.visitTypeInsn(CHECKCAST, type.getInternalName());
             }
-            boolean isInterface = method.getDeclaringClass().isInterface();
+            boolean isInterface = isInterfaceMethod(method);
             mv.visitMethodInsn(isInterface ? INVOKEINTERFACE : INVOKEVIRTUAL,
                     beanClassName, method.getName(), "("+type+")"+returnType, isInterface);
             mv.visitInsn(RETURN);
