@@ -24,6 +24,7 @@ not datatype, data format, or JAX-RS provider modules.
 
   <modules>
     <module>afterburner</module>
+    <module>android-record</module>
     <module>blackbird</module>
     <module>guice</module>
     <module>guice7</module>
