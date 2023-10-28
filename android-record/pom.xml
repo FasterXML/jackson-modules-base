@@ -35,6 +35,10 @@
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
     </dependencies>
@@ -56,6 +60,19 @@
             <plugin>
                 <groupId>org.moditect</groupId>
                 <artifactId>moditect-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>animal-sniffer-maven-plugin</artifactId>
+              <version>${version.plugin.animal-sniffer}</version>
+              <configuration>
+                <signature>
+                  <groupId>com.toasttab.android</groupId>
+                  <artifactId>gummy-bears-api-${version.android.sdk}</artifactId>
+                  <version>${version.android.sdk.signature}</version>
+                </signature>
+              </configuration>
             </plugin>
         </plugins>
     </build>

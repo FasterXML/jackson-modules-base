@@ -55,6 +55,10 @@ not datatype, data format, or JAX-RS provider modules.
     <!-- 20-May-2023, tatu: 9.4 -> 9.5 for Jackson 2.15.2 -->
     <!-- 02-Oct-2023, tatu: 9.5 -> 9.6 for Jackson 2.16 -->
     <version.asm>9.6</version.asm>
+
+    <version.android.sdk>26</version.android.sdk>
+    <version.android.sdk.signature>0.5.1</version.android.sdk.signature>
+    <version.plugin.animal-sniffer>1.23</version.plugin.animal-sniffer>
   </properties>
 
   <dependencyManagement>
