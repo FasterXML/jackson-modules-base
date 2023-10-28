@@ -7,7 +7,7 @@ import java.io.InputStream;
 import javax.activation.DataHandler;
 
 import tools.jackson.core.*;
-import tools.jackson.core.exc.WrappedIOException;
+import tools.jackson.core.exc.JacksonIOException;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.SerializerProvider;
 import tools.jackson.databind.ser.std.StdSerializer;
@@ -41,7 +41,7 @@ public class DataHandlerSerializer extends StdSerializer<DataHandler>
                 len = in.read(buffer);
             }
         } catch (IOException e) {
-            throw WrappedIOException.construct(e);
+            throw JacksonIOException.construct(e);
         }
         g.writeBinary(out.toByteArray());
     }
