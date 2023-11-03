@@ -1,23 +1,35 @@
 package com.fasterxml.jackson.module.androidrecord;
 
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.PropertyName;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.deser.CreatorProperty;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.deser.ValueInstantiator;
 import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
+import com.fasterxml.jackson.databind.introspect.AccessorNamingStrategy;
+import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedConstructor;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
+import com.fasterxml.jackson.databind.introspect.AnnotatedParameter;
+import com.fasterxml.jackson.databind.introspect.BasicClassIntrospector;
+import com.fasterxml.jackson.databind.introspect.DefaultAccessorNamingStrategy;
+import com.fasterxml.jackson.databind.introspect.POJOPropertiesCollector;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.util.ClassUtil;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -38,32 +50,85 @@ import java.util.stream.Stream;
  * so it is safe to use in code shared between Android and non-Android platforms.
  *
  * <p>
- * Note: The canonical record constructor is found
- * through matching of parameter types with field types.
+ * Note: the canonical record constructor is found
+ * through matching of parameter names and types with fields.
  * Therefore, this module doesn't allow a deserialized desugared record class to have a custom
- * constructor with a signature that's any permutation of the canonical one's.
+ * constructor with the same set of parameter names and types as the canonical one.
  *
  * @author Eran Leshem
  **/
 public class AndroidRecordModule extends SimpleModule {
+  private static final class AndroidRecordNaming
+      extends DefaultAccessorNamingStrategy
+  {
+      /**
+       * Names of actual Record components from definition; auto-detected.
+       */
+      private final Set<String> _componentNames;
+
+      private AndroidRecordNaming(MapperConfig<?> config, AnnotatedClass forClass) {
+          super(config, forClass,
+                  // no setters for (immutable) Records:
+                  null,
+                  // trickier: regular fields are ok (handled differently), but should
+                  // we also allow getter discovery? For now let's do so
+                  "get", "is", null);
+          _componentNames = getDesugaredRecordComponents(forClass.getRawType()).map(Field::getName)
+                  .collect(Collectors.toSet());
+      }
+
+      @Override
+      public String findNameForRegularGetter(AnnotatedMethod am, String name)
+      {
+          // By default, field names are un-prefixed, but verify so that we will not
+          // include "toString()" or additional custom methods (unless latter are
+          // annotated for inclusion)
+          if (_componentNames.contains(name)) {
+              return name;
+          }
+          // but also allow auto-detecting additional getters, if any?
+          return super.findNameForRegularGetter(am, name);
+      }
+  }
+
+  private static class AndroidRecordClassIntrospector extends BasicClassIntrospector {
+    @Override
+    protected POJOPropertiesCollector collectProperties(MapperConfig<?> config, JavaType type, MixInResolver r,
+                                                        boolean forSerialization) {
+      if (isDesugaredRecordClass(type.getRawClass())) {
+        AnnotatedClass classDef = _resolveAnnotatedClass(config, type, r);
+        AccessorNamingStrategy accNaming = new AndroidRecordNaming(config, classDef);
+        return constructPropertyCollector(config, classDef, type, forSerialization, accNaming);
+      }
+
+      return super.collectProperties(config, type, r, forSerialization);
+    }
+  }
+
   @Override
   public void setupModule(SetupContext context) {
     super.setupModule(context);
     context.addValueInstantiators(AndroidRecordModule::findValueInstantiator);
+    context.setClassIntrospector(new AndroidRecordClassIntrospector());
+  }
+
+  static boolean isDesugaredRecordClass(Class<?> raw) {
+    return raw.getSuperclass() != null && raw.getSuperclass().getName().equals("com.android.tools.r8.RecordTag");
   }
 
   private static ValueInstantiator findValueInstantiator(DeserializationConfig config, BeanDescription beanDesc,
                                                          ValueInstantiator defaultInstantiator) {
     Class<?> raw = beanDesc.getType().getRawClass();
-    if (defaultInstantiator instanceof StdValueInstantiator && raw.getSuperclass() != null
-            && raw.getSuperclass().getName().equals("com.android.tools.r8.RecordTag")) {
-      Map<Type, Integer> componentTypes = typeMap(Arrays.stream(raw.getDeclaredFields())
-              .filter(field -> !Modifier.isStatic(field.getModifiers())).map(Field::getGenericType));
+    if (! defaultInstantiator.canCreateFromObjectWith() && defaultInstantiator instanceof StdValueInstantiator
+            && isDesugaredRecordClass(raw)) {
+      Map<String, Type> components = getDesugaredRecordComponents(raw)
+              .collect(Collectors.toMap(Field::getName, Field::getGenericType));
       boolean found = false;
-      for (Constructor<?> constructor: raw.getDeclaredConstructors()) {
-        Parameter[] parameters = constructor.getParameters();
-        Map<Type, Integer> parameterTypes = typeMap(Arrays.stream(parameters).map(Parameter::getParameterizedType));
-        if (! parameterTypes.equals(componentTypes)) {
+      for (AnnotatedConstructor constructor: beanDesc.getConstructors()) {
+        Parameter[] parameters = constructor.getAnnotated().getParameters();
+        Map<String, Type> parameterTypes = Arrays.stream(parameters)
+                .collect(Collectors.toMap(Parameter::getName, Parameter::getParameterizedType));
+        if (! parameterTypes.equals(components)) {
           continue;
         }
 
@@ -72,16 +137,23 @@ public class AndroidRecordModule extends SimpleModule {
                           "Multiple constructors match set of components for record %s", raw.getName()));
         }
 
+        AnnotationIntrospector intro = config.getAnnotationIntrospector();
         SettableBeanProperty[] properties = new SettableBeanProperty[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
-          Parameter parameter = parameters[i];
-          properties[i] = CreatorProperty.construct(PropertyName.construct(parameter.getName()), config.getTypeFactory()
-                          .constructType(parameter.getParameterizedType()), null, null, null, null, i, null, null);
+          AnnotatedParameter parameter = constructor.getParameter(i);
+          JacksonInject.Value injectable = intro.findInjectableValue(parameter);
+          PropertyName name = intro.findNameForDeserialization(parameter);
+          if (name == null || name.isEmpty()) {
+              name = PropertyName.construct(parameters[i].getName());
+          }
+
+          properties[i] = CreatorProperty.construct(name, parameter.getType(),
+                  null, null, parameter.getAllAnnotations(), parameter, i, injectable, null);
         }
 
         ((StdValueInstantiator) defaultInstantiator).configureFromObjectSettings(null, null, null, null,
-                           new AnnotatedConstructor(null, constructor, null, null), properties);
-        constructor.setAccessible(true);
+                constructor, properties);
+        ClassUtil.checkAndFixAccess(constructor.getAnnotated(), false);
         found = true;
       }
     }
@@ -89,7 +161,7 @@ public class AndroidRecordModule extends SimpleModule {
     return defaultInstantiator;
   }
 
-  private static Map<Type, Integer> typeMap(Stream<? extends Type> typeStream) {
-    return typeStream.collect(HashMap::new, (map, type) -> map.merge(type, 1, Integer::sum), Map::putAll);
+  private static Stream<Field> getDesugaredRecordComponents(Class<?> raw) {
+    return Arrays.stream(raw.getDeclaredFields()).filter(field -> ! Modifier.isStatic(field.getModifiers()));
   }
 }

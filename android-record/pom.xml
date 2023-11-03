@@ -37,6 +37,10 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
+      <dependency>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+      </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -45,6 +49,19 @@
 
     <build>
         <plugins>
+          <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-compiler-plugin</artifactId>
+               <inherited>true</inherited>
+               <configuration>
+                 <compilerArgs>
+                   <arg>-parameters</arg>
+                 </compilerArgs>
+                 <fork>true</fork>
+                 <useIncrementalCompilation>true</useIncrementalCompilation>
+               </configuration>
+           </plugin>
+
             <plugin>
                 <!-- Inherited from oss-base. Generate PackageVersion.java.-->
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
