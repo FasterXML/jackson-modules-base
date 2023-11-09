@@ -34,10 +34,8 @@ import java.util.stream.Stream;
 
 
 /**
- * Module that allows deserialization into records
- * using the canonical constructor on Android,
- * where java records are supported through desugaring,
- * and Jackson's built-in support for records doesn't work,
+ * Module that allows (de)serialization of records using the canonical constructor and accessors on Android,
+ * where java records are supported through desugaring, and Jackson's built-in support for records doesn't work,
  * since the desugared classes have a non-standard super class,
  * and record component-related reflection methods are missing.
  *
@@ -46,14 +44,17 @@ import java.util.stream.Stream;
  *   Android Developers Blog article</a>
  *
  * <p>
- * Note: this module is a no-op when no Android-desugared records are being deserialized,
+ * An attempt was made to make this module as consistent with Jackson's built-in support for records as possible,
+ * but gaps exist when using some of Jackson's advanced mapping features.
+ *
+ * <p>
+ * Note: this module is a no-op when no Android-desugared records are being (de)serialized,
  * so it is safe to use in code shared between Android and non-Android platforms.
  *
  * <p>
- * Note: the canonical record constructor is found
- * through matching of parameter names and types with fields.
- * Therefore, this module doesn't allow a deserialized desugared record class to have a custom
- * constructor with the same set of parameter names and types as the canonical one.
+ * Note: the canonical record constructor is found through matching of parameter names and types with fields.
+ * Therefore, this module doesn't allow a deserialized desugared record to have a custom constructor
+ * with the same set of parameter names and types as the canonical one.
  *
  * @author Eran Leshem
  **/
@@ -70,8 +71,6 @@ public class AndroidRecordModule extends SimpleModule {
           super(config, forClass,
                   // no setters for (immutable) Records:
                   null,
-                  // trickier: regular fields are ok (handled differently), but should
-                  // we also allow getter discovery? For now let's do so
                   "get", "is", null);
           _componentNames = getDesugaredRecordComponents(forClass.getRawType()).map(Field::getName)
                   .collect(Collectors.toSet());

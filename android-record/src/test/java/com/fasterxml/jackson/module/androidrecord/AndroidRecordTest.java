@@ -74,18 +74,26 @@ public class AndroidRecordTest extends TestCase {
 
   private static final class MultipleConstructors extends RecordTag {
     private final int i;
+    private final List<String> l;
 
-    private MultipleConstructors(int i) {
+    private MultipleConstructors(int i, List<String> l) {
       this.i = i;
+      this.l = l;
     }
 
-    private MultipleConstructors(String s) {
+    private MultipleConstructors(String s, List<String> l) {
       i = Integer.parseInt(s);
+      this.l = l;
     }
 
-
-    private MultipleConstructors(int i, String s) {
+    private MultipleConstructors(int i, String s, List<String> l) {
       this.i = i;
+      this.l = l;
+    }
+
+    private MultipleConstructors(List<Integer> l, int i) {
+      this.i = i;
+      this.l = null;
     }
 
     int i() {
@@ -128,12 +136,15 @@ public class AndroidRecordTest extends TestCase {
   }
 
   public void testMultipleConstructors() throws JsonProcessingException {
-    assertEquals(9, _objectMapper.readValue(_objectMapper.writeValueAsString(new MultipleConstructors(9)),
+    List<String> l = Arrays.asList("bar", "baz");
+    assertEquals(9, _objectMapper.readValue(_objectMapper.writeValueAsString(new MultipleConstructors(9, l)),
                                         MultipleConstructors.class).i());
     assertEquals(9, _objectMapper.readValue(_objectMapper.writeValueAsString(
-                    new MultipleConstructors("9")), MultipleConstructors.class).i());
+                    new MultipleConstructors("9", l)), MultipleConstructors.class).i());
     assertEquals(9, _objectMapper.readValue(_objectMapper.writeValueAsString(
-                    new MultipleConstructors(9,"foobar")), MultipleConstructors.class).i());
+                    new MultipleConstructors(9,"foobar", l)), MultipleConstructors.class).i());
+    assertEquals(9, _objectMapper.readValue(_objectMapper.writeValueAsString(
+                    new MultipleConstructors(Arrays.asList(1, 2), 9)), MultipleConstructors.class).i());
   }
 
   public void testConflictingConstructors() {
