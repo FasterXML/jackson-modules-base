@@ -95,7 +95,9 @@ public class RecordBasicsFailingTest extends BaseMapTest
     }
   }
 
-  private final ObjectMapper MAPPER = newJsonMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+  private final ObjectMapper MAPPER = jsonMapperBuilder()
+          .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+          .build();
 
     /*
     /**********************************************************************
@@ -119,10 +121,12 @@ public class RecordBasicsFailingTest extends BaseMapTest
      * @see #testDeserializeConstructorInjectRecord()
      */
     public void testDeserializeHeaderInjectRecord_WillFail() throws Exception {
-        MAPPER.setInjectableValues(new InjectableValues.Std().addValue(String.class, "Bob"));
+        ObjectMapper mapper = jsonMapperBuilder().
+                injectableValues(new InjectableValues.Std().addValue(String.class, "Bob"))
+                .build();
 
         try {
-            MAPPER.readValue("{\"id\":123}", RecordWithHeaderInject.class);
+            mapper.readValue("{\"id\":123}", RecordWithHeaderInject.class);
 
             fail("should not pass");
         } catch (IllegalArgumentException e) {

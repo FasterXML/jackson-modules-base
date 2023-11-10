@@ -14,7 +14,6 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.databind.json.JsonMapper;
 import junit.framework.TestCase;
-import tools.jackson.module.androidrecord.AndroidRecordModule;
 
 import org.junit.Assert;
 
@@ -24,7 +23,7 @@ import org.junit.Assert;
  * @author Eran Leshem
  **/
 public class AndroidRecordTest extends TestCase {
-  private static final class Simple extends RecordTag {
+  static final class Simple extends RecordTag {
     static int si = 7;
     private final int i;
     private final int j;
@@ -32,7 +31,7 @@ public class AndroidRecordTest extends TestCase {
     private final List<String> l;
     private final AtomicInteger ai;
 
-    private Simple(int i, int j, String s, List<String> l, AtomicInteger ai) {
+    Simple(int i, int j, String s, List<String> l, AtomicInteger ai) {
       this.i = i;
       this.j = j;
       this.s = s;
@@ -74,26 +73,26 @@ public class AndroidRecordTest extends TestCase {
     }
   }
 
-  private static final class MultipleConstructors extends RecordTag {
-    private final int i;
-    private final List<String> l;
+  static final class MultipleConstructors extends RecordTag {
+    final int i;
+    final List<String> l;
 
-    private MultipleConstructors(int i, List<String> l) {
+    MultipleConstructors(int i, List<String> l) {
       this.i = i;
       this.l = l;
     }
 
-    private MultipleConstructors(String s, List<String> l) {
+    MultipleConstructors(String s, List<String> l) {
       i = Integer.parseInt(s);
       this.l = l;
     }
 
-    private MultipleConstructors(int i, String s, List<String> l) {
+    MultipleConstructors(int i, String s, List<String> l) {
       this.i = i;
       this.l = l;
     }
 
-    private MultipleConstructors(List<Integer> l, int i) {
+    MultipleConstructors(List<Integer> l, int i) {
       this.i = i;
       this.l = null;
     }
@@ -103,17 +102,16 @@ public class AndroidRecordTest extends TestCase {
     }
   }
 
-
-  private static final class ConflictingConstructors extends RecordTag {
+  static final class ConflictingConstructors extends RecordTag {
     private final int i;
     private final String s;
 
-    private ConflictingConstructors(int i, String s) {
+    ConflictingConstructors(int i, String s) {
       this.i = i;
       this.s = s;
     }
 
-    private ConflictingConstructors(String s, int i) {
+    ConflictingConstructors(String s, int i) {
       this.i = i;
       this.s = s;
     }
@@ -129,8 +127,9 @@ public class AndroidRecordTest extends TestCase {
 
 
   private final ObjectMapper _objectMapper = JsonMapper.builder()
-                  .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-                  .addModule(new AndroidRecordModule()).build();
+          .addModule(new AndroidRecordModule())
+          .changeDefaultVisibility(vc -> vc.withVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY))
+          .build();
 
   public void testSimple() throws Exception {
     Simple simple = new Simple(9, 3, "foo", Arrays.asList("bar", "baz"), new AtomicInteger(8));

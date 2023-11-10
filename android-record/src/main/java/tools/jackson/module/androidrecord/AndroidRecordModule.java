@@ -60,7 +60,7 @@ public class AndroidRecordModule extends SimpleModule
        */
       private final Set<String> _componentNames;
 
-      private AndroidRecordNaming(MapperConfig<?> config, AnnotatedClass forClass) {
+      AndroidRecordNaming(MapperConfig<?> config, AnnotatedClass forClass) {
           super(config, forClass,
                   // no setters for (immutable) Records:
                   null,
