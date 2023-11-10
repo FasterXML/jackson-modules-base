@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.annotation.JacksonInject;
 
 import tools.jackson.databind.*;
+import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.databind.cfg.MapperConfig;
 import tools.jackson.databind.deser.CreatorProperty;
 import tools.jackson.databind.deser.SettableBeanProperty;
@@ -86,7 +87,11 @@ public class AndroidRecordModule extends SimpleModule
   static class AndroidRecordClassIntrospector extends BasicClassIntrospector {
       private static final long serialVersionUID = 1L;
 
-      public AndroidRecordClassIntrospector(DeserializationConfig config) {
+      public AndroidRecordClassIntrospector() {
+          super();
+      }
+
+      AndroidRecordClassIntrospector(MapperConfig<?> config) {
           super(config);
       }
 
@@ -100,13 +105,24 @@ public class AndroidRecordModule extends SimpleModule
           }
           return super.collectProperties(type, classDef, forSerialization, mutatorPrefix);
       }
+
+      @Override
+      public BasicClassIntrospector forMapper() {
+          return this;
+      }
+
+      @Override
+      public BasicClassIntrospector forOperation(MapperConfig<?> config) {
+          return new AndroidRecordClassIntrospector(config);
+      }
   }
 
   @Override
   public void setupModule(SetupContext context) {
     super.setupModule(context);
+    MapperBuilder<?,?> builder = (MapperBuilder<?,?>) context.getOwner();
     context.addValueInstantiators(new AndroidValueInstantiators());
-    context.setClassIntrospector(new AndroidRecordClassIntrospector());
+    builder.classIntrospector(new AndroidRecordClassIntrospector());
   }
 
   static boolean isDesugaredRecordClass(Class<?> raw) {
