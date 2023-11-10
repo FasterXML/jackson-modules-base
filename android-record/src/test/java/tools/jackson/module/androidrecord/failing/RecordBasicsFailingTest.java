@@ -33,6 +33,14 @@ public class RecordBasicsFailingTest extends BaseMapTest
     public String name() {
       return name;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        // Need not be robust, so:
+        RecordWithRename other = (RecordWithRename) o;
+        return Objects.equals(this.id, other.id)
+                && Objects.equals(this.name, other.name);
+    }
   }
 
   static final class RecordWithHeaderInject extends RecordTag {
