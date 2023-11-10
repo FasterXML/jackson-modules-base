@@ -140,3 +140,8 @@ Marco Descher (@col-panic)
 * Contributed fix for #219: (jakarta-xmlbind) Using `jackson-module-jakarta-xmlbind-annotations`
   2.15.2 fails in OSGi Environment with JAXB 4
  (2.16.0)
+
+Eran Leshem (@eranl)
+
+* Contributed #227: Add `jackson-module-android-record
+
