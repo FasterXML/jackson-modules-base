@@ -1,6 +1,7 @@
 Project: jackson-modules-base
 Modules:
   jackson-module-afterburner
+  jackson-module-android-record (2.16)
   jackson-module-blackbird (2.12)
   jackson-module-guice
   jackson-module-guice7 (2.16)
@@ -13,6 +14,7 @@ Modules:
 
 Active maintainers:
 
+* Eran Leshem (@eranl): author of jackson-module-android-record
 * Steven Schlansker (@stevenschlansker): author of Blackbird, co-author
   of Afterburner
 * Tatu Saloranta (@cowtowncoder): author or co-author of all other modules
@@ -24,6 +26,8 @@ Active maintainers:
 #223: IncompatibleClassChangeError when deserializing a class implementing
   an interface with default get/set implementations
  (reported by @avnersin)
+#227: Add `jackson-module-android-record
+ (contributed by Eran L)
 
 2.16.0-rc1 (20-Oct-2023)
 
