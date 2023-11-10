@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.androidrecord;
+package tools.jackson.module.androidrecord;
 
 import junit.framework.TestCase;
 

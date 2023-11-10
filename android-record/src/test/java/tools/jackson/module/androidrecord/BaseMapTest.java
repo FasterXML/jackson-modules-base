@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.androidrecord;
+package tools.jackson.module.androidrecord;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;

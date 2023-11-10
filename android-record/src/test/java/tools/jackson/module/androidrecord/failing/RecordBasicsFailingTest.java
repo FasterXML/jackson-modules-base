@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.androidrecord.failing;
+package tools.jackson.module.androidrecord.failing;
 
 import java.util.Objects;
 
@@ -11,8 +11,7 @@ import tools.jackson.databind.*;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.type.TypeFactory;
 import tools.jackson.databind.util.Converter;
-
-import com.fasterxml.jackson.module.androidrecord.BaseMapTest;
+import tools.jackson.module.androidrecord.BaseMapTest;
 
 public class RecordBasicsFailingTest extends BaseMapTest
 {

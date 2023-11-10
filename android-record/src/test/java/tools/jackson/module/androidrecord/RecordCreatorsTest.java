@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.androidrecord;
+package tools.jackson.module.androidrecord;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
