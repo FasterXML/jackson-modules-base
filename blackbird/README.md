@@ -35,11 +35,11 @@ Blackbird passes all the original Afterburner tests (except a couple that didn't
 
 ### Maven dependency
 
-Blackbird is available on Maven Central as of 2.12.0:
+Blackbird is available on Maven Central:
 
 ```xml
 <dependency>
-  <groupId>com.fasterxml.jackson.module</groupId>
+  <groupId>tools.jackson.module</groupId>
   <artifactId>jackson-module-blackbird</artifactId>
 </dependency>
 ```

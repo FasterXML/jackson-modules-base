@@ -9,9 +9,9 @@ To use this extension on Maven-based projects, use following dependency:
 
 ```xml
 <dependency>
-  <groupId>com.fasterxml.jackson.module</groupId>
+  <groupId>tools.jackson.module</groupId>
   <artifactId>jackson-module-jaxb-annotations</artifactId>
-  <version>2.11.0</version>
+  <version>3.0.0-SNAPSHOT</version>
 </dependency>
 ```
 

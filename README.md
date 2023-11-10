@@ -9,7 +9,7 @@ for more mature (and generally slower moving, stable) modules.
 Currently included are:
 
 * [Afterburner](afterburner/) -- 
-* [Blackbird](blackbird/) (NEW in 2.12 -- to eventually replace Afterburner)
+* [Blackbird](blackbird/)
 * Guice
     * "Old" (`javax.inject`) based versions: [Guice](guice/)
     * New "Jakarta" (`jakarta.inject`) based versions: [Guice 7](guice7/) (added in 2.16)
@@ -17,7 +17,7 @@ Currently included are:
     * "Old" (`java.xml.bind`) annotations: [JAXB Annotations](jaxb/)
     * New "Jakarta" (`jakarta.xml.bind`): [Jakarta XML Bind Annotations](jakarta-xmlbind/) (added in 2.13)
 * [Mr Bean](mrbean/)
-* [No-Constructor-Deserialization](no-ctor-deser/) (added in 2.13)
+* [No-Constructor-Deserialization](no-ctor-deser/)
 * [OSGi](osgi/)
 * [Paranamer](paranamer/)
 
@@ -38,30 +38,12 @@ whereas 3.0 will use [ByteBuddy](https://github.com/raphw/byte-buddy) (licensed 
 
 ## Using Jakarta
 
-### Jackson 2.13 and later (once released)
-
-With 2.13, you need to choose either:
+You need to choose either:
 
 * `jackson-module-jaxb-annotations` for "old JAXB" (2.x): supports `javax.xml.bind` annotations
 * `jackson-module-jakarta-xmlbind-annotations` for "new Jakarta JAXB" (3.x): supports `jakarta.xml.bind` annotations
 
 (in theory you can even use both, with databind `AnnotationIntrospectorPair`, but more often you will only want one of these)
-
-Note that Jakarta version was added in Jackson 2.13 and was not available for earlier versions.
-
-### Jackson 2.12 (only)
-
-Alternatively if using Jackson 2.12, there is a specific variant of `jackson-module-jaxb-annotations`
-available, usable with Maven classifier of "jakarta". You can use it instead of "old" JAXB variant
-by specifying classifier like so:
-
-```
-<dependency>
-    <groupId>com.fasterxml.jackson.module</groupId>
-    <artifactId>jackson-module-jaxb-annotations</artifactId>
-    <classifier>jakarta</classifier>
-</dependency>
-``` 
 
 ## More
 

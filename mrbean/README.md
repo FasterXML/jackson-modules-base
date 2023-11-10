@@ -14,9 +14,9 @@ To use module on Maven-based projects, use following dependency:
 
 ```xml
 <dependency>
-  <groupId>com.fasterxml.jackson.module</groupId>
+  <groupId>tools.jackson.module</groupId>
   <artifactId>jackson-module-mrbean</artifactId>
-  <version>2.11.0</version>
+  <version>3.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -29,9 +29,10 @@ To use module on Maven-based projects, use following dependency:
 To use the the Module in Jackson, simply register it with the ObjectMapper instance:
 
 ```java
-ObjectMapper mapper = new ObjectMapper()
-// com.fasterxml.jackson.module.mrbean.MrBeanModule:
-mapper.registerModule(new MrBeanModule());
+ObjectMapper mapper = JsonMapper.builder()
+// tools.jackson.module.mrbean.MrBeanModule:
+    .addModule(new MrBeanModule())
+    .build();
 ```
 
 ### Simple usage

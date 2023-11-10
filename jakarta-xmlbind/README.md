@@ -16,9 +16,9 @@ To use this extension on Maven-based projects, use following dependency:
 
 ```xml
 <dependency>
-  <groupId>com.fasterxml.jackson.module</groupId>
+  <groupId>tools.jackson.module</groupId>
   <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
-  <version>2.13.0</version>
+  <version>3.0.0-SNAPSHOT</version>
 </dependency>
 ```
 

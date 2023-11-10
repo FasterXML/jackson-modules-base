@@ -8,8 +8,8 @@ Module is considered stable and has been used in production environments since v
 There is, however, a potential future replacement available (as of Jackson 2.12): Blackbird module.
 See the parent README for details.
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-afterburner/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-afterburner/)
-[![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.module/jackson-module-afterburner.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-afterburner)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/tools.jackson.module/jackson-module-afterburner/badge.svg)](https://maven-badges.herokuapp.com/maven-central/tools.jackson.module/jackson-module-afterburner/)
+[![Javadoc](https://javadoc.io/badge/tools.jackson.module/jackson-module-afterburner.svg)](http://www.javadoc.io/doc/tools.jackson.module/jackson-module-afterburner)
 
 ## Usage
 
@@ -19,9 +19,9 @@ To use module on Maven-based projects, use following dependency:
 
 ```xml
 <dependency>
-  <groupId>com.fasterxml.jackson.module</groupId>
+  <groupId>tools.jackson.module</groupId>
   <artifactId>jackson-module-afterburner</artifactId>
-  <version>2.12.0</version>
+  <version>3.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -29,7 +29,7 @@ To use module on Maven-based projects, use following dependency:
 
 ### Non-Maven
 
-For non-Maven use cases, you download jars from [Central Maven repository](http://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-afterburner/).
+For non-Maven use cases, you download jars from [Central Maven repository](http://repo1.maven.org/maven2/tools/jackson/module/jackson-module-afterburner/).
 
 Module jar is also a functional OSGi bundle, with proper import/export declarations, so it can be use on OSGi container as is.
 

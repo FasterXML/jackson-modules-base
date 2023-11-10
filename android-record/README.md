@@ -23,7 +23,7 @@ ObjectMapper mapper = JsonMapper.builder() // or mapper for other dataformats
 
 Maven information for jar is:
 
-* Group id: `com.fasterxml.jackson.module`
+* Group id: `tools.jackson.module`
 * Artifact id: `jackson-module-android-record`
 
 ## Other
