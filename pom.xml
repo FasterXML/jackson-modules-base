@@ -24,6 +24,7 @@ not datatype, data format, or JAX-RS provider modules.
 
   <modules>
     <module>afterburner</module>
+    <module>android-record</module>
     <module>blackbird</module>
     <module>guice</module>
     <module>guice7</module>
@@ -59,6 +60,10 @@ not datatype, data format, or JAX-RS provider modules.
           starting with 3.0
       -->
     <version.bytebuddy>1.14.9</version.bytebuddy>
+
+    <version.android.sdk>26</version.android.sdk>
+    <version.android.sdk.signature>0.5.1</version.android.sdk.signature>
+    <version.plugin.animal-sniffer>1.23</version.plugin.animal-sniffer>
   </properties>
 
   <dependencyManagement>

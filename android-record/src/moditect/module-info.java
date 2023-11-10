@@ -1,11 +1,12 @@
-module com.fasterxml.jackson.module.androidrecord {
+module tools.jackson.module.androidrecord {
 
-    requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.annotation;
-    requires com.fasterxml.jackson.databind;
 
-    exports com.fasterxml.jackson.module.androidrecord;
+    requires tools.jackson.core;
+    requires tools.jackson.databind;
 
-    provides com.fasterxml.jackson.databind.Module with
-        com.fasterxml.jackson.module.androidrecord.AndroidRecordModule;
+    exports tools.jackson.module.androidrecord;
+
+    provides tools.jackson.databind.Module with
+        tools.jackson.module.androidrecord.AndroidRecordModule;
 }

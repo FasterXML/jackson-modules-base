@@ -1,9 +1,11 @@
 package com.fasterxml.jackson.module.androidrecord;
 
-import com.android.tools.r8.RecordTag;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.android.tools.r8.RecordTag;
+
+import tools.jackson.databind.ObjectMapper;
 
 public class RecordCreatorsTest extends BaseMapTest
 {

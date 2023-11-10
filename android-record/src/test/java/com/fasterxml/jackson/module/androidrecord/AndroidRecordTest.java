@@ -1,20 +1,22 @@
 package com.fasterxml.jackson.module.androidrecord;
 
-import com.android.tools.r8.RecordTag;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import junit.framework.TestCase;
-import org.junit.Assert;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.android.tools.r8.RecordTag;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.exc.InvalidDefinitionException;
+import tools.jackson.databind.json.JsonMapper;
+import junit.framework.TestCase;
+import tools.jackson.module.androidrecord.AndroidRecordModule;
+
+import org.junit.Assert;
 
 /**
  * Inner test classes simulate Android-desugared records.
@@ -130,12 +132,12 @@ public class AndroidRecordTest extends TestCase {
                   .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
                   .addModule(new AndroidRecordModule()).build();
 
-  public void testSimple() throws JsonProcessingException {
+  public void testSimple() throws Exception {
     Simple simple = new Simple(9, 3, "foo", Arrays.asList("bar", "baz"), new AtomicInteger(8));
     assertEquals(simple, _objectMapper.readValue(_objectMapper.writeValueAsString(simple), Simple.class));
   }
 
-  public void testMultipleConstructors() throws JsonProcessingException {
+  public void testMultipleConstructors() throws Exception {
     List<String> l = Arrays.asList("bar", "baz");
     assertEquals(9, _objectMapper.readValue(_objectMapper.writeValueAsString(new MultipleConstructors(9, l)),
                                         MultipleConstructors.class).i());

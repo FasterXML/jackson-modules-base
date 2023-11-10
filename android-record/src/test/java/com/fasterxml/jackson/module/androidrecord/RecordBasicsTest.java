@@ -1,15 +1,15 @@
 package com.fasterxml.jackson.module.androidrecord;
 
 import com.android.tools.r8.RecordTag;
+
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.InjectableValues;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+
+import tools.jackson.databind.*;
+import tools.jackson.databind.annotation.JsonNaming;
+import tools.jackson.databind.json.JsonMapper;
+
+import tools.jackson.module.androidrecord.AndroidRecordModule;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -269,7 +269,9 @@ public class RecordBasicsTest extends BaseMapTest
     }
   }
 
-    private final ObjectMapper MAPPER = newJsonMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+    private final ObjectMapper MAPPER = jsonMapperBuilder()
+            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+            .build();
 
     /*
     /**********************************************************************
@@ -370,9 +372,11 @@ public class RecordBasicsTest extends BaseMapTest
     }
 
     public void testDeserializeConstructorInjectRecord() throws Exception {
-        MAPPER.setInjectableValues(new InjectableValues.Std().addValue(String.class, "Bob"));
+        ObjectMapper mapper = jsonMapperBuilder()
+                .injectableValues(new InjectableValues.Std().addValue(String.class, "Bob"))
+                .build();
 
-        RecordWithConstructorInject value = MAPPER.readValue("{\"id\":123}", RecordWithConstructorInject.class);
+        RecordWithConstructorInject value = mapper.readValue("{\"id\":123}", RecordWithConstructorInject.class);
         assertEquals(new RecordWithConstructorInject(123, "Bob"), value);
     }
 

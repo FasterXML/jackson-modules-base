@@ -1,10 +1,13 @@
 package com.fasterxml.jackson.module.androidrecord.failing;
 
-import com.android.tools.r8.RecordTag;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.exc.UnrecognizedPropertyException;
+
+import com.android.tools.r8.RecordTag;
+
 import com.fasterxml.jackson.module.androidrecord.BaseMapTest;
 
 public class RecordCreatorsFailingTest extends BaseMapTest

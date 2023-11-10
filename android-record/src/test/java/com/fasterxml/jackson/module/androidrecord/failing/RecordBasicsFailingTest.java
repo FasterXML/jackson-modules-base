@@ -1,18 +1,18 @@
 package com.fasterxml.jackson.module.androidrecord.failing;
 
-import com.android.tools.r8.RecordTag;
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.InjectableValues;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.databind.util.Converter;
-import com.fasterxml.jackson.module.androidrecord.BaseMapTest;
 
-import java.util.Objects;
+import com.android.tools.r8.RecordTag;
+
+import tools.jackson.databind.*;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.type.TypeFactory;
+import tools.jackson.databind.util.Converter;
+
+import com.fasterxml.jackson.module.androidrecord.BaseMapTest;
 
 public class RecordBasicsFailingTest extends BaseMapTest
 {

@@ -1,13 +1,19 @@
 package com.fasterxml.jackson.module.androidrecord;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+
+import tools.jackson.module.androidrecord.AndroidRecordModule;
 
 public abstract class BaseMapTest
     extends BaseTest
 {
     protected static ObjectMapper newJsonMapper() {
-        return new JsonMapper().registerModule(new AndroidRecordModule());
+        return jsonMapperBuilder().build();
     }
 
+    protected static JsonMapper.Builder jsonMapperBuilder() {
+        return JsonMapper.builder()
+                .addModule(new AndroidRecordModule());
+    }
 }
