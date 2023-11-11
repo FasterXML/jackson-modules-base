@@ -33,6 +33,7 @@ not datatype, data format, or JAX-RS provider modules.
     <module>mrbean</module>
     <module>osgi</module>
     <module>paranamer</module>
+    <module>subtype</module>
     <!-- since 2.13: -->
     <module>no-ctor-deser</module>
   </modules>
