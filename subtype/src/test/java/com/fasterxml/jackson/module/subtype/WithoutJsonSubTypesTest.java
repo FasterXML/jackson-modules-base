@@ -12,35 +12,35 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * test work without {@link JsonSubTypes}
+ * test {@link JsonSubType} works alone, without {@link JsonSubTypes}
  */
 public class WithoutJsonSubTypesTest {
-    private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+    private final ObjectMapper mapper = new ObjectMapper().registerModule(new SubtypeModule());
 
     @Test
     public void testFirstChild() throws Exception {
         FirstChild child = new FirstChild();
-        child.setFoo("hello");
+        child.foo = "hello";
         String json = mapper.writeValueAsString(child);
 
         // {"type":"first-child","foo":"hello"}
 
         Parent unmarshal = mapper.readValue(json, Parent.class);
         FirstChild actual = assertInstanceOf(FirstChild.class, unmarshal);
-        assertEquals("hello", actual.getFoo());
+        assertEquals("hello", actual.foo);
     }
 
     @Test
     public void testSecondChild() throws Exception {
         SecondChild child = new SecondChild();
-        child.setBar("world");
+        child.bar = "world";
         String json = mapper.writeValueAsString(child);
 
         // {"type":"second-child","bar":"world"}
 
         Parent unmarshal = mapper.readValue(json, Parent.class);
         SecondChild actual = assertInstanceOf(SecondChild.class, unmarshal);
-        assertEquals("world", actual.getBar());
+        assertEquals("world", actual.bar);
     }
 
     public static <T> T assertInstanceOf(Class<T> expectedType, Object actualValue) {
@@ -55,17 +55,9 @@ public class WithoutJsonSubTypesTest {
     @JsonSubType("first-child")
     @AutoService(Parent.class) // module requires spi
     public static class FirstChild implements Parent {
-        private String foo;
+        public String foo;
 
         public FirstChild() {
-        }
-
-        public String getFoo() {
-            return foo;
-        }
-
-        public void setFoo(String foo) {
-            this.foo = foo;
         }
 
         @Override
@@ -88,17 +80,9 @@ public class WithoutJsonSubTypesTest {
     @JsonSubType("second-child")
     @AutoService(Parent.class) // module requires spi
     public static class SecondChild implements Parent {
-        private String bar;
+        public String bar;
 
         public SecondChild() {
-        }
-
-        public String getBar() {
-            return bar;
-        }
-
-        public void setBar(String bar) {
-            this.bar = bar;
         }
 
         @Override

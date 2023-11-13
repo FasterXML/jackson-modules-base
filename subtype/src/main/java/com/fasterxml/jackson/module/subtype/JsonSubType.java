@@ -35,7 +35,6 @@ public @interface JsonSubType {
      * more than one type name should be associated with the same type.
      *
      * @return subtype name array
-     * @since 2.12
      */
     String[] names() default {};
 }

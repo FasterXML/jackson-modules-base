@@ -23,6 +23,8 @@ import java.util.function.Function;
  * <p>
  * When not found in the cache, it loads and caches subclasses using SPI.
  * Therefore, we can {@link #unregisterType} a class and then module will reload this class's subclasses.
+ *
+ * @since 2.16
  */
 public class SubtypeModule extends Module {
 
@@ -50,7 +52,7 @@ public class SubtypeModule extends Module {
             public List<NamedType> findSubtypes(Annotated a) {
                 registerTypes(a.getRawType());
 
-                List<NamedType> list1 = SubtypeModule.findSubtypes(a.getRawType(), a::getAnnotation);
+                List<NamedType> list1 = _findSubtypes(a.getRawType(), a::getAnnotation);
                 List<NamedType> list2 = subtypes.getOrDefault(a.getRawType(), Collections.emptyList());
 
                 if (list1.isEmpty()) return list2;
@@ -92,7 +94,7 @@ public class SubtypeModule extends Module {
     public <S> void registerTypes(Class<S> parent, Iterable<Class<S>> subclasses) {
         List<NamedType> result = new ArrayList<>();
         for (Class<S> subclass : subclasses) {
-            result.addAll(findSubtypes(subclass, subclass::getAnnotation));
+            result.addAll(_findSubtypes(subclass, subclass::getAnnotation));
         }
         subtypes.put(parent, result);
     }
@@ -101,7 +103,7 @@ public class SubtypeModule extends Module {
         subtypes.remove(parent);
     }
 
-    private static <S> List<NamedType> findSubtypes(Class<S> clazz, Function<Class<JsonSubType>, JsonSubType> getter) {
+    private <S> List<NamedType> _findSubtypes(Class<S> clazz, Function<Class<JsonSubType>, JsonSubType> getter) {
         if (clazz == null) {
             return Collections.emptyList();
         }
