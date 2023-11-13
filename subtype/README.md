@@ -10,7 +10,7 @@ Implementation on SPI.
 Registering modules.
 
 ```
-ObjectMapper mapper = new ObjectMapper().registerModule(new DynamicSubtypeModule());
+ObjectMapper mapper = new ObjectMapper().registerModule(new SubtypeModule());
 ```
 
 Ensure that the parent class has at least the `JsonTypeInfo` annotation.
@@ -25,7 +25,7 @@ public interface Parent {
 2. provide a non-argument constructor (SPI require it).
 
 ```java
-import io.github.black.jackson.JsonSubType;
+import com.fasterxml.jackson.module.subtype.JsonSubType;
 
 @JsonSubType("first-child")
 public class FirstChild {

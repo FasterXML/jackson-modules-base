@@ -18,12 +18,12 @@ import java.util.Objects;
 import static org.junit.Assert.*;
 
 /**
- * test work with {@link JsonSubTypes}
+ * test {@link JsonSubType} work with {@link JsonSubTypes}
  */
 @RunWith(value = Parameterized.class)
 public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
 
-    private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+    private final ObjectMapper mapper = new ObjectMapper().registerModule(new SubtypeModule());
 
     public static class Argument<T> {
         private final Class<T> clazz;
@@ -72,23 +72,13 @@ public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
     }
 
     public static class FirstChild implements Parent {
-        private String foo;
+        public String foo;
 
         @SuppressWarnings("unused") // SPI require it
         public FirstChild() {
         }
 
         public FirstChild(String foo) {
-            this.foo = foo;
-        }
-
-        @SuppressWarnings("unused") // jackson require it
-        public String getFoo() {
-            return foo;
-        }
-
-        @SuppressWarnings("unused") // jackson require it
-        public void setFoo(String foo) {
             this.foo = foo;
         }
 
@@ -109,22 +99,12 @@ public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
     }
 
     public static class SecondChild implements Parent {
-        private String bar;
+        public String bar;
 
         public SecondChild() {
         }
 
         public SecondChild(String bar) {
-            this.bar = bar;
-        }
-
-        @SuppressWarnings("unused") // jackson require it
-        public String getBar() {
-            return bar;
-        }
-
-        @SuppressWarnings("unused") // jackson require it
-        public void setBar(String bar) {
             this.bar = bar;
         }
 
@@ -147,23 +127,13 @@ public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
     @JsonSubType("first-append-child")
     @AutoService(Parent.class)
     public static class FirstAppendChild implements Parent {
-        private Integer integer;
+        public Integer integer;
 
         @SuppressWarnings("unused") // SPI require it
         public FirstAppendChild() {
         }
 
         public FirstAppendChild(Integer integer) {
-            this.integer = integer;
-        }
-
-        @SuppressWarnings("unused") // jackson require it
-        public Integer getInteger() {
-            return integer;
-        }
-
-        @SuppressWarnings("unused") // jackson require it
-        public void setInteger(Integer integer) {
             this.integer = integer;
         }
 
@@ -187,23 +157,13 @@ public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
     @JsonSubType("second-append-child")
     @AutoService(Parent.class)
     public static class SecondAppendChild extends SecondChild {
-        private List<String> list;
+        public List<String> list;
 
         public SecondAppendChild() {
         }
 
         public SecondAppendChild(String bar, List<String> list) {
             super(bar);
-            this.list = list;
-        }
-
-        @SuppressWarnings("unused") // jackson require it
-        public List<String> getList() {
-            return list;
-        }
-
-        @SuppressWarnings("unused") // jackson require it
-        public void setList(List<String> list) {
             this.list = list;
         }
 
@@ -229,7 +189,7 @@ public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
     @JsonSubType("third-append-child")
     @AutoService(Parent.class)
     public static class ThirdAppendChild extends SecondAppendChild {
-        private double value;
+        public double value;
 
         @SuppressWarnings("unused") // SPI require it
         public ThirdAppendChild() {
@@ -237,16 +197,6 @@ public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
 
         public ThirdAppendChild(String bar, List<String> list, double value) {
             super(bar, list);
-            this.value = value;
-        }
-
-        @SuppressWarnings("unused") // jackson require it
-        public double getValue() {
-            return value;
-        }
-
-        @SuppressWarnings("unused") // jackson require it
-        public void setValue(double value) {
             this.value = value;
         }
 
