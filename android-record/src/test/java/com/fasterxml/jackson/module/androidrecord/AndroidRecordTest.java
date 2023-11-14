@@ -99,6 +99,10 @@ public class AndroidRecordTest extends TestCase {
     int i() {
       return i;
     }
+
+    List<String> l() {
+      return l;
+    }
   }
 
 
