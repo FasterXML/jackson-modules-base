@@ -23,6 +23,10 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.17.0 (not yet released)
+
+-
+
 2.16.0 (15-Nov-2023)
 
 #181: (blackbird) BlackBird proxy object error in Java 17
