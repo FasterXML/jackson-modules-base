@@ -33,19 +33,16 @@ import tools.jackson.databind.util.ClassUtil;
  * <p>
  * See <a href="https://android-developers.googleblog.com/2023/06/records-in-android-studio-flamingo.html">
  *   Android Developers Blog article</a>
- *
- * <p>
- * An attempt was made to make this module as consistent with Jackson's built-in support for records as possible,
- * but gaps exist when using some of Jackson's advanced mapping features.
- *
  * <p>
  * Note: this module is a no-op when no Android-desugared records are being (de)serialized,
  * so it is safe to use in code shared between Android and non-Android platforms.
- *
  * <p>
- * Note: the canonical record constructor is found through matching of parameter names and types with fields.
+ * Note: the canonical record constructor is identified through matching of parameter names and types with fields.
  * Therefore, this module doesn't allow a deserialized desugared record to have a custom constructor
  * with the same set of parameter names and types as the canonical one.
+ * For the same reason, this module requires that desugared canonical record constructor parameter names
+ * be stored in class files. Apparently, with Android SDK 34 tooling, that is the case by default.
+ * If that ever changes, it may require an explicit setting in build files.
  *
  * @author Eran Leshem
  **/
