@@ -23,13 +23,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-#223: IncompatibleClassChangeError when deserializing a class implementing
-  an interface with default get/set implementations
- (reported by @avnersin)
-#227: Add `jackson-module-android-record
- (contributed by Eran L)
-
-2.16.0-rc1 (20-Oct-2023)
+2.16.0 (15-Nov-2023)
 
 #181: (blackbird) BlackBird proxy object error in Java 17
  (fix by Steven S)
@@ -40,6 +34,11 @@ Active maintainers:
 #219: (jakarta-xmlbind) Using `jackson-module-jakarta-xmlbind-annotations`
   2.15.2 fails in OSGi Environment with JAXB 4
  (fix contributed by Marco D)
+#223: (mrbean) IncompatibleClassChangeError when deserializing a class implementing
+  an interface with default get/set implementations
+ (reported by @avnersin)
+#227: Add `jackson-module-android-record`
+ (contributed by Eran L)
 - Update `asm` version 9.5 -> 9.6
 
 2.15.3 (12-Oct-2023)
