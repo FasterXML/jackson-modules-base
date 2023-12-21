@@ -37,7 +37,9 @@
       -->
     <!-- 02-Oct-2023, tatu: [modules-base#219]: Need to relax constraints for bind-annotations
       -->
-    <osgi.import>javax.activation;resolution:=optional,
+    <!-- 20-Dec-2023, tatu: [modules-base#231]: And make sure to use "right" actiovation dep
+      -->
+    <osgi.import>jakarta.activation;resolution:=optional,
       jakarta.xml.bind;version="[3.0,4.0.100)",
       jakarta.xml.bind.*;version="[3.0,4.0.100)",
       *

@@ -27,6 +27,12 @@ Active maintainers:
 
 -
 
+2.16.1 (not yet released)
+
+#231: (jakarta-xmlbind) Missed change of `javax.activation;resolution:=optional`
+  to `jakarta.activation;resolution:=optional` in `jakarta-xmlbind/pom.xml`
+ (reported by Sammy C)
+
 2.16.0 (15-Nov-2023)
 
 #181: (blackbird) BlackBird proxy object error in Java 17
