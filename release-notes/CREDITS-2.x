@@ -144,4 +144,10 @@ Marco Descher (@col-panic)
 Eran Leshem (@eranl)
 
 * Contributed #227: Add `jackson-module-android-record
+ (2.16.0)
 
+Sammy Chu (@sammyhk)
+
+* Reported#231: (jakarta-xmlbind) Missed change of `javax.activation;resolution:=optional`
+  to `jakarta.activation;resolution:=optional` in `jakarta-xmlbind/pom.xml`
+ (2.16.1)
