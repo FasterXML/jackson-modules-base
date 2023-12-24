@@ -27,7 +27,7 @@ Active maintainers:
 
 -
 
-2.16.1 (not yet released)
+2.16.1 (24-Dec-2023)
 
 #231: (jakarta-xmlbind) Missed change of `javax.activation;resolution:=optional`
   to `jakarta.activation;resolution:=optional` in `jakarta-xmlbind/pom.xml`
