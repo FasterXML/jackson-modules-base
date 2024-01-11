@@ -54,6 +54,14 @@ for configuring data-binding.
       <artifactId>jackson-databind</artifactId>
     </dependency>
 
+    <!-- Tolerate [2.2,3) for javax.xml.bind Import-Package in the generated MANIFEST.MF -->
+    <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.2.12</version>
+    </dependency>
+
     <!--  and actual JAXB annotations, types -->
     <!-- NOTE! Despite groupId, this is "old" JAXB, not Jakarta
          (3.x is real Jakarta one)
