@@ -20,7 +20,7 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
  *
  * @author Tatu Saloranta
  */
-public class TestJaxbAutoDetect extends ModuleTestBase
+public class JakartaXmlBindAutoDetectTest extends ModuleTestBase
 {
     /*
     /**********************************************************

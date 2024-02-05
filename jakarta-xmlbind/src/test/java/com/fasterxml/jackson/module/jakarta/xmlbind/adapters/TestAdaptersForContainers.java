@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
-import com.fasterxml.jackson.module.jakarta.xmlbind.introspect.TestJaxbAnnotationIntrospector.KeyValuePair;
+import com.fasterxml.jackson.module.jakarta.xmlbind.introspect.JakartaXmlBindAnnotationIntrospectorTest.KeyValuePair;
 
 /**
  * Unit tests to check that {@link XmlAdapter}s also work with
