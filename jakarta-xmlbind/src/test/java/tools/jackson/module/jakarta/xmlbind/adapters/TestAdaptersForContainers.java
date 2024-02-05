@@ -8,7 +8,7 @@ import jakarta.xml.bind.annotation.adapters.*;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
-import tools.jackson.module.jakarta.xmlbind.introspect.TestJaxbAnnotationIntrospector.KeyValuePair;
+import tools.jackson.module.jakarta.xmlbind.introspect.JakartaXmlBindAnnotationIntrospectorTest.KeyValuePair;
 
 /**
  * Unit tests to check that {@link XmlAdapter}s also work with

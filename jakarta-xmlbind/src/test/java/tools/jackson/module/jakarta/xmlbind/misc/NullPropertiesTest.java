@@ -14,7 +14,7 @@ import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
  * Unit tests to ensure that handling of writing of null properties (or not)
  * works when using JAXB annotation introspector.
  */
-public class TestJaxbNullProperties
+public class NullPropertiesTest
     extends ModuleTestBase
 {
     static class Bean

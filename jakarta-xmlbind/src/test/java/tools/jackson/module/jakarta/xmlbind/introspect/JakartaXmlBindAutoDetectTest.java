@@ -18,7 +18,7 @@ import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
 /**
  * Tests for verifying auto-detection settings with JAXB annotations.
  */
-public class TestJaxbAutoDetect extends ModuleTestBase
+public class JakartaXmlBindAutoDetectTest extends ModuleTestBase
 {
     /* Bean for testing problem [JACKSON-183]: with normal
      * auto-detect enabled, 2 fields visible; if disabled, just 1.

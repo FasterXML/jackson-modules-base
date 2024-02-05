@@ -7,7 +7,7 @@ import jakarta.xml.bind.annotation.*;
 import tools.jackson.databind.*;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
-public class TestJaxbFieldAccess extends ModuleTestBase
+public class JakartaXmlBindFieldAccessTest extends ModuleTestBase
 {
     /*
     /**********************************************************
