@@ -77,7 +77,7 @@ public class TestJaxbPolymorphic
 //            @XmlElement(type=BaseImpl.class, name="baseImpl"),
         public Base[] stuff;
     }
-     
+
     /*
     /**********************************************************
     /* Test methods
@@ -85,7 +85,7 @@ public class TestJaxbPolymorphic
      */
 
     private final ObjectMapper MAPPER = getJaxbMapper();
-    
+
     //First a simple test with non-collection field
 
     @SuppressWarnings("unchecked")
