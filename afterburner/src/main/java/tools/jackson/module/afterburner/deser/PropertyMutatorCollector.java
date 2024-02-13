@@ -498,6 +498,8 @@ public class PropertyMutatorCollector
     private static class SingleMethodStackManipulation<T extends OptimizedSettableBeanProperty<T>>
             extends AbstractSinglePropStackManipulation<T> {
 
+        private static final TypeDescription OBJECT_TYPE_DESCRIPTION = TypeDescription.ForLoadedType.of(Object.class);
+
         SingleMethodStackManipulation(TypeDescription beanClassDescription,
                                       T prop,
                                       MethodVariableAccess beanValueAccess) {
@@ -522,13 +524,64 @@ public class PropertyMutatorCollector
             if (matchingMethods.size() == 1) { //method was declared on class
                 return MethodInvocation.invoke(matchingMethods.getOnly());
             }
-            if (matchingMethods.isEmpty()) { //method was not found on class, try super class
-                return invocationOperation(annotatedMember, beanClassDescription.getSuperClass());
-            }
-            else { //should never happen
+            if (matchingMethods.isEmpty()) { //method was not found on class, try interfaces and superclass
+
+                TypeDefinition klass = beanClassDescription;
+                Deque<TypeDefinition> toProcess = new LinkedList<>();
+                do {
+                    toProcess.addAll(klass.getInterfaces()); //add the interfaces of the current class we are at, so we can process them later
+                    if (OBJECT_TYPE_DESCRIPTION.equals(klass) || (klass.getSuperClass() == null)) {
+                        Set<TypeDefinition> seen = new HashSet<>(toProcess);
+                        while (!toProcess.isEmpty()) { // process all the interfaces (including super interfaces which will be looked up on demand)
+                            TypeDefinition iface = toProcess.poll();
+
+                            MethodList<MethodDescription> matches = getMatchingMethods(iface, methodName);
+                            if (matches.size() == 1) {
+                                return MethodInvocation.invoke(matches.getOnly());
+                            } else if (matches.size() > 1) {  // should never happen
+                                throw new IllegalStateException("Multiple definitions of method " + methodName + " found");
+                            }
+
+                            // now add the super interfaces
+                            for (TypeDefinition i : iface.getInterfaces()) {
+                                if (!seen.contains(i)) {
+                                    seen.add(i);
+                                    toProcess.add(i);
+                                }
+                            }
+                        }
+
+                        // we exhausted super classes and interfaces and came up empty...
+                        throw new IllegalStateException("Could not find definition of method: " + methodName);
+                    }
+
+                    MethodList<MethodDescription> matches = getMatchingMethods(klass, methodName);
+                    if (matches.size() == 1) {
+                        return MethodInvocation.invoke(matches.getOnly());
+                    } else if (matches.size() > 1) {  // should never happen
+                        throw new IllegalStateException("Multiple definitions of method " + methodName + " found");
+                    }
+
+                    // no match, keep going
+                    if (klass.isInterface()) {
+                        klass = OBJECT_TYPE_DESCRIPTION;
+                    } else {
+                        klass = klass.getSuperClass();
+                    }
+
+                } while (klass != null);
+
+                // we exhausted super classes and interfaces and came up empty...
                 throw new IllegalStateException("Could not find definition of method: " + methodName);
             }
+            else { //should never happen
+                throw new IllegalStateException("Multiple definitions of method " + methodName + " found");
+            }
 
+        }
+
+        private MethodList<MethodDescription> getMatchingMethods(TypeDefinition beanClassDescription, String methodName) {
+            return (MethodList<MethodDescription>) beanClassDescription.getDeclaredMethods().filter(named(methodName));
         }
 
     }

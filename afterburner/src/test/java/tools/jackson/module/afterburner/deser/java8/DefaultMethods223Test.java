@@ -1,4 +1,4 @@
-package tools.jackson.module.afterburner.failing;
+package tools.jackson.module.afterburner.deser.java8;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 

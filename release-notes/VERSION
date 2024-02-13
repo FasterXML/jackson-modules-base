@@ -18,3 +18,6 @@ Modules:
  (contributed by Georgios A))
 #40: Remove `jackson-module-paranamer` from Jackson 3.0
 #182: Rename "com.fasterxml.jackson" -> "tools.jackson"
+#225: Afterburner 3.0 fails to handle interface "default" methods
+ (contributed by Georgios A))
+
