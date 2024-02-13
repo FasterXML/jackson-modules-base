@@ -1,4 +1,4 @@
-package tools.jackson.module.afterburner.failing;
+package tools.jackson.module.afterburner.deser.java8;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.afterburner.AfterburnerTestBase;

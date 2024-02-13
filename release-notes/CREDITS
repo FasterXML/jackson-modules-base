@@ -11,5 +11,7 @@ Other contributors:
 
 Georgios Andrianakis (geoand@github)
 
-* Contributed [MrBean#28]: Replace ASM code-gen with ByteBuddy
+* Contributed #28: (mrbean) Replace ASM code-gen with ByteBuddy
+ (3.0.0)
+* Contributed #225: Afterburner 3.0 fails to handle interface "default" methods
  (3.0.0)
