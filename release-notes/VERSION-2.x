@@ -47,6 +47,7 @@ Active maintainers:
  (contributed by Eran L)
 - Update `asm` version 9.5 -> 9.6
 
+2.15.4 (15-Feb-2024)
 2.15.3 (12-Oct-2023)
 
 No changes since 2.15.2
