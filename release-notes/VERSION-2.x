@@ -27,6 +27,10 @@ Active maintainers:
 
 No changes since 2.16
 
+2.16.2 (09-Mar-2024)
+
+No changes since 2.16.1
+
 2.16.1 (24-Dec-2023)
 
 #231: (jakarta-xmlbind) Missed change of `javax.activation;resolution:=optional`
