@@ -23,6 +23,10 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.0 (not yet released)
+
+No changes since 2.17
+
 2.17.0-rc (26-Feb-2024)
 
 No changes since 2.16
