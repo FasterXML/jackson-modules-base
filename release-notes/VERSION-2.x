@@ -27,7 +27,7 @@ Active maintainers:
 
 No changes since 2.17
 
-2.17.0-rc (26-Feb-2024)
+2.17.0 (12-Mar-2024)
 
 No changes since 2.16
 
