@@ -58,6 +58,8 @@ import java.util.stream.Stream;
  * @author Eran Leshem
  **/
 public class AndroidRecordModule extends SimpleModule {
+  private static final long serialVersionUID = 1L;
+
   private static final class AndroidRecordNaming
       extends DefaultAccessorNamingStrategy
   {
@@ -66,7 +68,7 @@ public class AndroidRecordModule extends SimpleModule {
        */
       private final Set<String> _componentNames;
 
-      private AndroidRecordNaming(MapperConfig<?> config, AnnotatedClass forClass) {
+      AndroidRecordNaming(MapperConfig<?> config, AnnotatedClass forClass) {
           super(config, forClass,
                   // no setters for (immutable) Records:
                   null,
@@ -89,7 +91,9 @@ public class AndroidRecordModule extends SimpleModule {
       }
   }
 
-  private static class AndroidRecordClassIntrospector extends BasicClassIntrospector {
+  static class AndroidRecordClassIntrospector extends BasicClassIntrospector {
+    private static final long serialVersionUID = 1L;
+
     @Override
     protected POJOPropertiesCollector collectProperties(MapperConfig<?> config, JavaType type, MixInResolver r,
                                                         boolean forSerialization) {
@@ -159,7 +163,7 @@ public class AndroidRecordModule extends SimpleModule {
     return defaultInstantiator;
   }
 
-  private static Stream<Field> getDesugaredRecordComponents(Class<?> raw) {
+  static Stream<Field> getDesugaredRecordComponents(Class<?> raw) {
     return Arrays.stream(raw.getDeclaredFields()).filter(field -> ! Modifier.isStatic(field.getModifiers()));
   }
 }

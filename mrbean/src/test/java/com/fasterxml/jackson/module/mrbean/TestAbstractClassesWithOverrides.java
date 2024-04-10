@@ -85,6 +85,7 @@ public class TestAbstractClassesWithOverrides
         verifyBean(bean2);
     }
 
+    @SuppressWarnings("synthetic-access")
     public void testReAbstractedMethods() throws Exception
     {
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
@@ -161,6 +162,7 @@ public class TestAbstractClassesWithOverrides
         }
     }
 
+    @SuppressWarnings("synthetic-access")
     private void verifyBean(Bean bean) {
         assertNotNull(bean);
         assertEquals("abc", bean.getX());

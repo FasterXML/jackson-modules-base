@@ -33,6 +33,7 @@ public class TestAbstractClasses
     /**********************************************************
      */
 
+    @SuppressWarnings("synthetic-access")
     public void testSimpleInteface() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();

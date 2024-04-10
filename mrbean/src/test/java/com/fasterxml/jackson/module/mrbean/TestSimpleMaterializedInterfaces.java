@@ -59,6 +59,7 @@ public class TestSimpleMaterializedInterfaces
     }
 
     public interface BeanWithDefaultForOtherInterface extends Bean, OtherInterface {
+        @Override
         public default boolean anyValuePresent() {
             return getX() > 0 || getA() != null;
         }
