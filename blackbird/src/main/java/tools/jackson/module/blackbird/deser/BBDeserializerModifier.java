@@ -27,6 +27,8 @@ import tools.jackson.module.blackbird.util.ReflectionHack;
 
 public class BBDeserializerModifier extends ValueDeserializerModifier
 {
+    private static final long serialVersionUID = 1L;
+
     private static final MethodHandle TRAMPOLINE, BOOLEAN_TRAMPOLINE, LONG_TRAMPOLINE, INT_TRAMPOLINE;
 
     static {

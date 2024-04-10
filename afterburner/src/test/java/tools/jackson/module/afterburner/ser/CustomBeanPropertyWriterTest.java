@@ -27,6 +27,8 @@ public class CustomBeanPropertyWriterTest extends AfterburnerTestBase
     }
 
     static class Only2BeanSerializerModifier extends ValueSerializerModifier {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc, List<BeanPropertyWriter> props)
         {

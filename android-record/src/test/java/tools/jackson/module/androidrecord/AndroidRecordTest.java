@@ -74,8 +74,8 @@ public class AndroidRecordTest extends TestCase {
   }
 
   static final class MultipleConstructors extends RecordTag {
-    final int i;
-    final List<String> l;
+    private final int i;
+    private final List<String> l;
 
     MultipleConstructors(int i, List<String> l) {
       this.i = i;

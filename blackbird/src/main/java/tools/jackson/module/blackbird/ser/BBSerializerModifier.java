@@ -25,6 +25,8 @@ import static java.lang.invoke.MethodType.*;
 
 public class BBSerializerModifier extends ValueSerializerModifier
 {
+    private static final long serialVersionUID = 1L;
+
     private final Function<Class<?>, Lookup> _lookups;
     private final UnaryOperator<Lookup> _accessGrant;
 
