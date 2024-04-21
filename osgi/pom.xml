@@ -27,9 +27,9 @@
     </licenses>
 
     <properties>
-        <version.osgi.core>5.0.0</version.osgi.core>
-        <version.mockito>1.10.19</version.mockito>
-        <version.junit>4.12</version.junit>
+      <!-- TODO: upgrade to Mockito 4.x -->
+      <version.mockito>1.10.19</version.mockito>
+      <version.osgi.core>5.0.0</version.osgi.core>
 
         <!-- Generate PackageVersion.java into this directory. -->
         <packageVersion.dir>com/fasterxml/jackson/module/osgi</packageVersion.dir>
