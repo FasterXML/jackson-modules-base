@@ -25,7 +25,9 @@ Active maintainers:
 
 2.18.0 (not yet released)
 
-No changes since 2.17
+#233: (jaxb) Tolerate JAX-RS 2.2 in jackson-module-jaxb-annotations so
+  that it can be deployed in Liberty alongside features which use 2.2
+ (contributed by Jack D)
 
 2.17.1 (04-May-2024)
 2.17.0 (12-Mar-2024)
