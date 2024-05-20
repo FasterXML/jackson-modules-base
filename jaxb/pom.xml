@@ -62,16 +62,6 @@ for configuring data-binding.
       <version>2.2.12</version>
     </dependency>
 
-    <!--  and actual JAXB annotations, types -->
-    <!-- NOTE! Despite groupId, this is "old" JAXB, not Jakarta
-         (3.x is real Jakarta one)
-      -->
-    <dependency>
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
-      <version>${version.jaxb.impl}</version>
-    </dependency>
-
     <!-- 14-Mar-2019, tatu: Looks like this is needed for JDK11 and later
       -->
     <dependency>
