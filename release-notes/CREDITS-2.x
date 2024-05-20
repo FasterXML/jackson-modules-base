@@ -142,6 +142,12 @@ Eran Leshem (@eranl)
 
 Sammy Chu (@sammyhk)
 
-* Reported#231: (jakarta-xmlbind) Missed change of `javax.activation;resolution:=optional`
+* Reported #231: (jakarta-xmlbind) Missed change of `javax.activation;resolution:=optional`
   to `jakarta.activation;resolution:=optional` in `jakarta-xmlbind/pom.xml`
  (2.16.1)
+
+Jack Dunning (@JDUNNIN)
+
+* Contributed #233: (jaxb) Tolerate JAX-RS 2.2 in jackson-module-jaxb-annotations so
+  that it can be deployed in Liberty alongside features which use 2.2
+ (2.18.0)

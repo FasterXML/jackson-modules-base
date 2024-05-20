@@ -37,7 +37,9 @@ for configuring data-binding.
       -->
     <osgi.import>javax.activation;resolution:=optional,*</osgi.import>
 
+    <!-- 20-May-2024, tatu: no longer needed it seems:
     <version.jaxb.impl>2.3.3</version.jaxb.impl>
+    -->
   </properties>
   <dependencies>
     <!-- Extends Jackson core and mapper; minor dep on annotations too (JsonInclude) -->
@@ -55,13 +57,13 @@ for configuring data-binding.
     </dependency>
 
     <!--  and actual JAXB annotations, types -->
-    <!-- NOTE! Despite groupId, this is "old" JAXB, not Jakarta
-         (3.x is real Jakarta one)
-      -->
+    <!-- 20-May-2024: [modules-base#233]: Tolerate [2.2,3) for javax.xml.bind Import-Package
+	    in the generated MANIFEST.MF -->
+    <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
     <dependency>
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
-      <version>${version.jaxb.impl}</version>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.2.12</version>
     </dependency>
 
     <!-- 14-Mar-2019, tatu: Looks like this is needed for JDK11 and later
@@ -73,12 +75,14 @@ for configuring data-binding.
     </dependency>
 
     <!-- may also need JAXB impl for tests -->
+    <!-- 20-May-2024, tatu: no longer needed it seems:
     <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
       <version>${version.jaxb.impl}</version>
       <scope>test</scope>
     </dependency>
+    -->
 
   </dependencies>
 
