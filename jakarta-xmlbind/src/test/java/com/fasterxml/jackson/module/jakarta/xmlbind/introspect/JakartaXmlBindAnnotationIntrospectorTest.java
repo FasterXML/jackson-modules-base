@@ -22,7 +22,7 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
  * Tests for verifying that JAXB annotation based introspector
  * implementation works as expected
  */
-public class TestJaxbAnnotationIntrospector
+public class JakartaXmlBindAnnotationIntrospectorTest
     extends ModuleTestBase
 {
     /*

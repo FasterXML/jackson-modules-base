@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.*;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
-public class TestJaxbFieldAccess extends ModuleTestBase
+public class JakartaXmlBindFieldAccessTest extends ModuleTestBase
 {
     /*
     /**********************************************************

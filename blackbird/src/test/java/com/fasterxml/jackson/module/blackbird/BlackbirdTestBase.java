@@ -251,7 +251,7 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
         throws IOException
     {
         assertEquals(expName, jp.getText());
-        assertEquals(expName, jp.getCurrentName());
+        assertEquals(expName, jp.currentName());
     }
 
     protected void verifyIntValue(JsonParser jp, long expValue)

@@ -49,6 +49,8 @@ public class TestDeserializerCaching extends ModuleTestBase
     
     static class MyBeanDeserializerModifier extends BeanDeserializerModifier
     {
+        private static final long serialVersionUID = 1L;
+
         static int count = 0;
 
         @Override

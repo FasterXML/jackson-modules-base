@@ -23,9 +23,18 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.17.0 (not yet released)
+2.18.0 (not yet released)
 
--
+No changes since 2.17
+
+2.17.1 (04-May-2024)
+2.17.0 (12-Mar-2024)
+
+No changes since 2.16
+
+2.16.2 (09-Mar-2024)
+
+No changes since 2.16.1
 
 2.16.1 (24-Dec-2023)
 
@@ -51,6 +60,7 @@ Active maintainers:
  (contributed by Eran L)
 - Update `asm` version 9.5 -> 9.6
 
+2.15.4 (15-Feb-2024)
 2.15.3 (12-Oct-2023)
 
 No changes since 2.15.2
