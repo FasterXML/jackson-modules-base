@@ -1,10 +1,22 @@
 Project: jackson-modules-base
 Modules:
+  jackson-module-afterburner
+  jackson-module-android-record
+  jackson-module-blackbird
   jackson-module-guice
+  jackson-module-guice7
+  jackson-module-jakarta-xmlbind-annotations
   jackson-module-jaxb
   jackson-module-mrbean
+  jackson-module-no-ctor-deser
   jackson-module-osgi
-  jackson-module-paranamer
+
+Active maintainers:
+
+* Eran Leshem (@eranl): author of jackson-module-android-record
+* Steven Schlansker (@stevenschlansker): author of Blackbird, co-author
+  of Afterburner
+* Tatu Saloranta (@cowtowncoder): author or co-author of all other modules
 
 ------------------------------------------------------------------------
 === Releases ===
