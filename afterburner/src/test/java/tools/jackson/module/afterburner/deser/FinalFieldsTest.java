@@ -1,10 +1,10 @@
-package tools.jackson.module.blackbird.deser;
+package tools.jackson.module.afterburner.deser;
 
 import com.fasterxml.jackson.annotation.*;
 import tools.jackson.databind.*;
-import tools.jackson.module.blackbird.BlackbirdTestBase;
+import tools.jackson.module.afterburner.AfterburnerTestBase;
 
-public class TestFinalFields extends BlackbirdTestBase
+public class FinalFieldsTest extends AfterburnerTestBase
 {
     static class Address {
         public int zip1, zip2;
@@ -40,8 +40,10 @@ public class TestFinalFields extends BlackbirdTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = newBlackbirdMapper();
-    
+    private final ObjectMapper MAPPER = afterburnerMapperBuilder()
+            .enable(MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS)
+            .build();
+
     public void testFinalFields() throws Exception
     {
         String json = MAPPER.writeValueAsString(new Organization[] {

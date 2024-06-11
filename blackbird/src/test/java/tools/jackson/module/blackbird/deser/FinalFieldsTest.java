@@ -1,10 +1,10 @@
-package tools.jackson.module.afterburner.deser;
+package tools.jackson.module.blackbird.deser;
 
 import com.fasterxml.jackson.annotation.*;
 import tools.jackson.databind.*;
-import tools.jackson.module.afterburner.AfterburnerTestBase;
+import tools.jackson.module.blackbird.BlackbirdTestBase;
 
-public class TestFinalFields extends AfterburnerTestBase
+public class FinalFieldsTest extends BlackbirdTestBase
 {
     static class Address {
         public int zip1, zip2;
@@ -40,8 +40,10 @@ public class TestFinalFields extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = newAfterburnerMapper();
-
+    private final ObjectMapper MAPPER = blackbirdMapperBuilder()
+            .enable(MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS)
+            .build();
+    
     public void testFinalFields() throws Exception
     {
         String json = MAPPER.writeValueAsString(new Organization[] {
@@ -63,11 +65,11 @@ public class TestFinalFields extends AfterburnerTestBase
         JsonOrganization organization = new JsonOrganization(-1L, "name", address);
         String json = MAPPER.writeValueAsString(organization);
         assertNotNull(json);
-        
+
         JsonOrganization result = MAPPER.readValue(json, JsonOrganization.class);
         assertNotNull(result);
     }
- 
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     static class JsonAddress extends Resource<JsonAddress> {
         public final long id;
