@@ -151,9 +151,9 @@ public class TestXmlID2 extends BaseJaxbTest
                 .build();
         List<User> users = getUserList();
         final String json = mapper.writeValueAsString(users);
-        String expected = "[{\"id\":11,\"username\":\"11\",\"email\":\"11@test.com\",\"department\":9}"
-                +",{\"id\":22,\"username\":\"22\",\"email\":\"22@test.com\",\"department\":9}"
-                +",{\"id\":33,\"username\":\"33\",\"email\":\"33@test.com\",\"department\":null}]";
+        String expected = a2q("[{'id':11,'department':9,'email':'11@test.com','username':'11'}"
+                +",{'id':22,'department':9,'email':'22@test.com','username':'22'}"
+                +",{'id':33,'department':null,'email':'33@test.com','username':'33'}]");
         
         assertEquals(expected, json);
 
