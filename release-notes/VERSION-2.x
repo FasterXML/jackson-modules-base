@@ -29,6 +29,7 @@ Active maintainers:
   that it can be deployed in Liberty alongside features which use 2.2
  (contributed by Jack D)
 
+2.17.2 (05-Jul-2024)
 2.17.1 (04-May-2024)
 2.17.0 (12-Mar-2024)
 
