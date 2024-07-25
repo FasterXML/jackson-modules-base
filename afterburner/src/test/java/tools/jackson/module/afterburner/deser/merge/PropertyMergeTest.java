@@ -181,6 +181,7 @@ public class PropertyMergeTest extends AfterburnerTestBase
         // and finally with extra, failing
         try {
             MAPPER.readerForUpdating(input)
+                .with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .readValue("[9, 8, 14]");
             fail("Should not pass");
         } catch (MismatchedInputException e) {

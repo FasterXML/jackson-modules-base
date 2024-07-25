@@ -135,7 +135,9 @@ public class TestUnknownPropertyDeserialization
     public void testUnknownHandlingDefault() throws Exception
     {
         try {
-            MAPPER.readValue(new StringReader(JSON_UNKNOWN_FIELD), TestBean.class);
+            MAPPER.readerFor(TestBean.class)
+                .with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .readValue(new StringReader(JSON_UNKNOWN_FIELD));
             fail("Should not pass");
         } catch (UnrecognizedPropertyException jex) {
             verifyException(jex, "Unrecognized property \"foo\"");
@@ -231,14 +233,16 @@ public class TestUnknownPropertyDeserialization
      */
     public void testClassWithUnknownAndIgnore() throws Exception
     {
+        ObjectReader r = MAPPER.readerFor(ImplicitIgnores.class)
+                .with(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         // should be ok: "a" and "b" ignored, "c" mapped:
-        ImplicitIgnores result = MAPPER.readValue
-            ("{\"a\":1,\"b\":2,\"c\":3 }", ImplicitIgnores.class);
+        ImplicitIgnores result = r.readValue
+            ("{\"a\":1,\"b\":2,\"c\":3 }");
         assertEquals(3, result.c);
 
         // but "d" is not defined, so should still error
         try {
-            MAPPER.readValue("{\"a\":1,\"b\":2,\"c\":3,\"d\":4 }", ImplicitIgnores.class);            
+            r.readValue("{\"a\":1,\"b\":2,\"c\":3,\"d\":4 }");            
             fail("Should not pass");
         } catch (UnrecognizedPropertyException e) {
             verifyException(e, "Unrecognized property \"d\"");
