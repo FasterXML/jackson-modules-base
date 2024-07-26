@@ -153,10 +153,13 @@ public class AndroidRecordModule extends SimpleModule {
                   null, null, parameter.getAllAnnotations(), parameter, i, injectable, null);
         }
 
-        ((StdValueInstantiator) defaultInstantiator).configureFromObjectSettings(null, null, null, null,
-                constructor, properties);
+        AndroidRecordInstantiator instantiator = new AndroidRecordInstantiator((StdValueInstantiator) defaultInstantiator);
+        instantiator.configureFromObjectSettings(null, null, null, null, constructor, properties);
+
         ClassUtil.checkAndFixAccess(constructor.getAnnotated(), false);
         found = true;
+
+        defaultInstantiator = instantiator;
       }
     }
 
