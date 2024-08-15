@@ -9,8 +9,7 @@ import tools.jackson.module.androidrecord.BaseMapTest;
 
 import com.android.tools.r8.RecordTag;
 
-public class RecordCreatorsFailingTest extends BaseMapTest
-{
+public class RecordCreatorsFailingTest extends BaseMapTest {
   static final class RecordWithAltCtor extends RecordTag {
     private final int id;
     private final String name;
@@ -36,28 +35,28 @@ public class RecordCreatorsFailingTest extends BaseMapTest
 
   private final ObjectMapper MAPPER = newJsonMapper();
 
-    /*
-    /**********************************************************************
-    /* Test methods, alternate constructors
-    /**********************************************************************
-     */
+  /*
+  /**********************************************************************
+  /* Test methods, alternate constructors
+  /**********************************************************************
+  */
 
-    // Fails: Implicit canonical constructor still works too
-    public void testDeserializeWithAltCtor() throws Exception {
-        RecordWithAltCtor value = MAPPER.readValue("{\"id\":2812}",
-                RecordWithAltCtor.class);
-        assertEquals(2812, value.id());
-        assertEquals("name2", value.name());
+  // Fails: Implicit canonical constructor still works too
+  public void testDeserializeWithAltCtor() throws Exception {
+    RecordWithAltCtor value = MAPPER.readValue("{\"id\":2812}",
+            RecordWithAltCtor.class);
+    assertEquals(2812, value.id());
+    assertEquals("name2", value.name());
 
-        // "Implicit" canonical constructor can no longer be used when there's explicit constructor
-        try {
-            MAPPER.readValue("{\"id\":2812,\"name\":\"Bob\"}",
-                    RecordWithAltCtor.class);
-            fail("should not pass");
-        } catch (UnrecognizedPropertyException e) {
-            verifyException(e, "Unrecognized");
-            verifyException(e, "\"name\"");
-            verifyException(e, "RecordWithAltCtor");
-        }
+    // "Implicit" canonical constructor can no longer be used when there's explicit constructor
+    try {
+      MAPPER.readValue("{\"id\":2812,\"name\":\"Bob\"}",
+              RecordWithAltCtor.class);
+      fail("should not pass");
+    } catch (UnrecognizedPropertyException e) {
+      verifyException(e, "Unrecognized");
+      verifyException(e, "\"name\"");
+      verifyException(e, "RecordWithAltCtor");
     }
+  }
 }

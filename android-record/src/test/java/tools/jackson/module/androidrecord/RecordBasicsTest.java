@@ -7,12 +7,18 @@ import java.util.Objects;
 
 import com.android.tools.r8.RecordTag;
 
+import org.junit.Assert;
+
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import tools.jackson.databind.*;
+import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonNaming;
+import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.type.TypeFactory;
+import tools.jackson.databind.util.Converter;
 
 public class RecordBasicsTest extends BaseMapTest
 {
@@ -21,7 +27,6 @@ public class RecordBasicsTest extends BaseMapTest
     public boolean equals(Object o) {
       return o instanceof EmptyRecord;
     }
-
   }
 
   static final class SimpleRecord extends RecordTag {
@@ -95,6 +100,14 @@ public class RecordBasicsTest extends BaseMapTest
     @JsonProperty("rename")
     public String name() {
       return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      // Need not be robust, so:
+      RecordWithRename other = (RecordWithRename) o;
+      return Objects.equals(this.id, other.id)
+              && Objects.equals(this.name, other.name);
     }
   }
 
@@ -183,8 +196,10 @@ public class RecordBasicsTest extends BaseMapTest
   }
 
   static final class RecordSomeWriteOnly extends RecordTag {
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) private final int id;
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) private final String name;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private final int id;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private final String name;
     private final String email;
 
     RecordSomeWriteOnly(
@@ -267,197 +282,268 @@ public class RecordBasicsTest extends BaseMapTest
     }
   }
 
-    private final ObjectMapper MAPPER = jsonMapperBuilder()
-            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+  static final class RecordWithJsonDeserialize extends RecordTag {
+    private final int id;
+    @JsonDeserialize(converter = StringTrimmer.class)
+    private final String name;
+
+    RecordWithJsonDeserialize(int id, @JsonDeserialize(converter = StringTrimmer.class) String name) {
+      this.id = id;
+      this.name = name;
+    }
+
+    public int id() {
+      return id;
+    }
+
+    @JsonDeserialize(converter = StringTrimmer.class)
+    public String name() {
+      return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof RecordWithJsonDeserialize)) {
+        return false;
+      }
+      RecordWithJsonDeserialize that = (RecordWithJsonDeserialize) o;
+      return id == that.id && Objects.equals(name, that.name);
+    }
+
+    @Override
+    public String toString() {
+      return "RecordWithJsonDeserialize{" +
+              "id=" + id +
+              ", name='" + name + '\'' +
+              '}';
+    }
+  }
+
+  private final ObjectMapper MAPPER = jsonMapperBuilder()
+          .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+          .build();
+
+  /*
+  /**********************************************************************
+  /* Test methods, Record type introspection
+  /**********************************************************************
+  */
+
+  public void testClassUtil() {
+    assertFalse(AndroidRecordModule.isDesugaredRecordClass(getClass()));
+    assertTrue(AndroidRecordModule.isDesugaredRecordClass(SimpleRecord.class));
+    assertTrue(AndroidRecordModule.isDesugaredRecordClass(RecordOfRecord.class));
+    assertTrue(AndroidRecordModule.isDesugaredRecordClass(RecordWithRename.class));
+  }
+
+  public void testRecordJavaType() {
+    assertFalse(AndroidRecordModule.isDesugaredRecordClass(MAPPER.constructType(getClass()).getRawClass()));
+    assertTrue(AndroidRecordModule.isDesugaredRecordClass(MAPPER.constructType(SimpleRecord.class).getRawClass()));
+    assertTrue(AndroidRecordModule.isDesugaredRecordClass(MAPPER.constructType(RecordOfRecord.class).getRawClass()));
+    assertTrue(AndroidRecordModule.isDesugaredRecordClass(MAPPER.constructType(RecordWithRename.class).getRawClass()));
+  }
+
+  /*
+  /**********************************************************************
+  /* Test methods, default reading/writing Record values
+  /**********************************************************************
+   */
+
+  public void testSerializeSimpleRecord() throws Exception {
+    String json = MAPPER.writeValueAsString(new SimpleRecord(123, "Bob"));
+    final Object EXP = map("id", Integer.valueOf(123), "name", "Bob");
+    assertEquals(EXP, MAPPER.readValue(json, Object.class));
+  }
+
+  public void testDeserializeSimpleRecord() throws Exception {
+    assertEquals(new SimpleRecord(123, "Bob"),
+            MAPPER.readValue("{\"id\":123,\"name\":\"Bob\"}", SimpleRecord.class));
+  }
+
+  public void testSerializeEmptyRecord() throws Exception {
+    assertEquals("{}", MAPPER.writeValueAsString(new EmptyRecord()));
+  }
+
+  public void testDeserializeEmptyRecord() throws Exception {
+    assertEquals(new EmptyRecord(),
+            MAPPER.readValue("{}", EmptyRecord.class));
+  }
+
+  public void testSerializeRecordOfRecord() throws Exception {
+    RecordOfRecord record = new RecordOfRecord(new SimpleRecord(123, "Bob"));
+    String json = MAPPER.writeValueAsString(record);
+    final Object EXP = Collections.singletonMap("record",
+            map("id", Integer.valueOf(123), "name", "Bob"));
+    assertEquals(EXP, MAPPER.readValue(json, Object.class));
+  }
+
+  public void testDeserializeRecordOfRecord() throws Exception {
+    assertEquals(new RecordOfRecord(new SimpleRecord(123, "Bob")),
+            MAPPER.readValue("{\"record\":{\"id\":123,\"name\":\"Bob\"}}",
+                    RecordOfRecord.class));
+  }
+
+  /*
+  /**********************************************************************
+  /* Test methods, reading/writing Record values with different config
+  /**********************************************************************
+   */
+
+  public void testSerializeSimpleRecord_DisableAnnotationIntrospector() throws Exception {
+    SimpleRecord record = new SimpleRecord(123, "Bob");
+
+    JsonMapper mapper = JsonMapper.builder().addModule(new AndroidRecordModule())
+            .configure(MapperFeature.USE_ANNOTATIONS, false)
+            .build();
+    String json = mapper.writeValueAsString(record);
+
+    assertEquals("{\"id\":123,\"name\":\"Bob\"}", json);
+  }
+
+  public void testDeserializeSimpleRecord_DisableAnnotationIntrospector() throws Exception {
+    JsonMapper mapper = JsonMapper.builder().addModule(new AndroidRecordModule())
+            .configure(MapperFeature.USE_ANNOTATIONS, false)
             .build();
 
-    /*
-    /**********************************************************************
-    /* Test methods, Record type introspection
-    /**********************************************************************
-     */
+    Assert.assertThrows(InvalidDefinitionException.class, () -> mapper.readValue("{\"id\":123,\"name\":\"Bob\"}", SimpleRecord.class));
+  }
 
-    public void testClassUtil() {
-        assertFalse(AndroidRecordModule.isDesugaredRecordClass(getClass()));
-        assertTrue(AndroidRecordModule.isDesugaredRecordClass(SimpleRecord.class));
-        assertTrue(AndroidRecordModule.isDesugaredRecordClass(RecordOfRecord.class));
-        assertTrue(AndroidRecordModule.isDesugaredRecordClass(RecordWithRename.class));
+  /*
+  /**********************************************************************
+  /* Test methods, renames, injects
+  /**********************************************************************
+   */
+
+  public void testSerializeJsonRename() throws Exception {
+    String json = MAPPER.writeValueAsString(new RecordWithRename(123, "Bob"));
+    final Object EXP = map("id", Integer.valueOf(123), "rename", "Bob");
+    assertEquals(EXP, MAPPER.readValue(json, Object.class));
+  }
+
+  public void testDeserializeJsonRename() throws Exception {
+    RecordWithRename value = MAPPER.readValue("{\"id\":123,\"rename\":\"Bob\"}",
+            RecordWithRename.class);
+    assertEquals(new RecordWithRename(123, "Bob"), value);
+  }
+
+  public void testDeserializeConstructorInjectRecord() throws Exception {
+      ObjectReader r = MAPPER.readerFor(RecordWithConstructorInject.class)
+              .with(new InjectableValues.Std().addValue(String.class, "Bob"));
+
+    RecordWithConstructorInject value = r.readValue("{\"id\":123}");
+    assertEquals(new RecordWithConstructorInject(123, "Bob"), value);
+  }
+
+  /*
+  /**********************************************************************
+  /* Test methods, naming strategy
+  /**********************************************************************
+   */
+
+  // [databind#2992]
+  public void testNamingStrategy() throws Exception {
+    SnakeRecord input = new SnakeRecord("123", "value");
+
+    String json = MAPPER.writeValueAsString(input);
+    assertEquals("{\"my_id\":\"123\",\"my_value\":\"value\"}", json);
+
+    SnakeRecord output = MAPPER.readValue(json, SnakeRecord.class);
+    assertEquals(input, output);
+  }
+
+  /*
+  /**********************************************************************
+  /* Test methods, JsonProperty(access=WRITE_ONLY)
+  /**********************************************************************
+   */
+
+  public void testSerialize_SingleWriteOnlyParameter() throws Exception {
+    String json = MAPPER.writeValueAsString(new RecordSingleWriteOnly(123));
+
+    assertEquals("{}", json);
+  }
+
+  // [databind#3897]
+  public void testDeserialize_SingleWriteOnlyParameter() throws Exception {
+    RecordSingleWriteOnly value = MAPPER.readValue("{\"id\":123}", RecordSingleWriteOnly.class);
+
+    assertEquals(new RecordSingleWriteOnly(123), value);
+  }
+
+  public void testSerialize_SomeWriteOnlyParameter() throws Exception {
+    String json = MAPPER.writeValueAsString(new RecordSomeWriteOnly(123, "Bob", "bob@example.com"));
+
+    assertEquals("{\"email\":\"bob@example.com\"}", json);
+  }
+
+  public void testDeserialize_SomeWriteOnlyParameter() throws Exception {
+    RecordSomeWriteOnly value = MAPPER.readValue(
+            "{\"id\":123,\"name\":\"Bob\",\"email\":\"bob@example.com\"}",
+            RecordSomeWriteOnly.class);
+
+    assertEquals(new RecordSomeWriteOnly(123, "Bob", "bob@example.com"), value);
+  }
+
+  public void testSerialize_AllWriteOnlyParameter() throws Exception {
+    String json = MAPPER.writeValueAsString(new RecordAllWriteOnly(123, "Bob", "bob@example.com"));
+
+    assertEquals("{}", json);
+  }
+
+  public void testDeserialize_AllWriteOnlyParameter() throws Exception {
+    RecordAllWriteOnly value = MAPPER.readValue(
+            "{\"id\":123,\"name\":\"Bob\",\"email\":\"bob@example.com\"}",
+            RecordAllWriteOnly.class);
+
+    assertEquals(new RecordAllWriteOnly(123, "Bob", "bob@example.com"), value);
+  }
+
+  /*
+  /**********************************************************************
+  /* Test methods, JsonDeserialize
+  /**********************************************************************
+   */
+
+  // Fails: converter not applied
+  public void testDeserializeJsonDeserializeRecord() throws Exception {
+    RecordWithJsonDeserialize value = MAPPER.readValue("{\"id\":123,\"name\":\"   Bob   \"}",
+            RecordWithJsonDeserialize.class);
+
+    assertEquals(new RecordWithJsonDeserialize(123, "Bob"), value);
+  }
+
+  /*
+  /**********************************************************************
+  /* Internal helper methods
+  /**********************************************************************
+   */
+
+  private static Map<String, Object> map(String key1, Object value1,
+                                         String key2, Object value2) {
+    final Map<String, Object> result = new LinkedHashMap<>();
+    result.put(key1, value1);
+    result.put(key2, value2);
+    return result;
+  }
+
+  public static class StringTrimmer implements Converter<String, String> {
+
+    @Override
+    public String convert(String value) {
+      return value.trim();
     }
 
-    public void testRecordJavaType() {
-        assertFalse(AndroidRecordModule.isDesugaredRecordClass(MAPPER.constructType(getClass()).getRawClass()));
-        assertTrue(AndroidRecordModule.isDesugaredRecordClass(MAPPER.constructType(SimpleRecord.class).getRawClass()));
-        assertTrue(AndroidRecordModule.isDesugaredRecordClass(MAPPER.constructType(RecordOfRecord.class).getRawClass()));
-        assertTrue(AndroidRecordModule.isDesugaredRecordClass(MAPPER.constructType(RecordWithRename.class).getRawClass()));
+    @Override
+    public JavaType getInputType(TypeFactory typeFactory) {
+      return typeFactory.constructType(String.class);
     }
 
-    /*
-    /**********************************************************************
-    /* Test methods, default reading/writing Record values
-    /**********************************************************************
-     */
-
-    public void testSerializeSimpleRecord() throws Exception {
-        String json = MAPPER.writeValueAsString(new SimpleRecord(123, "Bob"));
-        final Object EXP = map("id", Integer.valueOf(123), "name", "Bob");
-        assertEquals(EXP, MAPPER.readValue(json, Object.class));
+    @Override
+    public JavaType getOutputType(TypeFactory typeFactory) {
+      return typeFactory.constructType(String.class);
     }
-
-    public void testDeserializeSimpleRecord() throws Exception {
-        assertEquals(new SimpleRecord(123, "Bob"),
-                MAPPER.readValue("{\"id\":123,\"name\":\"Bob\"}", SimpleRecord.class));
-    }
-
-    public void testSerializeEmptyRecord() throws Exception {
-        assertEquals("{}", MAPPER.writeValueAsString(new EmptyRecord()));
-    }
-
-    public void testDeserializeEmptyRecord() throws Exception {
-        assertEquals(new EmptyRecord(),
-                MAPPER.readValue("{}", EmptyRecord.class));
-    }
-
-    public void testSerializeRecordOfRecord() throws Exception {
-        RecordOfRecord record = new RecordOfRecord(new SimpleRecord(123, "Bob"));
-        String json = MAPPER.writeValueAsString(record);
-        final Object EXP = Collections.singletonMap("record",
-                map("id", Integer.valueOf(123), "name", "Bob"));
-        assertEquals(EXP, MAPPER.readValue(json, Object.class));
-    }
-
-    public void testDeserializeRecordOfRecord() throws Exception {
-        assertEquals(new RecordOfRecord(new SimpleRecord(123, "Bob")),
-                MAPPER.readValue("{\"record\":{\"id\":123,\"name\":\"Bob\"}}",
-                        RecordOfRecord.class));
-    }
-
-    /*
-    /**********************************************************************
-    /* Test methods, reading/writing Record values with different config
-    /**********************************************************************
-     */
-
-    public void testSerializeSimpleRecord_DisableAnnotationIntrospector() throws Exception {
-        SimpleRecord record = new SimpleRecord(123, "Bob");
-
-        JsonMapper mapper = JsonMapper.builder().addModule(new AndroidRecordModule())
-                .configure(MapperFeature.USE_ANNOTATIONS, false)
-                .build();
-        String json = mapper.writeValueAsString(record);
-
-        assertEquals("{\"id\":123,\"name\":\"Bob\"}", json);
-    }
-
-    public void testDeserializeSimpleRecord_DisableAnnotationIntrospector() throws Exception {
-        JsonMapper mapper = JsonMapper.builder().addModule(new AndroidRecordModule())
-                .configure(MapperFeature.USE_ANNOTATIONS, false)
-                .build();
-        SimpleRecord value = mapper.readValue("{\"id\":123,\"name\":\"Bob\"}", SimpleRecord.class);
-
-        assertEquals(new SimpleRecord(123, "Bob"), value);
-    }
-
-    /*
-    /**********************************************************************
-    /* Test methods, renames, injects
-    /**********************************************************************
-     */
-
-    public void testSerializeJsonRename() throws Exception {
-        String json = MAPPER.writeValueAsString(new RecordWithRename(123, "Bob"));
-        final Object EXP = map("id", Integer.valueOf(123), "rename", "Bob");
-        assertEquals(EXP, MAPPER.readValue(json, Object.class));
-    }
-
-    public void testDeserializeConstructorInjectRecord() throws Exception {
-        ObjectMapper mapper = jsonMapperBuilder()
-                .injectableValues(new InjectableValues.Std().addValue(String.class, "Bob"))
-                .build();
-
-        RecordWithConstructorInject value = mapper.readValue("{\"id\":123}", RecordWithConstructorInject.class);
-        assertEquals(new RecordWithConstructorInject(123, "Bob"), value);
-    }
-
-    /*
-    /**********************************************************************
-    /* Test methods, naming strategy
-    /**********************************************************************
-     */
-
-    // [databind#2992]
-    // 10-Jun-2024, tatu: Broken on Jackson 2.18, for some reason -- probably
-    //  module needs changes due to refactory POJO/Record property introspection
-    /*
-    public void testNamingStrategy() throws Exception
-    {
-        SnakeRecord input = new SnakeRecord("123", "value");
-
-        String json = MAPPER.writeValueAsString(input);
-        assertEquals("{\"my_id\":\"123\",\"my_value\":\"value\"}", json);
-
-        SnakeRecord output = MAPPER.readValue(json, SnakeRecord.class);
-        assertEquals(input, output);
-    }
-    */
-
-    /*
-    /**********************************************************************
-    /* Test methods, JsonProperty(access=WRITE_ONLY)
-    /**********************************************************************
-     */
-
-    public void testSerialize_SingleWriteOnlyParameter() throws Exception {
-        String json = MAPPER.writeValueAsString(new RecordSingleWriteOnly(123));
-
-        assertEquals("{}", json);
-    }
-
-    // [databind#3897]
-    public void testDeserialize_SingleWriteOnlyParameter() throws Exception {
-        RecordSingleWriteOnly value = MAPPER.readValue("{\"id\":123}", RecordSingleWriteOnly.class);
-
-        assertEquals(new RecordSingleWriteOnly(123), value);
-    }
-
-    public void testSerialize_SomeWriteOnlyParameter() throws Exception {
-        String json = MAPPER.writeValueAsString(new RecordSomeWriteOnly(123, "Bob", "bob@example.com"));
-
-        assertEquals("{\"email\":\"bob@example.com\"}", json);
-    }
-
-    public void testDeserialize_SomeWriteOnlyParameter() throws Exception {
-        RecordSomeWriteOnly value = MAPPER.readValue(
-                "{\"id\":123,\"name\":\"Bob\",\"email\":\"bob@example.com\"}",
-                RecordSomeWriteOnly.class);
-
-        assertEquals(new RecordSomeWriteOnly(123, "Bob", "bob@example.com"), value);
-    }
-
-    public void testSerialize_AllWriteOnlyParameter() throws Exception {
-        String json = MAPPER.writeValueAsString(new RecordAllWriteOnly(123, "Bob", "bob@example.com"));
-
-        assertEquals("{}", json);
-    }
-
-    public void testDeserialize_AllWriteOnlyParameter() throws Exception {
-        RecordAllWriteOnly value = MAPPER.readValue(
-                "{\"id\":123,\"name\":\"Bob\",\"email\":\"bob@example.com\"}",
-                RecordAllWriteOnly.class);
-
-        assertEquals(new RecordAllWriteOnly(123, "Bob", "bob@example.com"), value);
-    }
-
-    /*
-    /**********************************************************************
-    /* Internal helper methods
-    /**********************************************************************
-     */
-
-    private static Map<String,Object> map(String key1, Object value1,
-                                          String key2, Object value2) {
-        final Map<String, Object> result = new LinkedHashMap<>();
-        result.put(key1, value1);
-        result.put(key2, value2);
-        return result;
-    }
+  }
 }

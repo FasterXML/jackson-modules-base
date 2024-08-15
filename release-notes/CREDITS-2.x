@@ -157,3 +157,9 @@ Jack Dunning (@JDUNNIN)
 * Contributed #233: (jaxb) Tolerate JAX-RS 2.2 in jackson-module-jaxb-annotations so
   that it can be deployed in Liberty alongside features which use 2.2
  (2.18.0)
+
+@HelloOO7
+
+* Contributed #248: (android-record) jClass annotations and polymorphic types are ignored
+  when deserializing Android Record fields
+  (2.18.0)

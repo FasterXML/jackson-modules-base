@@ -28,6 +28,9 @@ Active maintainers:
 #233: (jaxb) Tolerate JAX-RS 2.2 in jackson-module-jaxb-annotations so
   that it can be deployed in Liberty alongside features which use 2.2
  (contributed by Jack D)
+#248: (android-record) jClass annotations and polymorphic types are ignored
+  when deserializing Android Record fields
+ (contributed by @HelloOO7)
 
 2.17.2 (05-Jul-2024)
 2.17.1 (04-May-2024)
