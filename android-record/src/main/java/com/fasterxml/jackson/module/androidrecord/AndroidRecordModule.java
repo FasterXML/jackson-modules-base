@@ -1,13 +1,5 @@
 package com.fasterxml.jackson.module.androidrecord;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.PropertyName;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
-import com.fasterxml.jackson.databind.introspect.*;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -16,6 +8,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.PropertyName;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
+import com.fasterxml.jackson.databind.introspect.*;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 /**
  * Module that allows (de)serialization of records using the canonical constructor and accessors on Android,
@@ -41,17 +40,20 @@ import java.util.stream.Stream;
  *
  * @author Eran Leshem
  **/
-public class AndroidRecordModule extends SimpleModule {
+public class AndroidRecordModule extends SimpleModule
+{
   private static final long serialVersionUID = 1L;
 
   private static final class AndroidRecordNaming
-          extends DefaultAccessorNamingStrategy {
+    extends DefaultAccessorNamingStrategy
+  {
     /**
      * Names of actual Record components from definition; auto-detected.
      */
     private final Set<String> _componentNames;
 
-    AndroidRecordNaming(MapperConfig<?> config, AnnotatedClass forClass) {
+    AndroidRecordNaming(MapperConfig<?> config, AnnotatedClass forClass)
+    {
       super(config, forClass,
               // no setters for (immutable) Records:
               null,
@@ -73,12 +75,13 @@ public class AndroidRecordModule extends SimpleModule {
     }
   }
 
-  static class AndroidRecordClassIntrospector extends BasicClassIntrospector {
+  static class AndroidRecordClassIntrospector extends BasicClassIntrospector
+  {
     private static final long serialVersionUID = 1L;
 
     @Override
     protected POJOPropertiesCollector collectProperties(MapperConfig<?> config, JavaType type, MixInResolver r,
-                                                        boolean forSerialization) {
+            boolean forSerialization) {
       if (isDesugaredRecordClass(type.getRawClass())) {
         AnnotatedClass classDef = _resolveAnnotatedClass(config, type, r);
         AccessorNamingStrategy accNaming = new AndroidRecordNaming(config, classDef);
@@ -89,23 +92,25 @@ public class AndroidRecordModule extends SimpleModule {
     }
   }
 
-  static class AndroidRecordAnnotationIntrospector extends AnnotationIntrospector {
+  static class AndroidRecordAnnotationIntrospector extends AnnotationIntrospector
+  {
+    private static final long serialVersionUID = 1L;
 
     @Override
     public Version version() {
-      return Version.unknownVersion();
+      return PackageVersion.VERSION;
     }
 
     @Override
     public PotentialCreator findDefaultCreator(MapperConfig<?> config,
-                                               AnnotatedClass valueClass,
-                                               List<PotentialCreator> declaredConstructors,
-                                               List<PotentialCreator> declaredFactories) {
+            AnnotatedClass valueClass,
+            List<PotentialCreator> declaredConstructors,
+            List<PotentialCreator> declaredFactories)
+    {
+      PotentialCreator foundCreator = null;
       if (AndroidRecordModule.isDesugaredRecordClass(valueClass.getRawType())) {
         Map<String, Type> components = AndroidRecordModule.getDesugaredRecordComponents(valueClass.getRawType())
                 .collect(Collectors.toMap(Field::getName, Field::getGenericType));
-
-        PotentialCreator foundCreator = null;
 
         for (PotentialCreator creator : declaredConstructors) {
           if (!(creator.creator() instanceof AnnotatedConstructor)) {
@@ -125,10 +130,8 @@ public class AndroidRecordModule extends SimpleModule {
             foundCreator = creator.introspectParamNames(config, Arrays.stream(parameters).map(Parameter::getName).map(PropertyName::new).toArray(PropertyName[]::new));
           }
         }
-
-        return foundCreator;
       }
-      return null;
+      return foundCreator;
     }
   }
 
@@ -140,7 +143,8 @@ public class AndroidRecordModule extends SimpleModule {
   }
 
   static boolean isDesugaredRecordClass(Class<?> raw) {
-    return raw.getSuperclass() != null && raw.getSuperclass().getName().equals("com.android.tools.r8.RecordTag");
+    final Class<?> sup = raw.getSuperclass();
+    return (sup != null) && sup.getName().equals("com.android.tools.r8.RecordTag");
   }
 
   static Stream<Field> getDesugaredRecordComponents(Class<?> raw) {
