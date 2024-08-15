@@ -45,7 +45,7 @@ public class AndroidRecordModule extends SimpleModule
   private static final long serialVersionUID = 1L;
 
   static final class AndroidRecordNaming
-      extends DefaultAccessorNamingStrategy
+    extends DefaultAccessorNamingStrategy
   {
     /**
      * Names of actual Record components from definition; auto-detected.
@@ -75,7 +75,8 @@ public class AndroidRecordModule extends SimpleModule
     }
   }
 
-  static class AndroidRecordClassIntrospector extends BasicClassIntrospector {
+  static class AndroidRecordClassIntrospector extends BasicClassIntrospector
+  {
       private static final long serialVersionUID = 1L;
 
       public AndroidRecordClassIntrospector() {
@@ -108,46 +109,47 @@ public class AndroidRecordModule extends SimpleModule
       }
   }
 
-  static class AndroidRecordAnnotationIntrospector extends AnnotationIntrospector {
+  static class AndroidRecordAnnotationIntrospector extends AnnotationIntrospector
+  {
     private static final long serialVersionUID = 1L;
 
     @Override
-      public Version version() {
-        return PackageVersion.VERSION;
-      }
+    public Version version() {
+      return PackageVersion.VERSION;
+    }
 
-      @Override
-      public PotentialCreator findDefaultCreator(MapperConfig<?> config,
-              AnnotatedClass valueClass,
-              List<PotentialCreator> declaredConstructors,
-              List<PotentialCreator> declaredFactories)
-      {
-        PotentialCreator foundCreator = null;
-        if (AndroidRecordModule.isDesugaredRecordClass(valueClass.getRawType())) {
-          Map<String, Type> components = AndroidRecordModule.getDesugaredRecordComponents(valueClass.getRawType())
-                  .collect(Collectors.toMap(Field::getName, Field::getGenericType));
+    @Override
+    public PotentialCreator findDefaultCreator(MapperConfig<?> config,
+            AnnotatedClass valueClass,
+            List<PotentialCreator> declaredConstructors,
+            List<PotentialCreator> declaredFactories)
+    {
+      PotentialCreator foundCreator = null;
+      if (AndroidRecordModule.isDesugaredRecordClass(valueClass.getRawType())) {
+        Map<String, Type> components = AndroidRecordModule.getDesugaredRecordComponents(valueClass.getRawType())
+                .collect(Collectors.toMap(Field::getName, Field::getGenericType));
 
-          for (PotentialCreator creator : declaredConstructors) {
-            if (!(creator.creator() instanceof AnnotatedConstructor)) {
-              continue;
+        for (PotentialCreator creator : declaredConstructors) {
+          if (!(creator.creator() instanceof AnnotatedConstructor)) {
+            continue;
+          }
+          AnnotatedConstructor constructor = (AnnotatedConstructor) creator.creator();
+          Parameter[] parameters = constructor.getAnnotated().getParameters();
+          Map<String, Type> parameterTypes = Arrays.stream(parameters)
+                  .collect(Collectors.toMap(Parameter::getName, Parameter::getParameterizedType));
+
+          if (parameterTypes.equals(components)) {
+            if (foundCreator != null) {
+              throw new IllegalArgumentException(String.format(
+                      "Multiple constructors match set of components for record %s", valueClass.getRawType().getName()));
             }
-            AnnotatedConstructor constructor = (AnnotatedConstructor) creator.creator();
-            Parameter[] parameters = constructor.getAnnotated().getParameters();
-            Map<String, Type> parameterTypes = Arrays.stream(parameters)
-                    .collect(Collectors.toMap(Parameter::getName, Parameter::getParameterizedType));
 
-            if (parameterTypes.equals(components)) {
-              if (foundCreator != null) {
-                throw new IllegalArgumentException(String.format(
-                        "Multiple constructors match set of components for record %s", valueClass.getRawType().getName()));
-              }
-
-              foundCreator = creator.introspectParamNames(config, Arrays.stream(parameters).map(Parameter::getName).map(PropertyName::new).toArray(PropertyName[]::new));
-            }
+            foundCreator = creator.introspectParamNames(config, Arrays.stream(parameters).map(Parameter::getName).map(PropertyName::new).toArray(PropertyName[]::new));
           }
         }
-        return foundCreator;
       }
+      return foundCreator;
+    }
   }
   
   @Override
