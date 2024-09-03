@@ -154,20 +154,21 @@ public class AndroidRecordModule extends SimpleModule
 
   static Type fixAndroidGenericType(Type type) {
     if (type instanceof GenericArrayType) {
-      //recurse into component type
       Type componentType = fixAndroidGenericType(((GenericArrayType) type).getGenericComponentType());
-      if (componentType instanceof Class<?>) { //if it isn't generic, return the raw array type
+      if (componentType instanceof Class<?>) {
         return arrayTypeCompat((Class<?>) componentType);
       }
     }
     else if (type instanceof ParameterizedType) {
       //if the parameterized type is not actually parameterized, deduce the raw type
       ParameterizedType parameterizedType = (ParameterizedType) type;
-      Type rawType = parameterizedType.getRawType();
-      if (rawType instanceof Class<?>) {
-        Class<?> rawComponentClass = (Class<?>) rawType;
-        if (rawComponentClass.getTypeParameters().length == 0) {
-          return rawComponentClass;
+      if (parameterizedType.getOwnerType() == null) {
+        Type rawType = parameterizedType.getRawType();
+        if (rawType instanceof Class<?>) {
+          Class<?> rawComponentClass = (Class<?>) rawType;
+          if (rawComponentClass.getTypeParameters().length == 0) {
+            return rawComponentClass;
+          }
         }
       }
     }
