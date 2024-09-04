@@ -1,13 +1,8 @@
 package tools.jackson.module.androidrecord;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.*;
+import java.util.*;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -136,7 +131,7 @@ public class AndroidRecordModule extends SimpleModule
           AnnotatedConstructor constructor = (AnnotatedConstructor) creator.creator();
           Parameter[] parameters = constructor.getAnnotated().getParameters();
           Map<String, Type> parameterTypes = Arrays.stream(parameters)
-                  .collect(Collectors.toMap(Parameter::getName, Parameter::getParameterizedType));
+                  .collect(Collectors.toMap(Parameter::getName, parameter -> fixAndroidGenericType(parameter.getParameterizedType())));
 
           if (parameterTypes.equals(components)) {
             if (foundCreator != null) {
@@ -167,5 +162,32 @@ public class AndroidRecordModule extends SimpleModule
 
   static Stream<Field> getDesugaredRecordComponents(Class<?> raw) {
       return Arrays.stream(raw.getDeclaredFields()).filter(field -> ! Modifier.isStatic(field.getModifiers()));
+  }
+
+  static Class<?> arrayTypeCompat(Class<?> componentType) {
+    return Array.newInstance(componentType, 0).getClass();
+  }
+
+  static Type fixAndroidGenericType(Type type) {
+    if (type instanceof GenericArrayType) {
+      Type componentType = fixAndroidGenericType(((GenericArrayType) type).getGenericComponentType());
+      if (componentType instanceof Class<?>) {
+        return arrayTypeCompat((Class<?>) componentType);
+      }
+    }
+    else if (type instanceof ParameterizedType) {
+      //if the parameterized type is not actually parameterized, deduce the raw type
+      ParameterizedType parameterizedType = (ParameterizedType) type;
+      if (parameterizedType.getOwnerType() == null) {
+        Type rawType = parameterizedType.getRawType();
+        if (rawType instanceof Class<?>) {
+          Class<?> rawComponentClass = (Class<?>) rawType;
+          if (rawComponentClass.getTypeParameters().length == 0) {
+            return rawComponentClass;
+          }
+        }
+      }
+    }
+    return type;
   }
 }

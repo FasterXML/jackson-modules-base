@@ -31,6 +31,9 @@ Active maintainers:
 #248: (android-record) jClass annotations and polymorphic types are ignored
   when deserializing Android Record fields
  (contributed by @HelloOO7)
+#251: (android-record) Constructor is not recognized when a record uses
+  both arrays and generic types
+ (contributed by @HelloOO7)
 
 2.17.2 (05-Jul-2024)
 2.17.1 (04-May-2024)
