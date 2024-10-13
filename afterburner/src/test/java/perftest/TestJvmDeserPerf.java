@@ -104,7 +104,7 @@ public final class TestJvmDeserPerf
     protected int testDeser(ObjectMapper mapper, byte[] input, int reps)
         throws Exception
     {
-        JavaType type = TypeFactory.defaultInstance().constructType(MediaItem.class);
+        JavaType type = mapper.constructType(MediaItem.class);
         MediaItem item = null;
         for (int i = 0; i < reps; ++i) {
             item = mapper.readValue(input, 0, input.length, type);
