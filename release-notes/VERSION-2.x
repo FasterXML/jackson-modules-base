@@ -23,6 +23,10 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+2.18.1 (28-Oct-2024)
+
+No changes since 2.18.0
+
 2.18.0 (26-Sep-2024)
 
 #233: (jaxb) Tolerate JAX-RS 2.2 in jackson-module-jaxb-annotations so
