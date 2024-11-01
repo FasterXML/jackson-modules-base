@@ -39,6 +39,7 @@ No changes since 2.18.0
   both arrays and generic types
  (contributed by @HelloOO7)
 
+2.17.3 (01-Nov-2024)
 2.17.2 (05-Jul-2024)
 2.17.1 (04-May-2024)
 2.17.0 (12-Mar-2024)
