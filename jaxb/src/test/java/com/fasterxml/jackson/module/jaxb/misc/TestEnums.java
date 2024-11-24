@@ -1,6 +1,6 @@
 package com.fasterxml.jackson.module.jaxb.misc;
 
-import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
@@ -14,15 +14,16 @@ public class TestEnums extends BaseJaxbTest
 
     /*
     /**********************************************************
-    /* Unit tests
+    /* Test methods
     /**********************************************************
      */
+
+    private final ObjectMapper MAPPER = getJaxbMapper();
 
     // [JACKSON-436]
     public void testWrapperWithCollection() throws Exception
     {
-        ObjectMapper mapper = getJaxbMapper();
-        assertEquals("\"B\"", mapper.writeValueAsString(Plain.B));
-        assertEquals("1", mapper.writeValueAsString(Numeric.B));
+        assertEquals("\"B\"", MAPPER.writeValueAsString(Plain.B));
+        assertEquals("1", MAPPER.writeValueAsString(Numeric.B));
     }
 }
