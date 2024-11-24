@@ -19,7 +19,6 @@ import tools.jackson.databind.deser.impl.UnwrappedPropertyHandler;
  */
 public abstract class SuperSonicBDBase
     extends BeanDeserializer
-    
 {
     /**
      * Names of properties being deserialized, in ordered they are
