@@ -61,6 +61,11 @@ ${project.groupId}.mrbean.*;version=${project.version}
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
