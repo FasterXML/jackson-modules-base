@@ -10,6 +10,7 @@ import tools.jackson.databind.*;
 import tools.jackson.databind.deser.*;
 import tools.jackson.databind.deser.bean.BeanDeserializer;
 import tools.jackson.databind.deser.bean.BeanPropertyMap;
+import tools.jackson.databind.deser.bean.PropertyBasedCreator;
 import tools.jackson.databind.deser.impl.UnwrappedPropertyHandler;
 
 /**
@@ -51,10 +52,10 @@ public abstract class SuperSonicBDBase
     }
 
     protected SuperSonicBDBase(SuperSonicBDBase src,
-            UnwrappedPropertyHandler unwrapHandler, BeanPropertyMap renamedProperties,
-            boolean ignoreAllUnknown)
+            UnwrappedPropertyHandler unwrapHandler, PropertyBasedCreator propertyBasedCreator,
+            BeanPropertyMap renamedProperties, boolean ignoreAllUnknown)
     {
-        super(src, unwrapHandler, renamedProperties, ignoreAllUnknown);
+        super(src, unwrapHandler, propertyBasedCreator, renamedProperties, ignoreAllUnknown);
         _orderedPropertyNames = src._orderedPropertyNames;
         _orderedProperties = src._orderedProperties;
     }

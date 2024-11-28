@@ -9,6 +9,7 @@ import tools.jackson.databind.*;
 import tools.jackson.databind.deser.*;
 import tools.jackson.databind.deser.bean.BeanDeserializer;
 import tools.jackson.databind.deser.bean.BeanPropertyMap;
+import tools.jackson.databind.deser.bean.PropertyBasedCreator;
 import tools.jackson.databind.deser.impl.UnwrappedPropertyHandler;
 import tools.jackson.databind.util.NameTransformer;
 
@@ -44,10 +45,10 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
     }
 
     protected SuperSonicBeanDeserializer(SuperSonicBeanDeserializer src,
-            UnwrappedPropertyHandler unwrapHandler, BeanPropertyMap renamedProperties,
-            boolean ignoreAllUnknown)
+            UnwrappedPropertyHandler unwrapHandler, PropertyBasedCreator propertyBasedCreator,
+            BeanPropertyMap renamedProperties, boolean ignoreAllUnknown)
     {
-        super(src, unwrapHandler, renamedProperties, ignoreAllUnknown);
+        super(src, unwrapHandler, propertyBasedCreator, renamedProperties, ignoreAllUnknown);
         _orderedPropertyNames = src._orderedPropertyNames;
         _orderedProperties = src._orderedProperties;
     }
@@ -71,7 +72,11 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
             if (uwHandler != null) {
                 uwHandler = uwHandler.renameAll(ctxt, transformer);
             }
-            return new SuperSonicBeanDeserializer(this, uwHandler,
+            PropertyBasedCreator pbCreator = _propertyBasedCreator;
+            if (pbCreator != null) {
+                pbCreator = pbCreator.renameAll(ctxt, transformer);
+            }
+            return new SuperSonicBeanDeserializer(this, uwHandler, pbCreator,
                     _beanProperties.renameAll(ctxt, transformer), true);
         } finally { _currentlyTransforming = null; }
     }
