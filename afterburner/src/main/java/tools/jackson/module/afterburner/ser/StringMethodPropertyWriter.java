@@ -3,7 +3,7 @@ package tools.jackson.module.afterburner.ser;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.PropertyName;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 
 public final class StringMethodPropertyWriter 
@@ -43,30 +43,30 @@ public final class StringMethodPropertyWriter
      */
 
     @Override
-    public final void serializeAsProperty(Object bean, JsonGenerator g, SerializerProvider prov)
+    public final void serializeAsProperty(Object bean, JsonGenerator g, SerializationContext ctxt)
         throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsProperty(bean, g, prov);
+            fallbackWriter.serializeAsProperty(bean, g, ctxt);
             return;
         }
         String value;
         try {
             value = _propertyAccessor.stringGetter(bean, _propertyIndex);
         } catch (Throwable t) {
-            _handleProblem(bean, g, prov, t, false);
+            _handleProblem(bean, g, ctxt, t, false);
             return;
         }
         // Null (etc) handling; copied from super-class impl
         if (value == null) {
             // 20-Jun-2022, tatu: Defer checking of null, see [databind#3481]
             if ((_suppressableValue != null)
-                    && prov.includeFilterSuppressNulls(_suppressableValue)) {
+                    && ctxt.includeFilterSuppressNulls(_suppressableValue)) {
                 return;
             }
             if (_nullSerializer != null) {
                 g.writeName(_fastName);
-                _nullSerializer.serialize(null, g, prov);
+                _nullSerializer.serialize(null, g, ctxt);
             }
             return;
         }
@@ -84,11 +84,11 @@ public final class StringMethodPropertyWriter
     }
 
     @Override
-    public final void serializeAsElement(Object bean, JsonGenerator g, SerializerProvider prov)
+    public final void serializeAsElement(Object bean, JsonGenerator g, SerializationContext ctxt)
         throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsElement(bean, g, prov);
+            fallbackWriter.serializeAsElement(bean, g, ctxt);
             return;
         }
 
@@ -96,26 +96,26 @@ public final class StringMethodPropertyWriter
         try {
             value = _propertyAccessor.stringGetter(bean, _propertyIndex);
         } catch (Throwable t) {
-            _handleProblem(bean, g, prov, t, true);
+            _handleProblem(bean, g, ctxt, t, true);
             return;
         }
         // Null (etc) handling; copied from super-class impl
         if (value == null) {
             if (_suppressNulls) {
-                serializeAsOmittedElement(bean, g, prov);
+                serializeAsOmittedElement(bean, g, ctxt);
             } else {
-                prov.defaultSerializeNullValue(g);
+                ctxt.defaultSerializeNullValue(g);
             }
             return;
         }
         if (_suppressableValue != null) {
             if (MARKER_FOR_EMPTY == _suppressableValue) {
                 if (value.length() == 0) {
-                    serializeAsOmittedElement(bean, g, prov);
+                    serializeAsOmittedElement(bean, g, ctxt);
                     return;
                 }
             } else if (_suppressableValue.equals(value)) {
-                serializeAsOmittedElement(bean, g, prov);
+                serializeAsOmittedElement(bean, g, ctxt);
                 return;
             }
         }

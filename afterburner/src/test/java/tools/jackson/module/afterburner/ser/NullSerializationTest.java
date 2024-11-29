@@ -19,9 +19,9 @@ public class NullSerializationTest extends AfterburnerTestBase
     static class NullSerializer extends ValueSerializer<Object>
     {
         @Override
-        public void serialize(Object value, JsonGenerator gen, SerializerProvider provider)
+        public void serialize(Object value, JsonGenerator g, SerializationContext ctxt)
         {
-            gen.writeString("foobar");
+            g.writeString("foobar");
         }
     }
 
@@ -52,14 +52,14 @@ public class NullSerializationTest extends AfterburnerTestBase
         @Override
         public SerializationContextExt createContext(SerializationConfig config,
                 GeneratorSettings genSettings) {
-            return new MyNullSerializerProvider(_streamFactory, _cache,
+            return new MyNullSerializationContext(_streamFactory, _cache,
                     config, genSettings, _serializerFactory);
         }
     }
 
-    static class MyNullSerializerProvider extends SerializationContextExt
+    static class MyNullSerializationContext extends SerializationContextExt
     {
-        public MyNullSerializerProvider(TokenStreamFactory streamFactory,
+        public MyNullSerializationContext(TokenStreamFactory streamFactory,
                 SerializerCache cache, SerializationConfig config,
                 GeneratorSettings genSettings, SerializerFactory f) {
             super(streamFactory, config, genSettings, f, cache);

@@ -9,7 +9,7 @@ import tools.jackson.core.JsonGenerator;
 
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.module.SimpleModule;
 
 import com.google.inject.Binder;
@@ -212,7 +212,7 @@ public class ObjectMapperModuleTest
                     {
                         @Override
                         public void serialize(
-                                Integer integer, JsonGenerator g, SerializerProvider serializerProvider
+                                Integer integer, JsonGenerator g, SerializationContext ctxt
                         ) {
                             g.writeString(new BigInteger(String.valueOf(integer)).toString(16).toUpperCase());
                         }

@@ -50,14 +50,14 @@ public class CustomBeanPropertyWriterTest extends AfterburnerTestBase
         }
 
         @Override
-        public void serializeAsProperty(Object bean, JsonGenerator g, SerializerProvider prov)
+        public void serializeAsProperty(Object bean, JsonGenerator g, SerializationContext ctxt)
             throws Exception
         {
           Object val = get(bean);
           if((val == null || !val.equals(2)) && _nullSerializer == null) {
               return;
           }
-          super.serializeAsProperty(bean, g, prov);
+          super.serializeAsProperty(bean, g, ctxt);
         }
     }
 
