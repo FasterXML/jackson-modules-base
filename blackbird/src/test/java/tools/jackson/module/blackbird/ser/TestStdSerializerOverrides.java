@@ -1,17 +1,16 @@
 package tools.jackson.module.blackbird.ser;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.Version;
 
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.*;
 import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.ser.std.StdSerializer;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
-
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 public class TestStdSerializerOverrides extends BlackbirdTestBase
 {
@@ -30,7 +29,7 @@ public class TestStdSerializerOverrides extends BlackbirdTestBase
 
         @Override
         public void serialize(String value, JsonGenerator gen,
-                SerializerProvider provider) {
+                SerializationContext ctxt) {
             gen.writeString("Foo:"+value);
         }
     }
@@ -41,7 +40,7 @@ public class TestStdSerializerOverrides extends BlackbirdTestBase
 
         @Override
         public void serialize(Integer value0, JsonGenerator gen,
-                SerializerProvider provider) {
+                SerializationContext ctxt) {
             int v = -value0.intValue();
             gen.writeNumber(v);
         }
@@ -53,7 +52,7 @@ public class TestStdSerializerOverrides extends BlackbirdTestBase
 
         @Override
         public void serialize(Long value0, JsonGenerator gen,
-                SerializerProvider provider) {
+                SerializationContext ctxt) {
             long v = -value0.longValue();
             gen.writeNumber(v);
         }

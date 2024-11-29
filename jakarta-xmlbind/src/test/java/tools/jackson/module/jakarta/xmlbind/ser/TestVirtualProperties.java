@@ -59,7 +59,7 @@ public class TestVirtualProperties extends ModuleTestBase
         }
 
         @Override
-        protected Object value(Object bean, JsonGenerator jgen, SerializerProvider prov) {
+        protected Object value(Object bean, JsonGenerator jgen, SerializationContext ctxt) {
             if (_name.toString().equals("id")) {
                 return "abc123";
             }

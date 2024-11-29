@@ -30,7 +30,7 @@ public class JsonAppendTest extends AfterburnerTestBase
             super(propDef, contextAnnotations, declaredType);
         }
         @Override
-        protected Object value(Object bean, JsonGenerator g, SerializerProvider prov) throws Exception {
+        protected Object value(Object bean, JsonGenerator g, SerializationContext prov) throws Exception {
             return "bar";
         }
         @Override

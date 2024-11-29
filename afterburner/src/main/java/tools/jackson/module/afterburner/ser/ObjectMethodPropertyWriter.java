@@ -3,7 +3,7 @@ package tools.jackson.module.afterburner.ser;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.PropertyName;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.impl.PropertySerializerMap;
 
@@ -44,30 +44,30 @@ public final class ObjectMethodPropertyWriter
      */
 
     @Override
-    public final void serializeAsProperty(Object bean, JsonGenerator g, SerializerProvider prov)
+    public final void serializeAsProperty(Object bean, JsonGenerator g, SerializationContext ctxt)
         throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsProperty(bean, g, prov);
+            fallbackWriter.serializeAsProperty(bean, g, ctxt);
             return;
         }
         Object value;
         try {
             value = _propertyAccessor.objectGetter(bean, _propertyIndex);
         } catch (Throwable t) {
-            _handleProblem(bean, g, prov, t, false);
+            _handleProblem(bean, g, ctxt, t, false);
             return;
         }
         // Null (etc) handling; copied from super-class impl
         if (value == null) {
             // 20-Jun-2022, tatu: Defer checking of null, see [databind#3481]
             if ((_suppressableValue != null)
-                    && prov.includeFilterSuppressNulls(_suppressableValue)) {
+                    && ctxt.includeFilterSuppressNulls(_suppressableValue)) {
                 return;
             }
             if (_nullSerializer != null) {
                 g.writeName(_fastName);
-                _nullSerializer.serialize(null, g, prov);
+                _nullSerializer.serialize(null, g, ctxt);
             }
             return;
         }
@@ -77,12 +77,12 @@ public final class ObjectMethodPropertyWriter
             PropertySerializerMap map = _dynamicSerializers;
             ser = map.serializerFor(cls);
             if (ser == null) {
-                ser = _findAndAddDynamic(map, cls, prov);
+                ser = _findAndAddDynamic(map, cls, ctxt);
             }
         }
         if (_suppressableValue != null) {
             if (MARKER_FOR_EMPTY == _suppressableValue) {
-                if (ser.isEmpty(prov, value)) {
+                if (ser.isEmpty(ctxt, value)) {
                     return;
                 }
             } else if (_suppressableValue.equals(value)) {
@@ -91,41 +91,41 @@ public final class ObjectMethodPropertyWriter
         }
         if (value == bean) {
             // three choices: exception; handled by call; or pass-through
-            if (_handleSelfReference(bean, g, prov, ser)) {
+            if (_handleSelfReference(bean, g, ctxt, ser)) {
                 return;
             }
         }
         g.writeName(_fastName);
         if (_typeSerializer == null) {
-            ser.serialize(value, g, prov);
+            ser.serialize(value, g, ctxt);
         } else {
-            ser.serializeWithType(value, g, prov, _typeSerializer);
+            ser.serializeWithType(value, g, ctxt, _typeSerializer);
         }
     }
 
     @Override
-    public final void serializeAsElement(Object bean, JsonGenerator g, SerializerProvider prov)
+    public final void serializeAsElement(Object bean, JsonGenerator g, SerializationContext ctxt)
         throws Exception
     {
         if (broken) {
-            fallbackWriter.serializeAsElement(bean, g, prov);
+            fallbackWriter.serializeAsElement(bean, g, ctxt);
             return;
         }
         Object value;
         try {
             value = _propertyAccessor.objectGetter(bean, _propertyIndex);
         } catch (Throwable t) {
-            _handleProblem(bean, g, prov, t, true);
+            _handleProblem(bean, g, ctxt, t, true);
             return;
         }
         // Null (etc) handling; copied from super-class impl
         if (value == null) {
             if (_nullSerializer != null) {
-                _nullSerializer.serialize(null, g, prov);
+                _nullSerializer.serialize(null, g, ctxt);
             } else if (_suppressNulls) {
-                serializeAsOmittedElement(bean, g, prov);
+                serializeAsOmittedElement(bean, g, ctxt);
             } else {
-                prov.defaultSerializeNullValue(g);
+                ctxt.defaultSerializeNullValue(g);
             }
             return;
         }
@@ -135,30 +135,30 @@ public final class ObjectMethodPropertyWriter
             PropertySerializerMap map = _dynamicSerializers;
             ser = map.serializerFor(cls);
             if (ser == null) {
-                ser = _findAndAddDynamic(map, cls, prov);
+                ser = _findAndAddDynamic(map, cls, ctxt);
             }
         }
         if (_suppressableValue != null) {
             if (MARKER_FOR_EMPTY == _suppressableValue) {
-                if (ser.isEmpty(prov, value)) {
-                    serializeAsOmittedElement(bean, g, prov);
+                if (ser.isEmpty(ctxt, value)) {
+                    serializeAsOmittedElement(bean, g, ctxt);
                     return;
                 }
             } else if (_suppressableValue.equals(value)) {
-                serializeAsOmittedElement(bean, g, prov);
+                serializeAsOmittedElement(bean, g, ctxt);
                 return;
             }
         }
         if (value == bean) {
             // three choices: exception; handled by call; or pass-through
-            if (_handleSelfReference(bean, g, prov, ser)) {
+            if (_handleSelfReference(bean, g, ctxt, ser)) {
                 return;
             }
         }
         if (_typeSerializer == null) {
-            ser.serialize(value, g, prov);
+            ser.serialize(value, g, ctxt);
         } else {
-            ser.serializeWithType(value, g, prov, _typeSerializer);
+            ser.serializeWithType(value, g, ctxt, _typeSerializer);
         }
     }
 }

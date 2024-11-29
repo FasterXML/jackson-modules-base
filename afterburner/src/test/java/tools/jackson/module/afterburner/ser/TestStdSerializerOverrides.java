@@ -4,7 +4,7 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.Version;
 
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
@@ -30,7 +30,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
         @Override
         public void serialize(String value, JsonGenerator gen,
-                SerializerProvider provider) {
+                SerializationContext ctxt) {
             gen.writeString("Foo:"+value);
         }
     }
@@ -41,7 +41,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
         @Override
         public void serialize(Integer value0, JsonGenerator gen,
-                SerializerProvider provider) {
+                SerializationContext ctxt) {
             int v = -value0.intValue();
             gen.writeNumber(v);
         }
@@ -53,7 +53,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
         @Override
         public void serialize(Long value0, JsonGenerator gen,
-                SerializerProvider provider) {
+                SerializationContext ctxt) {
             long v = -value0.longValue();
             gen.writeNumber(v);
         }

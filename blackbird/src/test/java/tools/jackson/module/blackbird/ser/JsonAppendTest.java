@@ -30,7 +30,7 @@ public class JsonAppendTest extends BlackbirdTestBase
             super(propDef, contextAnnotations, declaredType);
         }
         @Override
-        protected Object value(Object bean, JsonGenerator g, SerializerProvider prov) throws Exception {
+        protected Object value(Object bean, JsonGenerator g, SerializationContext ctxt) throws Exception {
             return "bar";
         }
         @Override

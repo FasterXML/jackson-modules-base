@@ -10,7 +10,7 @@ import tools.jackson.core.*;
 import tools.jackson.core.exc.JacksonIOException;
 
 import tools.jackson.databind.JavaType;
-import tools.jackson.databind.SerializerProvider;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ser.std.StdSerializer;
 import tools.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
@@ -21,7 +21,7 @@ public class DataHandlerSerializer extends StdSerializer<DataHandler>
     public DataHandlerSerializer() { super(DataHandler.class); }
     
     @Override
-    public void serialize(DataHandler value, JsonGenerator g, SerializerProvider provider)
+    public void serialize(DataHandler value, JsonGenerator g, SerializationContext ctxt)
         throws JacksonException
     {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();

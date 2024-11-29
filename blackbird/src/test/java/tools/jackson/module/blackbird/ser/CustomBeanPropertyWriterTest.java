@@ -52,14 +52,14 @@ public class CustomBeanPropertyWriterTest extends BlackbirdTestBase
         }
 
         @Override
-        public void serializeAsProperty(Object bean, JsonGenerator jgen, SerializerProvider prov)
+        public void serializeAsProperty(Object bean, JsonGenerator g, SerializationContext ctxt)
             throws Exception
         {
           Object val = get(bean);
           if((val == null || !val.equals(2)) && _nullSerializer == null) {
               return;
           }
-          super.serializeAsProperty(bean, jgen, prov);
+          super.serializeAsProperty(bean, g, ctxt);
         }
     }
 
