@@ -48,18 +48,18 @@ public final class SettableBooleanFieldProperty
         try {
             _propertyMutator.booleanField(bean, _optimizedIndex, b);
         } catch (Throwable e) {
-            _reportProblem(bean, b, e);
+            _reportProblem(ctxt, bean, b, e);
         }
     }
 
     @Override
-    public void set(Object bean, Object value) {
+    public void set(DeserializationContext ctxt, Object bean, Object value) {
         // not optimal (due to boxing), but better than using reflection:
         final boolean b = ((Boolean) value).booleanValue();
         try {
             _propertyMutator.booleanField(bean, _optimizedIndex, b);
         } catch (Throwable e) {
-            _reportProblem(bean, b, e);
+            _reportProblem(ctxt, bean, b, e);
         }
     }
 
@@ -70,10 +70,10 @@ public final class SettableBooleanFieldProperty
     {
         JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_TRUE) {
-            return setAndReturn(instance, Boolean.TRUE);
+            return setAndReturn(ctxt, instance, Boolean.TRUE);
         }
         if (t == JsonToken.VALUE_FALSE) {
-            return setAndReturn(instance, Boolean.FALSE);
+            return setAndReturn(ctxt, instance, Boolean.FALSE);
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }    

@@ -583,19 +583,18 @@ public class PropertyMutatorCollector
         private MethodList<MethodDescription> getMatchingMethods(TypeDefinition beanClassDescription, String methodName) {
             return (MethodList<MethodDescription>) beanClassDescription.getDeclaredMethods().filter(named(methodName));
         }
-
     }
 
-
-    private static class MethodAppender<T extends OptimizedSettableBeanProperty<T>> extends AbstractDelegatingAppender<T> {
-
+    private static class MethodAppender<T extends OptimizedSettableBeanProperty<T>>
+        extends AbstractDelegatingAppender<T>
+    {
         private final TypeDescription beanClassDescription;
         private final List<T> props;
         private final MethodVariableAccess beanValueAccess;
 
         MethodAppender(TypeDescription beanClassDescription,
-                              List<T> props,
-                              MethodVariableAccess beanValueAccess) {
+                List<T> props,
+                MethodVariableAccess beanValueAccess) {
             super(props);
             this.beanClassDescription = beanClassDescription;
             this.props = props;
@@ -635,13 +634,10 @@ public class PropertyMutatorCollector
 
     private <T extends OptimizedSettableBeanProperty<T>> DynamicType.Builder<?> _addSetters(
             DynamicType.Builder<?> builder, List<T> props, String methodName, MethodVariableAccess beanValueAccess) {
-
         return builder.method(named(methodName))
-                      .intercept(
-                              new Implementation.Simple(
-                                      new MethodAppender<T>(beanClassDefinition, props, beanValueAccess)
-                              )
-                      );
+                .intercept(
+                        new Implementation.Simple(
+                                new MethodAppender<T>(beanClassDefinition, props, beanValueAccess)
+                        ));
     }
-
 }

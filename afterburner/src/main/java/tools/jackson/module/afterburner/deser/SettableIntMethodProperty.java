@@ -44,7 +44,7 @@ public final class SettableIntMethodProperty
         try {
             _propertyMutator.intSetter(bean, _optimizedIndex, v);
         } catch (Throwable e) {
-            _reportProblem(bean, v, e);
+            _reportProblem(ctxt, bean, v, e);
         }
     }
 
@@ -54,20 +54,20 @@ public final class SettableIntMethodProperty
         throws JacksonException
     {
         if (p.isExpectedNumberIntToken()) {
-            return setAndReturn(instance, p.getIntValue());
+            return setAndReturn(ctxt, instance, p.getIntValue());
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
 
     @Override
-    public void set(Object bean, Object value)
+    public void set(DeserializationContext ctxt, Object bean, Object value)
     {
         // not optimal (due to boxing), but better than using reflection:
         int v = ((Number) value).intValue();
         try {
             _propertyMutator.intSetter(bean, _optimizedIndex, v);
         } catch (Throwable e) {
-            _reportProblem(bean, v, e);
+            _reportProblem(ctxt, bean, v, e);
         }
     }
 }

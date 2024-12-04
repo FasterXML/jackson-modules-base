@@ -78,7 +78,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             Object arg2) throws JacksonException;
 
     @Override
-    public abstract void set(Object bean, Object value);
+    public abstract void set(DeserializationContext ctxt, Object bean, Object value);
 
     /*
     /********************************************************************** 
@@ -102,8 +102,8 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 
 
     @Override
-    public Object setAndReturn(Object instance, Object value) {
-        return delegate.setAndReturn(instance, value);
+    public Object setAndReturn(DeserializationContext ctxt, Object instance, Object value) {
+        return delegate.setAndReturn(ctxt, instance, value);
     }
 
     /*
@@ -126,7 +126,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      * Helper method called when an exception is throw from mutator, to figure
      * out what to do.
      */
-    protected void _reportProblem(Object bean, Object value, Throwable e)
+    protected void _reportProblem(DeserializationContext ctxt, Object bean, Object value, Throwable e)
         throws JacksonException
     {
         if ((e instanceof IllegalAccessError)
@@ -144,7 +144,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
                     _propertyMutator = new DelegatingPropertyMutator(delegate);
                 }
             }
-            delegate.set(bean, value);
+            delegate.set(ctxt, bean, value);
             return;
         }
         if (e instanceof JacksonException) {
