@@ -38,7 +38,7 @@ final class SettableStringProperty
             delegate.deserializeAndSet(p, ctxt, bean);
             return;
         }
-        set(bean, p.getText());
+        set(ctxt, bean, p.getText());
     }
 
     @Override
@@ -46,17 +46,17 @@ final class SettableStringProperty
         throws JacksonException
     {
         if (p.hasToken(JsonToken.VALUE_STRING)) {
-            return setAndReturn(instance, p.getText());
+            return setAndReturn(ctxt, instance, p.getText());
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
 
     @Override
-    public void set(Object bean, Object value) {
+    public void set(DeserializationContext ctxt, Object bean, Object value) {
         try {
             _optimizedSetter.accept(bean, (String) value);
         } catch (Throwable e) {
-            _reportProblem(bean, value, e);
+            _reportProblem(ctxt, bean, value, e);
         }
     }
 }
