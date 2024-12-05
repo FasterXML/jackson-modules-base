@@ -51,7 +51,7 @@ final class SettableObjectProperty
         } else {
             value = _valueDeserializer.deserializeWithType(p, ctxt, _valueTypeDeserializer);
         }
-        set(bean, value);
+        set(ctxt, bean, value);
     }
 
     @Override
@@ -77,16 +77,16 @@ final class SettableObjectProperty
         } else {
             value = _valueDeserializer.deserializeWithType(p, ctxt, _valueTypeDeserializer);
         }
-        return setAndReturn(instance, value);
+        return setAndReturn(ctxt, instance, value);
     }
 
     @Override
-    public void set(Object bean, Object v)
+    public void set(DeserializationContext ctxt, Object bean, Object v)
     {
         try {
             _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
-            _reportProblem(bean, v, e);
+            _reportProblem(ctxt, bean, v, e);
         }
     }
 }

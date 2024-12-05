@@ -44,7 +44,7 @@ public final class SettableStringFieldProperty
         try {
             _propertyMutator.stringField(bean, _optimizedIndex, text);
         } catch (Throwable e) {
-            _reportProblem(bean, text, e);
+            _reportProblem(ctxt, bean, text, e);
         }
     }
 
@@ -53,19 +53,19 @@ public final class SettableStringFieldProperty
         throws JacksonException
     {
         if (p.hasToken(JsonToken.VALUE_STRING)) {
-            return setAndReturn(instance, p.getText());
+            return setAndReturn(ctxt, instance, p.getText());
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
 
     @Override
-    public void set(Object bean, Object value)
+    public void set(DeserializationContext ctxt, Object bean, Object value)
     {
         final String text = (String) value;
         try {
             _propertyMutator.stringField(bean, _optimizedIndex, text);
         } catch (Throwable e) {
-            _reportProblem(bean, text, e);
+            _reportProblem(ctxt, bean, text, e);
         }
     }
 }

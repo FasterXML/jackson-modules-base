@@ -3,8 +3,6 @@ package tools.jackson.module.androidrecord;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
-import tools.jackson.module.androidrecord.AndroidRecordModule;
-
 public abstract class BaseMapTest
     extends BaseTest
 {

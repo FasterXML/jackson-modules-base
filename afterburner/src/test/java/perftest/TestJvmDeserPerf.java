@@ -6,7 +6,6 @@ import tools.jackson.core.json.JsonFactory;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.type.TypeFactory;
 
 /**
  * Micro-benchmark for comparing performance of bean deserialization

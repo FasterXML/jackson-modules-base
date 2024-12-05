@@ -5,16 +5,14 @@ import java.util.List;
 
 public class DynamicPropertyAccessorBase
 {
-
     protected int _accessorCount = 0;
 
-    protected DynamicPropertyAccessorBase() {
-    }
+    protected DynamicPropertyAccessorBase() { }
 
     public final boolean isEmpty() {
         return (_accessorCount == 0);
     }
-    
+
     /*
     /**********************************************************
     /* Helper methods, other

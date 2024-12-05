@@ -12,6 +12,8 @@ import tools.jackson.module.afterburner.util.MyClassLoader;
 
 public class ABSerializerModifier extends ValueSerializerModifier
 {
+    private static final long serialVersionUID = 3L;
+
     /**
      * Class loader to use for generated classes; if null, will try to
      * use class loader of the target class.

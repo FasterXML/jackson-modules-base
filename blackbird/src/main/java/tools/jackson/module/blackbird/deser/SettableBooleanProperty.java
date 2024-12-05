@@ -45,7 +45,7 @@ final class SettableBooleanProperty
         try {
             _optimizedSetter.accept(bean, b);
         } catch (Throwable e) {
-            _reportProblem(bean, b, e);
+            _reportProblem(ctxt, bean, b, e);
         }
     }
 
@@ -56,23 +56,23 @@ final class SettableBooleanProperty
     {
         JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_TRUE) {
-            return setAndReturn(instance, Boolean.TRUE);
+            return setAndReturn(ctxt, instance, Boolean.TRUE);
         }
         if (t == JsonToken.VALUE_FALSE) {
-            return setAndReturn(instance, Boolean.FALSE);
+            return setAndReturn(ctxt, instance, Boolean.FALSE);
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
 
     @Override
-    public void set(Object bean, Object value)
+    public void set(DeserializationContext ctxt, Object bean, Object value)
     {
         // not optimal (due to boxing), but better than using reflection:
         final boolean b = ((Boolean) value).booleanValue();
         try {
             _optimizedSetter.accept(bean, b);
         } catch (Throwable e) {
-            _reportProblem(bean, b, e);
+            _reportProblem(ctxt, bean, b, e);
         }
     }
 }

@@ -56,9 +56,8 @@ public class CreatorOptimizer
 
     public ValueInstantiator createOptimized()
     {
-        /* [Issue#11]: Need to avoid optimizing if we use delegate- or
-         *  property-based creators.
-         */
+        // [Issue#11]: Need to avoid optimizing if we use delegate- or
+        //  property-based creators.
         if (_originalInstantiator.canCreateFromObjectWith()
                 || _originalInstantiator.canCreateUsingDelegate()) {
             return null;

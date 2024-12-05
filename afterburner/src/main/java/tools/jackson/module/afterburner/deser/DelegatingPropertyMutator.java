@@ -1,7 +1,5 @@
 package tools.jackson.module.afterburner.deser;
 
-import java.io.IOException;
-
 import tools.jackson.databind.deser.SettableBeanProperty;
 
 /**
@@ -21,44 +19,44 @@ public final class DelegatingPropertyMutator
     }
 
     @Override
-    public void intSetter(Object bean, int propertyIndex, int value) throws IOException {
-        _fallback.set(bean, value);
+    public void intSetter(Object bean, int propertyIndex, int value) {
+        _fallback.set(null, bean, value);
     }
     @Override
-    public void longSetter(Object bean, int propertyIndex, long value) throws IOException {
-        _fallback.set(bean, value);
+    public void longSetter(Object bean, int propertyIndex, long value) {
+        _fallback.set(null, bean, value);
     }
     @Override
-    public void booleanSetter(Object bean, int propertyIndex, boolean value) throws IOException {
-        _fallback.set(bean, value);
+    public void booleanSetter(Object bean, int propertyIndex, boolean value) {
+        _fallback.set(null, bean, value);
     }
     @Override
-    public void stringSetter(Object bean, int propertyIndex, String value) throws IOException {
-        _fallback.set(bean, value);
+    public void stringSetter(Object bean, int propertyIndex, String value) {
+        _fallback.set(null, bean, value);
     }
     @Override
-    public void objectSetter(Object bean, int propertyIndex, Object value) throws IOException {
-        _fallback.set(bean, value);
+    public void objectSetter(Object bean, int propertyIndex, Object value) {
+        _fallback.set(null, bean, value);
     }
 
     @Override
-    public void intField(Object bean, int propertyIndex, int value) throws IOException {
-        _fallback.set(bean, value);
+    public void intField(Object bean, int propertyIndex, int value) {
+        _fallback.set(null, bean, value);
     }
     @Override
-    public void longField(Object bean, int propertyIndex, long value) throws IOException {
-        _fallback.set(bean, value);
+    public void longField(Object bean, int propertyIndex, long value) {
+        _fallback.set(null, bean, value);
     }
     @Override
-    public void booleanField(Object bean, int propertyIndex, boolean value) throws IOException {
-        _fallback.set(bean, value);
+    public void booleanField(Object bean, int propertyIndex, boolean value) {
+        _fallback.set(null, bean, value);
     }
     @Override
-    public void stringField(Object bean, int propertyIndex, String value) throws IOException {
-        _fallback.set(bean, value);
+    public void stringField(Object bean, int propertyIndex, String value) {
+        _fallback.set(null, bean, value);
     }
     @Override
-    public void objectField(Object bean, int propertyIndex, Object value) throws IOException {
-        _fallback.set(bean, value);
+    public void objectField(Object bean, int propertyIndex, Object value) {
+        _fallback.set(null, bean, value);
     }
 }
