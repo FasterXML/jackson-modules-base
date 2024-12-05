@@ -1,6 +1,5 @@
 package tools.jackson.module.afterburner.ser;
 
-import net.bytebuddy.description.type.TypeList;
 import tools.jackson.databind.introspect.AnnotatedMember;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.module.afterburner.deser.PropertyMutatorCollector;
