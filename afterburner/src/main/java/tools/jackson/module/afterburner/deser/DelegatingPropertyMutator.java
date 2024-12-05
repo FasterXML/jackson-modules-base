@@ -1,5 +1,6 @@
 package tools.jackson.module.afterburner.deser;
 
+import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.deser.SettableBeanProperty;
 
 /**
@@ -19,44 +20,44 @@ public final class DelegatingPropertyMutator
     }
 
     @Override
-    public void intSetter(Object bean, int propertyIndex, int value) {
-        _fallback.set(null, bean, value);
+    public void intSetter(DeserializationContext ctxt, Object bean, int propertyIndex, int value) {
+        _fallback.set(ctxt, bean, value);
     }
     @Override
-    public void longSetter(Object bean, int propertyIndex, long value) {
-        _fallback.set(null, bean, value);
+    public void longSetter(DeserializationContext ctxt, Object bean, int propertyIndex, long value) {
+        _fallback.set(ctxt, bean, value);
     }
     @Override
-    public void booleanSetter(Object bean, int propertyIndex, boolean value) {
-        _fallback.set(null, bean, value);
+    public void booleanSetter(DeserializationContext ctxt, Object bean, int propertyIndex, boolean value) {
+        _fallback.set(ctxt, bean, value);
     }
     @Override
-    public void stringSetter(Object bean, int propertyIndex, String value) {
-        _fallback.set(null, bean, value);
+    public void stringSetter(DeserializationContext ctxt, Object bean, int propertyIndex, String value) {
+        _fallback.set(ctxt, bean, value);
     }
     @Override
-    public void objectSetter(Object bean, int propertyIndex, Object value) {
-        _fallback.set(null, bean, value);
+    public void objectSetter(DeserializationContext ctxt, Object bean, int propertyIndex, Object value) {
+        _fallback.set(ctxt, bean, value);
     }
 
     @Override
-    public void intField(Object bean, int propertyIndex, int value) {
-        _fallback.set(null, bean, value);
+    public void intField(DeserializationContext ctxt, Object bean, int propertyIndex, int value) {
+        _fallback.set(ctxt, bean, value);
     }
     @Override
-    public void longField(Object bean, int propertyIndex, long value) {
-        _fallback.set(null, bean, value);
+    public void longField(DeserializationContext ctxt, Object bean, int propertyIndex, long value) {
+        _fallback.set(ctxt, bean, value);
     }
     @Override
-    public void booleanField(Object bean, int propertyIndex, boolean value) {
-        _fallback.set(null, bean, value);
+    public void booleanField(DeserializationContext ctxt, Object bean, int propertyIndex, boolean value) {
+        _fallback.set(ctxt, bean, value);
     }
     @Override
-    public void stringField(Object bean, int propertyIndex, String value) {
-        _fallback.set(null, bean, value);
+    public void stringField(DeserializationContext ctxt, Object bean, int propertyIndex, String value) {
+        _fallback.set(ctxt, bean, value);
     }
     @Override
-    public void objectField(Object bean, int propertyIndex, Object value) {
-        _fallback.set(null, bean, value);
+    public void objectField(DeserializationContext ctxt, Object bean, int propertyIndex, Object value) {
+        _fallback.set(ctxt, bean, value);
     }
 }

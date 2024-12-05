@@ -41,7 +41,7 @@ public final class SettableLongFieldProperty
         }
         final long v = p.getLongValue();
         try {
-            _propertyMutator.longField(bean, _optimizedIndex, v);
+            _propertyMutator.longField(ctxt, bean, _optimizedIndex, v);
         } catch (Throwable e) {
             _reportProblem(ctxt, bean, v, e);
         }
@@ -64,7 +64,7 @@ public final class SettableLongFieldProperty
         // not optimal (due to boxing), but better than using reflection:
         final long v = ((Number) value).longValue();
         try {
-            _propertyMutator.longField(bean, _optimizedIndex, v);
+            _propertyMutator.longField(ctxt, bean, _optimizedIndex, v);
         } catch (Throwable e) {
             _reportProblem(ctxt, bean, v, e);
         }

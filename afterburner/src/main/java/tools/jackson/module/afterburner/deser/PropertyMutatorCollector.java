@@ -190,7 +190,7 @@ public class PropertyMutatorCollector
 
     /**
      * Implementation specific to {@link PropertyMutatorCollector}
-     * We now that there are three arguments to the methods created in this case
+     * We now that there are four arguments to the methods created in this case
      */
     private static class LocalVarIndexCalculator implements AbstractPropertyStackManipulation.LocalVarIndexCalculator {
 
@@ -211,18 +211,18 @@ public class PropertyMutatorCollector
             return result;
         }
 
-        //we have 3 arguments (plus arg 0 which is 'this'), so 4 is the position of the first unless it's a long
+        //we have 4 arguments (plus arg 0 which is 'this'), so 5 is the position of the first unless it's a long
         //this would look a lot nicer if MethodVariableAccess.stackSize were public...
         @Override
         public int calculate() {
-            return 3 + (beanValueAccess == MethodVariableAccess.LONG ?  2 : 1);
+            return 4 + (beanValueAccess == MethodVariableAccess.LONG ?  2 : 1);
         }
     }
 
     private static class CreateLocalVarStackManipulation extends AbstractCreateLocalVarStackManipulation {
 
         CreateLocalVarStackManipulation(TypeDescription beanClassDescription,
-                                                MethodVariableAccess beanValueAccess) {
+                MethodVariableAccess beanValueAccess) {
             super(beanClassDescription, PropertyMutatorCollector.LocalVarIndexCalculator.of(beanValueAccess));
         }
 
@@ -300,10 +300,10 @@ public class PropertyMutatorCollector
         }
 
         /**
-         * we know that all methods of created in {@link PropertyMutatorCollector} contain the bean value as the 3rd arg
+         * we know that all methods of created in {@link PropertyMutatorCollector} contain the bean value as the 4th arg
          */
         private int beanValueArgIndex() {
-            return 3;
+            return 4;
         }
     }
 

@@ -46,7 +46,7 @@ public final class SettableBooleanFieldProperty
             return;
         }
         try {
-            _propertyMutator.booleanField(bean, _optimizedIndex, b);
+            _propertyMutator.booleanField(ctxt, bean, _optimizedIndex, b);
         } catch (Throwable e) {
             _reportProblem(ctxt, bean, b, e);
         }
@@ -57,7 +57,7 @@ public final class SettableBooleanFieldProperty
         // not optimal (due to boxing), but better than using reflection:
         final boolean b = ((Boolean) value).booleanValue();
         try {
-            _propertyMutator.booleanField(bean, _optimizedIndex, b);
+            _propertyMutator.booleanField(ctxt, bean, _optimizedIndex, b);
         } catch (Throwable e) {
             _reportProblem(ctxt, bean, b, e);
         }

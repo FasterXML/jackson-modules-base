@@ -46,7 +46,7 @@ public final class SettableBooleanMethodProperty
             return;
         }
         try {
-            _propertyMutator.booleanSetter(bean, _optimizedIndex, b);
+            _propertyMutator.booleanSetter(ctxt, bean, _optimizedIndex, b);
         } catch (Throwable e) {
             _reportProblem(ctxt, bean, b, e);
         }
@@ -57,7 +57,7 @@ public final class SettableBooleanMethodProperty
         // not optimal (due to boxing), but better than using reflection:
         final boolean b = ((Boolean) value).booleanValue();
         try {
-            _propertyMutator.booleanSetter(bean, _optimizedIndex, b);
+            _propertyMutator.booleanSetter(ctxt, bean, _optimizedIndex, b);
         } catch (Throwable e) {
             _reportProblem(ctxt, bean, b, e);
         }

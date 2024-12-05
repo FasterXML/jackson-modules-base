@@ -41,7 +41,7 @@ public final class SettableIntFieldProperty
         }
         final int v = p.getIntValue();
         try {
-            _propertyMutator.intField(bean, _optimizedIndex, v);
+            _propertyMutator.intField(ctxt, bean, _optimizedIndex, v);
         } catch (Throwable e) {
             _reportProblem(ctxt, bean, v, e);
         }
@@ -64,7 +64,7 @@ public final class SettableIntFieldProperty
         // not optimal (due to boxing), but better than using reflection:
         final int v = ((Number) value).intValue();
         try {
-            _propertyMutator.intField(bean, _optimizedIndex, v);
+            _propertyMutator.intField(ctxt, bean, _optimizedIndex, v);
         } catch (Throwable e) {
             _reportProblem(ctxt, bean, v, e);
         }
