@@ -96,14 +96,14 @@ not datatype, data format, or JAX-RS provider modules.
     -->
   <repositories>
     <repository>
-      <id>sonatype-nexus-snapshots</id>
+      <id>sonatype-nexus-snapshots-new</id>
       <name>Sonatype Nexus Snapshots</name>
       <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
       <releases><enabled>false</enabled></releases>
       <snapshots><enabled>true</enabled></snapshots>
     </repository>
     <repository>
-      <id>sonatype-old-nexus-snapshots</id>
+      <id>sonatype-nexus-snapshots-old</id>
       <name>Sonatype Nexus Snapshots (old)</name>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
       <releases><enabled>false</enabled></releases>
