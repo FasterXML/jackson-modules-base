@@ -55,7 +55,7 @@ public final class SettableObjectFieldProperty
             value = _valueDeserializer.deserializeWithType(p, ctxt, _valueTypeDeserializer);
         }
         try {
-            _propertyMutator.objectField(bean, _optimizedIndex, value);
+            _propertyMutator.objectField(ctxt, bean, _optimizedIndex, value);
         } catch (Throwable e) {
             _reportProblem(ctxt, bean, value, e);
         }
@@ -91,7 +91,7 @@ public final class SettableObjectFieldProperty
     public void set(DeserializationContext ctxt, Object bean, Object v)
     {
         try {
-            _propertyMutator.objectField(bean, _optimizedIndex, v);
+            _propertyMutator.objectField(ctxt, bean, _optimizedIndex, v);
         } catch (Throwable e) {
             _reportProblem(ctxt, bean, v, e);
         }

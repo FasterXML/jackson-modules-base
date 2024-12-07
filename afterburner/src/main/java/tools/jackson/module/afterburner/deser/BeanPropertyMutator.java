@@ -1,5 +1,7 @@
 package tools.jackson.module.afterburner.deser;
 
+import tools.jackson.databind.DeserializationContext;
+
 /**
  * Abstract class that defines interface for implementations
  * that can be used proxy-like to change values of properties,
@@ -31,34 +33,34 @@ public abstract class BeanPropertyMutator
     //   are non-trivial, and Afterburner may be deprecated with 3.0 anyway
     //   so for now we just pass `null`
     
-    public void intSetter(Object bean, int propertyIndex, int value) {
+    public void intSetter(DeserializationContext ctxt, Object bean, int propertyIndex, int value) {
         throw new UnsupportedOperationException("No intSetters defined");
     }
-    public void longSetter(Object bean, int propertyIndex, long value){
+    public void longSetter(DeserializationContext ctxt, Object bean, int propertyIndex, long value){
         throw new UnsupportedOperationException("No longSetters defined");
     }
-    public void booleanSetter(Object bean, int propertyIndex, boolean value) {
+    public void booleanSetter(DeserializationContext ctxt, Object bean, int propertyIndex, boolean value) {
         throw new UnsupportedOperationException("No booleanSetters defined");
     }
-    public void stringSetter(Object bean, int propertyIndex, String value) {
+    public void stringSetter(DeserializationContext ctxt, Object bean, int propertyIndex, String value) {
         throw new UnsupportedOperationException("No stringSetters defined");
     }
-    public void objectSetter(Object bean, int propertyIndex, Object value) {
+    public void objectSetter(DeserializationContext ctxt, Object bean, int propertyIndex, Object value) {
         throw new UnsupportedOperationException("No objectSetters defined");
     }
-    public void intField(Object bean, int propertyIndex, int value) {
+    public void intField(DeserializationContext ctxt, Object bean, int propertyIndex, int value) {
         throw new UnsupportedOperationException("No intFields defined");
     }
-    public void longField(Object bean, int propertyIndex, long value) {
+    public void longField(DeserializationContext ctxt, Object bean, int propertyIndex, long value) {
         throw new UnsupportedOperationException("No longFields defined");
     }
-    public void booleanField(Object bean, int propertyIndex, boolean value) {
+    public void booleanField(DeserializationContext ctxt, Object bean, int propertyIndex, boolean value) {
         throw new UnsupportedOperationException("No booleanFields defined");
     }
-    public void stringField(Object bean, int propertyIndex, String value) {
+    public void stringField(DeserializationContext ctxt, Object bean, int propertyIndex, String value) {
         throw new UnsupportedOperationException("No stringFields defined");
     }
-    public void objectField(Object bean, int propertyIndex, Object value) {
+    public void objectField(DeserializationContext ctxt, Object bean, int propertyIndex, Object value) {
         throw new UnsupportedOperationException("No objectFields defined");
     }
 }

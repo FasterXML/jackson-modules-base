@@ -197,7 +197,7 @@ public class PropertyAccessorCollector
     private static class CreateLocalVarStackManipulation extends AbstractCreateLocalVarStackManipulation {
 
         CreateLocalVarStackManipulation(TypeDescription beanClassDescription) {
-            super(beanClassDescription, PropertyAccessorCollector.LocalVarIndexCalculator.INSTANCE);
+            super(beanClassDescription, PropertyAccessorCollector.LocalVarIndexCalculator.INSTANCE, false);
         }
 
         private static Map<TypeDescription, CreateLocalVarStackManipulation> cache
@@ -226,7 +226,7 @@ public class PropertyAccessorCollector
         AbstractSinglePropStackManipulation(TypeDescription beanClassDescription,
                                         T prop,
                                         MethodReturn methodReturn) {
-            super(PropertyAccessorCollector.LocalVarIndexCalculator.INSTANCE);
+            super(PropertyAccessorCollector.LocalVarIndexCalculator.INSTANCE, false);
             this.methodReturn = methodReturn;
             this.beanClassDescription = beanClassDescription;
             this.prop = prop;
@@ -396,7 +396,8 @@ public class PropertyAccessorCollector
             return new UsingSwitchStackManipulation<T>(
                     LocalVarIndexCalculator.INSTANCE,
                     props,
-                    SingleMethodStackManipulationSupplier.<T>of(beanClassDescription, methodReturn)
+                    SingleMethodStackManipulationSupplier.<T>of(beanClassDescription, methodReturn),
+                    false
             );
         }
 
@@ -411,7 +412,8 @@ public class PropertyAccessorCollector
             return new UsingIfStackManipulation<>(
                     LocalVarIndexCalculator.INSTANCE,
                     props,
-                    SingleMethodStackManipulationSupplier.<T>of(beanClassDescription, methodReturn)
+                    SingleMethodStackManipulationSupplier.<T>of(beanClassDescription, methodReturn),
+                    false
             );
         }
 
@@ -540,7 +542,8 @@ public class PropertyAccessorCollector
             return new UsingSwitchStackManipulation<T>(
                     LocalVarIndexCalculator.INSTANCE,
                     props,
-                    SingleFieldStackManipulationSupplier.<T>of(beanClassDescription, methodReturn)
+                    SingleFieldStackManipulationSupplier.<T>of(beanClassDescription, methodReturn),
+                    false
             );
         }
 
@@ -555,7 +558,8 @@ public class PropertyAccessorCollector
             return new UsingIfStackManipulation<>(
                     LocalVarIndexCalculator.INSTANCE,
                     props,
-                    SingleFieldStackManipulationSupplier.<T>of(beanClassDescription, methodReturn)
+                    SingleFieldStackManipulationSupplier.<T>of(beanClassDescription, methodReturn),
+                    false
             );
         }
 

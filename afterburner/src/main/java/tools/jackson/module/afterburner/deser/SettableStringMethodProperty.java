@@ -42,7 +42,7 @@ public final class SettableStringMethodProperty
         }
         final String text = p.getText();
         try {
-            _propertyMutator.stringSetter(bean, _optimizedIndex, text);
+            _propertyMutator.stringSetter(ctxt, bean, _optimizedIndex, text);
         } catch (Throwable e) {
             _reportProblem(ctxt, bean, text, e);
         }
@@ -63,7 +63,7 @@ public final class SettableStringMethodProperty
     {
         final String text = (String) value;
         try {
-            _propertyMutator.stringSetter(bean, _optimizedIndex, text);
+            _propertyMutator.stringSetter(ctxt, bean, _optimizedIndex, text);
         } catch (Throwable e) {
             _reportProblem(ctxt, bean, text, e);
         }

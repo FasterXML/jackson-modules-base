@@ -49,8 +49,9 @@ public class UsingIfStackManipulation<T> extends AbstractPropertyStackManipulati
 
     public UsingIfStackManipulation(LocalVarIndexCalculator localVarIndexCalculator,
                                     List<T> props,
-                                    SinglePropStackManipulationSupplier<T> singlePropStackManipulationSupplier) {
-        super(localVarIndexCalculator);
+                                    SinglePropStackManipulationSupplier<T> singlePropStackManipulationSupplier,
+                                    boolean isForMutator) {
+        super(localVarIndexCalculator, isForMutator);
         this.props = props;
         this.singlePropStackManipulationSupplier = singlePropStackManipulationSupplier;
     }
