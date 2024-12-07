@@ -26,8 +26,9 @@ public abstract class AbstractCreateLocalVarStackManipulation extends AbstractPr
 
     public AbstractCreateLocalVarStackManipulation(
             TypeDescription beanClassDescription,
-            AbstractPropertyStackManipulation.LocalVarIndexCalculator localVarIndexCalculator) {
-        super(localVarIndexCalculator);
+            AbstractPropertyStackManipulation.LocalVarIndexCalculator localVarIndexCalculator,
+            boolean isForMutator) {
+        super(localVarIndexCalculator, isForMutator);
         this.beanClassDescription = beanClassDescription;
     }
 

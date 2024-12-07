@@ -60,8 +60,9 @@ public class UsingSwitchStackManipulation<T> extends AbstractPropertyStackManipu
 
     public UsingSwitchStackManipulation(LocalVarIndexCalculator localVarIndexCalculator,
                                         List<T> props,
-                                        SinglePropStackManipulationSupplier<T> singlePropStackManipulationSupplier) {
-        super(localVarIndexCalculator);
+                                        SinglePropStackManipulationSupplier<T> singlePropStackManipulationSupplier,
+                                        boolean isForMutator) {
+        super(localVarIndexCalculator, isForMutator);
         this.props = props;
         this.singlePropStackManipulationSupplier = singlePropStackManipulationSupplier;
     }

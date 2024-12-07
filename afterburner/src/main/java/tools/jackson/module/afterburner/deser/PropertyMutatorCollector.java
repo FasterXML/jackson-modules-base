@@ -223,7 +223,7 @@ public class PropertyMutatorCollector
 
         CreateLocalVarStackManipulation(TypeDescription beanClassDescription,
                 MethodVariableAccess beanValueAccess) {
-            super(beanClassDescription, PropertyMutatorCollector.LocalVarIndexCalculator.of(beanValueAccess));
+            super(beanClassDescription, PropertyMutatorCollector.LocalVarIndexCalculator.of(beanValueAccess), true);
         }
 
         private static Map<Integer, CreateLocalVarStackManipulation> cache
@@ -259,7 +259,7 @@ public class PropertyMutatorCollector
         AbstractSinglePropStackManipulation(TypeDescription beanClassDescription,
                                             T prop,
                                             MethodVariableAccess beanValueAccess) {
-            super(PropertyMutatorCollector.LocalVarIndexCalculator.of(beanValueAccess));
+            super(PropertyMutatorCollector.LocalVarIndexCalculator.of(beanValueAccess), true);
             this.beanValueAccess = beanValueAccess;
             this.beanClassDescription = beanClassDescription;
             this.prop = prop;
@@ -399,7 +399,8 @@ public class PropertyMutatorCollector
             return new UsingSwitchStackManipulation<T>(
                     LocalVarIndexCalculator.of(beanValueAccess),
                     props,
-                    SingleFieldStackManipulationSupplier.<T>of(beanClassDescription, beanValueAccess)
+                    SingleFieldStackManipulationSupplier.<T>of(beanClassDescription, beanValueAccess),
+                    true
             );
         }
 
@@ -414,7 +415,8 @@ public class PropertyMutatorCollector
             return new UsingIfStackManipulation<T>(
                     LocalVarIndexCalculator.of(beanValueAccess),
                     props,
-                    SingleFieldStackManipulationSupplier.<T>of(beanClassDescription, beanValueAccess)
+                    SingleFieldStackManipulationSupplier.<T>of(beanClassDescription, beanValueAccess),
+                    true
             );
         }
 
@@ -612,7 +614,8 @@ public class PropertyMutatorCollector
             return new UsingSwitchStackManipulation<T>(
                     LocalVarIndexCalculator.of(beanValueAccess),
                     props,
-                    SingleMethodStackManipulationSupplier.<T>of(beanClassDescription, beanValueAccess)
+                    SingleMethodStackManipulationSupplier.<T>of(beanClassDescription, beanValueAccess),
+                    true
             );
         }
 
@@ -622,7 +625,8 @@ public class PropertyMutatorCollector
             return new UsingIfStackManipulation<T>(
                     LocalVarIndexCalculator.of(beanValueAccess),
                     props,
-                    SingleMethodStackManipulationSupplier.<T>of(beanClassDescription, beanValueAccess)
+                    SingleMethodStackManipulationSupplier.<T>of(beanClassDescription, beanValueAccess),
+                    true
             );
         }
 

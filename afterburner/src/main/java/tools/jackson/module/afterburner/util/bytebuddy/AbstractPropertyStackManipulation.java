@@ -11,9 +11,11 @@ import net.bytebuddy.implementation.bytecode.member.MethodVariableAccess;
 public abstract class AbstractPropertyStackManipulation implements StackManipulation {
 
     protected final LocalVarIndexCalculator localVarIndexCalculator;
+    private final boolean isForMutator;
 
-    public AbstractPropertyStackManipulation(LocalVarIndexCalculator localVarIndexCalculator) {
+    public AbstractPropertyStackManipulation(LocalVarIndexCalculator localVarIndexCalculator, boolean isForMutator) {
         this.localVarIndexCalculator = localVarIndexCalculator;
+        this.isForMutator = isForMutator;
     }
 
     @Override
@@ -22,11 +24,11 @@ public abstract class AbstractPropertyStackManipulation implements StackManipula
     }
 
     public final int beanArgIndex() {
-        return 1;
+        return 1 + (isForMutator ? 1 : 0);
     }
 
     public final int fieldIndexArgIndex() {
-        return 2;
+        return 2  + (isForMutator ? 1 : 0);
     }
 
     public final StackManipulation loadFieldIndexArg() {
