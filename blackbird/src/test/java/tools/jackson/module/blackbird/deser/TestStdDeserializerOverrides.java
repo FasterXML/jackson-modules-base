@@ -27,7 +27,7 @@ public class TestStdDeserializerOverrides extends BlackbirdTestBase
 
         @Override
         public String deserialize(JsonParser p, DeserializationContext ctxt) {
-            return "Foo:"+p.getText();
+            return "Foo:"+p.getString();
         }
     }
 
@@ -42,7 +42,7 @@ public class TestStdDeserializerOverrides extends BlackbirdTestBase
 
         @Override
         public String deserialize(JsonParser p, DeserializationContext ctxt) {
-            return p.getText().replaceAll("&amp;", "&");
+            return p.getString().replaceAll("&amp;", "&");
         }
     }
     

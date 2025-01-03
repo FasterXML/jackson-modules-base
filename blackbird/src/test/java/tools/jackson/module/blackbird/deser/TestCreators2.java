@@ -45,7 +45,7 @@ public class TestCreators2 extends BlackbirdTestBase
     {
         @Override
         public byte[] deserialize(JsonParser jp, DeserializationContext ctxt) {
-            String str = jp.getText();
+            String str = jp.getString();
             try {
                 return str.getBytes("UTF-8");
             } catch (IOException e) {

@@ -259,10 +259,10 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
     protected String getAndVerifyText(JsonParser p)
     {
         // Ok, let's verify other accessors
-        int actLen = p.getTextLength();
-        char[] ch = p.getTextCharacters();
-        String str2 = new String(ch, p.getTextOffset(), actLen);
-        String str = p.getText();
+        int actLen = p.getStringLength();
+        char[] ch = p.getStringCharacters();
+        String str2 = new String(ch, p.getStringOffset(), actLen);
+        String str = p.getString();
 
         if (str.length() !=  actLen) {
             fail("Internal problem (p.token == "+p.currentToken()+"): p.getText().length() ['"+str+"'] == "+str.length()+"; p.getTextLength() == "+actLen);
@@ -274,7 +274,7 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
 
     protected void verifyFieldName(JsonParser p, String expName)
     {
-        assertEquals(expName, p.getText());
+        assertEquals(expName, p.getString());
         assertEquals(expName, p.currentName());
     }
 
@@ -282,7 +282,7 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
         throws IOException
     {
         // First, via textual
-        assertEquals(String.valueOf(expValue), p.getText());
+        assertEquals(String.valueOf(expValue), p.getString());
     }
 
     protected void verifyException(Throwable e, String... matches)

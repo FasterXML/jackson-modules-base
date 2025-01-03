@@ -238,7 +238,7 @@ public class CoerceJDKScalarsTest extends BlackbirdTestBase
             assertSame(p, e.processor());
 
             assertToken(JsonToken.VALUE_STRING, p.currentToken());
-            assertEquals(unquotedValue, p.getText());
+            assertEquals(unquotedValue, p.getString());
         }
     }
 }

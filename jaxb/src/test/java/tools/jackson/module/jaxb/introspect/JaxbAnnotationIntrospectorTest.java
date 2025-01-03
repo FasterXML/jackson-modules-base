@@ -22,7 +22,7 @@ import tools.jackson.module.jaxb.JaxbAnnotationIntrospector;
  * @author Ryan Heaton
  * @author Tatu Saloranta
  */
-public class TestJaxbAnnotationIntrospector
+public class JaxbAnnotationIntrospectorTest
     extends BaseJaxbTest
 {
     public static enum EnumExample {
@@ -247,15 +247,15 @@ public class TestJaxbAnnotationIntrospector
         
         //make sure the json is written out correctly.
         JsonNode node = mapper.readValue(json, JsonNode.class);
-        assertEquals(qname.toString(), node.get("qname").asText());
+        assertEquals(qname.toString(), node.get("qname").asString());
         JsonNode attr = node.get("myattribute");
         assertNotNull(attr);
-        assertEquals("attributeValue", attr.asText());
-        assertEquals("elementValue", node.get("myelement").asText());
+        assertEquals("attributeValue", attr.asString());
+        assertEquals("elementValue", node.get("myelement").asString());
         assertTrue(node.has("mywrapped"));
         assertEquals(1, node.get("mywrapped").size());
-        assertEquals("wrappedElementValue", node.get("mywrapped").get(0).asText());
-        assertEquals("Value One", node.get("enumProperty").asText());
+        assertEquals("wrappedElementValue", node.get("mywrapped").get(0).asString());
+        assertEquals("Value One", node.get("enumProperty").asString());
         assertNull(node.get("propertyToIgnore"));
 
         //now make sure it gets deserialized correctly.

@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.adapters.*;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jaxb.BaseJaxbTest;
-import tools.jackson.module.jaxb.introspect.TestJaxbAnnotationIntrospector.KeyValuePair;
+import tools.jackson.module.jaxb.introspect.JaxbAnnotationIntrospectorTest.KeyValuePair;
 
 /**
  * Unit tests to check that {@link XmlAdapter}s also work with

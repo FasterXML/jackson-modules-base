@@ -40,7 +40,7 @@ public final class SettableStringMethodProperty
             delegate.deserializeAndSet(p, ctxt, bean);
             return;
         }
-        final String text = p.getText();
+        final String text = p.getString();
         try {
             _propertyMutator.stringSetter(ctxt, bean, _optimizedIndex, text);
         } catch (Throwable e) {
@@ -53,7 +53,7 @@ public final class SettableStringMethodProperty
         throws JacksonException
     {
         if (p.hasToken(JsonToken.VALUE_STRING)) {
-            return setAndReturn(ctxt, instance, p.getText());
+            return setAndReturn(ctxt, instance, p.getString());
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }

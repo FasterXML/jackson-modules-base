@@ -260,10 +260,10 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
     protected String getAndVerifyText(JsonParser p) throws IOException
     {
         // Ok, let's verify other accessors
-        int actLen = p.getTextLength();
-        char[] ch = p.getTextCharacters();
-        String str2 = new String(ch, p.getTextOffset(), actLen);
-        String str = p.getText();
+        int actLen = p.getStringLength();
+        char[] ch = p.getStringCharacters();
+        String str2 = new String(ch, p.getStringOffset(), actLen);
+        String str = p.getString();
 
         if (str.length() !=  actLen) {
             fail("Internal problem (jp.token == "+p.currentToken()+"): jp.getText().length() ['"+str+"'] == "+str.length()+"; jp.getTextLength() == "+actLen);
@@ -276,7 +276,7 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
     protected void verifyFieldName(JsonParser p, String expName)
         throws IOException
     {
-        assertEquals(expName, p.getText());
+        assertEquals(expName, p.getString());
         assertEquals(expName, p.currentName());
     }
     
@@ -284,7 +284,7 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
         throws IOException
     {
         // First, via textual
-        assertEquals(String.valueOf(expValue), jp.getText());
+        assertEquals(String.valueOf(expValue), jp.getString());
     }
     
     protected void verifyException(Throwable e, String... matches)

@@ -45,8 +45,8 @@ public class NodeMergeTest extends BlackbirdTestBase
                 MAPPER.readerForUpdating(base)
                 .readValue(aposToQuotes("{'second':'bar', 'third':5, 'fourth':true}")));
         assertEquals(4, base.size());
-        assertEquals("bar", base.path("second").asText());
-        assertEquals("foo", base.path("first").asText());
+        assertEquals("bar", base.path("second").asString());
+        assertEquals("foo", base.path("first").asString());
         assertEquals(5, base.path("third").asInt());
         assertTrue(base.path("fourth").asBoolean());
     }
@@ -56,8 +56,8 @@ public class NodeMergeTest extends BlackbirdTestBase
         ObjectNodeWrapper w = MAPPER.readValue(aposToQuotes("{'props':{'stuff':'xyz'}}"),
                 ObjectNodeWrapper.class);
         assertEquals(2, w.props.size());
-        assertEquals("enabled", w.props.path("default").asText());
-        assertEquals("xyz", w.props.path("stuff").asText());
+        assertEquals("enabled", w.props.path("default").asString());
+        assertEquals("xyz", w.props.path("stuff").asString());
     }
 
     public void testObjectDeepUpdate() throws Exception
@@ -94,8 +94,8 @@ public class NodeMergeTest extends BlackbirdTestBase
                 MAPPER.readerForUpdating(base)
                 .readValue(aposToQuotes("['second',false,null]")));
         assertEquals(4, base.size());
-        assertEquals("first", base.path(0).asText());
-        assertEquals("second", base.path(1).asText());
+        assertEquals("first", base.path(0).asString());
+        assertEquals("second", base.path(1).asString());
         assertFalse(base.path(2).asBoolean());
         assertTrue(base.path(3).isNull());
     }
@@ -114,6 +114,6 @@ public class NodeMergeTest extends BlackbirdTestBase
         n = w.list.get(4);
         assertTrue(n.isArray());
         assertEquals(0, n.size());
-        assertEquals("foo", w.list.get(5).asText());
+        assertEquals("foo", w.list.get(5).asString());
     }
 }
