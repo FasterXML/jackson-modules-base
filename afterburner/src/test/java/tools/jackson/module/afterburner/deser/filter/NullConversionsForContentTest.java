@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.Nulls;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.*;
 import tools.jackson.databind.exc.InvalidNullException;
-import tools.jackson.databind.node.ValueNode;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
 
 // For [databind#1402]; configurable null handling, for contents of
