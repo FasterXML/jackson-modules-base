@@ -229,6 +229,7 @@ public class TestCreators2 extends BlackbirdTestBase
     {
         Primitives p = MAPPER
             .readerFor(Primitives.class)
+            .without(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
             .readValue("{}");
         assertFalse(p.b);
         assertEquals(0, p.x);

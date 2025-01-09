@@ -58,6 +58,7 @@ public class ScalarCoercionTest extends BlackbirdTestBase
     {
         Object result = COERCING_MAPPER.readerFor(type)
                 .with(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
+                .without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .readValue("\"\"");
         if (exp == null) {
             assertNull(result);
