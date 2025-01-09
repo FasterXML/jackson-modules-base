@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.Nulls;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.*;
 import tools.jackson.databind.exc.InvalidNullException;
+import tools.jackson.databind.node.ValueNode;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
 
 // For [databind#1402]; configurable null handling, for contents of
@@ -248,24 +249,30 @@ public class NullConversionsForContentTest extends AfterburnerTestBase
 
         // int[]
         {
-            NullContentAsEmpty<int[]> result = MAPPER.readValue(JSON,
-                    new TypeReference<NullContentAsEmpty<int[]>>() { });
+            NullContentAsEmpty<int[]> result = MAPPER.readerFor(
+                    new TypeReference<NullContentAsEmpty<int[]>>() { })
+                    .without(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                    .readValue(JSON);
             assertEquals(1, result.values.length);
             assertEquals(0, result.values[0]);
         }
 
         // long[]
         {
-            NullContentAsEmpty<long[]> result = MAPPER.readValue(JSON,
-                    new TypeReference<NullContentAsEmpty<long[]>>() { });
+            NullContentAsEmpty<long[]> result = MAPPER.readerFor(
+                    new TypeReference<NullContentAsEmpty<long[]>>() { })
+                    .without(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                    .readValue(JSON);
             assertEquals(1, result.values.length);
             assertEquals(0L, result.values[0]);
         }
 
         // boolean[]
         {
-            NullContentAsEmpty<boolean[]> result = MAPPER.readValue(JSON,
-                    new TypeReference<NullContentAsEmpty<boolean[]>>() { });
+            NullContentAsEmpty<boolean[]> result = MAPPER.readerFor(
+                    new TypeReference<NullContentAsEmpty<boolean[]>>() { })
+                    .without(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                    .readValue(JSON);
             assertEquals(1, result.values.length);
             assertEquals(false, result.values[0]);
         }

@@ -32,6 +32,7 @@ public class CoerceStringToIntsTest extends AfterburnerTestBase
     private final ObjectMapper MAPPER_TO_NULL = afterburnerMapperBuilder()
             .withCoercionConfig(LogicalType.Integer, cfg ->
             cfg.setCoercion(CoercionInputShape.String, CoercionAction.AsNull))
+        .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
         .build();
 
     private final ObjectMapper MAPPER_TO_FAIL = afterburnerMapperBuilder()

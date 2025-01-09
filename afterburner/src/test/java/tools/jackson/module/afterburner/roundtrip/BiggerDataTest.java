@@ -78,7 +78,9 @@ public class BiggerDataTest extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = newAfterburnerMapper();
+    private final ObjectMapper MAPPER = mapperBuilder()
+			.disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+			.build();
 
     public void testReading() throws Exception
     {

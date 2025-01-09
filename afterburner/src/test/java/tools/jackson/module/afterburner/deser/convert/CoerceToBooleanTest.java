@@ -222,22 +222,25 @@ public class CoerceToBooleanTest extends AfterburnerTestBase
     // Test for verifying that Long values are coerced to boolean correctly as well
     public void testLongToBooleanCoercionOk() throws Exception
     {
+        ObjectReader r = DEFAULT_MAPPER.reader()
+                .without(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
+
         long value = 1L + Integer.MAX_VALUE;
-        BooleanWrapper b = DEFAULT_MAPPER.readValue("{\"primitive\" : "+value+", \"wrapper\":"+value+", \"ctor\":"+value+"}",
-                BooleanWrapper.class);
+        BooleanWrapper b = r.forType(BooleanWrapper.class)
+                .readValue("{\"primitive\" : "+value+", \"wrapper\":"+value+", \"ctor\":"+value+"}");
         assertEquals(Boolean.TRUE, b.wrapper);
         assertTrue(b.primitive);
         assertEquals(Boolean.TRUE, b.ctor);
 
         // but ensure we can also get `false`
-        b = DEFAULT_MAPPER.readValue("{\"primitive\" : 0 , \"wrapper\":0, \"ctor\":0}",
-                BooleanWrapper.class);
+        b = r.forType(BooleanWrapper.class)
+                .readValue("{\"primitive\" : 0 , \"wrapper\":0, \"ctor\":0}");
         assertEquals(Boolean.FALSE, b.wrapper);
         assertFalse(b.primitive);
         assertEquals(Boolean.FALSE, b.ctor);
 
-        boolean[] boo = DEFAULT_MAPPER.readValue("[ 0, 15, \"\", \"false\", \"True\" ]",
-                boolean[].class);
+        boolean[] boo = r.forType(boolean[].class)
+                .readValue("[ 0, 15, \"\", \"false\", \"True\" ]");
         assertEquals(5, boo.length);
         assertFalse(boo[0]);
         assertTrue(boo[1]);

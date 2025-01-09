@@ -26,7 +26,9 @@ import tools.jackson.module.afterburner.AfterburnerTestBase;
 public class JDKScalarsDeserTest
     extends AfterburnerTestBase
 {
-    private final ObjectMapper MAPPER = newAfterburnerMapper();
+    private final ObjectMapper MAPPER = mapperBuilder()
+            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+            .build();
 
     private final static String NAN_STRING = "NaN";
 
