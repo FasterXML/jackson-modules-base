@@ -30,7 +30,9 @@ public class TestFailOnPrimitiveFromNullDeserialization
 
     private final static String BEAN_WITH_NULL_VALUE = "{\"value\": null}";
 
-    private final ObjectMapper MAPPER = newAfterburnerMapper();
+    private final ObjectMapper MAPPER = afterburnerMapperBuilder()
+        .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+        .build();
     private final ObjectMapper FAIL_ON_NULL_MAPPER = afterburnerMapperBuilder()
         .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
         .build();

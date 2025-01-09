@@ -229,7 +229,9 @@ public class TestCreators2 extends AfterburnerTestBase
     // Test for [JACKSON-372]
     public void testMissingPrimitives() throws Exception
     {
-        Primitives p = MAPPER.readValue("{}", Primitives.class);
+        Primitives p = MAPPER.readerFor(Primitives.class)
+                .without(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                .readValue("{}");
         assertFalse(p.b);
         assertEquals(0, p.x);
         assertEquals(0.0, p.d);

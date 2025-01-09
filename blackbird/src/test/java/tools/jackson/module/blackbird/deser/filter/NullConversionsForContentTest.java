@@ -246,28 +246,33 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
 
     public void testNullsAsEmptyWithPrimitiveArrays() throws Exception
     {
+        ObjectReader r = MAPPER.reader().without(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
+
         final String JSON = aposToQuotes("{'values':[null]}");
 
         // int[]
         {
-            NullContentAsEmpty<int[]> result = MAPPER.readValue(JSON,
-                    new TypeReference<NullContentAsEmpty<int[]>>() { });
+            NullContentAsEmpty<int[]> result = r.forType(
+                    new TypeReference<NullContentAsEmpty<int[]>>() { })
+                    .readValue(JSON);
             assertEquals(1, result.values.length);
             assertEquals(0, result.values[0]);
         }
 
         // long[]
         {
-            NullContentAsEmpty<long[]> result = MAPPER.readValue(JSON,
-                    new TypeReference<NullContentAsEmpty<long[]>>() { });
+            NullContentAsEmpty<long[]> result = r.forType(
+                    new TypeReference<NullContentAsEmpty<long[]>>() { })
+                    .readValue(JSON);
             assertEquals(1, result.values.length);
             assertEquals(0L, result.values[0]);
         }
 
         // boolean[]
         {
-            NullContentAsEmpty<boolean[]> result = MAPPER.readValue(JSON,
-                    new TypeReference<NullContentAsEmpty<boolean[]>>() { });
+            NullContentAsEmpty<boolean[]> result = r.forType(
+                    new TypeReference<NullContentAsEmpty<boolean[]>>() { })
+                    .readValue(JSON);
             assertEquals(1, result.values.length);
             assertEquals(false, result.values[0]);
         }

@@ -44,10 +44,14 @@ public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBas
 
     public void testPassPrimitiveFromNull() throws Exception
     {
-        LongBean longBean = MAPPER.readValue(BEAN_WITH_NULL_VALUE, LongBean.class);
-        IntBean intBean = MAPPER.readValue(BEAN_WITH_NULL_VALUE, IntBean.class);
-        BooleanBean booleanBean = MAPPER.readValue(BEAN_WITH_NULL_VALUE, BooleanBean.class);
-        DoubleBean doubleBean = MAPPER.readValue(BEAN_WITH_NULL_VALUE, DoubleBean.class);
+        ObjectMapper mapper = mapperBuilder()
+            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+            .build();
+
+        LongBean longBean = mapper.readValue(BEAN_WITH_NULL_VALUE, LongBean.class);
+        IntBean intBean = mapper.readValue(BEAN_WITH_NULL_VALUE, IntBean.class);
+        BooleanBean booleanBean = mapper.readValue(BEAN_WITH_NULL_VALUE, BooleanBean.class);
+        DoubleBean doubleBean = mapper.readValue(BEAN_WITH_NULL_VALUE, DoubleBean.class);
         assertEquals(longBean.value, 0);
         assertEquals(intBean.value, 0);
         assertEquals(booleanBean.value, false);
