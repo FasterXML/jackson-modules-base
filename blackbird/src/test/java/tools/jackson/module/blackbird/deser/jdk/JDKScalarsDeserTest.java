@@ -28,7 +28,9 @@ import org.junit.Assert;
 public class JDKScalarsDeserTest
     extends BlackbirdTestBase
 {
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = mapperBuilder()
+            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+            .build();
 
     private final static String NAN_STRING = "NaN";
 

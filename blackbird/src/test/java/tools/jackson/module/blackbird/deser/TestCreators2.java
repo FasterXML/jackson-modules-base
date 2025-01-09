@@ -227,7 +227,9 @@ public class TestCreators2 extends BlackbirdTestBase
     // Test for [JACKSON-372]
     public void testMissingPrimitives() throws Exception
     {
-        Primitives p = MAPPER.readValue("{}", Primitives.class);
+        Primitives p = MAPPER
+            .readerFor(Primitives.class)
+            .readValue("{}");
         assertFalse(p.b);
         assertEquals(0, p.x);
         assertEquals(0.0, p.d);

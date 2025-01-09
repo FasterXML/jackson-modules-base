@@ -32,6 +32,7 @@ public class CoerceStringToIntsTest extends BlackbirdTestBase
     private final ObjectMapper MAPPER_TO_NULL = mapperBuilder()
             .withCoercionConfig(LogicalType.Integer, cfg ->
             cfg.setCoercion(CoercionInputShape.String, CoercionAction.AsNull))
+        .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
         .build();
 
     private final ObjectMapper MAPPER_TO_FAIL = mapperBuilder()

@@ -89,6 +89,7 @@ public class ArrayMergeTest extends BlackbirdTestBase
         MergedX<byte[]> input = new MergedX<byte[]>(new byte[] { 1, 2 });
         MergedX<byte[]> result = MAPPER
                 .readerFor(new TypeReference<MergedX<byte[]>>() {})
+                .without(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
                 .withValueToUpdate(input)
                 .readValue(aposToQuotes("{'value':[4, 6.0, null]}"));
         assertSame(input, result);
