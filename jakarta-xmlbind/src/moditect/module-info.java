@@ -1,4 +1,5 @@
-module com.fasterxml.jackson.module.jakarta.xmlbind {
+module tools.jackson.module.jakarta.xmlbind
+{
     requires static jakarta.xml.bind;
 
     requires static jakarta.activation;
