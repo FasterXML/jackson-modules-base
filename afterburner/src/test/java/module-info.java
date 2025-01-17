@@ -6,6 +6,7 @@ module tools.jackson.module.afterburner
 
     requires java.logging;
 
+    requires com.fasterxml.jackson.annotation;
     requires tools.jackson.core;
     requires tools.jackson.databind;
 

@@ -27,9 +27,6 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
   </licenses>
 
   <properties>
-    <javac.src.version>1.8</javac.src.version>
-    <javac.target.version>1.8</javac.target.version>
-
     <packageVersion.dir>tools/jackson/module/blackbird</packageVersion.dir>
     <packageVersion.package>${project.groupId}.blackbird</packageVersion.package>
   </properties>
@@ -62,13 +59,6 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
             <phase>generate-sources</phase>
           </execution>
         </executions>
-      </plugin>
-      <!--  14-Mar-2019, tatu: Add rudimentary JDK9+ module info. To build with JDK 8
-             will have to use `moduleInfoFile` as anything else requires JDK 9+
-        -->
-      <plugin>
-        <groupId>org.moditect</groupId>
-        <artifactId>moditect-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

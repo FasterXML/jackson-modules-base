@@ -3,8 +3,7 @@ module tools.jackson.module.afterburner
 {
     requires java.logging;
 
-    requires com.fasterxml.jackson.annotation;
-    requires transitive tools.jackson.core;
+    requires tools.jackson.core;
     requires transitive tools.jackson.databind;
 
     exports tools.jackson.module.afterburner;
