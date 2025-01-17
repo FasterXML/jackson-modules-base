@@ -54,10 +54,12 @@ field access and method calls
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>
     </dependency>
-    <dependency> <!-- tests use Jackson annotations -->
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <scope>provided</scope>
+
+    <!-- 20-Apr-2024, tatu: JUnit4 no longer from jackson-base -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <!--  16-Feb-2019, tatu: Test for [modules-base#49] fix requires Asm,
@@ -66,7 +68,7 @@ field access and method calls
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>9.5</version>
+      <version>9.7.1</version>
       <scope>test</scope>
     </dependency>
 
@@ -120,13 +122,6 @@ field access and method calls
           </execution>
         </executions>
       </plugin>
-      <!--  14-Mar-2019, tatu: Add rudimentary JDK9+ module info. To build with JDK 8
-             will have to use `moduleInfoFile` as anything else requires JDK 9+
-        -->
-      <plugin>
-        <groupId>org.moditect</groupId>
-        <artifactId>moditect-maven-plugin</artifactId>
-      </plugin>
      <plugin>
         <groupId>io.github.floverfelt</groupId>
         <artifactId>find-and-replace-maven-plugin</artifactId>
@@ -157,25 +152,4 @@ field access and method calls
     </plugins>
   </build>
 
-  <profiles>
-    <profile>
-      <!-- And different set up for JDK 17+ -->
-      <id>java17+</id>
-      <activation>
-        <jdk>[17,)</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>3.0.0-M8</version>
-            <configuration>
-              <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

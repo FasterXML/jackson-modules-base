@@ -32,4 +32,5 @@ Active maintainers:
 #182: Rename "com.fasterxml.jackson" -> "tools.jackson"
 #225: Afterburner 3.0 fails to handle interface "default" methods
  (contributed by Georgios A))
+#269: Change 3.0 to use `module-info.java` directly [JSTEP-11]
 - Minimum Java baseline: Java 17

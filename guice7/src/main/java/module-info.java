@@ -1,12 +1,14 @@
-module tools.jackson.module.guice7 {
-    //Jakarta Reference Implementation
-    requires static jakarta.inject;
-
+// Guice7-module Main artifact Module descriptor
+module tools.jackson.module.guice7
+{
     requires com.fasterxml.jackson.annotation;
     requires tools.jackson.core;
-    requires tools.jackson.databind;
+    requires transitive tools.jackson.databind;
 
     requires com.google.guice;
+
+    //Jakarta Reference Implementation
+    requires static jakarta.inject;
 
     exports tools.jackson.module.guice7;
 

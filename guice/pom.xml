@@ -54,6 +54,14 @@
             <artifactId>guice</artifactId>
             <version>${version.guice}</version>
         </dependency>
+
+        <!-- 20-Apr-2024, tatu: JUnit4 no longer from jackson-base -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
   <build>
@@ -61,13 +69,6 @@
       <plugin>
 	<groupId>com.google.code.maven-replacer-plugin</groupId>
 	<artifactId>replacer</artifactId>
-      </plugin>
-      <!--  14-Mar-2019, tatu: Add rudimentary JDK9+ module info. To build with JDK 8
-             will have to use `moduleInfoFile` as anything else requires JDK 9+
-        -->
-      <plugin>
-        <groupId>org.moditect</groupId>
-        <artifactId>moditect-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

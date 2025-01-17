@@ -8,8 +8,8 @@ import java.util.concurrent.Semaphore;
  * allowing the interleaving of threads
  * through {@link #loadAndResolve(ClassName, byte[])} to be controlled by an external test harness.
  */
-public class MyClassLoaderWithArtificialTiming extends MyClassLoader {
-
+public class MyClassLoaderWithArtificialTiming extends MyClassLoader
+{
     private Semaphore semaphore;
 
     public MyClassLoaderWithArtificialTiming(ClassLoader parent,

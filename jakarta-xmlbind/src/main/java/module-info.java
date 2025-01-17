@@ -1,11 +1,12 @@
+// Jakarta XML Bind Main artifact Module descriptor
 module tools.jackson.module.jakarta.xmlbind
 {
-    requires static jakarta.xml.bind;
-
-    requires static jakarta.activation;
-
+    requires com.fasterxml.jackson.annotation;
     requires tools.jackson.core;
-    requires tools.jackson.databind;
+    requires transitive tools.jackson.databind;
+
+    requires jakarta.xml.bind;
+    requires static jakarta.activation;
 
     // expose main level, but leave out "ser", "deser" impl
     exports tools.jackson.module.jakarta.xmlbind;

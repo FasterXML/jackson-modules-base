@@ -83,7 +83,7 @@ public class JSOGDeserialize622Test extends AfterburnerTestBase
         @Override
         public JSOGRef deserialize(JsonParser p, DeserializationContext ctx) {
             JsonNode node = p.readValueAsTree();
-            if (node.isTextual()) {
+            if (node.isString()) {
                 return new JSOGRef(node.asInt());
             }
             JsonNode n = node.get(REF_KEY);
