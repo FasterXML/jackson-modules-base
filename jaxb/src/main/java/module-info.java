@@ -1,11 +1,12 @@
+// JAXB Annotations artifact Module descriptor
 module tools.jackson.module.jaxb {
-    requires static java.xml.bind;
-
-    // Needed for JDK9+, but optionally only
-    requires static java.activation;
-
+    requires com.fasterxml.jackson.annotation;
     requires tools.jackson.core;
-    requires tools.jackson.databind;
+    requires transitive tools.jackson.databind;
+
+    requires static java.xml.bind;
+    // Needed for JDK9+, but optionally only
+    //requires static java.activation;
 
     // expose main level, but leave out "ser", "deser" impl
     exports tools.jackson.module.jaxb;
