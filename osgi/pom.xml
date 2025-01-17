@@ -28,7 +28,7 @@
 
     <properties>
         <version.osgi.core>5.0.0</version.osgi.core>
-        <version.mockito>1.10.19</version.mockito>
+        <version.mockito>5.15.2</version.mockito>
 
         <!-- Generate PackageVersion.java into this directory. -->
         <packageVersion.dir>tools/jackson/module/osgi</packageVersion.dir>
@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
+            <artifactId>mockito-core</artifactId>
             <version>${version.mockito}</version>
             <scope>test</scope>
         </dependency>
@@ -58,13 +58,6 @@
       <plugin>
         <groupId>com.google.code.maven-replacer-plugin</groupId>
         <artifactId>replacer</artifactId>
-      </plugin>
-      <!--  14-Mar-2019, tatu: Add rudimentary JDK9+ module info. To build with JDK 8
-             will have to use `moduleInfoFile` as anything else requires JDK 9+
-        -->
-      <plugin>
-        <groupId>org.moditect</groupId>
-        <artifactId>moditect-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
@@ -81,7 +74,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>3.0.0-M8</version>
             <configuration>
               <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
             </configuration>
