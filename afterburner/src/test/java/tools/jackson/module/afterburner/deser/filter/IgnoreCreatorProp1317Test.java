@@ -9,7 +9,7 @@ import tools.jackson.module.afterburner.AfterburnerTestBase;
 
 public class IgnoreCreatorProp1317Test extends AfterburnerTestBase
 {
-    static class Testing {
+    public static class Testing {
         @JsonIgnore
         public String ignore;
 

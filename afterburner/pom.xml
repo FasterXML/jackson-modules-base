@@ -66,7 +66,7 @@ field access and method calls
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>9.5</version>
+      <version>9.7.1</version>
       <scope>test</scope>
     </dependency>
 
@@ -120,13 +120,6 @@ field access and method calls
           </execution>
         </executions>
       </plugin>
-      <!--  14-Mar-2019, tatu: Add rudimentary JDK9+ module info. To build with JDK 8
-             will have to use `moduleInfoFile` as anything else requires JDK 9+
-        -->
-      <plugin>
-        <groupId>org.moditect</groupId>
-        <artifactId>moditect-maven-plugin</artifactId>
-      </plugin>
      <plugin>
         <groupId>io.github.floverfelt</groupId>
         <artifactId>find-and-replace-maven-plugin</artifactId>
@@ -169,7 +162,6 @@ field access and method calls
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>3.0.0-M8</version>
             <configuration>
               <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
             </configuration>

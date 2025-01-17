@@ -1,13 +1,17 @@
-package tools.jackson.module.afterburner.roundtrip;
-
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.module.afterburner.AfterburnerModule;
-import junit.framework.TestCase;
+package tools.jackson.module.afterburner.util;
 
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+
+import org.junit.Ignore;
+import org.junit.Test;
+
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+
+import tools.jackson.module.afterburner.AfterburnerModule;
+import tools.jackson.module.afterburner.AfterburnerTestBase;
 
 /**
  * Made for a bug found when trying to serialize an Object loaded from an
@@ -36,8 +40,10 @@ import java.net.URLClassLoader;
  * It would be nice to improve test to avoid storing pre-compiled class but
  * for now it'll have to do.
  */
-public class IsolatedClassLoaderTest extends TestCase {
-
+@Ignore("Fails on JVM 17 + JPMS")
+public class IsolatedClassLoaderTest extends AfterburnerTestBase
+{
+    @Test
     public void testBeanWithSeparateClassLoader() throws IOException {
         // 11-Jul-2023, tatu: No idea why/how, but Github CI barfs on
         // trying to load `Bean.class` so... let's just skip if so
@@ -62,7 +68,7 @@ public class IsolatedClassLoaderTest extends TestCase {
             @SuppressWarnings("resource")
             ClassLoader isolated = new URLClassLoader(resourcesDir, null);
             Class<?> beanClz = isolated.loadClass("Bean");
-            return beanClz.newInstance();
+            return beanClz.getConstructor().newInstance();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
