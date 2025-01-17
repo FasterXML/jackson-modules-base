@@ -13,7 +13,7 @@ module tools.jackson.module.afterburner
     //    exports tools.jackson.module.afterburner.util;
 
     // do not expose shaded ByteBuddy
-    //    exports tools.jackson.module.afterburner.bytebuddy;
+    //    exports tools.jackson.module.afterburner.util.bytebuddy;
     // but need to depend on it?
     requires static net.bytebuddy;
 
