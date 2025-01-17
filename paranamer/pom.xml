@@ -52,10 +52,9 @@ to introspect names of constructor (and factory method) parameters.
       <version>2.8</version>
     </dependency>
 
-     <!-- and for testing, annotations -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
