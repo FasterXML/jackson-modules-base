@@ -71,13 +71,11 @@ not datatype, data format, or JAX-RS provider modules.
     </dependencies>
   </dependencyManagement>
 
-  <!-- 20-Apr-2024, tatu: JUnit4 no longer from jackson-base, so: -->
+  <!-- 17-Jan-2025, tatu: Temporarily moved JUnit4/5 deps down to
+      modules to allow mix of 4 and 5; will promote JUnit 5 back up
+      once conversion complete
+    -->
   <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
   
   <!-- Alas, need to include snapshot reference since otherwise can not find

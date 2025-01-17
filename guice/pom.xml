@@ -39,10 +39,6 @@
         <!-- Extends Jackson mapper, but also uses types from core, hence direct dep as well -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
         <dependency>
@@ -54,6 +50,12 @@
             <artifactId>guice</artifactId>
             <version>${version.guice}</version>
         </dependency>
+
+         <dependency>
+             <groupId>junit</groupId>
+             <artifactId>junit</artifactId>
+             <scope>test</scope>
+         </dependency>
     </dependencies>
 
   <build>

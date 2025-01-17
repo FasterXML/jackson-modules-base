@@ -74,6 +74,12 @@ for configuring data-binding.
       <version>1.2.2</version>
     </dependency>
 
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <!-- may also need JAXB impl for tests -->
     <!-- 20-May-2024, tatu: no longer needed it seems:
     <dependency>
