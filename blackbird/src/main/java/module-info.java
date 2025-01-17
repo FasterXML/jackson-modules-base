@@ -1,4 +1,4 @@
-// Blackbidr Main artifact Module descriptor
+// Blackbird Main artifact Module descriptor
 module tools.jackson.module.blackbird
 {
     requires java.logging;

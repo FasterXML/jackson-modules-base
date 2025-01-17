@@ -1,4 +1,4 @@
-// Blackbidrd (unit) Test Module descriptor
+// Blackbird (unit) Test Module descriptor
 module tools.jackson.module.blackbird
 {
     // Since we are not split from Main artifact, will not
