@@ -45,6 +45,14 @@
             <artifactId>org.osgi.core</artifactId>
             <version>${version.osgi.core}</version>
         </dependency>
+
+        <!-- 20-Apr-2024, tatu: JUnit4 no longer from jackson-base -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>

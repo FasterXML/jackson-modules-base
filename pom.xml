@@ -82,11 +82,13 @@ not datatype, data format, or JAX-RS provider modules.
 
   <!-- 20-Apr-2024, tatu: JUnit4 no longer from jackson-base -->
   <dependencies>
+    <!--
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
+    -->
 
     <!-- 11-Jan-2025, joohyukkim: For JSTEP-10, migrate to JUnit5
     <dependency>

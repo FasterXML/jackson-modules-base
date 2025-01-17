@@ -10,7 +10,8 @@ module tools.jackson.module.osgi
 
     // Additional test lib/framework dependencies
 
-    requires junit; // JUnit4 To Be Removed in future
+    requires junit;
+    requires org.mockito;
 
     // Further, need to open up some packages for JUnit et al
     opens tools.jackson.module.osgi;

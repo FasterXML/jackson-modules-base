@@ -54,10 +54,12 @@ field access and method calls
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>
     </dependency>
-    <dependency> <!-- tests use Jackson annotations -->
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <scope>provided</scope>
+
+    <!-- 20-Apr-2024, tatu: JUnit4 no longer from jackson-base -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <!--  16-Feb-2019, tatu: Test for [modules-base#49] fix requires Asm,
