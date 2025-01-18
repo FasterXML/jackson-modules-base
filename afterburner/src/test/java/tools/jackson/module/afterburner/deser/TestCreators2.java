@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 
 import tools.jackson.core.*;
@@ -15,6 +17,8 @@ import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.exc.ValueInstantiationException;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests copied from core databind, to verify that Afterburner does
@@ -202,8 +206,8 @@ public class TestCreators2 extends AfterburnerTestBase
      */
 
     private final ObjectMapper MAPPER = newAfterburnerMapper();
-    
-    // for [JACKSON-547]
+
+    @Test
     public void testExceptionFromConstructor() throws Exception
     {
         try {
@@ -218,7 +222,8 @@ public class TestCreators2 extends AfterburnerTestBase
             assertEquals("foobar", t.getMessage());
         }
     }
-    
+
+    @Test
     public void testSimpleConstructor() throws Exception
     {
         HashTest test = MAPPER.readValue("{\"type\":\"custom\",\"bytes\":\"abc\" }", HashTest.class);
@@ -226,7 +231,7 @@ public class TestCreators2 extends AfterburnerTestBase
         assertEquals("abc", new String(test.bytes, "UTF-8"));
     }    
 
-    // Test for [JACKSON-372]
+    @Test
     public void testMissingPrimitives() throws Exception
     {
         Primitives p = MAPPER.readerFor(Primitives.class)
@@ -237,6 +242,7 @@ public class TestCreators2 extends AfterburnerTestBase
         assertEquals(0.0, p.d);
     }
 
+    @Test
     public void testJackson431() throws Exception
     {
         final Test431Container foo = MAPPER.readValue(
@@ -250,6 +256,7 @@ public class TestCreators2 extends AfterburnerTestBase
     }
 
     // [JACKSON-438]: Catch and rethrow exceptions that Creator methods throw
+    @Test
     public void testJackson438() throws Exception
     {
         try {
@@ -269,6 +276,7 @@ public class TestCreators2 extends AfterburnerTestBase
     }
 
     @SuppressWarnings("unchecked")
+    @Test
     public void testIssue465() throws Exception
     {
         final String JSON = "{\"A\":12}";
@@ -292,6 +300,7 @@ public class TestCreators2 extends AfterburnerTestBase
         assertEquals(0, bean.map.size());
     }
 
+    @Test
     public void testCreatorWithDupNames() throws Exception
     {
         try {
@@ -302,6 +311,7 @@ public class TestCreators2 extends AfterburnerTestBase
         }
     }
     
+    @Test
     public void testCreatorMultipleArgumentWithoutAnnotation() throws Exception {
         AutoDetectConstructorBean value = MAPPER.readValue("{\"bar\":\"bar\",\"foo\":\"foo\"}", AutoDetectConstructorBean.class);
         assertEquals("bar", value.bar);
@@ -309,6 +319,7 @@ public class TestCreators2 extends AfterburnerTestBase
     }
 
     // for [JACKSON-575]
+    @Test
     public void testIgnoredSingleArgCtor() throws Exception
     {
         try {
@@ -319,6 +330,7 @@ public class TestCreators2 extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testAbstractFactory() throws Exception
     {
         AbstractBase bean = MAPPER.readValue("{\"a\":3}", AbstractBase.class);
@@ -328,13 +340,14 @@ public class TestCreators2 extends AfterburnerTestBase
         assertEquals(Integer.valueOf(3), impl.props.get("a"));
     }
 
-    // [JACKSON-700]
+    @Test
     public void testCreatorProperties() throws Exception
     {
         Issue700Bean value = MAPPER.readValue("{ \"item\" : \"foo\" }", Issue700Bean.class);
         assertNotNull(value);
     }
 
+    @Test
     public void testSingleStringCreator() throws Exception
     {
         FromStringWrapper w = MAPPER.readValue("{\"wrapped\":\"foo\"}",

@@ -4,14 +4,16 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 import tools.jackson.module.afterburner.AfterburnerModule;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Made for a bug found when trying to serialize an Object loaded from an
@@ -40,7 +42,7 @@ import tools.jackson.module.afterburner.AfterburnerTestBase;
  * It would be nice to improve test to avoid storing pre-compiled class but
  * for now it'll have to do.
  */
-@Ignore("Fails on JVM 17 + JPMS")
+@Disabled("Fails on JVM 17 + JPMS")
 public class IsolatedClassLoaderTest extends AfterburnerTestBase
 {
     @Test

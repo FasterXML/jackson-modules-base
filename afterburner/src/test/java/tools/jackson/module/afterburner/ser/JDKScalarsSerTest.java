@@ -1,11 +1,15 @@
 package tools.jackson.module.afterburner.ser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.ser.std.ToStringSerializer;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JDKScalarsSerTest extends AfterburnerTestBase
 {
@@ -32,6 +36,7 @@ public class JDKScalarsSerTest extends AfterburnerTestBase
     private final ObjectMapper VANILLA_MAPPER = newVanillaJSONMapper();
 
     // [modules-base#117]
+    @Test
     public void testIntAsStringWithJsonSerialize() throws Exception
     {
         final String EXP_JSON = "{\"value\":\"42\"}";
@@ -41,6 +46,7 @@ public class JDKScalarsSerTest extends AfterburnerTestBase
     }
 
     // [modules-base#118]
+    @Test
     public void testIntAsStringWithJsonFormat() throws Exception
     {
         final String EXP_JSON = "{\"value\":\"42\"}";
@@ -50,6 +56,7 @@ public class JDKScalarsSerTest extends AfterburnerTestBase
     }
 
     // [modules-base#118]
+    @Test
     public void testLongAsStringWithJsonFormat() throws Exception
     {
         final String EXP_JSON = "{\"value\":\"-137\"}";

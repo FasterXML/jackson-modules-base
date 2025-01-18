@@ -2,12 +2,16 @@ package tools.jackson.module.afterburner.ser;
 
 import java.math.BigDecimal;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.ser.std.ToStringSerializer;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestJsonSerializeAnnotationBug
     extends tools.jackson.module.afterburner.AfterburnerTestBase
@@ -27,6 +31,7 @@ public class TestJsonSerializeAnnotationBug
         }
     }
 
+    @Test
     public void testAfterburnerModule() throws Exception
     {
         ObjectMapper mapper = newAfterburnerMapper();

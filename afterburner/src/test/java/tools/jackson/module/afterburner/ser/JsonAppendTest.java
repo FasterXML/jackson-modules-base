@@ -1,6 +1,7 @@
 package tools.jackson.module.afterburner.ser;
 
 import tools.jackson.core.JsonGenerator;
+
 import tools.jackson.databind.*;
 import tools.jackson.databind.annotation.JsonAppend;
 import tools.jackson.databind.cfg.MapperConfig;
@@ -8,7 +9,10 @@ import tools.jackson.databind.introspect.AnnotatedClass;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.databind.ser.VirtualBeanPropertyWriter;
 import tools.jackson.databind.util.Annotations;
+
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // most for [module-afterburner#57]
 public class JsonAppendTest extends AfterburnerTestBase

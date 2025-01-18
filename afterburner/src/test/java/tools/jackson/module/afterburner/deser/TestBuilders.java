@@ -1,8 +1,12 @@
 package tools.jackson.module.afterburner.deser;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestBuilders extends AfterburnerTestBase
 {
@@ -35,9 +39,10 @@ public class TestBuilders extends AfterburnerTestBase
     /* Test methods, valid cases, non-deferred, no-mixins
     /**********************************************************
      */
-    
+
     private final ObjectMapper MAPPER = newAfterburnerMapper();
-    
+
+    @Test
     public void testSimpleBuilder() throws Exception
     {
         final Thing expected = new ThingBuilder().withFoo("bar").build();
@@ -47,5 +52,4 @@ public class TestBuilders extends AfterburnerTestBase
         assertNotNull(actual.foo);
         assertEquals(expected.foo, actual.foo);
     }
-
 }

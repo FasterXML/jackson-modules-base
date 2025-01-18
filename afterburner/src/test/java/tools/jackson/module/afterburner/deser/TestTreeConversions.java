@@ -1,10 +1,14 @@
 package tools.jackson.module.afterburner.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestTreeConversions extends AfterburnerTestBase
 {
@@ -68,6 +72,7 @@ public class TestTreeConversions extends AfterburnerTestBase
 
     private final ObjectMapper MAPPER = newAfterburnerMapper();
 
+    @Test
     public void testConversion() throws Exception
     {
         final JsonNode node = MAPPER.readTree("{" +

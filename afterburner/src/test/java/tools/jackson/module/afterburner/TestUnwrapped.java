@@ -1,8 +1,14 @@
 package tools.jackson.module.afterburner;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 import tools.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class TestUnwrapped extends AfterburnerTestBase
 {
@@ -34,6 +40,7 @@ public class TestUnwrapped extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testSimpleSerialize() throws Exception
     {
         final ObjectMapper VANILLA = new ObjectMapper();
@@ -43,6 +50,7 @@ public class TestUnwrapped extends AfterburnerTestBase
         assertEquals(json, BURNER.writeValueAsString(input));
     }
     
+    @Test
     public void testUnwrappedDeserialize() throws Exception
     {
         final ObjectMapper VANILLA = new ObjectMapper();
@@ -53,5 +61,4 @@ public class TestUnwrapped extends AfterburnerTestBase
         assertNotNull(out.b);
         assertEquals(9, out.b.value);
     }
-
 }

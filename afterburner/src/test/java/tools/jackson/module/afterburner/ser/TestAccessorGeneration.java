@@ -2,6 +2,8 @@
 
 import java.lang.reflect.Method;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.PropertyName;
 import tools.jackson.databind.cfg.MapperConfig;
@@ -10,6 +12,8 @@ import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.util.SimpleBeanPropertyDefinition;
 
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestAccessorGeneration extends AfterburnerTestBase
 {
@@ -50,6 +54,7 @@ public class TestAccessorGeneration extends AfterburnerTestBase
     private final ObjectMapper MAPPER = new ObjectMapper();
     private final MapperConfig<?> MAPPER_CONFIG = MAPPER.serializationConfig();
 
+    @Test
     public void testSingleIntAccessorGeneration() throws Exception
     {
         Method method = Bean1.class.getDeclaredMethod("getX");
@@ -68,6 +73,7 @@ public class TestAccessorGeneration extends AfterburnerTestBase
         assertEquals(bean.getX(), value);
     }
 
+    @Test
     public void testDualIntAccessorGeneration() throws Exception
     {
         PropertyAccessorCollector coll = new PropertyAccessorCollector(Bean3.class);
@@ -105,6 +111,7 @@ public class TestAccessorGeneration extends AfterburnerTestBase
     }
 
     // And then test to ensure Switch-table construction also works...
+    @Test
     public void testLotsaIntAccessorGeneration() throws Exception
     {
         PropertyAccessorCollector coll = new PropertyAccessorCollector(BeanN.class);

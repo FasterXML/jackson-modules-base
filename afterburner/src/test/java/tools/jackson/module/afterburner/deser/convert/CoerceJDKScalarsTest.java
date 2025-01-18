@@ -1,19 +1,22 @@
 package tools.jackson.module.afterburner.deser.convert;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.*;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // Copied from "jackson-databind" as of 2.12.1
 public class CoerceJDKScalarsTest extends AfterburnerTestBase
@@ -48,6 +51,7 @@ public class CoerceJDKScalarsTest extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testNullValueFromEmpty() throws Exception
     {
         // wrappers accept `null` fine
@@ -88,6 +92,7 @@ public class CoerceJDKScalarsTest extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testNullFailFromEmpty() throws Exception
     {
         _verifyNullFail(Boolean.class);
@@ -129,6 +134,7 @@ public class CoerceJDKScalarsTest extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testStringToNumbersCoercionOk() throws Exception
     {
         _verifyCoerceSuccess(quote("123"), Byte.TYPE, Byte.valueOf((byte) 123));
@@ -152,6 +158,7 @@ public class CoerceJDKScalarsTest extends AfterburnerTestBase
         assertTrue(ab.get());
     }
 
+    @Test
     public void testStringCoercionFailInteger() throws Exception
     {
         _verifyRootStringCoerceFail("123", Byte.TYPE);
@@ -164,6 +171,7 @@ public class CoerceJDKScalarsTest extends AfterburnerTestBase
         _verifyRootStringCoerceFail("123", Long.class);
     }
 
+    @Test
     public void testStringCoercionFailFloat() throws Exception
     {
         _verifyRootStringCoerceFail("123.5", Float.TYPE);
@@ -175,6 +183,7 @@ public class CoerceJDKScalarsTest extends AfterburnerTestBase
         _verifyRootStringCoerceFail("123.0", BigDecimal.class);
     }
 
+    @Test
     public void testMiscCoercionFail() throws Exception
     {
         // And then we have coercions from more esoteric types too

@@ -11,7 +11,10 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.module.afterburner.testutil.NoCheckSubTypeValidator;
 
-public abstract class AfterburnerTestBase extends junit.framework.TestCase
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public abstract class AfterburnerTestBase
 {
     // // // First some "shared" classes from databind's `BaseMapTest`
     
@@ -213,16 +216,6 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
         return new JsonMapper();
     }
 
-    // to deprecate
-    protected static JsonMapper newObjectMapper() {
-        return mapperBuilder().build();
-    }
-
-    // to deprecate
-    protected static JsonMapper.Builder mapperBuilder() {
-        return afterburnerMapperBuilder();
-    }
-    
     /*
     /**********************************************************
     /* Helper methods; assertions
@@ -257,7 +250,7 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
      * available methods, and ensures results are consistent, before
      * returning them
      */
-    protected String getAndVerifyText(JsonParser p) throws IOException
+    protected String getAndVerifyText(JsonParser p)
     {
         // Ok, let's verify other accessors
         int actLen = p.getStringLength();

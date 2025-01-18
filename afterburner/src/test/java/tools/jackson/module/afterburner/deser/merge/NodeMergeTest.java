@@ -1,11 +1,15 @@
 package tools.jackson.module.afterburner.deser.merge;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonMerge;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
 import tools.jackson.databind.node.ArrayNode;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class NodeMergeTest extends AfterburnerTestBase
 {
@@ -36,6 +40,7 @@ public class NodeMergeTest extends AfterburnerTestBase
     /********************************************************
      */
 
+    @Test
     public void testObjectNodeUpdateValue() throws Exception
     {
         ObjectNode base = MAPPER.createObjectNode();
@@ -50,6 +55,7 @@ public class NodeMergeTest extends AfterburnerTestBase
         assertTrue(base.path("fourth").asBoolean());
     }
 
+    @Test
     public void testObjectNodeMerge() throws Exception
     {
         ObjectNodeWrapper w = MAPPER.readValue(aposToQuotes("{'props':{'stuff':'xyz'}}"),
@@ -59,6 +65,7 @@ public class NodeMergeTest extends AfterburnerTestBase
         assertEquals("xyz", w.props.path("stuff").asString());
     }
 
+    @Test
     public void testObjectDeepUpdate() throws Exception
     {
         ObjectNode base = MAPPER.createObjectNode();
@@ -85,6 +92,7 @@ public class NodeMergeTest extends AfterburnerTestBase
         assertEquals(3, n.get(1).asInt());
     }
 
+    @Test
     public void testArrayNodeUpdateValue() throws Exception
     {
         ArrayNode base = MAPPER.createArrayNode();
@@ -99,6 +107,7 @@ public class NodeMergeTest extends AfterburnerTestBase
         assertTrue(base.path(3).isNull());
     }
 
+    @Test
     public void testArrayNodeMerge() throws Exception
     {
         ArrayNodeWrapper w = MAPPER.readValue(aposToQuotes("{'list':[456,true,{},  [], 'foo']}"),

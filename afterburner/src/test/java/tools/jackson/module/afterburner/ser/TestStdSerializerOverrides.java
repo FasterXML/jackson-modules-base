@@ -1,5 +1,9 @@
 package tools.jackson.module.afterburner.ser;
 
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.Version;
 
@@ -9,9 +13,10 @@ import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.ser.std.StdSerializer;
+
 import tools.jackson.module.afterburner.AfterburnerTestBase;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestStdSerializerOverrides extends AfterburnerTestBase
 {
@@ -80,6 +85,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
 
     private final ObjectMapper VANILLA_MAPPER = newVanillaJSONMapper();
     
+    @Test
     public void testStringSerWith() throws Exception
     {
         ObjectMapper abMapper = newAfterburnerMapper();
@@ -89,6 +95,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
         assertEquals(jsonPlain, jsonAb);
     }
 
+    @Test
     public void testStringSerOverideNoAfterburner() throws Exception
     {
         String json = JsonMapper.builder()
@@ -99,6 +106,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
         assertEquals("{\"field\":\"Foo:value\"}", json);
     }
 
+    @Test
     public void testStringSerOverideWithAfterburner() throws Exception
     {
         String json = afterburnerMapperBuilder()
@@ -115,6 +123,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testIntSerOverideVanilla() throws Exception
     {
         // First, baseline, no custom serializer
@@ -131,6 +140,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
         assertEquals(aposToQuotes("{'value':-42}"), json);
     }
 
+    @Test
     public void testIntSerOverideWithAfterburner() throws Exception
     {
         String json = afterburnerMapperBuilder()
@@ -142,6 +152,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
         assertEquals(aposToQuotes("{'value':-42}"), json);
     }
 
+    @Test
     public void testLongSerOverideVanilla() throws Exception
     {
         // First, baseline, no custom serializer
@@ -158,6 +169,7 @@ public class TestStdSerializerOverrides extends AfterburnerTestBase
         assertEquals(aposToQuotes("{'value':-999}"), json);
     }
 
+    @Test
     public void testLongSerOverideWithAfterburner() throws Exception
     {
         String json = afterburnerMapperBuilder()

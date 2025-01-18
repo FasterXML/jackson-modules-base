@@ -1,5 +1,7 @@
 package tools.jackson.module.afterburner.ser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 
 import tools.jackson.databind.*;
@@ -8,6 +10,8 @@ import tools.jackson.databind.ser.FilterProvider;
 import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter;
 import tools.jackson.databind.ser.std.SimpleFilterProvider;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for verifying that bean property filtering using JsonFilter
@@ -70,6 +74,7 @@ public class TestJsonFilter extends AfterburnerTestBase
 
     private final ObjectMapper MAPPER = newAfterburnerMapper();
     
+    @Test
     public void testSimpleInclusionFilter() throws Exception
     {
         FilterProvider prov = new SimpleFilterProvider().addFilter("RootFilter",
@@ -82,6 +87,7 @@ public class TestJsonFilter extends AfterburnerTestBase
         assertEquals("{\"a\":\"a\"}", mapper.writeValueAsString(new Bean()));
     }
 
+    @Test
     public void testSimpleExclusionFilter() throws Exception
     {
         FilterProvider prov = new SimpleFilterProvider().addFilter("RootFilter",
@@ -90,6 +96,7 @@ public class TestJsonFilter extends AfterburnerTestBase
     }
 
     // should handle missing case gracefully
+    @Test
     public void testMissingFilter() throws Exception
     {
         // First: default behavior should be to throw an exception
@@ -109,29 +116,32 @@ public class TestJsonFilter extends AfterburnerTestBase
         assertEquals("{\"a\":\"a\",\"b\":\"b\"}", json);
     }
 
+    @Test
     public void testDefaultFilter() throws Exception
     {
         FilterProvider prov = new SimpleFilterProvider().setDefaultFilter(SimpleBeanPropertyFilter.filterOutAllExcept("b"));
         assertEquals("{\"b\":\"b\"}", MAPPER.writer(prov).writeValueAsString(new Bean()));
     }
     
-    // Combining @JsonIgnore, @JsonProperty
+    // [modules-base#89] combining @JsonIgnore, @JsonProperty
+    @Test
     public void testIssue89() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper();
         Pod pod = new Pod();
         pod.username = "Bob";
         pod.userPassword = "s3cr3t!";
 
-        String json = mapper.writeValueAsString(pod);
+        String json = MAPPER.writeValueAsString(pod);
 
         assertEquals("{\"username\":\"Bob\"}", json);
 
-        Pod pod2 = mapper.readValue("{\"username\":\"Bill\",\"user_password\":\"foo!\"}", Pod.class);
+        Pod pod2 = MAPPER.readValue("{\"username\":\"Bill\",\"user_password\":\"foo!\"}", Pod.class);
         assertEquals("Bill", pod2.username);
         assertEquals("foo!", pod2.userPassword);
     }
 
+    // Wrt [modules-base#306]
+    @Test
     public void testFilterOnProperty() throws Exception
     {
         FilterProvider prov = new SimpleFilterProvider()

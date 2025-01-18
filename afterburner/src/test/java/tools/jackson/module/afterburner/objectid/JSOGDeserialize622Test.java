@@ -7,6 +7,10 @@ import tools.jackson.databind.*;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * Unit test(s) for [databind#622], supporting non-scalar-Object-ids,
  * to support things like JSOG.
@@ -182,6 +186,7 @@ public class JSOGDeserialize622Test extends AfterburnerTestBase
     private final ObjectMapper MAPPER = newAfterburnerMapper();
 
     // Basic for [databind#622]
+    @Test
     public void testStructJSOGRef() throws Exception
     {
         final String EXP_EXAMPLE_JSOG =  aposToQuotes(
@@ -194,6 +199,7 @@ public class JSOGDeserialize622Test extends AfterburnerTestBase
     }
 
     // polymorphic alternative for [databind#622]
+    @Test
     public void testPolymorphicRoundTrip() throws Exception
     {
         JSOGWrapper w = new JSOGWrapper(15);
@@ -214,6 +220,7 @@ public class JSOGDeserialize622Test extends AfterburnerTestBase
     }
 
     // polymorphic alternative for [databind#669]
+    @Test
     public void testAlterativePolymorphicRoundTrip669() throws Exception
     {
         Outer outer = new Outer();

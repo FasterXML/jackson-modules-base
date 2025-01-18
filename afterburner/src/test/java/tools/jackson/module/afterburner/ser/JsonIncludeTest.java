@@ -3,10 +3,14 @@ package tools.jackson.module.afterburner.ser;
 import java.io.IOException;
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import tools.jackson.databind.*;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for checking that alternative settings for
@@ -144,6 +148,7 @@ public class JsonIncludeTest
 
     final private ObjectMapper MAPPER = newAfterburnerMapper();
 
+    @Test
     public void testGlobal() throws IOException
     {
         Map<String,Object> result = writeAndMap(MAPPER, new SimpleBean());
@@ -153,6 +158,7 @@ public class JsonIncludeTest
         assertTrue(result.containsKey("b"));
     }
 
+    @Test
     public void testNonNullByClass() throws IOException
     {
         Map<String,Object> result = writeAndMap(MAPPER, new NoNullsBean());
@@ -163,6 +169,7 @@ public class JsonIncludeTest
         assertNull(result.get("b"));
     }
 
+    @Test
     public void testNonDefaultByClass() throws IOException
     {
         NonDefaultBean bean = new NonDefaultBean();
@@ -177,6 +184,7 @@ public class JsonIncludeTest
     }
 
     // [databind#998]
+    @Test
     public void testNonDefaultByClassNoCtor() throws IOException
     {
         NonDefaultBeanXYZ bean = new NonDefaultBeanXYZ(1, 2, 0);
@@ -184,6 +192,7 @@ public class JsonIncludeTest
         assertEquals(aposToQuotes("{'x':1,'y':2}"), json);
     }
     
+    @Test
     public void testMixedMethod() throws IOException
     {
         MixedBean bean = new MixedBean();
@@ -202,17 +211,20 @@ public class JsonIncludeTest
         assertFalse(result.containsKey("a"));
     }
     
+    @Test
     public void testDefaultForEmptyList() throws IOException
     {
         assertEquals("{}", MAPPER.writeValueAsString(new ListBean()));
     }
 
     // NON_DEFAULT shoud work for arrays too
+    @Test
     public void testNonEmptyDefaultArray() throws IOException
     {
         assertEquals("{}", MAPPER.writeValueAsString(new ArrayBean()));
     }
 
+    @Test
     public void testDefaultForIntegers() throws IOException
     {
         assertEquals("{}", MAPPER.writeValueAsString(new DefaultIntBean(0, Integer.valueOf(0))));
@@ -220,6 +232,7 @@ public class JsonIncludeTest
         assertEquals("{\"i1\":3}", MAPPER.writeValueAsString(new DefaultIntBean(3, Integer.valueOf(0))));
     }
 
+    @Test
     public void testEmptyInclusionScalars() throws IOException
     {
         ObjectMapper defMapper = MAPPER;

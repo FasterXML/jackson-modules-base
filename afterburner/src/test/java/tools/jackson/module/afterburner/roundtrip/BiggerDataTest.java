@@ -2,8 +2,12 @@ package tools.jackson.module.afterburner.roundtrip;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.*;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Bigger test to try to do smoke-testing of overall functionality,
@@ -78,10 +82,11 @@ public class BiggerDataTest extends AfterburnerTestBase
     /**********************************************************
      */
 
-    private final ObjectMapper MAPPER = mapperBuilder()
+    private final ObjectMapper MAPPER = afterburnerMapperBuilder()
 			.disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
 			.build();
 
+    @Test
     public void testReading() throws Exception
     {
         Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
@@ -111,10 +116,11 @@ public class BiggerDataTest extends AfterburnerTestBase
 		assertEquals(1, citm.venueNames.size());
 	}
 
-	public void testRoundTrip() throws Exception
-	{
-		Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
-				Citm.class);
+    @Test
+    public void testRoundTrip() throws Exception
+    {
+        Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),
+                Citm.class);
 
 		byte[] cbor = MAPPER.writeValueAsBytes(citm0);
 		Citm citm = MAPPER.readValue(cbor, Citm.class);

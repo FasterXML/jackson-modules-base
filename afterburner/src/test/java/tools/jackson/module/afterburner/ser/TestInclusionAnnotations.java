@@ -1,9 +1,13 @@
 package tools.jackson.module.afterburner.ser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestInclusionAnnotations extends AfterburnerTestBase
 {
@@ -67,6 +71,7 @@ public class TestInclusionAnnotations extends AfterburnerTestBase
 
     private final ObjectMapper MAPPER = newAfterburnerMapper();
     
+    @Test
     public void testIncludeUsingAnnotation() throws Exception
     {
         String json = MAPPER.writeValueAsString(new IntWrapper(3));
@@ -81,6 +86,7 @@ public class TestInclusionAnnotations extends AfterburnerTestBase
     }
 
     // [module-afterburner#39]
+    @Test
     public void testEmptyExclusion() throws Exception
     {
         String json;
@@ -100,6 +106,7 @@ public class TestInclusionAnnotations extends AfterburnerTestBase
         assertEquals("{}", json);
     }
     
+    @Test
     public void testEmptyExclusionViaClass() throws Exception
     {
         assertEquals("{\"value\":3}",
@@ -115,6 +122,7 @@ public class TestInclusionAnnotations extends AfterburnerTestBase
                 MAPPER.writeValueAsString(new NonEmptyStringWrapper2(null)));
     }
 
+    @Test
     public void testDefaultExclusion() throws Exception
     {
         String json;

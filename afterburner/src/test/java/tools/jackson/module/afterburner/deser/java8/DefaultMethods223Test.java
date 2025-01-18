@@ -1,10 +1,14 @@
 package tools.jackson.module.afterburner.deser.java8;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.databind.ObjectMapper;
 
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [modules-base#223]
 public class DefaultMethods223Test extends AfterburnerTestBase
@@ -42,8 +46,9 @@ public class DefaultMethods223Test extends AfterburnerTestBase
     /**********************************************************************
      */
 
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
 
+    @Test
     public void testSerializeViaDefault223() throws Exception
     {
         Cat223 cat = new Cat223();
@@ -52,6 +57,7 @@ public class DefaultMethods223Test extends AfterburnerTestBase
                 MAPPER.writeValueAsString(cat));
     }
 
+    @Test
     public void testDeserializeViaDefault223() throws Exception
     {
         String json = a2q("{'name':'Emma','info':'xyz'}");

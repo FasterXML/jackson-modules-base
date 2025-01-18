@@ -1,9 +1,12 @@
 package tools.jackson.module.afterburner.roundtrip;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 
 import tools.jackson.databind.ObjectMapper;
+
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleRoundTripTest extends AfterburnerTestBase
 {
@@ -17,6 +20,7 @@ public class SimpleRoundTripTest extends AfterburnerTestBase
 
     // Test that would fail with problems wrt "ultra-optimized" bean serializer/deserializer
     // (with max 6 properties limit)
+    @Test
     public void testPojoWith6Fiels() throws Exception
     {
         String json = MAPPER.writeValueAsString(new Pojo6());
@@ -31,6 +35,6 @@ public class SimpleRoundTripTest extends AfterburnerTestBase
         assertEquals(false, result.c);
         assertEquals(1234567890L, result.d);
         assertEquals(-0.5, result.getE());
-        Assert.assertArrayEquals(new int[] { 2, 6 }, result.f);
+        assertArrayEquals(new int[] { 2, 6 }, result.f);
     }
 }

@@ -1,8 +1,12 @@
 package tools.jackson.module.afterburner.ser;
 
 import com.fasterxml.jackson.annotation.*;
+
 import tools.jackson.databind.ObjectMapper;
+
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SerializeWithViewTest extends AfterburnerTestBase
 {

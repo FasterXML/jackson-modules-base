@@ -1,8 +1,12 @@
 package tools.jackson.module.afterburner.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestSingleArgCtors extends AfterburnerTestBase
 {
@@ -82,6 +86,7 @@ public class TestSingleArgCtors extends AfterburnerTestBase
 
     private final ObjectMapper MAPPER = newAfterburnerMapper();
 
+    @Test
     public void testSingleStringArgCtor() throws Exception
     {
         Node bean = MAPPER.readValue(quote("Foobar"), Node.class);
@@ -90,6 +95,7 @@ public class TestSingleArgCtors extends AfterburnerTestBase
         assertEquals("Foobar", bean.name);
     }
 
+    @Test
     public void testSingleStringArgCtor2() throws Exception
     {
         Node2 bean = MAPPER.readValue(quote("Foobar"), Node2.class);
@@ -99,6 +105,7 @@ public class TestSingleArgCtors extends AfterburnerTestBase
         assertEquals("Foobar", bean.name);
     }
 
+    @Test
     public void testSingleStringArgCtor3() throws Exception
     {
         Node3 bean = MAPPER.readValue(quote("Foobar"), Node3.class);
@@ -109,6 +116,7 @@ public class TestSingleArgCtors extends AfterburnerTestBase
         assertEquals("Foobar", bean.name);
     }
 
+    @Test
     public void testSingleStringArgCtor4() throws Exception
     {
         Node4 bean = MAPPER.readValue(quote("Foobar"), Node4.class);

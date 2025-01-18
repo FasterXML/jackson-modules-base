@@ -1,7 +1,11 @@
 package tools.jackson.module.afterburner.deser;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestNonStaticInner extends AfterburnerTestBase
 {
@@ -30,6 +34,7 @@ public class TestNonStaticInner extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testInnerClass() throws  Exception {
         final ObjectMapper MAPPER = newAfterburnerMapper();
 //        final ObjectMapper MAPPER = new ObjectMapper();

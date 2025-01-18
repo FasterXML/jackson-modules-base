@@ -2,13 +2,20 @@ package tools.jackson.module.afterburner.ser;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import tools.jackson.core.*;
+
 import tools.jackson.databind.*;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.ValueSerializerModifier;
+
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [afterburner#52]
 public class CustomBeanPropertyWriterTest extends AfterburnerTestBase
@@ -61,6 +68,7 @@ public class CustomBeanPropertyWriterTest extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testCustomPropertyWriter() throws Exception
     {
         SimpleModule simpleModule = new SimpleModule()

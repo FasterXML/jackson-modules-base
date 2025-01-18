@@ -1,10 +1,14 @@
 package tools.jackson.module.afterburner.deser.filter;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import tools.jackson.databind.*;
 import tools.jackson.databind.exc.InvalidNullException;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [databind#1402]; configurable null handling, for values themselves
 public class NullConversionsPojoTest extends AfterburnerTestBase
@@ -46,6 +50,7 @@ public class NullConversionsPojoTest extends AfterburnerTestBase
 
     private final ObjectMapper MAPPER = newAfterburnerMapper();
 
+    @Test
     public void testFailOnNull() throws Exception
     {
         // first, ok if assigning non-null to not-nullable, null for nullable
@@ -64,6 +69,7 @@ public class NullConversionsPojoTest extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testFailOnNullWithDefaults() throws Exception
     {
         // also: config overrides by type should work
@@ -83,6 +89,7 @@ public class NullConversionsPojoTest extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testNullsToEmptyScalar() throws Exception
     {
         NullAsEmpty result = MAPPER.readValue(aposToQuotes("{'nullAsEmpty':'foo', 'nullsOk':null}"),

@@ -1,6 +1,10 @@
 package tools.jackson.module.afterburner;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestAccessFallback extends AfterburnerTestBase
 {
@@ -50,6 +54,7 @@ public class TestAccessFallback extends AfterburnerTestBase
 
     private static final String BEAN_JSON = "{\"e\":\"a\"}";
 
+    @Test
     public void testSerializeAccess() throws Exception
     {
         ObjectMapper abMapper = newAfterburnerMapper();
@@ -59,6 +64,7 @@ public class TestAccessFallback extends AfterburnerTestBase
         assertEquals(BEAN_JSON, abMapper.writeValueAsString(new MyBean("a")));
     }
 
+    @Test
     public void testDeserializeAccess() throws Exception
     {
         ObjectMapper abMapper = newAfterburnerMapper();

@@ -2,8 +2,12 @@ package tools.jackson.module.afterburner.deser;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.*;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestCollectionDeser extends AfterburnerTestBase
 {
@@ -25,6 +29,8 @@ public class TestCollectionDeser extends AfterburnerTestBase
     /**********************************************************************
      */
 
+    // [module-afterburner#36]
+    @Test
     public void testIntMethod() throws Exception
     {
         final ObjectMapper mapper = afterburnerMapperBuilder()
@@ -36,6 +42,8 @@ public class TestCollectionDeser extends AfterburnerTestBase
         assertEquals(TreeSet.class, bean.x.getClass());
     }
 
+    // [module-afterburner#56]
+    @Test
     public void testUnwrapSingleArray() throws Exception
     {
         final ObjectMapper mapper = afterburnerMapperBuilder()

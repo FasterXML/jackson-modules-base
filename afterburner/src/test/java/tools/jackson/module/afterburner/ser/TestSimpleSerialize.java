@@ -1,10 +1,14 @@
 package tools.jackson.module.afterburner.ser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestSimpleSerialize extends AfterburnerTestBase
 {
@@ -141,10 +145,12 @@ public class TestSimpleSerialize extends AfterburnerTestBase
 
     private final ObjectMapper MAPPER = newAfterburnerMapper();
 
+    @Test
     public void testIntMethod() throws Exception {
         assertEquals("{\"x\":123}", MAPPER.writeValueAsString(new IntBean()));
     }
 
+    @Test
     public void testIntMethod2() throws Exception {
         final String json = MAPPER.writeValueAsString(new IntBean2());
         assertTrue(json.contains("x"));
@@ -153,6 +159,7 @@ public class TestSimpleSerialize extends AfterburnerTestBase
         assertTrue(json.contains("456"));
     }
 
+    @Test
     public void testIntMethod4() throws Exception {
         final String json = MAPPER.writeValueAsString(new IntBean4());
         assertTrue(json.contains("a"));
@@ -165,24 +172,29 @@ public class TestSimpleSerialize extends AfterburnerTestBase
         assertTrue(json.contains("4"));
     }
 
+    @Test
     public void testNonDefaultIntMethod() throws Exception {
         assertEquals("{}", MAPPER.writeValueAsString(new NonDefaultIntBean()));
         assertEquals("{\"x\":-181}", MAPPER.writeValueAsString(new NonDefaultIntBean(-181)));
     }
 
+    @Test
     public void testLongMethod() throws Exception {
         assertEquals("{\"value\":-99}", MAPPER.writeValueAsString(new LongBean()));
     }
 
+    @Test
     public void testNonDefaultLongMethod() throws Exception {
         assertEquals("{}", MAPPER.writeValueAsString(new NonDefaultLongBean()));
         assertEquals("{\"value\":45}", MAPPER.writeValueAsString(new NonDefaultLongBean(45L)));
     }
 
+    @Test
     public void testStringMethod() throws Exception {
         assertEquals("{\"name\":\"abc\"}", MAPPER.writeValueAsString(new StringBean()));
     }
 
+    @Test
     public void testObjectMethod() throws Exception {
         assertEquals("{\"enum\":\"B\"}", MAPPER.writeValueAsString(new EnumBean()));
     }
@@ -193,36 +205,44 @@ public class TestSimpleSerialize extends AfterburnerTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testIntField() throws Exception {
         assertEquals("{\"intF\":17}", MAPPER.writeValueAsString(new IntFieldBean()));
     }
 
+    @Test
     public void testNonDefaultIntField() throws Exception {
         assertEquals("{}", MAPPER.writeValueAsString(new NonDefaultIntFieldBean()));
         assertEquals("{\"intF\":91}", MAPPER.writeValueAsString(new NonDefaultIntFieldBean(91)));
     }
 
+    @Test
     public void testLongField() throws Exception {
         assertEquals("{\"long\":-123}", MAPPER.writeValueAsString(new LongFieldBean()));
     }
 
+    @Test
     public void testNonDefaultLongField() throws Exception {
         assertEquals("{}", MAPPER.writeValueAsString(new NonDefaultLongFieldBean()));
         assertEquals("{\"long\":58}", MAPPER.writeValueAsString(new NonDefaultLongFieldBean(58L)));
     }
 
+    @Test
     public void testStringField() throws Exception {
         assertEquals("{\"foo\":\"bar\"}", MAPPER.writeValueAsString(new StringFieldBean()));
     }
 
+    @Test
     public void testStringField2() throws Exception {
         assertEquals("{\"foo\":\"bar\"}", MAPPER.writeValueAsString(new StringFieldBean()));
     }
 
+    @Test
     public void testObjectField() throws Exception {
         assertEquals("{\"a\":null}", MAPPER.writeValueAsString(new StringsBean()));
     }
 
+    @Test
     public void testBooleans() throws Exception {
         assertEquals(aposToQuotes("{'a':true,'b':false}"),
                 MAPPER.writeValueAsString(new BooleansBean()));
@@ -234,6 +254,7 @@ public class TestSimpleSerialize extends AfterburnerTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testFiveMinuteDoc() throws Exception
     {
         ObjectMapper plainMapper = new ObjectMapper();
@@ -255,6 +276,7 @@ public class TestSimpleSerialize extends AfterburnerTestBase
     }
 
     @SuppressWarnings("unchecked")
+    @Test
     public void testGeneratedSerializerName() throws Exception {
         CheckGeneratedSerializerName bean = new CheckGeneratedSerializerName();
         bean.stringField = "bar";

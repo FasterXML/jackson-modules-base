@@ -1,10 +1,14 @@
 package tools.jackson.module.afterburner.deser.merge;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UpdateValueTest extends AfterburnerTestBase
 {
@@ -40,6 +44,7 @@ public class UpdateValueTest extends AfterburnerTestBase
     private final ObjectMapper MAPPER = newAfterburnerMapper();
     
     // [databind#318] (and Scala module issue #83]
+    @Test
     public void testValueUpdateWithCreator() throws Exception
     {
         Bean bean = new Bean("abc", "def");
@@ -48,6 +53,7 @@ public class UpdateValueTest extends AfterburnerTestBase
         assertEquals("jkl", bean.getB());
     }
 
+    @Test
     public void testValueUpdateOther() throws Exception
     {
         Bean bean = new Bean("abc", "def");

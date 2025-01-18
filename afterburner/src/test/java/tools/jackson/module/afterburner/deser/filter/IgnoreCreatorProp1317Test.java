@@ -2,10 +2,14 @@ package tools.jackson.module.afterburner.deser.filter;
 
 import java.beans.ConstructorProperties;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class IgnoreCreatorProp1317Test extends AfterburnerTestBase
 {
@@ -43,6 +47,7 @@ public class IgnoreCreatorProp1317Test extends AfterburnerTestBase
 
     private final ObjectMapper MAPPER = newAfterburnerMapper();
 
+    @Test
     public void testThatJsonIgnoreWorksWithConstructorProperties() throws Exception {
         Testing testing = new Testing("shouldBeIgnored", "notIgnore");
         String json = MAPPER.writeValueAsString(testing);

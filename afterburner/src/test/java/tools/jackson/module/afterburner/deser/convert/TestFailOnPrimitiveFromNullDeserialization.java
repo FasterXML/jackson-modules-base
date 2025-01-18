@@ -1,9 +1,13 @@
 package tools.jackson.module.afterburner.deser.convert;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestFailOnPrimitiveFromNullDeserialization
     extends AfterburnerTestBase
@@ -37,6 +41,7 @@ public class TestFailOnPrimitiveFromNullDeserialization
         .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
         .build();
 
+    @Test
     public void testPassPrimitiveFromNull() throws Exception
     {
         LongBean longBean = MAPPER.readValue(BEAN_WITH_NULL_VALUE, LongBean.class);
@@ -49,6 +54,7 @@ public class TestFailOnPrimitiveFromNullDeserialization
         assertEquals(doubleBean.value, 0.0);
     }
 
+    @Test
     public void testFailPrimitiveFromNull() throws Exception
     {
         try {

@@ -1,10 +1,15 @@
 package tools.jackson.module.afterburner.deser;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JacksonInject;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestCreatorsDelegating extends AfterburnerTestBase
 {
@@ -59,6 +64,7 @@ public class TestCreatorsDelegating extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testBooleanDelegate() throws Exception
     {
         ObjectMapper m = newAfterburnerMapper();
@@ -70,7 +76,8 @@ public class TestCreatorsDelegating extends AfterburnerTestBase
         bb = m.readValue(quote("true"), BooleanBean.class);
         assertEquals(Boolean.TRUE, bb.value);
     }
-    
+
+    @Test
     public void testWithCtorAndDelegate() throws Exception
     {
         ObjectMapper mapper = afterburnerMapperBuilder()
@@ -82,6 +89,7 @@ public class TestCreatorsDelegating extends AfterburnerTestBase
         assertEquals("Pooka", bean.name);
     }
 
+    @Test
     public void testWithFactoryAndDelegate() throws Exception
     {
         ObjectMapper mapper = afterburnerMapperBuilder()

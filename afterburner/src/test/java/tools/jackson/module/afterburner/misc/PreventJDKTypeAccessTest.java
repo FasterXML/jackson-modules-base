@@ -2,14 +2,19 @@ package tools.jackson.module.afterburner.misc;
 
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class PreventJDKTypeAccessTest extends AfterburnerTestBase
 {
-    private final ObjectMapper MAPPER = newObjectMapper();
+    private final ObjectMapper MAPPER = newAfterburnerMapper();
     private final ObjectMapper VANILLA_MAPPER = newVanillaJSONMapper();
 
+    @Test
     public void testJDKThreadroundTrip() throws Exception
     {
         final Object input = Thread.currentThread();

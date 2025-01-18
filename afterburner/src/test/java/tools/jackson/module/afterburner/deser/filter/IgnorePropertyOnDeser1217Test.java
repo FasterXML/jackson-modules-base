@@ -1,8 +1,12 @@
 package tools.jackson.module.afterburner.deser.filter;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class IgnorePropertyOnDeser1217Test extends AfterburnerTestBase
 {
@@ -27,6 +31,7 @@ public class IgnorePropertyOnDeser1217Test extends AfterburnerTestBase
 
     private final ObjectMapper MAPPER = newAfterburnerMapper();
 
+    @Test
     public void testIgnoreOnProperty() throws Exception
     {
         TestIgnoreObject result = MAPPER.readValue(
@@ -48,6 +53,7 @@ public class IgnorePropertyOnDeser1217Test extends AfterburnerTestBase
         assertEquals(2, result1.obj2.y);
     }
 
+    @Test
     public void testIgnoreViaConfigOverride() throws Exception
     {
         ObjectMapper mapper = afterburnerMapperBuilder()

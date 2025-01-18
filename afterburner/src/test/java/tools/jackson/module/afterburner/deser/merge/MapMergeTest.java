@@ -3,10 +3,14 @@ package tools.jackson.module.afterburner.deser.merge;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonMerge;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MapMergeTest extends AfterburnerTestBase
 {
@@ -30,6 +34,7 @@ public class MapMergeTest extends AfterburnerTestBase
             .disable(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE)
             .build();
 
+    @Test
     public void testMapMerging() throws Exception
     {
         MergedMap v = MAPPER.readValue(aposToQuotes("{'values':{'c':'y'}}"), MergedMap.class);

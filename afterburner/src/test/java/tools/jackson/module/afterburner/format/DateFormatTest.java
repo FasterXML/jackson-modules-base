@@ -3,9 +3,13 @@ package tools.jackson.module.afterburner.format;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import tools.jackson.databind.*;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DateFormatTest extends AfterburnerTestBase
 {
@@ -17,6 +21,7 @@ public class DateFormatTest extends AfterburnerTestBase
         public DateWrapper(Date v) { value = v; }
     }
 
+    @Test
     public void testTypeDefaults() throws Exception
     {
         ObjectMapper mapper = afterburnerMapperBuilder()

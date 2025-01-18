@@ -1,8 +1,12 @@
 package tools.jackson.module.afterburner.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestConstructors extends AfterburnerTestBase
 {
@@ -22,6 +26,7 @@ public class TestConstructors extends AfterburnerTestBase
      */
 
     // For [Issue#34]
+    @Test
     public void testPrivateConstructor() throws Exception
     {
         ObjectMapper mapper = newAfterburnerMapper();

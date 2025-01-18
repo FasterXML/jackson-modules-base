@@ -12,15 +12,15 @@ public class MyClassLoaderWithArtificialTiming extends MyClassLoader
 {
     private Semaphore semaphore;
 
-    public MyClassLoaderWithArtificialTiming(ClassLoader parent,
-                                             boolean tryToUseParent,
-                                             Semaphore semaphore) {
+    public MyClassLoaderWithArtificialTiming(ClassLoader parent, boolean tryToUseParent,
+            Semaphore semaphore) {
         super(parent, tryToUseParent);
         this.semaphore = semaphore;
     }
 
     @Override
-    Class<?> defineClassOnParent(ClassLoader parentClassLoader, String className, byte[] byteCode, int offset, int length) {
+    Class<?> defineClassOnParent(ClassLoader parentClassLoader, String className,
+            byte[] byteCode, int offset, int length) {
         semaphore.acquireUninterruptibly();
         return super.defineClassOnParent(parentClassLoader, className, byteCode, offset, length);
     }

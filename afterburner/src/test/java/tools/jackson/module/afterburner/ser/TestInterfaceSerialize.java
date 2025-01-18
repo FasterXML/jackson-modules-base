@@ -1,7 +1,11 @@
 package tools.jackson.module.afterburner.ser;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestInterfaceSerialize extends AfterburnerTestBase
 {
@@ -10,6 +14,7 @@ public class TestInterfaceSerialize extends AfterburnerTestBase
         String getFoo();
     }
 
+    @Test
     public void testInterfaceSerialize() throws Exception
     {
         ObjectMapper mapper = newAfterburnerMapper();

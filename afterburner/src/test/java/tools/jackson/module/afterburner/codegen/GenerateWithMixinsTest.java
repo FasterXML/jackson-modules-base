@@ -1,11 +1,15 @@
 package tools.jackson.module.afterburner.codegen;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 // for [afterburner#51], where re-generation of classes does not work
 // as expected
@@ -48,11 +52,12 @@ public class GenerateWithMixinsTest extends AfterburnerTestBase
         }
     }
 
-    public abstract class IgnoreField3MixIn {
+    public abstract static class IgnoreField3MixIn {
         @JsonIgnore
         public abstract byte[] getField3();
     }
 
+    @Test
     public void testIssue51() throws Exception
     {
         _testIssue51(afterburnerMapperBuilder());
