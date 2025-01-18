@@ -13,6 +13,10 @@ import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 /**
  * Tests for handling of type-related JAXB annotations 
  */
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class TestJaxbTypes
     extends BaseJaxbTest
 {
@@ -110,6 +114,7 @@ public class TestJaxbTypes
     /**********************************************************
      */
 
+    @Test
     public void testXmlElementTypeDeser() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -120,6 +125,7 @@ public class TestJaxbTypes
         assertEquals("...", bean.b);
     }
 
+    @Test
     public void testXmlElementTypeSer() throws Exception
     {
         ObjectMapper mapper = getJaxbAndJacksonMapper();
@@ -128,6 +134,7 @@ public class TestJaxbTypes
                      mapper.writeValueAsString(wrapper));
     }
 
+    @Test
     public void testXmlElementListTypeDeser() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -150,6 +157,7 @@ public class TestJaxbTypes
         assertEquals("b", bean.b);
     }
 
+    @Test
     public void testXmlElementListArrayDeser() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -169,6 +177,7 @@ public class TestJaxbTypes
         assertEquals("b", bean.b);
     }
 
+    @Test
     public void testXmlElementListTypeSer() throws Exception
     {
         // important: Jackson mapper so we can force ordering
@@ -183,6 +192,7 @@ public class TestJaxbTypes
                      mapper.writeValueAsString(bean));
     }
 
+    @Test
     public void testRoundTrip() throws Exception
     {
         ComboBean input = new ComboBean(new BeanImpl(3, "abc"),
@@ -206,6 +216,7 @@ public class TestJaxbTypes
         assertEquals("c", (result.beans.get(2)).b);
     }
 
+    @Test
     public void testListWithDefaultTyping() throws Exception
     {
         Object input = new ListBean(new BeanImpl(1, "a"));
@@ -225,6 +236,7 @@ public class TestJaxbTypes
         assertEquals("a", bean.b);
     }
 
+    @Test
     public void testIssue250() throws Exception
     {
         ObjectMapper mapper = getJaxbAndJacksonMapper();
