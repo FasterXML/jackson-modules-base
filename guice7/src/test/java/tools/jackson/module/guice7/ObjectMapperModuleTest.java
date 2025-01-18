@@ -2,6 +2,15 @@ package tools.jackson.module.guice7;
 
 import java.math.BigInteger;
 
+import org.junit.jupiter.api.Test;
+
+import com.google.inject.Binder;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Module;
+import com.google.inject.name.Names;
+
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -13,15 +22,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.module.SimpleModule;
 
-import com.google.inject.Binder;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Module;
-import com.google.inject.name.Names;
-
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ObjectMapperModuleTest
 {
@@ -66,7 +67,7 @@ public class ObjectMapperModuleTest
 
         final ObjectMapper mapper = injector.getInstance(ObjectMapper.class);
 
-        Assert.assertEquals(mapper.writeValueAsString(Integer.valueOf(10)), "\"A\"");
+        assertEquals(mapper.writeValueAsString(10), "\"A\"");
     }
 
     @Test
@@ -78,7 +79,7 @@ public class ObjectMapperModuleTest
 
         final ObjectMapper mapper = injector.getInstance(ObjectMapper.class);
 
-        Assert.assertEquals(mapper.writeValueAsString(Integer.valueOf(10)), "\"A\"");
+        assertEquals(mapper.writeValueAsString(10), "\"A\"");
     }
 
     @Test
@@ -98,7 +99,7 @@ public class ObjectMapperModuleTest
 
         final ObjectMapper mapper = injector.getInstance(ObjectMapper.class);
 
-        Assert.assertEquals(mapper.writeValueAsString(Integer.valueOf(10)), "\"A\"");
+        assertEquals(mapper.writeValueAsString(10), "\"A\"");
     }
 
     @Test
@@ -120,7 +121,7 @@ public class ObjectMapperModuleTest
 
         final ObjectMapper mapper = injector.getInstance(ObjectMapper.class);
 
-        Assert.assertEquals(mapper.writeValueAsString(Integer.valueOf(10)), "\"A\"");
+        assertEquals(mapper.writeValueAsString(10), "\"A\"");
     }
 
     @Test
@@ -132,7 +133,7 @@ public class ObjectMapperModuleTest
 
         final ObjectMapper mapper = injector.getInstance(ObjectMapper.class);
 
-        Assert.assertEquals(mapper.writeValueAsString(Integer.valueOf(10)), "\"A\"");
+        assertEquals(mapper.writeValueAsString(10), "\"A\"");
     }
 
     private static class SomeBean
@@ -187,15 +188,15 @@ public class ObjectMapperModuleTest
 
         public boolean verify()
         {
-            Assert.assertEquals(1, one);
-            Assert.assertEquals(2, two);
-            Assert.assertEquals(3, three);
-            Assert.assertEquals(4, four);
-            Assert.assertEquals(5, five);
-            Assert.assertEquals(6, six);
-            Assert.assertEquals(7, seven);
-            Assert.assertEquals(8, eight);
-            Assert.assertEquals(9, nine);
+            assertEquals(1, one);
+            assertEquals(2, two);
+            assertEquals(3, three);
+            assertEquals(4, four);
+            assertEquals(5, five);
+            assertEquals(6, six);
+            assertEquals(7, seven);
+            assertEquals(8, eight);
+            assertEquals(9, nine);
             return true;
         }
 
