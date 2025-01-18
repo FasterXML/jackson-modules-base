@@ -1,14 +1,24 @@
 package com.fasterxml.jackson.module.androidrecord.failing;
 
+import org.junit.jupiter.api.Test;
+
 import com.android.tools.r8.RecordTag;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+
 import com.fasterxml.jackson.module.androidrecord.BaseMapTest;
 
-public class RecordCreatorsFailingTest extends BaseMapTest {
-  static final class RecordWithAltCtor extends RecordTag {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+public class RecordCreatorsFailingTest extends BaseMapTest
+{
+  static final class RecordWithAltCtor extends RecordTag
+  {
     private final int id;
     private final String name;
 
@@ -40,6 +50,7 @@ public class RecordCreatorsFailingTest extends BaseMapTest {
   */
 
   // Fails: Implicit canonical constructor still works too
+  @Test
   public void testDeserializeWithAltCtor() throws Exception {
     RecordWithAltCtor value = MAPPER.readValue("{\"id\":2812}",
             RecordWithAltCtor.class);
