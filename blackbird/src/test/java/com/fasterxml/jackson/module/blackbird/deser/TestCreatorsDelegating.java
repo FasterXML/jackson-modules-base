@@ -1,10 +1,14 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JacksonInject;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestCreatorsDelegating extends BlackbirdTestBase
 {
@@ -59,6 +63,7 @@ public class TestCreatorsDelegating extends BlackbirdTestBase
     /**********************************************************
      */
 
+    @Test
     public void testBooleanDelegate() throws Exception
     {
         ObjectMapper m = newObjectMapper();
@@ -72,6 +77,7 @@ public class TestCreatorsDelegating extends BlackbirdTestBase
     }
     
     // As per [JACKSON-711]: should also work with delegate model (single non-annotated arg)
+    @Test
     public void testWithCtorAndDelegate() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();
@@ -88,6 +94,7 @@ public class TestCreatorsDelegating extends BlackbirdTestBase
         assertEquals("Pooka", bean.name);
     }
 
+    @Test
     public void testWithFactoryAndDelegate() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();

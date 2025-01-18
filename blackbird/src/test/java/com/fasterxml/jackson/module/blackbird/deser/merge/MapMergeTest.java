@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 public class MapMergeTest extends BlackbirdTestBase
 {
     static class MergedMap
@@ -31,6 +34,7 @@ public class MapMergeTest extends BlackbirdTestBase
             .build()
     ;
 
+    @Test
     public void testMapMerging() throws Exception
     {
         MergedMap v = MAPPER.readValue(aposToQuotes("{'values':{'c':'y'}}"), MergedMap.class);

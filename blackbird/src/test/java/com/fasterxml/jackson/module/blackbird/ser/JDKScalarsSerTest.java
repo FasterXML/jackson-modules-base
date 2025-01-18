@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.module.blackbird.ser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,6 +9,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JDKScalarsSerTest extends BlackbirdTestBase
 {
@@ -37,6 +41,7 @@ public class JDKScalarsSerTest extends BlackbirdTestBase
     private final ObjectMapper VANILLA_MAPPER = newVanillaJSONMapper();
 
     // [modules-base#117]
+    @Test
     public void testIntAsStringWithJsonSerialize() throws Exception
     {
         final String EXP_JSON = "{\"value\":\"42\"}";
@@ -46,6 +51,7 @@ public class JDKScalarsSerTest extends BlackbirdTestBase
     }
 
     // [modules-base#118]
+    @Test
     public void testIntAsStringWithJsonFormat() throws Exception
     {
         final String EXP_JSON = "{\"value\":\"42\"}";
@@ -55,6 +61,7 @@ public class JDKScalarsSerTest extends BlackbirdTestBase
     }
 
     // [modules-base#118]
+    @Test
     public void testLongAsStringWithJsonFormat() throws Exception
     {
         final String EXP_JSON = "{\"value\":\"-137\"}";

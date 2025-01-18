@@ -1,7 +1,11 @@
 package com.fasterxml.jackson.module.blackbird.deser.java8;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [modules-base#30]
 public class DefaultMethodsTest extends BlackbirdTestBase
@@ -32,12 +36,14 @@ public class DefaultMethodsTest extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testSerializeViaDefault() throws Exception
     {
         assertEquals(aposToQuotes("{'type':'bogus'}"),
                 MAPPER.writeValueAsString(new Model()));
     }
 
+    @Test
     public void testDeserializeViaDefault() throws Exception
     {
         // Would throws `java.lang.IncompatibleClassChangeError`

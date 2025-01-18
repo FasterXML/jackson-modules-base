@@ -2,14 +2,19 @@ package com.fasterxml.jackson.module.blackbird.misc;
 
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PreventJDKTypeAccessTest extends BlackbirdTestBase
 {
     private final ObjectMapper MAPPER = newObjectMapper();
     private final ObjectMapper VANILLA_MAPPER = newVanillaJSONMapper();
 
+    @Test
     public void testJDKThreadroundTrip() throws Exception
     {
         final Object input = Thread.currentThread();

@@ -1,8 +1,12 @@
 package com.fasterxml.jackson.module.blackbird.deser.filter;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class IgnorePropertyOnDeser1217Test extends BlackbirdTestBase
 {
@@ -27,6 +31,7 @@ public class IgnorePropertyOnDeser1217Test extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testIgnoreOnProperty() throws Exception
     {
         TestIgnoreObject result = MAPPER.readValue(
@@ -48,6 +53,7 @@ public class IgnorePropertyOnDeser1217Test extends BlackbirdTestBase
         assertEquals(2, result1.obj2.y);
     }
 
+    @Test
     public void testIgnoreViaConfigOverride() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();

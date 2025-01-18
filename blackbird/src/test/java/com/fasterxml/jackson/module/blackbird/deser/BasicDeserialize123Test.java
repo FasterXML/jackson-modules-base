@@ -1,8 +1,12 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // Failing test from "BasicDeserializeTest", see [modules-base#123]
 public class BasicDeserialize123Test extends BlackbirdTestBase
@@ -27,6 +31,7 @@ public class BasicDeserialize123Test extends BlackbirdTestBase
     private final ObjectMapper MAPPER = newObjectMapper();
 
     // [modules-base#123]
+    @Test
     public void testFluentMethod() throws Exception
     {
         String json = MAPPER.writeValueAsString(new Model123(28));

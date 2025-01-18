@@ -3,6 +3,8 @@ package com.fasterxml.jackson.module.blackbird.deser;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,8 +13,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class TestIssue14 extends BlackbirdTestBase
 {
+    @Test
     public void testIssue() throws Exception
     {
         // create this ridiculously complicated object

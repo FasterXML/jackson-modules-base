@@ -1,9 +1,13 @@
 package com.fasterxml.jackson.module.blackbird.deser.inject;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestInjectables extends BlackbirdTestBase
 {
@@ -94,6 +98,7 @@ public class TestInjectables extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
     
+    @Test
     public void testSimple() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();
@@ -109,6 +114,7 @@ public class TestInjectables extends BlackbirdTestBase
         assertEquals(37L, bean.third);
     }
     
+    @Test
     public void testWithCtors() throws Exception
     {
         CtorBean bean = MAPPER.readerFor(CtorBean.class)
@@ -119,6 +125,7 @@ public class TestInjectables extends BlackbirdTestBase
         assertEquals("Bubba", bean.name);
     }
 
+    @Test
     public void testTwoInjectablesViaCreator() throws Exception
     {
         CtorBean2 bean = MAPPER.readerFor(CtorBean2.class)
@@ -131,6 +138,7 @@ public class TestInjectables extends BlackbirdTestBase
     }
 
     // [databind#77]
+    @Test
     public void testTransientField() throws Exception
     {
         TransientBean bean = MAPPER.readerFor(TransientBean.class)
@@ -141,6 +149,7 @@ public class TestInjectables extends BlackbirdTestBase
         assertEquals("Injected!", bean.injected);
     }
 
+    @Test
     public void testIssueGH471() throws Exception
     {
         final Object constructorInjected = "constructorInjected";

@@ -1,10 +1,14 @@
 package com.fasterxml.jackson.module.blackbird.deser.convert;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBase
 {
@@ -42,6 +46,7 @@ public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBas
     private final ObjectMapper FAIL_ON_NULL_MAPPER = newObjectMapper()
         .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
 
+    @Test
     public void testPassPrimitiveFromNull() throws Exception
     {
         LongBean longBean = MAPPER.readValue(BEAN_WITH_NULL_VALUE, LongBean.class);
@@ -54,6 +59,7 @@ public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBas
         assertEquals(doubleBean.value, 0.0);
     }
 
+    @Test
     public void testFailPrimitiveFromNull() throws Exception
     {
         try {

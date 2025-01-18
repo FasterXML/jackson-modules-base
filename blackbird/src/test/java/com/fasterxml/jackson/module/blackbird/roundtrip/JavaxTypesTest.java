@@ -4,8 +4,12 @@ import javax.security.auth.AuthPermission;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Simple tests to try to see that handling of semi-standard types
@@ -15,6 +19,7 @@ public class JavaxTypesTest extends BlackbirdTestBase
 {
     final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testGregorianCalendar() throws Exception
     {
         DatatypeFactory f = DatatypeFactory.newInstance();
@@ -31,6 +36,7 @@ public class JavaxTypesTest extends BlackbirdTestBase
         assertEquals(in.getYear(), out.getYear());
     }
 
+    @Test
     public void testAuthPermission() throws Exception
     {
         AuthPermission in = new AuthPermission("foo");

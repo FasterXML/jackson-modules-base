@@ -1,10 +1,14 @@
 package com.fasterxml.jackson.module.blackbird.deser.filter;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RecursiveIgnorePropertiesTest extends BlackbirdTestBase
 {
@@ -17,6 +21,7 @@ public class RecursiveIgnorePropertiesTest extends BlackbirdTestBase
         public Person personZ;
     }
 
+    @Test
     public void testRecursiveForDeser() throws Exception
     {
         String st = aposToQuotes("{ 'name': 'admin',\n"
@@ -29,6 +34,7 @@ public class RecursiveIgnorePropertiesTest extends BlackbirdTestBase
         assertEquals("admin", result.name);
     }
 
+    @Test
     public void testRecursiveForSer() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();
