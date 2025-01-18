@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
@@ -16,6 +18,8 @@ import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.type.LogicalType;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CoerceToBooleanTest extends AfterburnerTestBase
 {
@@ -87,6 +91,7 @@ public class CoerceToBooleanTest extends AfterburnerTestBase
      */
 
     // for [databind#403]
+    @Test
     public void testEmptyStringFailForBooleanPrimitive() throws IOException
     {
         final ObjectReader reader = DEFAULT_MAPPER
@@ -101,6 +106,7 @@ public class CoerceToBooleanTest extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testStringToBooleanCoercionOk() throws Exception
     {
         // first successful coercions. Boolean has a ton...
@@ -130,6 +136,7 @@ public class CoerceToBooleanTest extends AfterburnerTestBase
         assertEquals(exp, result);
     }
 
+    @Test
     public void testStringToBooleanCoercionFail() throws Exception
     {
         _verifyRootStringCoerceFail(LEGACY_NONCOERCING_MAPPER, "true", Boolean.TYPE);
@@ -185,6 +192,7 @@ public class CoerceToBooleanTest extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testIntToBooleanCoercionSuccessPojo() throws Exception
     {        
         BooleanPOJO p;
@@ -201,6 +209,7 @@ public class CoerceToBooleanTest extends AfterburnerTestBase
         assertEquals(true, p.value);
     }
 
+    @Test
     public void testIntToBooleanCoercionSuccessRoot() throws Exception
     {        
         final ObjectReader br = DEFAULT_MAPPER.readerFor(Boolean.class);
@@ -225,6 +234,7 @@ public class CoerceToBooleanTest extends AfterburnerTestBase
     }
 
     // Test for verifying that Long values are coerced to boolean correctly as well
+    @Test
     public void testLongToBooleanCoercionOk() throws Exception
     {
         long value = 1L + Integer.MAX_VALUE;
@@ -252,6 +262,7 @@ public class CoerceToBooleanTest extends AfterburnerTestBase
     }
 
     // [databind#2635], [databind#2770]
+    @Test
     public void testIntToBooleanCoercionFailBytes() throws Exception
     {
         _verifyBooleanCoerceFail(aposToQuotes("{'value':1}"), true, JsonToken.VALUE_NUMBER_INT, "1", BooleanPOJO.class);
@@ -264,6 +275,7 @@ public class CoerceToBooleanTest extends AfterburnerTestBase
     }
 
     // [databind#2635], [databind#2770]
+    @Test
     public void testIntToBooleanCoercionFailChars() throws Exception
     {
         _verifyBooleanCoerceFail(aposToQuotes("{'value':1}"), false, JsonToken.VALUE_NUMBER_INT, "1", BooleanPOJO.class);
@@ -281,6 +293,7 @@ public class CoerceToBooleanTest extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testIntToNullCoercion() throws Exception
     {
         assertNull(MAPPER_INT_TO_NULL.readValue("0", Boolean.class));
@@ -302,6 +315,7 @@ public class CoerceToBooleanTest extends AfterburnerTestBase
         assertFalse(p.value);
     }
 
+    @Test
     public void testIntToEmptyCoercion() throws Exception
     {
         // "empty" value for Boolean/boolean is False/false
@@ -325,6 +339,7 @@ public class CoerceToBooleanTest extends AfterburnerTestBase
         assertFalse(p.value);
     }
         
+    @Test
     public void testIntToTryCoercion() throws Exception
     {
         // And "TryCoerce" should do what would be typically expected
@@ -354,6 +369,7 @@ public class CoerceToBooleanTest extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testFailFromInteger() throws Exception
     {
         _verifyFailFromInteger(MAPPER_TO_FAIL, BooleanPOJO.class, DOC_WITH_0, Boolean.TYPE);

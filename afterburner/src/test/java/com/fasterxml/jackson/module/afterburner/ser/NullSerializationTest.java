@@ -2,6 +2,8 @@ package com.fasterxml.jackson.module.afterburner.ser;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 
 import com.fasterxml.jackson.databind.*;
@@ -11,6 +13,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import com.fasterxml.jackson.databind.ser.SerializerFactory;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // Copied from [com.fasterxml.jackson.databind.ser.filter]
 public class NullSerializationTest extends AfterburnerTestBase
@@ -82,11 +86,13 @@ public class NullSerializationTest extends AfterburnerTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testSimple() throws Exception
     {
         assertEquals("null", MAPPER.writeValueAsString(null));
     }
 
+    @Test
     public void testOverriddenDefaultNulls() throws Exception
     {
         DefaultSerializerProvider sp = new DefaultSerializerProvider.Impl();
@@ -96,6 +102,7 @@ public class NullSerializationTest extends AfterburnerTestBase
         assertEquals("\"foobar\"", m.writeValueAsString(null));
     }
 
+    @Test
     public void testCustomPOJONullsViaProvider() throws Exception
     {
         ObjectMapper m = new ObjectMapper();
@@ -104,6 +111,7 @@ public class NullSerializationTest extends AfterburnerTestBase
         assertEquals("{\"type\":null}", m.writeValueAsString(new Bean2()));
     }
 
+    @Test
     public void testCustomTreeNullsViaProvider() throws Exception
     {
         ObjectNode root = MAPPER.createObjectNode();
@@ -120,6 +128,7 @@ public class NullSerializationTest extends AfterburnerTestBase
         assertEquals("{\"a\":\"foobar\"}", m.writeValueAsString(root));
     }
 
+    @Test
     public void testNullSerializeViaPropertyAnnotation() throws Exception
     {
         assertEquals("{\"a\":\"foobar\"}", MAPPER.writeValueAsString(new BeanWithNullProps()));

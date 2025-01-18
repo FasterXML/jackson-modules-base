@@ -1,9 +1,13 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SerializeWithViewTest extends AfterburnerTestBase
 {
@@ -16,6 +20,7 @@ public class SerializeWithViewTest extends AfterburnerTestBase
         public int b;
     }
     
+    @Test
     public void testWriterWithView() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();

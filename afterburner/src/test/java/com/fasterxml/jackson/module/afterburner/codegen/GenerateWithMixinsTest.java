@@ -1,7 +1,8 @@
 package com.fasterxml.jackson.module.afterburner.codegen;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
@@ -45,12 +46,13 @@ public class GenerateWithMixinsTest extends AfterburnerTestBase
         }
       }
 
-      public abstract class IgnoreField3MixIn {
-        @JsonIgnore
-        public abstract byte[] getField3();
+      public abstract static class IgnoreField3MixIn {
+          @JsonIgnore
+          public abstract byte[] getField3();
       }
 
-      public void testIssue51() throws JsonProcessingException
+      @Test
+      public void testIssue51() throws Exception
       {
           SampleObject sampleObject = new SampleObject("field1", 2, "field3".getBytes());
 

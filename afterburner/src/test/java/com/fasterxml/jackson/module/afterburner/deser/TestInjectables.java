@@ -1,10 +1,14 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.databind.*;
 
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestInjectables extends AfterburnerTestBase
 {
@@ -45,6 +49,7 @@ public class TestInjectables extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testIssueGH471() throws Exception
     {
         final Object constructorInjected = "constructorInjected";

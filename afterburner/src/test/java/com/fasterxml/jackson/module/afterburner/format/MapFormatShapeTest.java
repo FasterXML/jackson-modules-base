@@ -6,12 +6,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("serial")
 public class MapFormatShapeTest extends AfterburnerTestBase
@@ -147,6 +151,7 @@ public class MapFormatShapeTest extends AfterburnerTestBase
     final private ObjectMapper MAPPER = newAfterburnerMapper();
 
     // for [databind#476]: Maps as POJOs
+    @Test
     public void testSerializeAsPOJOViaClass() throws Exception
     {
         String result = MAPPER.writeValueAsString(new Bean476Container(1,2,0));
@@ -157,6 +162,7 @@ public class MapFormatShapeTest extends AfterburnerTestBase
     // Can't yet use per-property overrides at all, see [databind#1419]
     
     /*
+    @Test
     public void testSerializeAsPOJOViaProperty() throws Exception
     {
         String result = MAPPER.writeValueAsString(new Bean476Container(1,0,3));
@@ -164,6 +170,7 @@ public class MapFormatShapeTest extends AfterburnerTestBase
                 result);
     }
 
+    @Test
     public void testSerializeNaturalViaOverride() throws Exception
     {
         String result = MAPPER.writeValueAsString(new Bean476Override(123));
@@ -179,6 +186,7 @@ public class MapFormatShapeTest extends AfterburnerTestBase
      */
 
     // [databind#1540]
+    @Test
     public void testRoundTrip() throws Exception
     {
         Map1540Implementation input = new Map1540Implementation();
@@ -196,6 +204,7 @@ public class MapFormatShapeTest extends AfterburnerTestBase
    }
     
     // [databind#1554]
+    @Test
     public void testDeserializeAsPOJOViaClass() throws Exception
     {
         Map476AsPOJO result = MAPPER.readValue(aposToQuotes("{'extra':42}"),

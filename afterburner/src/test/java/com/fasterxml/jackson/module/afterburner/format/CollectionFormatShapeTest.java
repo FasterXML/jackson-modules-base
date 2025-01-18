@@ -3,13 +3,17 @@ package com.fasterxml.jackson.module.afterburner.format;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
-public class ColletionFormatShapeTest extends AfterburnerTestBase
+import static org.junit.jupiter.api.Assertions.*;
+
+public class CollectionFormatShapeTest extends AfterburnerTestBase
 {
     // [databind#40]: Allow serialization 'as POJO' (resulting in JSON Object) 
     @JsonPropertyOrder({ "size", "value" })
@@ -46,6 +50,7 @@ public class ColletionFormatShapeTest extends AfterburnerTestBase
 
     private final static ObjectMapper MAPPER = newObjectMapper();    
 
+    @Test
     public void testListAsObjectRoundtrip() throws Exception
     {
         // First, serialize a "POJO-List"

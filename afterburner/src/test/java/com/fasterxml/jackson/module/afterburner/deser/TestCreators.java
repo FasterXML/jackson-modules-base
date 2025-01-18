@@ -2,10 +2,14 @@ package com.fasterxml.jackson.module.afterburner.deser;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for verifying that it is possible to annotate
@@ -284,20 +288,23 @@ public class TestCreators extends AfterburnerTestBase
      */
 
     private final ObjectMapper MAPPER = newObjectMapper();
-    
+
+    @Test
     public void testSimpleConstructor() throws Exception
     {
         ConstructorBean bean = MAPPER.readValue("{ \"x\" : 42 }", ConstructorBean.class);
         assertEquals(42, bean.x);
     }
 
+    @Test
     public void testNoArgsFactory() throws Exception
     {
         NoArgFactoryBean value = MAPPER.readValue("{\"y\":13}", NoArgFactoryBean.class);
         assertEquals(13, value.y);
         assertEquals(123, value.x);
     }
-    
+
+    @Test
     public void testSimpleDoubleConstructor() throws Exception
     {
         Double exp = 0.25;
@@ -305,6 +312,7 @@ public class TestCreators extends AfterburnerTestBase
         assertEquals(exp, bean.d);
     }
 
+    @Test
     public void testSimpleBooleanConstructor() throws Exception
     {
         BooleanConstructorBean bean = MAPPER.readValue(" true ", BooleanConstructorBean.class);
@@ -314,12 +322,14 @@ public class TestCreators extends AfterburnerTestBase
         assertTrue(bean2.b);
     }
 
+    @Test
     public void testSimpleFactory() throws Exception
     {
         FactoryBean bean = MAPPER.readValue("{ \"f\" : 0.25 }", FactoryBean.class);
         assertEquals(0.25, bean.d);
     }
 
+    @Test
     public void testLongFactory() throws Exception
     {
         long VALUE = 123456789000L;
@@ -327,6 +337,7 @@ public class TestCreators extends AfterburnerTestBase
         assertEquals(VALUE, bean.value);
     }
 
+    @Test
     public void testStringFactory() throws Exception
     {
         String str = "abc";
@@ -337,7 +348,7 @@ public class TestCreators extends AfterburnerTestBase
     // 18-May-2024, tatu: Need to disable for now wrt [databind#4515]:
     //    handling seems inconsistent wrt Constructor/Factory precedence,
     //    will tackle at a later point -- this is the last JDK8 fail
-    /*
+    @Test
     public void testConstructorCreator() throws Exception
     {
         CreatorBeanWithBoth bean = MAPPER.readValue
@@ -345,8 +356,8 @@ public class TestCreators extends AfterburnerTestBase
         assertEquals(13, bean.x);
         assertEquals("ctor:xyz", bean.a);
     }
-    */
 
+    @Test
     public void testConstructorAndProps() throws Exception
     {
         ConstructorAndPropsBean bean = MAPPER.readValue
@@ -356,6 +367,7 @@ public class TestCreators extends AfterburnerTestBase
         assertEquals(true, bean.c);
     }
 
+    @Test
     public void testFactoryAndProps() throws Exception
     {
         FactoryAndPropsBean bean = MAPPER.readValue
@@ -374,6 +386,7 @@ public class TestCreators extends AfterburnerTestBase
      * Test to verify that multiple creators may co-exist, iff
      * they use different JSON type as input
      */
+    @Test
     public void testMultipleCreators() throws Exception
     {
         MultiBean bean = MAPPER.readValue("123", MultiBean.class);
@@ -390,6 +403,7 @@ public class TestCreators extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testDeferredConstructorAndProps() throws Exception
     {
         DeferredConstructorAndPropsBean bean = MAPPER.readValue
@@ -403,6 +417,7 @@ public class TestCreators extends AfterburnerTestBase
         assertEquals(1, bean.createA[0]);
     }
 
+    @Test
     public void testDeferredFactoryAndProps() throws Exception
     {
         DeferredFactoryAndPropsBean bean = MAPPER.readValue
@@ -417,6 +432,7 @@ public class TestCreators extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testFactoryCreatorWithMixin() throws Exception
     {
         ObjectMapper m = new ObjectMapper();
@@ -427,6 +443,7 @@ public class TestCreators extends AfterburnerTestBase
         assertEquals("factory:xyz", bean.a);
     }
 
+    @Test
     public void testFactoryCreatorWithRenamingMixin() throws Exception
     {
         ObjectMapper m = new ObjectMapper();
@@ -443,6 +460,7 @@ public class TestCreators extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testMapWithConstructor() throws Exception
     {
         MapWithCtor result = MAPPER.readValue
@@ -457,6 +475,7 @@ public class TestCreators extends AfterburnerTestBase
         assertEquals(123, result._number);
     }
 
+    @Test
     public void testMapWithFactory() throws Exception
     {
         MapWithFactory result = MAPPER.readValue
@@ -473,10 +492,12 @@ public class TestCreators extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testBrokenConstructor() throws Exception
     {
         try {
             /*BrokenBean bean =*/ MAPPER.readValue("{ \"x\" : 42 }", BrokenBean.class);
+            fail("Should not pass");
         } catch (JsonMappingException je) {
             verifyException(je, "has no property name");
         }

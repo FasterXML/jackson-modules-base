@@ -3,12 +3,16 @@ package com.fasterxml.jackson.module.afterburner.deser.convert;
 import java.math.BigInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.CoercionAction;
 import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.type.LogicalType;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // Copied from "jackson-databind" as of 2.12.1
 public class CoerceStringToIntsTest extends AfterburnerTestBase
@@ -48,7 +52,8 @@ public class CoerceStringToIntsTest extends AfterburnerTestBase
     /* Test methods, defaults (legacy)
     /********************************************************
      */
-    
+
+    @Test
     public void testLegacyStringToIntCoercion() throws Exception
     {
         // by default, should be ok
@@ -77,6 +82,7 @@ public class CoerceStringToIntsTest extends AfterburnerTestBase
         assertEquals(95007, biggie.intValue());
     }
 
+    @Test
     public void testLegacyFailStringToInt() throws Exception
     {
         _verifyCoerceFail(READER_LEGACY_FAIL, Integer.class, q("52"), "java.lang.Integer");
@@ -85,6 +91,7 @@ public class CoerceStringToIntsTest extends AfterburnerTestBase
         _verifyCoerceFail(READER_LEGACY_FAIL, IntWrapper.class, "{\"i\":\"19\" }", "int");
     }
 
+    @Test
     public void testLegacyFailStringToLong() throws Exception
     {
         _verifyCoerceFail(READER_LEGACY_FAIL, Long.class, q("55"));
@@ -93,6 +100,7 @@ public class CoerceStringToIntsTest extends AfterburnerTestBase
         _verifyCoerceFail(READER_LEGACY_FAIL, LongWrapper.class, "{\"l\": \"77\" }");
     }
 
+    @Test
     public void testLegacyFailStringToOther() throws Exception
     {
         _verifyCoerceFail(READER_LEGACY_FAIL, Short.class, q("50"));
@@ -114,6 +122,7 @@ public class CoerceStringToIntsTest extends AfterburnerTestBase
     /********************************************************
      */
 
+    @Test
     public void testCoerceConfigStringToNullInt() throws Exception
     {
         assertNull(MAPPER_TO_NULL.readValue(q("155"), Integer.class));
@@ -128,6 +137,7 @@ public class CoerceStringToIntsTest extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testCoerceConfigStringToNullLong() throws Exception
     {
         assertNull(MAPPER_TO_NULL.readValue(q("25"), Long.class));
@@ -141,6 +151,7 @@ public class CoerceStringToIntsTest extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testCoerceConfigStringToNullOther() throws Exception
     {
         assertNull(MAPPER_TO_NULL.readValue(q("25"), Short.class));
@@ -173,6 +184,7 @@ public class CoerceStringToIntsTest extends AfterburnerTestBase
     /********************************************************
      */
 
+    @Test
     public void testCoerceConfigStringToEmptyInt() throws Exception
     {
         assertEquals(Integer.valueOf(0), MAPPER_TO_EMPTY.readValue(q("12"), Integer.class));
@@ -186,6 +198,7 @@ public class CoerceStringToIntsTest extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testCoerceConfigStringToEmptyLong() throws Exception
     {
         assertEquals(Long.valueOf(0), MAPPER_TO_EMPTY.readValue(q("12"), Long.class));
@@ -199,6 +212,7 @@ public class CoerceStringToIntsTest extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testCoerceConfigStringToEmptyOther() throws Exception
     {
         assertEquals(Short.valueOf((short)0), MAPPER_TO_EMPTY.readValue(q("12"), Short.class));
@@ -216,6 +230,7 @@ public class CoerceStringToIntsTest extends AfterburnerTestBase
     /********************************************************
      */
 
+    @Test
     public void testCoerceConfigStringConvert() throws Exception
     {
         assertEquals(Integer.valueOf(12), MAPPER_TRY_CONVERT.readValue(q("12"), Integer.class));
@@ -253,6 +268,7 @@ public class CoerceStringToIntsTest extends AfterburnerTestBase
     /********************************************************
      */
 
+    @Test
     public void testCoerceConfigFailFromString() throws Exception
     {
         _verifyCoerceFail(MAPPER_TO_FAIL, Integer.class, q("15"));

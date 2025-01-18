@@ -2,13 +2,19 @@ package com.fasterxml.jackson.module.afterburner.ser;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.*;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [afterburner#52]
 public class CustomBeanPropertyWriterTest extends AfterburnerTestBase
@@ -58,7 +64,8 @@ public class CustomBeanPropertyWriterTest extends AfterburnerTestBase
           super.serializeAsField(bean, jgen, prov);
         }
     }
-    
+
+    @Test
     public void testCustomPropertyWriter() throws Exception
     {
         ObjectMapper objectMapper = newObjectMapper();

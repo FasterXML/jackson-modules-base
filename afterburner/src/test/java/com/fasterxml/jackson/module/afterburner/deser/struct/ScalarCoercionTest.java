@@ -1,13 +1,19 @@
 package com.fasterxml.jackson.module.afterburner.deser.struct;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [databind#1106], [jackson-modules-base#70]
 // Copied from databind's test: com.fasterxml.jackson.databind.struct.ScalarCoercionTest
@@ -27,6 +33,7 @@ public class ScalarCoercionTest extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testNullValueFromEmpty() throws Exception
     {
         // wrappers accept `null` fine
@@ -65,6 +72,7 @@ public class ScalarCoercionTest extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testNullFailFromEmpty() throws Exception
     {
         _verifyNullFail(Boolean.class);
@@ -105,6 +113,7 @@ public class ScalarCoercionTest extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testStringCoercionOk() throws Exception
     {
         // first successful coercions. Boolean has a ton...
@@ -138,6 +147,7 @@ public class ScalarCoercionTest extends AfterburnerTestBase
         _verifyCoerceSuccess(quote("123.0"), BigDecimal.class, new BigDecimal("123.0"));
     }
 
+    @Test
     public void testStringCoercionFail() throws Exception
     {
         _verifyCoerceFail(quote("true"), Boolean.TYPE);
@@ -159,6 +169,7 @@ public class ScalarCoercionTest extends AfterburnerTestBase
         _verifyCoerceFail(quote("123.0"), BigDecimal.class);
     }
 
+    @Test
     public void testMiscCoercionFail() throws Exception
     {
         // And then we have coercions from more esoteric types too
