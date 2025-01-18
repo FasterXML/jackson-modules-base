@@ -93,7 +93,7 @@ public class CreatorOptimizer
             impl = loader.loadAndResolve(baseName, bytecode);
         }
         try {
-            return (OptimizedValueInstantiator) impl.newInstance();
+            return (OptimizedValueInstantiator) impl.getConstructor().newInstance();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to generate accessor class '"+baseName+"': "+e.getMessage(), e);
         }

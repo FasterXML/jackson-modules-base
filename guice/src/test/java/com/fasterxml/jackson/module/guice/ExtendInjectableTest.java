@@ -1,18 +1,21 @@
 package com.fasterxml.jackson.module.guice;
 
-import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.inject.Inject;
+
+import org.junit.jupiter.api.Test;
+
 import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
-import org.junit.Assert;
-import org.junit.Test;
 
-import javax.inject.Inject;
+import com.fasterxml.jackson.annotation.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  */
@@ -62,9 +65,9 @@ public class ExtendInjectableTest
 
         final ReadableBean bean = mapper.readValue("{\"constructor_value\":\"myConstructor\",\"field_value\":\"myField\",\"method_value\":\"myMethod\"}", ReadableBean.class);
 
-        Assert.assertEquals("myConstructor", bean.constructorValue);
-        Assert.assertEquals("myMethod",      bean.methodValue);
-        Assert.assertEquals("myField",       bean.fieldValue);
+        assertEquals("myConstructor", bean.constructorValue);
+        assertEquals("myMethod",      bean.methodValue);
+        assertEquals("myField",       bean.fieldValue);
 
         verifyInjections("From Jackson's ObjectMapper", bean);
 
@@ -72,20 +75,20 @@ public class ExtendInjectableTest
 
     private void verifyInjections(String message, InjectableBean injected)
     {
-        Assert.assertSame(message, constructorInjected,                     injected.constructorInjected);
-        Assert.assertSame(message, constructorInjectedWithJavaAnnotation,   injected.constructorInjectedWithJavaAnnotation);
-        Assert.assertSame(message, constructorInjectedWithGuiceAnnotation,  injected.constructorInjectedWithGuiceAnnotation);
-        Assert.assertSame(message, constructorInjectedWithCustomAnnotation, injected.constructorInjectedWithCustomAnnotation);
+        assertSame(constructorInjected,                     injected.constructorInjected);
+        assertSame(constructorInjectedWithJavaAnnotation,   injected.constructorInjectedWithJavaAnnotation);
+        assertSame(constructorInjectedWithGuiceAnnotation,  injected.constructorInjectedWithGuiceAnnotation);
+        assertSame(constructorInjectedWithCustomAnnotation, injected.constructorInjectedWithCustomAnnotation);
 
-        Assert.assertSame(message, methodInjected,                     injected.methodInjected);
-        Assert.assertSame(message, methodInjectedWithJavaAnnotation,   injected.methodInjectedWithJavaAnnotation);
-        Assert.assertSame(message, methodInjectedWithGuiceAnnotation,  injected.methodInjectedWithGuiceAnnotation);
-        Assert.assertSame(message, methodInjectedWithCustomAnnotation, injected.methodInjectedWithCustomAnnotation);
+        assertSame(methodInjected,                     injected.methodInjected);
+        assertSame(methodInjectedWithJavaAnnotation,   injected.methodInjectedWithJavaAnnotation);
+        assertSame(methodInjectedWithGuiceAnnotation,  injected.methodInjectedWithGuiceAnnotation);
+        assertSame(methodInjectedWithCustomAnnotation, injected.methodInjectedWithCustomAnnotation);
 
-        Assert.assertSame(message, fieldInjected,                     injected.fieldInjected);
-        Assert.assertSame(message, fieldInjectedWithJavaAnnotation,   injected.fieldInjectedWithJavaAnnotation);
-        Assert.assertSame(message, fieldInjectedWithGuiceAnnotation,  injected.fieldInjectedWithGuiceAnnotation);
-        Assert.assertSame(message, fieldInjectedWithCustomAnnotation, injected.fieldInjectedWithCustomAnnotation);
+        assertSame(fieldInjected,                     injected.fieldInjected);
+        assertSame(fieldInjectedWithJavaAnnotation,   injected.fieldInjectedWithJavaAnnotation);
+        assertSame(fieldInjectedWithGuiceAnnotation,  injected.fieldInjectedWithGuiceAnnotation);
+        assertSame(fieldInjectedWithCustomAnnotation, injected.fieldInjectedWithCustomAnnotation);
     }
 
     /* ===================================================================== */

@@ -101,7 +101,7 @@ public class PropertyMutatorCollector
         final ClassName baseName = ClassName.constructFor(beanClass, "$Access4JacksonDeserializer");
         Class<?> accessorClass = generateMutatorClass(classLoader, baseName);
         try {
-            return (BeanPropertyMutator) accessorClass.newInstance();
+            return (BeanPropertyMutator) accessorClass.getConstructor().newInstance();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to generate accessor class '"+accessorClass.getName()+"': "+e.getMessage(), e);
         }
