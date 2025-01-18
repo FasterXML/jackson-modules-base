@@ -1,8 +1,12 @@
 package com.fasterxml.jackson.module.afterburner.roundtrip;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Let's use a non-trivial POJO from "jvm-serializers" benchmark as
@@ -12,6 +16,7 @@ public class MediaItemRoundtripTest extends AfterburnerTestBase
 {
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testSimple() throws Exception
     {
         MediaItem input = buildItem();

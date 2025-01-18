@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 // for [issue#47]
 public class AbstractSettersTest extends AfterburnerTestBase
 {
