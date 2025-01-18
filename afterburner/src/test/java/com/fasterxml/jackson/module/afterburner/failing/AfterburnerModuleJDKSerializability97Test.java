@@ -2,8 +2,12 @@ package com.fasterxml.jackson.module.afterburner.failing;
 
 import java.io.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AfterburnerModuleJDKSerializability97Test extends AfterburnerTestBase
 {
@@ -12,6 +16,7 @@ public class AfterburnerModuleJDKSerializability97Test extends AfterburnerTestBa
     }
 
     // But also test that after light use, ser/deser works
+    @Test
     public void testMapperAfterUse() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();
