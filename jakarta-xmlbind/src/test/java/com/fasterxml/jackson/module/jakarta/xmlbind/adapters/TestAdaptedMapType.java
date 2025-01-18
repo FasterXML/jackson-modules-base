@@ -6,9 +6,13 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.*;
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for verifying JAXB adapter handling for {@link java.util.Map}
@@ -64,6 +68,7 @@ public class TestAdaptedMapType extends ModuleTestBase
     /**********************************************************
      */
     
+    @Test
     public void testJacksonAdaptedMapType() throws IOException
     {
         ObjectContainingAMap obj = new ObjectContainingAMap();
@@ -83,6 +88,7 @@ public class TestAdaptedMapType extends ModuleTestBase
         assertEquals("here", map.get("how"));
     }
 
+    @Test
     public void testStringMaps() throws IOException
     {
         ObjectMapper mapper = getJaxbMapper();

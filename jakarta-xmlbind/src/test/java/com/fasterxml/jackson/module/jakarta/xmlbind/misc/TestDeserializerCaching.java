@@ -1,11 +1,15 @@
 package com.fasterxml.jackson.module.jakarta.xmlbind.misc;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.BeanDeserializer;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestDeserializerCaching extends ModuleTestBase
 {
@@ -71,6 +75,7 @@ public class TestDeserializerCaching extends ModuleTestBase
     /**********************************************************
      */
 
+    @Test
     public void testCaching() throws Exception
     {
         final String JSON = "{\"value1\" : {\"name\" : \"fruit\", \"value\" : \"apple\"},\n"

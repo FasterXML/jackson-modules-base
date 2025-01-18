@@ -4,9 +4,13 @@ import java.util.*;
 
 import jakarta.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Simple testing to verify that XmlID and XMLIDREF handling works
@@ -56,6 +60,7 @@ public class TestXmlID extends ModuleTestBase
     /**********************************************************
      */
 
+    @Test
     public void testSimpleRefs() throws Exception
     {
         final ObjectMapper mapper = getJaxbMapper();

@@ -4,9 +4,13 @@ import java.io.IOException;
 
 import jakarta.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.*;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JakartaXmlBindFieldAccessTest extends ModuleTestBase
 {
@@ -31,6 +35,7 @@ public class JakartaXmlBindFieldAccessTest extends ModuleTestBase
      */
 
     // Verify serialization wrt [JACKSON-202]
+    @Test
     public void testFieldSerialization() throws IOException
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -38,6 +43,7 @@ public class JakartaXmlBindFieldAccessTest extends ModuleTestBase
     }
 
     // Verify deserialization wrt [JACKSON-202]
+    @Test
     public void testFieldDeserialization() throws IOException
     {
         ObjectMapper mapper = getJaxbMapper();

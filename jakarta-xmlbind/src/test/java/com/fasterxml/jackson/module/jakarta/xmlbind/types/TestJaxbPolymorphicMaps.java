@@ -4,7 +4,11 @@ import java.util.*;
 
 import jakarta.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for handling of type-related JAXB annotations 
@@ -47,6 +51,7 @@ public class TestJaxbPolymorphicMaps
     /**********************************************************
      */
 
+    @Test
     public void testPolymorphicMap() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -66,6 +71,7 @@ public class TestJaxbPolymorphicMaps
         assertEquals("Pena", ((Whale) map.get(Integer.valueOf(3))).nickname);
     }
 
+    @Test
     public void testPolymorphicMapElementRefs() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

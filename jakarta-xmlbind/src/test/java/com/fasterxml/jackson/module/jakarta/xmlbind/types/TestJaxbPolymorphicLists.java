@@ -4,7 +4,11 @@ import java.util.*;
 
 import jakarta.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for handling of type-related JAXB annotations with collection (List)
@@ -60,7 +64,8 @@ public class TestJaxbPolymorphicLists
      /**
       * And then a test for collection types
       */
-     public void testPolymorphicList() throws Exception
+     @Test
+    public void testPolymorphicList() throws Exception
      {
          ObjectMapper mapper = getJaxbMapper();
          ListBean input = new ListBean(new Whale("bluey", 150),
@@ -85,7 +90,8 @@ public class TestJaxbPolymorphicLists
      /**
       * And then a test for collection types using element ref(s)
       */
-     public void testPolymorphicListElementRef() throws Exception
+     @Test
+    public void testPolymorphicListElementRef() throws Exception
      {
          ObjectMapper mapper = getJaxbMapper();
          ListBean input = new ListBean();
@@ -110,7 +116,8 @@ public class TestJaxbPolymorphicLists
      }
 
      // [JACKSON-348]
-     public void testShortList() throws Exception
+     @Test
+    public void testShortList() throws Exception
      {
          ShortListHolder holder = getJaxbMapper().readValue("{\"id\":[1,2,3]}",
                  ShortListHolder.class);
