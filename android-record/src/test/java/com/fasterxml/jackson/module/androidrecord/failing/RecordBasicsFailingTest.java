@@ -1,22 +1,21 @@
 package com.fasterxml.jackson.module.androidrecord.failing;
 
+import org.junit.jupiter.api.Test;
+
 import com.android.tools.r8.RecordTag;
+
 import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.InjectableValues;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.databind.util.Converter;
+
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.androidrecord.BaseMapTest;
 import com.fasterxml.jackson.module.androidrecord.RecordBasicsTest;
 
-import java.util.Objects;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class RecordBasicsFailingTest extends BaseMapTest {
-  static final class RecordWithHeaderInject extends RecordTag {
+public class RecordBasicsFailingTest extends BaseMapTest
+{
+  static final class RecordWithHeaderInject extends RecordTag
+  {
     private final int id;
     @JacksonInject
     private final String name;
@@ -46,6 +45,7 @@ public class RecordBasicsFailingTest extends BaseMapTest {
    *
    * @see RecordBasicsTest#testDeserializeConstructorInjectRecord()
    */
+  @Test
   public void testDeserializeHeaderInjectRecord_WillFail() throws Exception {
     MAPPER.setInjectableValues(new InjectableValues.Std().addValue(String.class, "Bob"));
 

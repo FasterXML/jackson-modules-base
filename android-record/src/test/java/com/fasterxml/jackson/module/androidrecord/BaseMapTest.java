@@ -7,7 +7,8 @@ public abstract class BaseMapTest
     extends BaseTest
 {
     protected static ObjectMapper newJsonMapper() {
-        return new JsonMapper().registerModule(new AndroidRecordModule());
+        return JsonMapper.builder()
+                .addModule(new AndroidRecordModule())
+                .build();
     }
-
 }

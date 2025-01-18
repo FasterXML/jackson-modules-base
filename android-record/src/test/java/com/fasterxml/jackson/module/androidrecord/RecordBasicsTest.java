@@ -1,8 +1,14 @@
 package com.fasterxml.jackson.module.androidrecord;
 
+import java.util.*;
+
+import org.junit.jupiter.api.Test;
+
 import com.android.tools.r8.RecordTag;
+
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -10,14 +16,11 @@ import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.Converter;
-import org.junit.Assert;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class RecordBasicsTest extends BaseMapTest {
+public class RecordBasicsTest extends BaseMapTest
+{
   static final class EmptyRecord extends RecordTag {
     @Override
     public boolean equals(Object o) {
@@ -327,6 +330,7 @@ public class RecordBasicsTest extends BaseMapTest {
   /**********************************************************************
   */
 
+  @Test
   public void testClassUtil() {
     assertFalse(AndroidRecordModule.isDesugaredRecordClass(getClass()));
     assertTrue(AndroidRecordModule.isDesugaredRecordClass(SimpleRecord.class));
@@ -334,6 +338,7 @@ public class RecordBasicsTest extends BaseMapTest {
     assertTrue(AndroidRecordModule.isDesugaredRecordClass(RecordWithRename.class));
   }
 
+  @Test
   public void testRecordJavaType() {
     assertFalse(AndroidRecordModule.isDesugaredRecordClass(MAPPER.constructType(getClass()).getRawClass()));
     assertTrue(AndroidRecordModule.isDesugaredRecordClass(MAPPER.constructType(SimpleRecord.class).getRawClass()));
@@ -347,26 +352,31 @@ public class RecordBasicsTest extends BaseMapTest {
   /**********************************************************************
    */
 
+  @Test
   public void testSerializeSimpleRecord() throws Exception {
     String json = MAPPER.writeValueAsString(new SimpleRecord(123, "Bob"));
     final Object EXP = map("id", Integer.valueOf(123), "name", "Bob");
     assertEquals(EXP, MAPPER.readValue(json, Object.class));
   }
 
+  @Test
   public void testDeserializeSimpleRecord() throws Exception {
     assertEquals(new SimpleRecord(123, "Bob"),
             MAPPER.readValue("{\"id\":123,\"name\":\"Bob\"}", SimpleRecord.class));
   }
 
+  @Test
   public void testSerializeEmptyRecord() throws Exception {
     assertEquals("{}", MAPPER.writeValueAsString(new EmptyRecord()));
   }
 
+  @Test
   public void testDeserializeEmptyRecord() throws Exception {
     assertEquals(new EmptyRecord(),
             MAPPER.readValue("{}", EmptyRecord.class));
   }
 
+  @Test
   public void testSerializeRecordOfRecord() throws Exception {
     RecordOfRecord record = new RecordOfRecord(new SimpleRecord(123, "Bob"));
     String json = MAPPER.writeValueAsString(record);
@@ -375,6 +385,7 @@ public class RecordBasicsTest extends BaseMapTest {
     assertEquals(EXP, MAPPER.readValue(json, Object.class));
   }
 
+  @Test
   public void testDeserializeRecordOfRecord() throws Exception {
     assertEquals(new RecordOfRecord(new SimpleRecord(123, "Bob")),
             MAPPER.readValue("{\"record\":{\"id\":123,\"name\":\"Bob\"}}",
@@ -387,6 +398,7 @@ public class RecordBasicsTest extends BaseMapTest {
   /**********************************************************************
    */
 
+  @Test
   public void testSerializeSimpleRecord_DisableAnnotationIntrospector() throws Exception {
     SimpleRecord record = new SimpleRecord(123, "Bob");
 
@@ -398,12 +410,14 @@ public class RecordBasicsTest extends BaseMapTest {
     assertEquals("{\"id\":123,\"name\":\"Bob\"}", json);
   }
 
+  @Test
   public void testDeserializeSimpleRecord_DisableAnnotationIntrospector() throws Exception {
     JsonMapper mapper = JsonMapper.builder().addModule(new AndroidRecordModule())
             .configure(MapperFeature.USE_ANNOTATIONS, false)
             .build();
 
-    Assert.assertThrows(InvalidDefinitionException.class, () -> mapper.readValue("{\"id\":123,\"name\":\"Bob\"}", SimpleRecord.class));
+    assertThrows(InvalidDefinitionException.class,
+            () -> mapper.readValue("{\"id\":123,\"name\":\"Bob\"}", SimpleRecord.class));
   }
 
   /*
@@ -412,18 +426,21 @@ public class RecordBasicsTest extends BaseMapTest {
   /**********************************************************************
    */
 
+  @Test
   public void testSerializeJsonRename() throws Exception {
     String json = MAPPER.writeValueAsString(new RecordWithRename(123, "Bob"));
     final Object EXP = map("id", Integer.valueOf(123), "rename", "Bob");
     assertEquals(EXP, MAPPER.readValue(json, Object.class));
   }
 
+  @Test
   public void testDeserializeJsonRename() throws Exception {
     RecordWithRename value = MAPPER.readValue("{\"id\":123,\"rename\":\"Bob\"}",
             RecordWithRename.class);
     assertEquals(new RecordWithRename(123, "Bob"), value);
   }
 
+  @Test
   public void testDeserializeConstructorInjectRecord() throws Exception {
     MAPPER.setInjectableValues(new InjectableValues.Std().addValue(String.class, "Bob"));
 
@@ -438,6 +455,7 @@ public class RecordBasicsTest extends BaseMapTest {
    */
 
   // [databind#2992]
+  @Test
   public void testNamingStrategy() throws Exception {
     SnakeRecord input = new SnakeRecord("123", "value");
 
@@ -454,6 +472,7 @@ public class RecordBasicsTest extends BaseMapTest {
   /**********************************************************************
    */
 
+  @Test
   public void testSerialize_SingleWriteOnlyParameter() throws Exception {
     String json = MAPPER.writeValueAsString(new RecordSingleWriteOnly(123));
 
@@ -461,18 +480,21 @@ public class RecordBasicsTest extends BaseMapTest {
   }
 
   // [databind#3897]
+  @Test
   public void testDeserialize_SingleWriteOnlyParameter() throws Exception {
     RecordSingleWriteOnly value = MAPPER.readValue("{\"id\":123}", RecordSingleWriteOnly.class);
 
     assertEquals(new RecordSingleWriteOnly(123), value);
   }
 
+  @Test
   public void testSerialize_SomeWriteOnlyParameter() throws Exception {
     String json = MAPPER.writeValueAsString(new RecordSomeWriteOnly(123, "Bob", "bob@example.com"));
 
     assertEquals("{\"email\":\"bob@example.com\"}", json);
   }
 
+  @Test
   public void testDeserialize_SomeWriteOnlyParameter() throws Exception {
     RecordSomeWriteOnly value = MAPPER.readValue(
             "{\"id\":123,\"name\":\"Bob\",\"email\":\"bob@example.com\"}",
@@ -481,12 +503,14 @@ public class RecordBasicsTest extends BaseMapTest {
     assertEquals(new RecordSomeWriteOnly(123, "Bob", "bob@example.com"), value);
   }
 
+  @Test
   public void testSerialize_AllWriteOnlyParameter() throws Exception {
     String json = MAPPER.writeValueAsString(new RecordAllWriteOnly(123, "Bob", "bob@example.com"));
 
     assertEquals("{}", json);
   }
 
+  @Test
   public void testDeserialize_AllWriteOnlyParameter() throws Exception {
     RecordAllWriteOnly value = MAPPER.readValue(
             "{\"id\":123,\"name\":\"Bob\",\"email\":\"bob@example.com\"}",
@@ -502,6 +526,7 @@ public class RecordBasicsTest extends BaseMapTest {
    */
 
   // Fails: converter not applied
+  @Test
   public void testDeserializeJsonDeserializeRecord() throws Exception {
     RecordWithJsonDeserialize value = MAPPER.readValue("{\"id\":123,\"name\":\"   Bob   \"}",
             RecordWithJsonDeserialize.class);
