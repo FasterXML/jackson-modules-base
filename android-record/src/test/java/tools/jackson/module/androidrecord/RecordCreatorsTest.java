@@ -1,11 +1,15 @@
 package tools.jackson.module.androidrecord;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import org.junit.jupiter.api.Test;
 
 import com.android.tools.r8.RecordTag;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import tools.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RecordCreatorsTest extends BaseMapTest
 {
@@ -58,6 +62,7 @@ public class RecordCreatorsTest extends BaseMapTest
     /**********************************************************************
      */
 
+    @Test
     public void testDeserializeWithCanonicalCtorOverride() throws Exception {
         RecordWithCanonicalCtorOverride value = MAPPER.readValue("{\"id\":123,\"name\":\"Bob\"}",
                 RecordWithCanonicalCtorOverride.class);
@@ -66,6 +71,7 @@ public class RecordCreatorsTest extends BaseMapTest
     }
 
     // [databind#2980]
+    @Test
     public void testDeserializeWithDelegatingCtor() throws Exception {
         RecordWithDelegation value = MAPPER.readValue(q("foobar"),
                 RecordWithDelegation.class);

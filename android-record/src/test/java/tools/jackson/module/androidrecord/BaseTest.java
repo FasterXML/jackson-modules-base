@@ -1,11 +1,10 @@
 package tools.jackson.module.androidrecord;
 
-import junit.framework.TestCase;
-
 import java.util.Arrays;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 public abstract class BaseTest
-    extends TestCase
 {
     /**
      * @param e Exception to check

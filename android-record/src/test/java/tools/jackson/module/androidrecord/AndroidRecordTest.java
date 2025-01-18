@@ -1,9 +1,9 @@
 package tools.jackson.module.androidrecord;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.Test;
 
 import com.android.tools.r8.RecordTag;
 
@@ -13,16 +13,18 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.databind.json.JsonMapper;
-import junit.framework.TestCase;
 
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Inner test classes simulate Android-desugared records.
  *
  * @author Eran Leshem
  **/
-public class AndroidRecordTest extends TestCase {
+public class AndroidRecordTest
+    extends BaseMapTest
+{
   static final class Simple extends RecordTag {
     static int si = 7;
     private final int i;
@@ -129,17 +131,18 @@ public class AndroidRecordTest extends TestCase {
     }
   }
 
-
   private final ObjectMapper _objectMapper = JsonMapper.builder()
           .addModule(new AndroidRecordModule())
           .changeDefaultVisibility(vc -> vc.withVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY))
           .build();
 
+  @Test
   public void testSimple() throws Exception {
     Simple simple = new Simple(9, 3, "foo", Arrays.asList("bar", "baz"), new AtomicInteger(8));
     assertEquals(simple, _objectMapper.readValue(_objectMapper.writeValueAsString(simple), Simple.class));
   }
 
+  @Test
   public void testMultipleConstructors() throws Exception {
     List<String> l = Arrays.asList("bar", "baz");
     assertEquals(9, _objectMapper.readValue(_objectMapper.writeValueAsString(new MultipleConstructors(9, l)),
@@ -152,8 +155,9 @@ public class AndroidRecordTest extends TestCase {
                     new MultipleConstructors(Arrays.asList(1, 2), 9)), MultipleConstructors.class).i());
   }
 
+  @Test
   public void testConflictingConstructors() {
-    Assert.assertThrows(InvalidDefinitionException.class,
+    assertThrows(InvalidDefinitionException.class,
              () -> _objectMapper.readValue(_objectMapper.writeValueAsString(
                      new ConflictingConstructors(9, "foo")), ConflictingConstructors.class));
   }

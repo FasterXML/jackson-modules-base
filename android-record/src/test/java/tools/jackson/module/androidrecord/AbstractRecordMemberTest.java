@@ -1,18 +1,20 @@
 package tools.jackson.module.androidrecord;
 
+import org.junit.jupiter.api.Test;
+
 import com.android.tools.r8.RecordTag;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.*;
 
 import tools.jackson.databind.ObjectMapper;
 
-public class AbstractRecordMemberTest extends BaseMapTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-  static final class RootRecord extends RecordTag {
-
+public class AbstractRecordMemberTest extends BaseMapTest
+{
+  static final class RootRecord extends RecordTag
+  {
     private final AbstractMember member;
 
     public RootRecord(AbstractMember member) {
@@ -67,6 +69,8 @@ public class AbstractRecordMemberTest extends BaseMapTest {
   /* https://github.com/FasterXML/jackson-modules-base/issues/248
   /**********************************************************************
    */
+
+  @Test
   public void testDeserializeRecordWithAbstractMember() throws Exception {
     RootRecord value = MAPPER.readValue("{\"member\":{\"@class\":\"string\",\"val\":\"Hello, abstract member!\"}}",
             RootRecord.class);
