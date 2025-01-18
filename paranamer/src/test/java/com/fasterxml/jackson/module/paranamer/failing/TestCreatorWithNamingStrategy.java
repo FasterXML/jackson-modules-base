@@ -1,10 +1,14 @@
 package com.fasterxml.jackson.module.paranamer.failing;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.module.paranamer.ParanamerModule;
 import com.fasterxml.jackson.module.paranamer.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestCreatorWithNamingStrategy
     extends ModuleTestBase
@@ -36,6 +40,7 @@ public class TestCreatorWithNamingStrategy
             .registerModule(new ParanamerModule())
             .setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
 
+    @Test
     public void testStaticStringCreator() throws Exception
     {
         StaticStringCreatorBean bean = MAPPER.readValue("\"42|NotMyRealName\"", StaticStringCreatorBean.class);
