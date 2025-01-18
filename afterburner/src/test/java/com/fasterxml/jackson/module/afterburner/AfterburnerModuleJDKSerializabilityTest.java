@@ -4,6 +4,8 @@ import java.io.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class AfterburnerModuleJDKSerializabilityTest extends AfterburnerTestBase
 {
     static class Point {

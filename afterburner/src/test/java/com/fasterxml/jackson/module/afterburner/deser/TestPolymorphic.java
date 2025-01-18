@@ -1,10 +1,14 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestPolymorphic extends AfterburnerTestBase
 {
@@ -35,6 +39,7 @@ public class TestPolymorphic extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testAfterburner() throws Exception {
         ObjectMapper mapper = newObjectMapper();
         Envelope envelope = new Envelope(new Payload("test"));
@@ -47,6 +52,7 @@ public class TestPolymorphic extends AfterburnerTestBase
     }
 
     // for [module-afterburner#58]; although seems to be due to databind issue
+    @Test
     public void testPolymorphicIssue58() throws Exception
     {
         final String CLASS = Payload.class.getName();

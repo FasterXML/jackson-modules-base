@@ -1,7 +1,11 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GenericPropertyDeserializationTest extends AfterburnerTestBase
 {
@@ -31,6 +35,7 @@ public class GenericPropertyDeserializationTest extends AfterburnerTestBase
 
     final private ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testGenericIssue4() throws Exception
     {
         MyClass result = MAPPER.readValue("{\"id\":\"foo\"}", MyClass.class);

@@ -8,7 +8,10 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
-public abstract class AfterburnerTestBase extends junit.framework.TestCase
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public abstract class AfterburnerTestBase
 {
     // // // First some "shared" classes from databind's `BaseMapTest`
     
@@ -195,12 +198,6 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
         return new JsonMapper();
     }
 
-    @Deprecated
-    protected ObjectMapper mapperWithModule()
-    {
-        return newObjectMapper();
-    }
-
     /*
     /**********************************************************
     /* Helper methods; assertions
@@ -236,7 +233,7 @@ public abstract class AfterburnerTestBase extends junit.framework.TestCase
      * returning them
      */
     protected String getAndVerifyText(JsonParser jp)
-        throws IOException, JsonParseException
+        throws IOException
     {
         // Ok, let's verify other accessors
         int actLen = jp.getTextLength();

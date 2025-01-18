@@ -1,15 +1,21 @@
 package com.fasterxml.jackson.module.afterburner.util;
 
-import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+import java.util.concurrent.*;
+
+import org.junit.jupiter.api.Test;
+
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 
-import java.util.concurrent.*;
+import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
 import static org.objectweb.asm.Opcodes.*;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class MyClassLoaderTest extends AfterburnerTestBase
 {
+    @Test
     public void testNameReplacement() throws Exception
     {
         byte[] input = "Something with FOO in it (but not just FO!): FOOFOO".getBytes("UTF-8");
@@ -18,6 +24,7 @@ public class MyClassLoaderTest extends AfterburnerTestBase
         assertEquals("Something with BAR in it (but not just FO!): BARBAR", new String(input, "UTF-8"));
     }
 
+    @Test
     public void testLoadAndResolveTryParentSameClassTwice() {
         ClassName className = ClassName.constructFor(TestClass.class, "_TryParent_Twice");
         byte[] stubTestClassByteCode = generateTestClassByteCode(className, TestClass.class);
@@ -28,19 +35,21 @@ public class MyClassLoaderTest extends AfterburnerTestBase
 
         Class<?> clazz0 = myClassLoader.loadAndResolve(className, stubTestClassByteCode);
         Class<?> clazz1 = myClassLoader.loadAndResolve(className, stubTestClassByteCode);
-        assertNotNull("first loaded class should not be null", clazz0);
-        assertNotNull("second loaded class should not be null", clazz1);
+        assertNotNull(clazz0, "first loaded class should not be null");
+        assertNotNull(clazz1, "second loaded class should not be null");
         assertEquals(
-                "first class should be loaded with parent class loader",
                 parentClassLoader,
-                clazz0.getClassLoader());
+                clazz0.getClassLoader(),
+                "first class should be loaded with parent class loader");
         assertEquals(
-                "second class should be loaded with parent class loader",
                 parentClassLoader,
-                clazz1.getClassLoader());
-        assertEquals("the two loaded class instances should be equal", clazz0, clazz1);
+                clazz1.getClassLoader(),
+                "second class should be loaded with parent class loader");
+        assertEquals(clazz0, clazz1,
+                "the two loaded class instances should be equal");
     }
 
+    @Test
     public void testLoadAndResolvePrivateSuperclassTryParentSameClassTwice() {
         ClassName className = ClassName.constructFor(PrivateTestClass.class, "_TryParent_Twice");
         byte[] stubTestClassByteCode = generateTestClassByteCode(className, PrivateTestClass.class);
@@ -51,48 +60,52 @@ public class MyClassLoaderTest extends AfterburnerTestBase
 
         Class<?> clazz0 = myClassLoader.loadAndResolve(className, stubTestClassByteCode);
         Class<?> clazz1 = myClassLoader.loadAndResolve(className, stubTestClassByteCode);
-        assertNotNull("first loaded class should not be null", clazz0);
-        assertNotNull("second loaded class should not be null", clazz1);
+        assertNotNull(clazz0, "first loaded class should not be null");
+        assertNotNull(clazz1, "second loaded class should not be null");
         assertEquals(
-                "first class should be loaded with parent class loader",
                 parentClassLoader,
-                clazz0.getClassLoader());
+                clazz0.getClassLoader(),
+                "first class should be loaded with parent class loader");
         assertEquals(
-                "second class should be loaded with parent class loader",
                 parentClassLoader,
-                clazz1.getClassLoader());
+                clazz1.getClassLoader(),
+                "second class should be loaded with parent class loader");
     }
 
+    @Test
     public void testLoadAndResolveTryParentSameClassTwiceTwoThreads() {
         Class<?>[] loadedClasses = loadSameClassOnTwoThreads(TestClass.class, "_TryParent_TwoThreads", true);
 
-        assertNotNull("first loaded class should not be null", loadedClasses[0]);
-        assertNotNull("second loaded class should not be null", loadedClasses[1]);
+        assertNotNull(loadedClasses[0], "first loaded class should not be null");
+        assertNotNull(loadedClasses[1], "second loaded class should not be null");
         assertEquals(
-                "first class should be loaded with parent class loader",
                 getParentClassLoader(),
-                loadedClasses[0].getClassLoader());
+                loadedClasses[0].getClassLoader(),
+                "first class should be loaded with parent class loader");
         assertEquals(
-                "second class should be loaded with parent class loader",
                 getParentClassLoader(),
-                loadedClasses[1].getClassLoader());
-        assertEquals("the two loaded class instances should be equal", loadedClasses[0], loadedClasses[1]);
+                loadedClasses[1].getClassLoader(),
+                "second class should be loaded with parent class loader");
+        assertEquals(loadedClasses[0], loadedClasses[1],
+                "the two loaded class instances should be equal");
     }
 
+    @Test
     public void testLoadAndResolvePrivateSuperclassTryParentSameClassTwiceTwoThreads() {
         Class<?>[] loadedClasses = loadSameClassOnTwoThreads(PrivateTestClass.class, "_TryParent_TwoThreads", true);
 
-        assertNotNull("first loaded class should not be null", loadedClasses[0]);
-        assertNotNull("second loaded class should not be null", loadedClasses[1]);
+        assertNotNull(loadedClasses[0], "first loaded class should not be null");
+        assertNotNull(loadedClasses[1], "second loaded class should not be null");
         assertEquals(
-                "first class should be loaded with parent class loader",
                 getParentClassLoader(),
-                loadedClasses[0].getClassLoader());
+                loadedClasses[0].getClassLoader(),
+                "first class should be loaded with parent class loader");
         assertEquals(
-                "second class should be loaded with parent class loader",
                 getParentClassLoader(),
-                loadedClasses[1].getClassLoader());
-        assertEquals("the two loaded class instances should be equal", loadedClasses[0], loadedClasses[1]);
+                loadedClasses[1].getClassLoader(),
+                "second class should be loaded with parent class loader");
+        assertEquals(loadedClasses[0], loadedClasses[1],
+                "the two loaded class instances should be equal");
     }
 
     /**
@@ -198,5 +211,4 @@ public class MyClassLoaderTest extends AfterburnerTestBase
             throw new RuntimeException(e);
         }
     }
-
 }
