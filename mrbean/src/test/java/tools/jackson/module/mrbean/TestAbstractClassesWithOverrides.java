@@ -1,8 +1,12 @@
 package tools.jackson.module.mrbean;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.databind.json.JsonMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestAbstractClassesWithOverrides
     extends BaseTest
@@ -75,6 +79,7 @@ public class TestAbstractClassesWithOverrides
     /**********************************************************
      */
 
+    @Test
     public void testOverrides() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -86,6 +91,7 @@ public class TestAbstractClassesWithOverrides
     }
 
     @SuppressWarnings("synthetic-access")
+    @Test
     public void testReAbstractedMethods() throws Exception
     {
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
@@ -133,6 +139,7 @@ public class TestAbstractClassesWithOverrides
         assertEquals("Another Foo!", beanWithOtherFoo.getFoo());
     }
 
+    @Test
     public void testEagerFailureOnReAbstractedMethods() throws Exception
     {
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();

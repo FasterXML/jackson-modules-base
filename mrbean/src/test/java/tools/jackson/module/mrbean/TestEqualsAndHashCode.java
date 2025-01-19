@@ -1,12 +1,11 @@
 package tools.jackson.module.mrbean;
 
+import java.util.List;
+
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
-import java.util.List;
-
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestEqualsAndHashCode extends BaseTest {
 
@@ -42,7 +41,7 @@ public class TestEqualsAndHashCode extends BaseTest {
     }
 
 
-    public void testReadOnlyBeanSameNonNullInput() throws IOException {
+    public void testReadOnlyBeanSameNonNullInput() throws Exception {
         final ObjectMapper mapper = newMrBeanMapper();
         
         final String input = "{\"field\":\"testing\"}";
@@ -53,7 +52,7 @@ public class TestEqualsAndHashCode extends BaseTest {
         assertEqualsAndHashCode(bean1, bean2);
     }
 
-    public void testReadOnlyBeanSameNullInput() throws IOException {
+    public void testReadOnlyBeanSameNullInput() throws Exception {
         final ObjectMapper mapper = newMrBeanMapper();
 
         final String input = "{\"field\":null}";
@@ -64,7 +63,7 @@ public class TestEqualsAndHashCode extends BaseTest {
         assertEqualsAndHashCode(bean1, bean2);
     }
 
-    public void testReadOnlyBeanDifferentInput() throws IOException {
+    public void testReadOnlyBeanDifferentInput() throws Exception {
         final ObjectMapper mapper = newMrBeanMapper();
 
         final String input1 = "{\"field\":\"testing\"}";
@@ -76,7 +75,7 @@ public class TestEqualsAndHashCode extends BaseTest {
         assertNeitherEqualsNorHashCode(bean1, bean2);
     }
 
-    public void testGenericBeanSameInput() throws IOException {
+    public void testGenericBeanSameInput() throws Exception {
         final ObjectMapper mapper = newMrBeanMapper();
 
         final String input = "{\"someData\":[{\"leaves\":[{\"value\":\"foo\"}] },{\"leaves\":[{\"value\":\"foo\"}] }]}";
@@ -87,7 +86,7 @@ public class TestEqualsAndHashCode extends BaseTest {
         assertEqualsAndHashCode(bean1, bean2);
     }
 
-    public void testGenericBeanDifferentInput() throws IOException {
+    public void testGenericBeanDifferentInput() throws Exception {
         final ObjectMapper mapper = newMrBeanMapper();
 
         final String input1 = "{\"someData\":[{\"leaves\":[{\"value\":\"foo\"}] },{\"leaves\":[{\"value\":\"foo\"}] }]}";

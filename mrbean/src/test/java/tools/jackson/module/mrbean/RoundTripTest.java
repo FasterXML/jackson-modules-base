@@ -1,6 +1,10 @@
 package tools.jackson.module.mrbean;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RoundTripTest extends BaseTest
 {
@@ -14,6 +18,7 @@ public class RoundTripTest extends BaseTest
     }
 
     // [mrbean#20]: naming convention caused under-score prefixed duplicates
+    @Test
     public void testSimple() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -24,6 +29,7 @@ public class RoundTripTest extends BaseTest
         assertEquals(input, output);
     }
 
+    @Test
     public void testSimpleWithoutSetter() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();

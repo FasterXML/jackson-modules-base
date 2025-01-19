@@ -3,18 +3,15 @@ package tools.jackson.module.mrbean;
 import java.io.*;
 import java.util.Arrays;
 
-import junit.framework.TestCase;
-
 import tools.jackson.core.*;
 import tools.jackson.core.json.JsonFactory;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
-//import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class BaseTest
-    extends TestCase
 {
     /*
     /**********************************************************

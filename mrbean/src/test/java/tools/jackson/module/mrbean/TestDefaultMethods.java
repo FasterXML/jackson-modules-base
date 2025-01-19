@@ -2,7 +2,7 @@ package tools.jackson.module.mrbean;
 
 import tools.jackson.databind.*;
 
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 // test for [modules-base#52]
 public class TestDefaultMethods
@@ -19,7 +19,7 @@ public class TestDefaultMethods
         }
     }
 
-    public void testMaterializedDefaultMethod() throws IOException {
+    public void testMaterializedDefaultMethod() throws Exception {
         final ObjectMapper mapper = newMrBeanMapper();
 
         // Main thing is that we should not get an exception for missing method,

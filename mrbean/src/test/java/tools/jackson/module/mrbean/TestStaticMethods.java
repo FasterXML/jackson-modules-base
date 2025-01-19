@@ -1,6 +1,10 @@
 package tools.jackson.module.mrbean;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test(s) to ensure that `static` methods are not considered to be
@@ -63,6 +67,7 @@ public class TestStaticMethods extends BaseTest
         }
     }
 
+    @Test
     public void testAbstract25() throws Exception
     {
         TestPOJO v = new TestPOJO();

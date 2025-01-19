@@ -2,11 +2,15 @@ package tools.jackson.module.mrbean;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.type.TypeReference;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.databind.json.JsonMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestSimpleTypes extends BaseTest
 {
@@ -40,6 +44,7 @@ public class TestSimpleTypes extends BaseTest
 
     private final ObjectMapper MAPPER = newMrBeanMapper();
 
+    @Test
     public void testIssue19() throws Exception
     {
         final IntegerBean integerBean = new IntegerBean();
@@ -53,6 +58,7 @@ public class TestSimpleTypes extends BaseTest
     }
 
     // for [modules-base#42]: ignore `get()` and `set()`
+    @Test
     public void testPlainGetAndSet() throws Exception
     {
         // First, simple attempt fails
