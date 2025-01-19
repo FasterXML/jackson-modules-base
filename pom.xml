@@ -71,11 +71,18 @@ not datatype, data format, or JAX-RS provider modules.
     </dependencies>
   </dependencyManagement>
 
-  <!-- 17-Jan-2025, tatu: Temporarily moved JUnit4/5 deps down to
-      modules to allow mix of 4 and 5; will promote JUnit 5 back up
-      once conversion complete
-    -->
   <dependencies>
+    <!-- 11-Jan-2025, joohyukkim: For JSTEP-10, migrate to JUnit5 -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   
   <!-- Alas, need to include snapshot reference since otherwise can not find

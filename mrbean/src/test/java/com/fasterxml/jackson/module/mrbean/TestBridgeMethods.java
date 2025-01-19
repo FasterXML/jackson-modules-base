@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.junit.jupiter.api.Test;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;
@@ -21,6 +22,8 @@ import org.objectweb.asm.TypePath;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.mrbean.AbstractTypeMaterializer.MyClassLoader;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // [modules-base#110]: avoid synthetic bridge method generation
 public class TestBridgeMethods extends BaseTest
@@ -52,6 +55,7 @@ public class TestBridgeMethods extends BaseTest
         Coffee getObject();
     }
 
+    @Test
     public void testSimpleCovariantProperty() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -64,6 +68,7 @@ public class TestBridgeMethods extends BaseTest
         assertEquals("pumpkin spice", result.getDrink().getFlavor());
     }
 
+    @Test
     public void testGenericCovariantProperty() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();

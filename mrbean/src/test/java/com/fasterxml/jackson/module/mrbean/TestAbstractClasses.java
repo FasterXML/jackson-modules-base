@@ -1,6 +1,10 @@
 package com.fasterxml.jackson.module.mrbean;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestAbstractClasses
     extends BaseTest
@@ -34,6 +38,7 @@ public class TestAbstractClasses
      */
 
     @SuppressWarnings("synthetic-access")
+    @Test
     public void testSimpleInteface() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();

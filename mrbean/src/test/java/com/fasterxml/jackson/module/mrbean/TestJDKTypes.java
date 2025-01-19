@@ -3,10 +3,14 @@ package com.fasterxml.jackson.module.mrbean;
 import java.io.Serializable;
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests stemming from [#12], where `Calendar` fails; however, bit more general
@@ -27,6 +31,7 @@ public class TestJDKTypes extends BaseTest
     private final ObjectMapper MAPPER = newMrBeanMapper();
     private final ObjectMapper VANILLA_MAPPER = newPlainJsonMapper();
 
+    @Test
     public void testDateTimeTypes() throws Exception
     {
         Calendar cal = MAPPER.readValue("0", Calendar.class);
@@ -38,6 +43,7 @@ public class TestJDKTypes extends BaseTest
         assertEquals(0L, dt.getTime());
     }
 
+    @Test
     public void testNumbers() throws Exception
     {
         Number nr = MAPPER.readValue("0", Number.class);
@@ -49,6 +55,7 @@ public class TestJDKTypes extends BaseTest
         assertSame(Double.class, nr.getClass());
     }
 
+    @Test
     public void testIterable() throws Exception
     {
         Object ob = MAPPER.readValue("[ ]", Iterable.class);
@@ -63,6 +70,7 @@ public class TestJDKTypes extends BaseTest
         assertEquals(Integer.valueOf(123), l.get(0));
     }
 
+    @Test
     public void testStringLike() throws Exception
     {
         CharSequence seq = MAPPER.readValue(q("abc"), CharSequence.class);
@@ -70,6 +78,7 @@ public class TestJDKTypes extends BaseTest
     }
 
     // [modules-base#74]: more types to skip
+    @Test
     public void testSerializable() throws Exception
     {
 //        Serializable value = MAPPER.readValue(quote("abc"), Serializable.class);
@@ -78,6 +87,7 @@ public class TestJDKTypes extends BaseTest
     }
 
     // Extra test inspired by Afterburner report
+    @Test
     public void testIntAsString() throws Exception
     {
         final String EXP_JSON = "{\"value\":\"42\"}";
@@ -92,6 +102,7 @@ public class TestJDKTypes extends BaseTest
     }
 
     // [modules-base#132]: Don't block "java.util.TimeZone"
+    @Test
     public void testUtilTimeZone() throws Exception
     {
         final String json = q("PST");
