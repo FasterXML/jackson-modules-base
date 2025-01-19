@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.androidrecord.failing;
+package com.fasterxml.jackson.module.androidrecord.tofix;
 
 import org.junit.jupiter.api.Test;
 
@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.androidrecord.BaseMapTest;
 import com.fasterxml.jackson.module.androidrecord.RecordBasicsTest;
+import com.fasterxml.jackson.module.androidrecord.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -45,6 +46,7 @@ public class RecordBasicsFailingTest extends BaseMapTest
    *
    * @see RecordBasicsTest#testDeserializeConstructorInjectRecord()
    */
+  @JacksonTestFailureExpected
   @Test
   public void testDeserializeHeaderInjectRecord_WillFail() throws Exception {
     MAPPER.setInjectableValues(new InjectableValues.Std().addValue(String.class, "Bob"));

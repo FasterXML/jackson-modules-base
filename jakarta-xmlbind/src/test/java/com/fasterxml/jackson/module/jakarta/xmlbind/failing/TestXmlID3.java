@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
+import com.fasterxml.jackson.module.jakarta.xmlbind.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -50,6 +51,7 @@ public class TestXmlID3 extends ModuleTestBase
         public HasID getParent() { return parent; }
     }
 
+    @JacksonTestFailureExpected
     @Test
     public void testIssue46() throws Exception
     {

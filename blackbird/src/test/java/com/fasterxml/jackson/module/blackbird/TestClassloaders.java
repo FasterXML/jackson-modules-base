@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.blackbird.failing;
+package com.fasterxml.jackson.module.blackbird;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -6,7 +6,6 @@ import java.lang.reflect.Constructor;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.*;

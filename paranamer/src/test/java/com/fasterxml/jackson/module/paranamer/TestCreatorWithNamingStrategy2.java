@@ -1,16 +1,14 @@
-package com.fasterxml.jackson.module.paranamer.failing;
+package com.fasterxml.jackson.module.paranamer;
 
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.module.paranamer.ParanamerModule;
-import com.fasterxml.jackson.module.paranamer.ModuleTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestCreatorWithNamingStrategy
+public class TestCreatorWithNamingStrategy2
     extends ModuleTestBase
 {
     static class StaticStringCreatorBean
