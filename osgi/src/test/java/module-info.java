@@ -10,8 +10,8 @@ module tools.jackson.module.osgi
 
     // Additional test lib/framework dependencies
 
-    requires junit;
-    requires org.mockito;
+    requires org.junit.jupiter.api;
+    requires org.junit.jupiter.params;
 
     // Further, need to open up some packages for JUnit et al
     opens tools.jackson.module.osgi;

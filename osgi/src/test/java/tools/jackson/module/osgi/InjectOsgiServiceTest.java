@@ -1,28 +1,11 @@
 package tools.jackson.module.osgi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import java.util.stream.Stream;
 
-import java.util.Arrays;
-import java.util.Collection;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mockito;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Filter;
@@ -34,8 +17,17 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
-@RunWith(value = Parameterized.class)
-@Ignore("Does not work on JDK 17/Mockito 5.x")
+import static org.junit.jupiter.api.Assertions.*;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
+
 public class InjectOsgiServiceTest
 {
     private static final String OSGI_FILTER = "osgi.filter";
@@ -43,21 +35,21 @@ public class InjectOsgiServiceTest
     private BundleContext bundleContext;
 
     private ObjectMapper mapper;
-    
-    @Parameter
-    public Class<?> beanClass;
-    
-    @Parameters
-    public static Collection<Class<? extends VerifyableBean>> data() {
-        return Arrays.asList(
-            BeanWithServiceInConstructor.class, 
-            BeanWithFilter.class, 
-            BeanWithServiceInField.class,
-            BeanWithNotFoundService.class);
+
+    public static Stream<Class<? extends VerifyableBean>> data() {
+        // 18-Jan-2025, tatu: Looks like we'll mostly fail to inject Service
+        //   in Jackson 3.0/JDK 17/JUnit 5/JPMS (not sure which part matters most;
+        //   possibly JPMS). So comment out ones that'd fail
+        return Stream.of(
+                //BeanWithServiceInConstructor.class, 
+                BeanWithFilter.class
+                //BeanWithServiceInField.class,
+                //BeanWithNotFoundService.class
+                );
     }
     
     @SuppressWarnings("unchecked")
-    @Before
+    @BeforeEach
     public void setUp() throws Exception
     {
         bundleContext = mock(BundleContext.class);
@@ -73,8 +65,10 @@ public class InjectOsgiServiceTest
                 .build();
     }
 
-    @Test
-    public void testServiceIsInjected() throws Exception
+    @MethodSource("data")
+    @ParameterizedTest
+    public void testServiceIsInjected(Class<?> beanClass)
+        throws Exception
     {
         // ACTION
         VerifyableBean result = mapper.reader().forType(beanClass)
@@ -98,7 +92,7 @@ public class InjectOsgiServiceTest
     {
         public String field;
         
-        protected Service service;
+        public Service service;
         
         public boolean verify(BundleContext bundleContext)
         {
@@ -135,7 +129,7 @@ public class InjectOsgiServiceTest
     public static class BeanWithServiceInField extends VerifyableBean
     {
         @JacksonInject
-        private Service service2;
+        public Service service2;
         
         @Override
         public boolean verify(BundleContext bundleContext)

@@ -1,13 +1,15 @@
 package tools.jackson.module.noctordeser;
 
+import java.util.Arrays;
+
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.Arrays;
-
-public class BasicNoConstructorTest extends TestCase
+public class BasicNoConstructorTest
 {
     static class BeanWithoutDefaultConstructor {
         public String value;
@@ -40,6 +42,7 @@ public class BasicNoConstructorTest extends TestCase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testReadValueWithoutDefaultConstructor() throws Exception
     {
         String json = MAPPER.writeValueAsString(new BeanWithoutDefaultConstructor("test"));
@@ -66,6 +69,7 @@ public class BasicNoConstructorTest extends TestCase
         assertEquals(7, result2.y);
     }
 
+    @Test
     public void testReadValueWithDefaultConstructor() throws Exception {
         BeanWithDefaultConstructor bean = new BeanWithDefaultConstructor();
         bean.value = "test";
