@@ -1,11 +1,16 @@
 package tools.jackson.module.jakarta.xmlbind.misc;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.deser.bean.BeanDeserializer;
+
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestDeserializerCaching extends ModuleTestBase
 {
@@ -64,6 +69,7 @@ public class TestDeserializerCaching extends ModuleTestBase
     /**********************************************************
      */
 
+    @Test
     public void testCaching() throws Exception
     {
         final String JSON = "{\"value1\" : {\"name\" : \"fruit\", \"value\" : \"apple\"},\n"

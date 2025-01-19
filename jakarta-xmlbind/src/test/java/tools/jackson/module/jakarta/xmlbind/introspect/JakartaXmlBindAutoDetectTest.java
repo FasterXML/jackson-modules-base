@@ -4,16 +4,21 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import jakarta.xml.bind.annotation.*;
+import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+
+import jakarta.xml.bind.annotation.*;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.introspect.AnnotationIntrospectorPair;
 import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
+
 import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for verifying auto-detection settings with JAXB annotations.
@@ -78,6 +83,7 @@ public class JakartaXmlBindAutoDetectTest extends ModuleTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testAutoDetectDisable() throws IOException
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -100,6 +106,7 @@ public class JakartaXmlBindAutoDetectTest extends ModuleTestBase
         assertEquals("b", result.get("b"));
     }
 
+    @Test
     public void testIssue246() throws IOException
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -109,6 +116,7 @@ public class JakartaXmlBindAutoDetectTest extends ModuleTestBase
     }
 
     // [JACKSON-556]
+    @Test
     public void testJaxbAnnotatedObject() throws Exception
     {
         AnnotationIntrospector primary = new JakartaXmlBindAnnotationIntrospector();
@@ -121,12 +129,13 @@ public class JakartaXmlBindAutoDetectTest extends ModuleTestBase
         JaxbAnnotatedObject original = new JaxbAnnotatedObject("123");
         
         String json = mapper.writeValueAsString(original);
-        assertFalse("numberString field in JSON", json.contains("numberString")); // kinda hack-y :)
+        assertFalse(json.contains("numberString"), "numberString field in JSON"); // kinda hack-y :)
         JaxbAnnotatedObject result = mapper.readValue(json, JaxbAnnotatedObject.class);
         assertEquals(new BigDecimal("123"), result.number);
     }
 
     /*
+    @Test
     public void testJaxbAnnotatedObjectXML() throws Exception
     {
         JAXBContext ctxt = JAXBContext.newInstance(JaxbAnnotatedObject.class);

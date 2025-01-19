@@ -2,11 +2,13 @@ package tools.jackson.module.jakarta.xmlbind.introspect;
 
 import java.util.*;
 
+import javax.xml.namespace.QName;
+
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.annotation.*;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import javax.xml.namespace.QName;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.introspect.AnnotatedClass;
@@ -15,6 +17,8 @@ import tools.jackson.databind.introspect.AnnotatedField;
 import tools.jackson.databind.type.TypeFactory;
 import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for verifying that JAXB annotation based introspector
@@ -203,6 +207,7 @@ public class JakartaXmlBindAnnotationIntrospectorTest
 
     private final ObjectMapper MAPPER = getJaxbMapper();
     
+    @Test
     public void testDetection() throws Exception
     {
         Map<String,Object> result = writeAndMap(MAPPER, new SimpleBean());
@@ -221,6 +226,7 @@ public class JakartaXmlBindAnnotationIntrospectorTest
     /**
      * tests getting serializer/deserializer instances.
      */
+    @Test
     public void testSerializeDeserializeWithJaxbAnnotations() throws Exception
     {
         ObjectMapper mapper = getJaxbMapperBuilder()
@@ -267,6 +273,7 @@ public class JakartaXmlBindAnnotationIntrospectorTest
         assertNull(readEx.propertyToIgnore);
     }
 
+    @Test
     public void testRootNameAccess() throws Exception
     {
         final TypeFactory tf = MAPPER.getTypeFactory();
@@ -293,6 +300,7 @@ public class JakartaXmlBindAnnotationIntrospectorTest
     }
 
     // JAXB can specify that properties are to be written in alphabetic order...
+    @Test
     public void testSerializationAlphaOrdering() throws Exception
     {
         assertEquals("{\"a\":1,\"b\":2,\"c\":3}", MAPPER.writeValueAsString(new AlphaBean()));
@@ -302,6 +310,7 @@ public class JakartaXmlBindAnnotationIntrospectorTest
      * Additional simple tests to ensure we will retain basic namespace information
      * now that it can be included
      */
+    @Test
     public void testNamespaces() throws Exception
     {
         final TypeFactory tf = MAPPER.getTypeFactory();

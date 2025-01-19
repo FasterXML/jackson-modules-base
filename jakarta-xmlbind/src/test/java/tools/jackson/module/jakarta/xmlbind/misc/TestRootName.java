@@ -6,6 +6,10 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
 public class TestRootName extends ModuleTestBase
 {
     @XmlRootElement(name="rooty")
@@ -20,6 +24,7 @@ public class TestRootName extends ModuleTestBase
     /**********************************************************************
      */
     
+    @Test
     public void testRootName() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

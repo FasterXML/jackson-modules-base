@@ -2,6 +2,8 @@ package tools.jackson.module.jakarta.xmlbind.id;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -11,6 +13,8 @@ import tools.jackson.databind.*;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestXmlID2 extends ModuleTestBase
 {
@@ -112,6 +116,7 @@ public class TestXmlID2 extends ModuleTestBase
         return resultList;
     }
     
+    @Test
     public void testIdWithJacksonRules() throws Exception
     {
         String expected = a2q("[{'id':11,'department':{'id':9,'employees':"
@@ -135,6 +140,7 @@ public class TestXmlID2 extends ModuleTestBase
         assertEquals(Long.valueOf(33), result.get(2).id);
     }
     
+    @Test
     public void testIdWithJaxbRules() throws Exception
     {
         ObjectMapper mapper = JsonMapper.builder()

@@ -1,11 +1,13 @@
 package tools.jackson.module.jakarta.xmlbind.introspect;
 
-import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
 import jakarta.xml.bind.annotation.*;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JakartaXmlBindFieldAccessTest extends ModuleTestBase
 {
@@ -30,14 +32,16 @@ public class JakartaXmlBindFieldAccessTest extends ModuleTestBase
      */
 
     // Verify serialization wrt [JACKSON-202]
-    public void testFieldSerialization() throws IOException
+    @Test
+    public void testFieldSerialization() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
         assertEquals("{\"x\":3}", serializeAsString(mapper, new Fields(3)));
     }
 
     // Verify deserialization wrt [JACKSON-202]
-    public void testFieldDeserialization() throws IOException
+    @Test
+    public void testFieldDeserialization() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
         Fields result = mapper.readValue("{ \"x\":3 }", Fields.class);

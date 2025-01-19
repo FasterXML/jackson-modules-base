@@ -1,9 +1,13 @@
 package tools.jackson.module.jakarta.xmlbind.types;
 
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.annotation.XmlElement;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // Failing temporarily due to [databind#1023]
 public class TestJaxbTypeCoercion1023 extends ModuleTestBase
@@ -39,6 +43,7 @@ public class TestJaxbTypeCoercion1023 extends ModuleTestBase
     /**********************************************************
      */
     
+    @Test
     public void testIssue416() throws Exception
     {
         ObjectMapper mapper = getJaxbAndJacksonMapper();

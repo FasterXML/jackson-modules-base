@@ -2,6 +2,8 @@ package tools.jackson.module.jakarta.xmlbind.misc;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.annotation.XmlElement;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -9,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestSerializationInclusion extends ModuleTestBase
 {
@@ -19,8 +23,9 @@ public class TestSerializationInclusion extends ModuleTestBase
         public List<Object> getStuff() {
             return stuff;
         }
-    }    
+    }
 
+    @Test
     public void testIssue39() throws Exception
     {
         // First: use plain JAXB introspector:

@@ -1,6 +1,5 @@
 package tools.jackson.module.jakarta.xmlbind;
 
-import java.io.IOException;
 import java.util.Map;
 
 import tools.jackson.databind.*;
@@ -10,7 +9,6 @@ import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import tools.jackson.databind.json.JsonMapper;
 
 public abstract class ModuleTestBase
-    extends junit.framework.TestCase
 {
     protected ModuleTestBase() { }
 
@@ -68,24 +66,22 @@ public abstract class ModuleTestBase
 
     @SuppressWarnings("unchecked")
     protected Map<String,Object> writeAndMap(ObjectMapper m, Object value)
-        throws IOException
     {
         String str = m.writeValueAsString(value);
         return (Map<String,Object>) m.readValue(str, Map.class);
     }
 
     protected Map<String,Object> writeAndMap(Object value)
-        throws IOException
     {
         return writeAndMap(new ObjectMapper(), value);
     }
 
-    protected String serializeAsString(ObjectMapper m, Object value) throws IOException
+    protected String serializeAsString(ObjectMapper m, Object value)
     {
         return m.writeValueAsString(value);
     }
 
-    protected String serializeAsString(Object value) throws IOException
+    protected String serializeAsString(Object value)
     {
         return serializeAsString(new ObjectMapper(), value);
     }

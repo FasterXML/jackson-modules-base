@@ -2,10 +2,14 @@ package tools.jackson.module.jakarta.xmlbind.id;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.annotation.*;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Simple testing to verify that XmlID and XMLIDREF handling works
@@ -55,6 +59,7 @@ public class TestXmlID extends ModuleTestBase
     /**********************************************************
      */
 
+    @Test
     public void testSimpleRefs() throws Exception
     {
         final ObjectMapper mapper = getJaxbMapper();

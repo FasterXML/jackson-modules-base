@@ -1,13 +1,19 @@
 package tools.jackson.module.jakarta.xmlbind.failing;
 
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 import tools.jackson.databind.*;
 import tools.jackson.databind.introspect.AnnotationIntrospectorPair;
 import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
+
 import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestUnwrapping extends ModuleTestBase
 {
@@ -51,6 +57,7 @@ public class TestUnwrapping extends ModuleTestBase
      */
 
     // not asserting anything
+    @Test
     public void testXmlElementAndXmlElementRefs() throws Exception
     {
         Bean<A> bean = new Bean<A>();

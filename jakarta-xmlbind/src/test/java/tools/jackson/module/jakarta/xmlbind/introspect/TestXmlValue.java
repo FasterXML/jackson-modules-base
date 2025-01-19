@@ -1,6 +1,6 @@
 package tools.jackson.module.jakarta.xmlbind.introspect;
 
-import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
 import jakarta.xml.bind.annotation.*;
 
@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestXmlValue extends ModuleTestBase
 {
@@ -49,7 +51,8 @@ public class TestXmlValue extends ModuleTestBase
      */
 
     // For [jaxb-annotations#30]
-    public void testXmlValueDefault() throws IOException
+    @Test
+    public void testXmlValueDefault() throws Exception
     {
         ObjectMapper mapper = getJaxbAndJacksonMapper();
         // default is 'value'
@@ -57,7 +60,8 @@ public class TestXmlValue extends ModuleTestBase
     }
 
     // For [jaxb-annotations#30]
-    public void testXmlValueOverride() throws IOException
+    @Test
+    public void testXmlValueOverride() throws Exception
     {
         ObjectMapper mapper = getJaxbAndJacksonMapper();
         // default is 'value'
@@ -65,7 +69,8 @@ public class TestXmlValue extends ModuleTestBase
     }
 
     // For [jaxb-annotations#31]
-    public void testXmlValueDefault2() throws IOException
+    @Test
+    public void testXmlValueDefault2() throws Exception
     {
         ObjectMapper mapper = getJaxbAndJacksonMapper();
         

@@ -2,9 +2,13 @@ package tools.jackson.module.jakarta.xmlbind.types;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.annotation.*;
 
 import tools.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for handling of type-related JAXB annotations 
@@ -86,6 +90,7 @@ public class TestJaxbPolymorphic
     //First a simple test with non-collection field
 
     @SuppressWarnings("unchecked")
+    @Test
     public void testSinglePolymorphic() throws Exception
     {
          Bean input = new Bean(new Buffalo("Billy", "brown"));
@@ -110,7 +115,8 @@ public class TestJaxbPolymorphic
          assertEquals("brown", ((Buffalo) a).hairColor);
      }
 
-     public void testPolymorphicArray() throws Exception
+     @Test
+    public void testPolymorphicArray() throws Exception
      {
          Animal a1 = new Buffalo("Bill", "grey");
          Animal a2 = new Whale("moe", 3000);
@@ -132,7 +138,8 @@ public class TestJaxbPolymorphic
          assertEquals(3000, ((Whale)a2).weightInTons); 
      }
 
-     public void testPolymorphicArrayElementRef() throws Exception
+     @Test
+    public void testPolymorphicArrayElementRef() throws Exception
      {
          Animal a1 = new Emu("Bill", "grey");
          Animal a2 = new Cow("moe", 3000);
@@ -156,7 +163,8 @@ public class TestJaxbPolymorphic
      }
 
      // For [Issue#1]
-     public void testXmlSeeAlso() throws Exception
+     @Test
+    public void testXmlSeeAlso() throws Exception
      {
          ContainerForBase input = new ContainerForBase();
          input.stuff = new Base[] { new BaseImpl("xyz") };

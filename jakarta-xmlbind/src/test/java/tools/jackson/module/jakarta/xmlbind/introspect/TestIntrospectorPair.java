@@ -2,26 +2,26 @@ package tools.jackson.module.jakarta.xmlbind.introspect;
 
 import java.util.*;
 
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.XmlTransient;
+import org.junit.jupiter.api.Test;
+
+import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.*;
+
 import tools.jackson.databind.*;
 import tools.jackson.databind.introspect.AnnotatedClassResolver;
 import tools.jackson.databind.introspect.AnnotationIntrospectorPair;
 import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import tools.jackson.databind.type.TypeFactory;
+
 import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Simple testing that <code>AnnotationIntrospector.Pair</code> works as
  * expected, when used with Jackson and JAXB-based introspector.
- *
- * @author Tatu Saloranta
  */
 public class TestIntrospectorPair
     extends ModuleTestBase
@@ -111,6 +111,7 @@ public class TestIntrospectorPair
     private final static AnnotationIntrospector _jacksonAI = new JacksonAnnotationIntrospector();
     private final static AnnotationIntrospector _jaxbAI = new JakartaXmlBindAnnotationIntrospector();
     
+    @Test
     public void testSimple() throws Exception
     {
         ObjectMapper mapper;
@@ -143,6 +144,7 @@ public class TestIntrospectorPair
         assertEquals("3", result.get("bothJaxb"));
     }
 
+    @Test
     public void testNaming() throws Exception
     {
         ObjectMapper mapper;
@@ -173,6 +175,7 @@ public class TestIntrospectorPair
         //assertEquals("123", result.get("jackson"));
     }
 
+    @Test
     public void testSimpleIgnore() throws Exception
     {
         // first: only Jackson introspector (default)
@@ -212,6 +215,7 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
     }
 
+    @Test
     public void testSimpleFieldIgnore() throws Exception
     {
         ObjectMapper mapper;
@@ -253,6 +257,7 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
     }
 
+    @Test
     public void testRootName() throws Exception
     {
         // first: test with Jackson/Jaxb pair (jackson having precedence)
@@ -290,6 +295,7 @@ public class TestIntrospectorPair
      * Test that will just use Jackson annotations, but did trigger [JACKSON-495] due to a bug
      * in JAXB annotation introspector.
      */
+    @Test
     public void testIssue495() throws Exception
     {
         ObjectMapper mapper = objectMapperBuilder()

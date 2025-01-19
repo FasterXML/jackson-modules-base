@@ -2,10 +2,14 @@ package tools.jackson.module.jakarta.xmlbind.misc;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.annotation.*;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestXmlAnyElementWithElementRef
     extends ModuleTestBase
@@ -39,7 +43,7 @@ public class TestXmlAnyElementWithElementRef
     /**********************************************************
      */
 
-    // [JACKSON-254]: verify that things do work
+    @Test
     public void testXmlAnyElementWithElementRef() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -59,5 +63,4 @@ public class TestXmlAnyElementWithElementRef
         assertSame(Count.class, resultOb.getClass());
         assertEquals(8, ((Count) resultOb).count);
     }
-
 }

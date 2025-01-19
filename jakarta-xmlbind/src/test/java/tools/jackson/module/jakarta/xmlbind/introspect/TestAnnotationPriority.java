@@ -1,14 +1,19 @@
 package tools.jackson.module.jakarta.xmlbind.introspect;
 
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.annotation.XmlElement;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * Unit test(s) to verify that annotations from super classes and
  * interfaces are properly used (for example, wrt [JACKSON-450])
  */
+
 public class TestAnnotationPriority extends ModuleTestBase
 {
     /*
@@ -48,6 +53,7 @@ public class TestAnnotationPriority extends ModuleTestBase
     /**********************************************************
      */
 
+    @Test
     public void testInterfacesAndClasses() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

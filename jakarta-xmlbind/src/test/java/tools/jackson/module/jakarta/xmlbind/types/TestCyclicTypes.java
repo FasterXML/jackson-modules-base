@@ -2,10 +2,14 @@ package tools.jackson.module.jakarta.xmlbind.types;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.annotation.*;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Simple unit tests to verify that it is possible to handle
@@ -48,6 +52,7 @@ public class TestCyclicTypes
     /* Added to check for [JACKSON-171], i.e. that type its being
      * cyclic is not a problem (instances are).
      */
+    @Test
     public void testWithJAXB() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

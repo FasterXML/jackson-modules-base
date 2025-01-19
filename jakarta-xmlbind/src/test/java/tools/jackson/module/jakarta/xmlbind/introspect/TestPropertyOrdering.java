@@ -1,9 +1,13 @@
 package tools.jackson.module.jakarta.xmlbind.introspect;
 
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.annotation.*;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestPropertyOrdering
     extends ModuleTestBase
@@ -59,6 +63,7 @@ public class TestPropertyOrdering
     /**********************************************************
      */
 
+    @Test
     public void testSerializationExplicitOrdering() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -66,12 +71,14 @@ public class TestPropertyOrdering
     }
     
     // Trying to reproduce [JACKSON-268]
+    @Test
     public void testOrderingWithRename() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
         assertEquals("{\"cparty\":\"dto\",\"contacts\":[1,2,3]}", mapper.writeValueAsString(new BeanFor268()));
     }
 
+    @Test
     public void testOrderingWithOriginalPropName() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

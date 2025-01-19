@@ -4,6 +4,8 @@ import java.util.*;
 
 import jakarta.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -11,6 +13,8 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import tools.jackson.databind.*;
 import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for handling of type-related JAXB annotations 
@@ -121,6 +125,7 @@ public class TestJaxbTypes
     /**********************************************************************
      */
 
+    @Test
     public void testXmlElementTypeDeser() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -131,6 +136,7 @@ public class TestJaxbTypes
         assertEquals("...", bean.b);
     }
 
+    @Test
     public void testXmlElementTypeSer() throws Exception
     {
         ObjectMapper mapper = getJaxbAndJacksonMapper();
@@ -139,6 +145,7 @@ public class TestJaxbTypes
                      mapper.writeValueAsString(wrapper));
     }
 
+    @Test
     public void testXmlElementListTypeDeser() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -161,6 +168,7 @@ public class TestJaxbTypes
         assertEquals("b", bean.b);
     }
 
+    @Test
     public void testXmlElementListArrayDeser() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -180,6 +188,7 @@ public class TestJaxbTypes
         assertEquals("b", bean.b);
     }
 
+    @Test
     public void testXmlElementListTypeSer() throws Exception
     {
         // important: Jackson mapper so we can force ordering
@@ -194,6 +203,7 @@ public class TestJaxbTypes
                      mapper.writeValueAsString(bean));
     }
 
+    @Test
     public void testRoundTrip() throws Exception
     {
         ComboBean input = new ComboBean(new BeanImpl(3, "abc"),
@@ -217,6 +227,7 @@ public class TestJaxbTypes
         assertEquals("c", (result.beans.get(2)).b);
     }
 
+    @Test
     public void testListWithDefaultTyping() throws Exception
     {
         Object input = new ListBean(new BeanImpl(1, "a"));
@@ -236,6 +247,7 @@ public class TestJaxbTypes
         assertEquals("a", bean.b);
     }
 
+    @Test
     public void testIssue250() throws Exception
     {
         ObjectMapper mapper = getJaxbAndJacksonMapper();
