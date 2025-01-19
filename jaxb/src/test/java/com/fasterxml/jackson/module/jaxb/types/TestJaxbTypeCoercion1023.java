@@ -6,6 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 
 // Failing temporarily due to [databind#1023]
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class TestJaxbTypeCoercion1023 extends BaseJaxbTest
 {
     /*
@@ -39,6 +43,7 @@ public class TestJaxbTypeCoercion1023 extends BaseJaxbTest
     /**********************************************************
      */
     
+    @Test
     public void testIssue416() throws Exception
     {
         ObjectMapper mapper = getJaxbAndJacksonMapper();

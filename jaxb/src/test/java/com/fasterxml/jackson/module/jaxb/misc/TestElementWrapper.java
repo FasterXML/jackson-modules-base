@@ -2,12 +2,16 @@ package com.fasterxml.jackson.module.jaxb.misc;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests to verify handling of @XmlElementWrapper annotation.
@@ -75,6 +79,7 @@ public class TestElementWrapper extends BaseJaxbTest
      */
 
     // [JACKSON-436]
+    @Test
     public void testWrapperWithCollection() throws Exception
     {
         ObjectMapper mapper = getJaxbMapperBuilder()
@@ -100,6 +105,7 @@ public class TestElementWrapper extends BaseJaxbTest
     }
 
     // [Issue#13]
+    @Test
     public void testWrapperRenaming() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -116,6 +122,7 @@ public class TestElementWrapper extends BaseJaxbTest
     }
 
     // [Issue#25]
+    @Test
     public void testWrapperDefaultName() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

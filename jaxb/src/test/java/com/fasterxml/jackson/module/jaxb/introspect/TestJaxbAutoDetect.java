@@ -6,6 +6,8 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
@@ -13,6 +15,8 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for verifying auto-detection settings with JAXB annotations.
@@ -99,6 +103,7 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
     /**********************************************************
      */
 
+    @Test
     public void testAutoDetectDisable() throws IOException
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -121,6 +126,7 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
         assertEquals("b", result.get("b"));
     }
 
+    @Test
     public void testIssue246() throws IOException
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -130,17 +136,19 @@ public class TestJaxbAutoDetect extends BaseJaxbTest
     }
 
     // [JACKSON-556]
+    @Test
     public void testJaxbAnnotatedObject() throws Exception
     {
         JaxbAnnotatedObject original = new JaxbAnnotatedObject("123");
         ObjectMapper mapper = new DualAnnotationObjectMapper();
         String json = mapper.writeValueAsString(original);
-        assertFalse("numberString field in JSON", json.contains("numberString")); // kinda hack-y :)
+        assertFalse(json.contains("numberString"), "numberString field in JSON"); // kinda hack-y :)
         JaxbAnnotatedObject result = mapper.readValue(json, JaxbAnnotatedObject.class);
         assertEquals(new BigDecimal("123"), result.number);
     }
 
     /*
+    @Test
     public void testJaxbAnnotatedObjectXML() throws Exception
     {
         JAXBContext ctxt = JAXBContext.newInstance(JaxbAnnotatedObject.class);

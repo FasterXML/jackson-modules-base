@@ -10,6 +10,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class XmlSeeAlsoForSubtypes195Test
     extends BaseJaxbTest
 {
@@ -38,6 +42,7 @@ public class XmlSeeAlsoForSubtypes195Test
     private final ObjectMapper MAPPER = getJaxbAndJacksonMapper();
 
     // [modules-base#195]
+    @Test
     public void testXmlSeeAlso195() throws Exception
     {
         String json = MAPPER.writeValueAsString(new Root195(new Sub195B()));

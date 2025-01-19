@@ -9,6 +9,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Tests for handling of type-related JAXB annotations 
  */
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class TestJaxbPolymorphicMaps
     extends PolymorpicTestBase
 {
@@ -47,6 +51,7 @@ public class TestJaxbPolymorphicMaps
     /**********************************************************
      */
 
+    @Test
     public void testPolymorphicMap() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -66,6 +71,7 @@ public class TestJaxbPolymorphicMaps
         assertEquals("Pena", ((Whale) map.get(Integer.valueOf(3))).nickname);
     }
 
+    @Test
     public void testPolymorphicMapElementRefs() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

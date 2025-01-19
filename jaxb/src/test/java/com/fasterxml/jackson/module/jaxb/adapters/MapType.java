@@ -5,6 +5,10 @@ import java.util.List;
 /**
  * @author Ryan Heaton
  */
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class MapType<K,V> {
 
   public List<EntryType<K, V>> entries;
