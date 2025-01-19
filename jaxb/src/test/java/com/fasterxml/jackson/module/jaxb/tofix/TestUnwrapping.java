@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.jaxb.failing;
+package com.fasterxml.jackson.module.jaxb.tofix;
 
 import javax.xml.bind.annotation.*;
 
@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import com.fasterxml.jackson.module.jaxb.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,6 +56,7 @@ public class TestUnwrapping extends BaseJaxbTest
      */
     
     // not asserting anything
+    @JacksonTestFailureExpected
     @Test
     public void testXmlElementAndXmlElementRefs() throws Exception
     {

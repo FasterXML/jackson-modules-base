@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.jaxb.failing;
+package com.fasterxml.jackson.module.jaxb.tofix;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
+import com.fasterxml.jackson.module.jaxb.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -49,6 +50,7 @@ public class TestXmlID3 extends BaseJaxbTest
         public HasID getParent() { return parent; }
     }
 
+    @JacksonTestFailureExpected
     @Test
     public void testIssue46() throws Exception
     {

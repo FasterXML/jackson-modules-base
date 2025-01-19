@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.paranamer.failing;
+package com.fasterxml.jackson.module.paranamer.tofix;
 
 import org.junit.jupiter.api.Test;
 
@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.module.paranamer.ParanamerModule;
 import com.fasterxml.jackson.module.paranamer.ModuleTestBase;
+import com.fasterxml.jackson.module.paranamer.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,6 +41,7 @@ public class TestCreatorWithNamingStrategy
             .registerModule(new ParanamerModule())
             .setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
 
+    @JacksonTestFailureExpected
     @Test
     public void testStaticStringCreator() throws Exception
     {

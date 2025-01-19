@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
+import com.fasterxml.jackson.module.jakarta.xmlbind.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -57,6 +58,7 @@ public class TestUnwrapping extends ModuleTestBase
      */
     
     // not asserting anything
+    @JacksonTestFailureExpected
     @Test
     public void testXmlElementAndXmlElementRefs() throws Exception
     {

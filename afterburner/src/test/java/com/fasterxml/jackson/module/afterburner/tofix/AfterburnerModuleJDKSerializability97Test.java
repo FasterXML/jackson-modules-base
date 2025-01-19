@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.afterburner.failing;
+package com.fasterxml.jackson.module.afterburner.tofix;
 
 import java.io.*;
 
@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+import com.fasterxml.jackson.module.afterburner.util.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,6 +17,7 @@ public class AfterburnerModuleJDKSerializability97Test extends AfterburnerTestBa
     }
 
     // But also test that after light use, ser/deser works
+    @JacksonTestFailureExpected
     @Test
     public void testMapperAfterUse() throws Exception
     {
