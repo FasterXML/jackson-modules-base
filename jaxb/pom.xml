@@ -56,18 +56,6 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- Test dependencies -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- 20-May-2024: [modules-base#233]: Tolerate [2.2,3) for javax.xml.bind Import-Package
               in the generated MANIFEST.MF -->
         <!-- 16-Jan-2025, tatu: Let's not bother with 2.2 any more -->
@@ -88,6 +76,8 @@
             <version>1.2.1</version>
         </dependency>
         -->
+
+        <!-- Test dependencies -->
     </dependencies>
 
   <build>

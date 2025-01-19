@@ -56,16 +56,6 @@ field access and method calls
     </dependency>
 
     <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <scope>test</scope>
-    </dependency>
 
     <!--  16-Feb-2019, tatu: Test for [modules-base#49] fix requires Asm,
            should convert but for now:

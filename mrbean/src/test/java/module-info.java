@@ -12,7 +12,8 @@ module tools.jackson.module.mrbean
 
     // Additional test lib/framework dependencies
 
-    requires junit; // JUnit4 To Be Removed in future
+    requires org.junit.jupiter.api;
+    requires org.junit.jupiter.params;
 
     // Other test dependencies
     requires org.objectweb.asm;

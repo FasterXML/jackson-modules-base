@@ -56,12 +56,7 @@ ${project.groupId}.mrbean.*;version=${project.version}
       <artifactId>byte-buddy</artifactId>
     </dependency>
 
-        <!-- 20-Apr-2024, tatu: JUnit4 no longer from jackson-base -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
+    <!-- Test dependencies -->
 
     <!-- 22-Sep-2020, tatu: For #110 test will use Asm for now -->
     <dependency>

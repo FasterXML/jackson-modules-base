@@ -80,17 +80,8 @@ not datatype, data format, or JAX-RS provider modules.
     </dependencies>
   </dependencyManagement>
 
-  <!-- 20-Apr-2024, tatu: JUnit4 no longer from jackson-base -->
   <dependencies>
-    <!--
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    -->
-
-    <!-- 11-Jan-2025, joohyukkim: For JSTEP-10, migrate to JUnit5
+    <!-- 11-Jan-2025, joohyukkim: For JSTEP-10, migrate to JUnit5 -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
@@ -101,7 +92,6 @@ not datatype, data format, or JAX-RS provider modules.
       <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>
     </dependency>
-    -->
 
     <!-- For validating more complex comparisons -->
     <dependency>
