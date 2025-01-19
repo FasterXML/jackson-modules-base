@@ -2,6 +2,8 @@ package tools.jackson.module.blackbird.deser.filter;
 
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
@@ -11,6 +13,8 @@ import tools.jackson.databind.deser.ValueInstantiator;
 import tools.jackson.databind.exc.InvalidTypeIdException;
 import tools.jackson.databind.jsontype.TypeIdResolver;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests to exercise handler methods of {@link DeserializationProblemHandler}.
@@ -200,11 +204,6 @@ public class ProblemHandlerTest extends BlackbirdTestBase
         public final static BustedCtor INST = new BustedCtor(true);
 
         public BustedCtor() {
-try {
-    throw new Exception();
-} catch (Exception e) {
-    e.printStackTrace();
-}
             throw new RuntimeException("Fail!");
         }
         private BustedCtor(boolean b) { }
@@ -224,6 +223,7 @@ try {
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testWeirdKeyHandling() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()
@@ -237,6 +237,7 @@ try {
         assertEquals(Integer.valueOf(7), map.keySet().iterator().next());
     }
 
+    @Test
     public void testWeirdNumberHandling() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()
@@ -246,6 +247,7 @@ try {
         assertEquals(SingleValuedEnum.A, result);
     }
 
+    @Test
     public void testWeirdStringHandling() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()
@@ -255,6 +257,7 @@ try {
         assertEquals(SingleValuedEnum.A, result);
     }
 
+    @Test
     public void testInvalidTypeId() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()
@@ -266,6 +269,7 @@ try {
         assertEquals(BaseImpl.class, w.value.getClass());
     }
 
+    @Test
     public void testInvalidClassAsId() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()
@@ -279,6 +283,7 @@ try {
 
     // 2.9: missing type id, distinct from unknown
 
+    @Test
     public void testMissingTypeId() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()
@@ -290,6 +295,7 @@ try {
         assertEquals(BaseImpl.class, w.value.getClass());
     }
 
+    @Test
     public void testMissingClassAsId() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()
@@ -302,6 +308,7 @@ try {
     }
     
     // verify that by default we get special exception type
+    @Test
     public void testInvalidTypeIdFail() throws Exception
     {
         try {
@@ -315,6 +322,7 @@ try {
         }
     }
 
+    @Test
     public void testInstantiationExceptionHandling() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()
@@ -330,6 +338,7 @@ try {
         assertNotNull(w);
     }
 
+    @Test
     public void testMissingInstantiatorHandling() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()
@@ -340,6 +349,7 @@ try {
         assertEquals(13, w.value);
     }
 
+    @Test
     public void testUnexpectedTokenHandling() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()

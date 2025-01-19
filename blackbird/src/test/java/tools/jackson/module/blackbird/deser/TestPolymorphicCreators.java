@@ -1,9 +1,13 @@
 package tools.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for verifying that it is possible to annotate
@@ -96,6 +100,7 @@ public class TestPolymorphicCreators extends BlackbirdTestBase
      * Simple test to verify that it is possible to implement polymorphic
      * deserialization manually.
      */
+    @Test
     public void testManualPolymorphicDog() throws Exception
     {
         // first, a dog, start with type
@@ -105,6 +110,7 @@ public class TestPolymorphicCreators extends BlackbirdTestBase
         assertEquals(95.0, ((Dog) animal).barkVolume);
     }
 
+    @Test
     public void testManualPolymorphicCatBasic() throws Exception
     {
         // and finally, lactose-intolerant, but otherwise robust super-cat:
@@ -117,6 +123,7 @@ public class TestPolymorphicCreators extends BlackbirdTestBase
         assertEquals(false, cat.likesCream);
     }
 
+    @Test
     public void testManualPolymorphicCatWithReorder() throws Exception
     {
         // Then cat; shuffle order to mandate buffering
@@ -127,6 +134,7 @@ public class TestPolymorphicCreators extends BlackbirdTestBase
         assertTrue(((Cat) animal).likesCream);
     }
 
+    @Test
     public void testManualPolymorphicWithNumbered() throws Exception
     {
          final ObjectWriter w = MAPPER.writerFor(AbstractRoot.class);

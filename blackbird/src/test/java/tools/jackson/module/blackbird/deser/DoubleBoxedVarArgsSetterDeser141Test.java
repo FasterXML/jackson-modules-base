@@ -1,9 +1,13 @@
 package tools.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // [modules-base#141]
 public class DoubleBoxedVarArgsSetterDeser141Test extends BlackbirdTestBase
@@ -25,6 +29,7 @@ public class DoubleBoxedVarArgsSetterDeser141Test extends BlackbirdTestBase
     private final ObjectMapper MAPPER = newObjectMapper();
 
     // [modules-base#141]
+    @Test
     public void testBoxedDoubleArraySetter() throws Exception
     {
         Foo141 foo = new Foo141().setBar(2.0, 0.25);

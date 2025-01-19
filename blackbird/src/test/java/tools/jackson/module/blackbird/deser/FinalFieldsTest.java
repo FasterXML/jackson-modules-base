@@ -1,8 +1,12 @@
 package tools.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 import tools.jackson.databind.*;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FinalFieldsTest extends BlackbirdTestBase
 {
@@ -44,6 +48,7 @@ public class FinalFieldsTest extends BlackbirdTestBase
             .enable(MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS)
             .build();
     
+    @Test
     public void testFinalFields() throws Exception
     {
         String json = MAPPER.writeValueAsString(new Organization[] {
@@ -59,6 +64,7 @@ public class FinalFieldsTest extends BlackbirdTestBase
 
     // For [Afterburner#42]
     
+    @Test
     public void testFinalFields42() throws Exception
     {
         JsonAddress address = new JsonAddress(-1L, "line1", "line2", "city", "state", "zip", "locale", "timezone");

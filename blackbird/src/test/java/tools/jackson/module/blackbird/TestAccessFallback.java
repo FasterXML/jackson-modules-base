@@ -1,11 +1,12 @@
 package tools.jackson.module.blackbird;
 
-//import org.junit.Ignore;
-//import org.junit.Test;
-
-//import java.lang.reflect.Proxy;
+import java.lang.reflect.Proxy;
 
 import tools.jackson.databind.ObjectMapper;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestAccessFallback extends BlackbirdTestBase
 {
@@ -55,6 +56,7 @@ public class TestAccessFallback extends BlackbirdTestBase
 
     private static final String BEAN_JSON = "{\"e\":\"a\"}";
 
+    @Test
     public void testSerializeAccess() throws Exception
     {
         ObjectMapper abMapper = newObjectMapper();
@@ -64,6 +66,7 @@ public class TestAccessFallback extends BlackbirdTestBase
         assertEquals(BEAN_JSON, abMapper.writeValueAsString(new MyBean("a")));
     }
 
+    @Test
     public void testDeserializeAccess() throws Exception
     {
         ObjectMapper abMapper = newObjectMapper();
@@ -75,8 +78,9 @@ public class TestAccessFallback extends BlackbirdTestBase
         assertEquals("a", bean2.getE());
     }
 
+    // 18-Jan-2025, tatu: Fails on JDK-17/JPMS, for reasons unknown.
+    //    need to comment out.
     /*
-    @Ignore("Does not work on JDK17+, JPMS")
     @Test
     public void testProxyAccessIssue181() throws Exception {
         ObjectMapper om = newObjectMapper();
@@ -89,9 +93,9 @@ public class TestAccessFallback extends BlackbirdTestBase
         }));
         assertEquals("{\"a\":42}", val);
     }
-    */
 
     public interface Beany {
         int getA();
     }
+    */
 }

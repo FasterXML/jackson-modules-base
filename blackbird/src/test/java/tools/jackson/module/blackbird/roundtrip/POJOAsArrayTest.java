@@ -1,14 +1,19 @@
 package tools.jackson.module.blackbird.roundtrip;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.cfg.MapperConfig;
 import tools.jackson.databind.introspect.Annotated;
 import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // NOTE: copied almost verbatim from jackson-databind tests
 public class POJOAsArrayTest extends BlackbirdTestBase
@@ -102,6 +107,7 @@ public class POJOAsArrayTest extends BlackbirdTestBase
     /**
      * Test that verifies that property annotation works
      */
+    @Test
     public void testReadSimplePropertyValue() throws Exception
     {
         String json = "{\"value\":[true,\"Foobar\",42,13]}";
@@ -116,6 +122,7 @@ public class POJOAsArrayTest extends BlackbirdTestBase
     /**
      * Test that verifies that Class annotation works
      */
+    @Test
     public void testReadSimpleRootValue() throws Exception
     {
         String json = "[false,\"Bubba\",1,2]";
@@ -129,6 +136,7 @@ public class POJOAsArrayTest extends BlackbirdTestBase
     /**
      * Test that verifies that property annotation works
      */
+    @Test
     public void testWriteSimplePropertyValue() throws Exception
     {
         String json = MAPPER.writeValueAsString(new Pojo("Foobar", 42, 13, true));
@@ -139,6 +147,7 @@ public class POJOAsArrayTest extends BlackbirdTestBase
     /**
      * Test that verifies that Class annotation works
      */
+    @Test
     public void testWriteSimpleRootValue() throws Exception
     {
         String json = MAPPER.writeValueAsString(new FlatPojo("Bubba", 1, 2, false));
@@ -147,6 +156,7 @@ public class POJOAsArrayTest extends BlackbirdTestBase
     }
 
     // [Issue#223]
+    @Test
     public void testNullColumn() throws Exception
     {
         assertEquals("[null,\"bar\"]", MAPPER.writeValueAsString(new TwoStringsBean()));
@@ -158,6 +168,7 @@ public class POJOAsArrayTest extends BlackbirdTestBase
     /*****************************************************
      */
     
+    @Test
     public void testSerializeAsArrayWithSingleProperty() throws Exception {
         String json = MAPPER.writer()
                 .with(SerializationFeature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)

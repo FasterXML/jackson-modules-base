@@ -1,14 +1,18 @@
 package tools.jackson.module.blackbird.deser.struct;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [databind#1106], [jackson-modules-base#70]
 // Copied from databind's test: tools.jackson.databind.struct.ScalarCoercionTest
@@ -28,6 +32,7 @@ public class ScalarCoercionTest extends BlackbirdTestBase
     /**********************************************************
      */
 
+    @Test
     public void testNullValueFromEmpty() throws Exception
     {
         // wrappers accept `null` fine
@@ -67,6 +72,7 @@ public class ScalarCoercionTest extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testNullFailFromEmpty() throws Exception
     {
         _verifyNullFail(Boolean.class);
@@ -107,6 +113,7 @@ public class ScalarCoercionTest extends BlackbirdTestBase
     /**********************************************************
      */
 
+    @Test
     public void testStringCoercionOk() throws Exception
     {
         // first successful coercions. Boolean has a ton...
@@ -140,6 +147,7 @@ public class ScalarCoercionTest extends BlackbirdTestBase
         _verifyCoerceSuccess(quote("123.0"), BigDecimal.class, new BigDecimal("123.0"));
     }
 
+    @Test
     public void testStringCoercionFail() throws Exception
     {
         _verifyCoerceFail(quote("true"), Boolean.TYPE);
@@ -161,6 +169,7 @@ public class ScalarCoercionTest extends BlackbirdTestBase
         _verifyCoerceFail(quote("123.0"), BigDecimal.class);
     }
 
+    @Test
     public void testMiscCoercionFail() throws Exception
     {
         // And then we have coercions from more esoteric types too

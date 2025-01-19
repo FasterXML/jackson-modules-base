@@ -1,13 +1,16 @@
 package tools.jackson.module.blackbird.ser;
 
-import java.io.IOException;
 import java.util.*;
+
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for checking that alternative settings for
@@ -145,7 +148,8 @@ public class JsonIncludeTest
 
     final private ObjectMapper MAPPER = newObjectMapper();
 
-    public void testGlobal() throws IOException
+    @Test
+    public void testGlobal() throws Exception
     {
         Map<String,Object> result = writeAndMap(MAPPER, new SimpleBean());
         assertEquals(2, result.size());
@@ -154,7 +158,8 @@ public class JsonIncludeTest
         assertTrue(result.containsKey("b"));
     }
 
-    public void testNonNullByClass() throws IOException
+    @Test
+    public void testNonNullByClass() throws Exception
     {
         Map<String,Object> result = writeAndMap(MAPPER, new NoNullsBean());
         assertEquals(1, result.size());
@@ -164,7 +169,8 @@ public class JsonIncludeTest
         assertNull(result.get("b"));
     }
 
-    public void testNonDefaultByClass() throws IOException
+    @Test
+    public void testNonDefaultByClass() throws Exception
     {
         NonDefaultBean bean = new NonDefaultBean();
         // need to change one of defaults
@@ -178,14 +184,16 @@ public class JsonIncludeTest
     }
 
     // [databind#998]
-    public void testNonDefaultByClassNoCtor() throws IOException
+    @Test
+    public void testNonDefaultByClassNoCtor() throws Exception
     {
         NonDefaultBeanXYZ bean = new NonDefaultBeanXYZ(1, 2, 0);
         String json = MAPPER.writeValueAsString(bean);
         assertEquals(aposToQuotes("{'x':1,'y':2}"), json);
     }
     
-    public void testMixedMethod() throws IOException
+    @Test
+    public void testMixedMethod() throws Exception
     {
         MixedBean bean = new MixedBean();
         bean._a = "xyz";
@@ -203,25 +211,29 @@ public class JsonIncludeTest
         assertFalse(result.containsKey("a"));
     }
     
-    public void testDefaultForEmptyList() throws IOException
+    @Test
+    public void testDefaultForEmptyList() throws Exception
     {
         assertEquals("{}", MAPPER.writeValueAsString(new ListBean()));
     }
 
     // NON_DEFAULT shoud work for arrays too
-    public void testNonEmptyDefaultArray() throws IOException
+    @Test
+    public void testNonEmptyDefaultArray() throws Exception
     {
         assertEquals("{}", MAPPER.writeValueAsString(new ArrayBean()));
     }
 
-    public void testDefaultForIntegers() throws IOException
+    @Test
+    public void testDefaultForIntegers() throws Exception
     {
         assertEquals("{}", MAPPER.writeValueAsString(new DefaultIntBean(0, Integer.valueOf(0))));
         assertEquals("{\"i2\":1}", MAPPER.writeValueAsString(new DefaultIntBean(0, Integer.valueOf(1))));
         assertEquals("{\"i1\":3}", MAPPER.writeValueAsString(new DefaultIntBean(3, Integer.valueOf(0))));
     }
 
-    public void testEmptyInclusionScalars() throws IOException
+    @Test
+    public void testEmptyInclusionScalars() throws Exception
     {
         ObjectMapper defMapper = MAPPER;
         ObjectMapper inclMapper = mapperBuilder()
@@ -253,7 +265,7 @@ public class JsonIncludeTest
     }
 
     @SuppressWarnings("unchecked")
-    Map<String,Object> writeAndMap(ObjectMapper mapper, Object value) throws IOException
+    Map<String,Object> writeAndMap(ObjectMapper mapper, Object value) throws Exception
     {
         String json = mapper.writeValueAsString(value);
         return (Map<String,Object>) mapper.readValue(json, Map.class);

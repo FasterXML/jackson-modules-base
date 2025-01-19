@@ -1,11 +1,15 @@
 package tools.jackson.module.blackbird.codegen;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [afterburner#51], where re-generation of classes does not work
 // as expected
@@ -53,6 +57,7 @@ public class GenerateWithMixinsTest extends BlackbirdTestBase
         public abstract byte[] getField3();
     }
 
+    @Test
     public void testIssue51() throws Exception
     {
         _testIssue51(mapperBuilder());
@@ -62,7 +67,7 @@ public class GenerateWithMixinsTest extends BlackbirdTestBase
         _testIssue51(mapperBuilder());
     }
 
-    public void _testIssue51(MapperBuilder<?,?> mapperB) throws Exception
+    void _testIssue51(MapperBuilder<?,?> mapperB) throws Exception
     {
         SampleObject sampleObject = new SampleObject("field1", 2, "field3".getBytes());
         ObjectMapper mapper = mapperB

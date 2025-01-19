@@ -13,6 +13,8 @@ import tools.jackson.databind.ser.SerializerCache;
 import tools.jackson.databind.ser.SerializerFactory;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 // Copied from [tools.jackson.databind.ser.filter]
 public class NullSerializationTest extends BlackbirdTestBase
 {

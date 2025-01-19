@@ -2,10 +2,14 @@ package tools.jackson.module.blackbird.deser.filter;
 
 import java.beans.ConstructorProperties;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class IgnoreCreatorProp1317Test extends BlackbirdTestBase
 {
@@ -41,6 +45,7 @@ public class IgnoreCreatorProp1317Test extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testThatJsonIgnoreWorksWithConstructorProperties() throws Exception {
         final ObjectMapper om = newBlackbirdMapper();
         Testing testing = new Testing("shouldBeIgnored", "notIgnore");

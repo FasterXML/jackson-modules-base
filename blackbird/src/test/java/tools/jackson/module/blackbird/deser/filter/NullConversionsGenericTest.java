@@ -3,6 +3,8 @@ package tools.jackson.module.blackbird.deser.filter;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import tools.jackson.core.type.TypeReference;
@@ -10,6 +12,8 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.*;
 import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [databind#1402]; configurable null handling, for values themselves,
 // using generic types
@@ -43,6 +47,7 @@ public class NullConversionsGenericTest extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testNullsToEmptyPojo() throws Exception
     {
         GeneralEmpty<Point> result = MAPPER.readValue(aposToQuotes("{'value':null}"),
@@ -63,6 +68,7 @@ public class NullConversionsGenericTest extends BlackbirdTestBase
     }
 
     // [databind#2023] two-part coercion from "" to `null` to skip/empty/exception should work
+    @Test
     public void testEmptyStringToNullToEmptyPojo() throws Exception
     {
         GeneralEmpty<Point> result = MAPPER.readerFor(new TypeReference<GeneralEmpty<Point>>() { })
@@ -74,6 +80,7 @@ public class NullConversionsGenericTest extends BlackbirdTestBase
         assertEquals(0, p.y);
     }
     
+    @Test
     public void testNullsToEmptyCollection() throws Exception
     {
         GeneralEmpty<List<String>> result = MAPPER.readValue(aposToQuotes("{'value':null}"),
@@ -88,6 +95,7 @@ public class NullConversionsGenericTest extends BlackbirdTestBase
         assertEquals(0, result2.value.size());
     }
 
+    @Test
     public void testNullsToEmptyMap() throws Exception
     {
         GeneralEmpty<Map<String,String>> result = MAPPER.readValue(aposToQuotes("{'value':null}"),
@@ -96,6 +104,7 @@ public class NullConversionsGenericTest extends BlackbirdTestBase
         assertEquals(0, result.value.size());
     }
 
+    @Test
     public void testNullsToEmptyArrays() throws Exception
     {
         final String json = aposToQuotes("{'value':null}");

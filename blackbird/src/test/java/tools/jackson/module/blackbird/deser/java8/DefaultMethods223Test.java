@@ -1,9 +1,13 @@
 package tools.jackson.module.blackbird.deser.java8;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [modules-base#223]
 public class DefaultMethods223Test extends BlackbirdTestBase
@@ -43,6 +47,7 @@ public class DefaultMethods223Test extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testSerializeViaDefault223() throws Exception
     {
         Cat223 cat = new Cat223();
@@ -51,6 +56,7 @@ public class DefaultMethods223Test extends BlackbirdTestBase
                 MAPPER.writeValueAsString(cat));
     }
 
+    @Test
     public void testDeserializeViaDefault223() throws Exception
     {
         String json = a2q("{'name':'Emma','info':'xyz'}");

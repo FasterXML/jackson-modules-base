@@ -1,11 +1,15 @@
 package tools.jackson.module.blackbird.objectid;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 import tools.jackson.core.JsonParser;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit test(s) for [databind#622], supporting non-scalar-Object-ids,
@@ -189,6 +193,7 @@ public class JSOGDeserialize622Test extends BlackbirdTestBase
     private final ObjectMapper MAPPER = newObjectMapper();
 
     // Basic for [databind#622]
+    @Test
     public void testStructJSOGRef() throws Exception
     {
         IdentifiableExampleJSOG result = MAPPER.readValue(EXP_EXAMPLE_JSOG,
@@ -198,6 +203,7 @@ public class JSOGDeserialize622Test extends BlackbirdTestBase
     }
 
     // polymorphic alternative for [databind#622]
+    @Test
     public void testPolymorphicRoundTrip() throws Exception
     {
         JSOGWrapper w = new JSOGWrapper(15);
@@ -218,6 +224,7 @@ public class JSOGDeserialize622Test extends BlackbirdTestBase
     }
 
     // polymorphic alternative for [databind#669]
+    @Test
     public void testAlterativePolymorphicRoundTrip669() throws Exception
     {
         Outer outer = new Outer();

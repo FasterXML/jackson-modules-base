@@ -1,10 +1,14 @@
 package tools.jackson.module.blackbird.deser.merge;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UpdateValueTest extends BlackbirdTestBase
 {
@@ -40,6 +44,7 @@ public class UpdateValueTest extends BlackbirdTestBase
     private final ObjectMapper MAPPER = newObjectMapper();
     
     // [databind#318] (and Scala module issue #83]
+    @Test
     public void testValueUpdateWithCreator() throws Exception
     {
         Bean bean = new Bean("abc", "def");
@@ -48,6 +53,7 @@ public class UpdateValueTest extends BlackbirdTestBase
         assertEquals("jkl", bean.getB());
     }
 
+    @Test
     public void testValueUpdateOther() throws Exception
     {
         Bean bean = new Bean("abc", "def");

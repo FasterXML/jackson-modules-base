@@ -1,5 +1,7 @@
 package tools.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import tools.jackson.databind.ObjectMapper;
@@ -7,6 +9,8 @@ import tools.jackson.module.blackbird.BlackbirdTestBase;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ObjectArrayDeserTest extends BlackbirdTestBase
 {
@@ -32,6 +36,7 @@ public class ObjectArrayDeserTest extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testObjectArrayCreator() throws Exception
     {
         Foo141 foo = new Foo141(new Bar[] {new Bar("a"), new Bar("b")});

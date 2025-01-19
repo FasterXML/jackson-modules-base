@@ -1,9 +1,9 @@
 package tools.jackson.module.blackbird.roundtrip;
 
-import org.junit.Assert;
-
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleRoundTripTest extends BlackbirdTestBase
 {
@@ -20,7 +20,7 @@ public class SimpleRoundTripTest extends BlackbirdTestBase
     public void testPojoWith6Fiels() throws Exception
     {
         String json = MAPPER.writeValueAsString(new Pojo6());
-        assertEquals(aposToQuotes("{'a':13,'b':'foo','c':true,'d':-13117,'e':0.25,'f':[1,2,3]}"),
+        assertEquals(a2q("{'a':13,'b':'foo','c':true,'d':-13117,'e':0.25,'f':[1,2,3]}"),
                 json);
 
         Pojo6 result = MAPPER.readValue(aposToQuotes(
@@ -31,6 +31,6 @@ public class SimpleRoundTripTest extends BlackbirdTestBase
         assertEquals(false, result.c);
         assertEquals(1234567890L, result.d);
         assertEquals(-0.5, result.getE());
-        Assert.assertArrayEquals(new int[] { 2, 6 }, result.f);
+        assertArrayEquals(new int[] { 2, 6 }, result.f);
     }
 }

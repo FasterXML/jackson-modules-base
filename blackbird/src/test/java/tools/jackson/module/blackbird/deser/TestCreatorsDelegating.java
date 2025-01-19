@@ -1,10 +1,14 @@
 package tools.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JacksonInject;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestCreatorsDelegating extends BlackbirdTestBase
 {
@@ -59,6 +63,7 @@ public class TestCreatorsDelegating extends BlackbirdTestBase
     /**********************************************************
      */
 
+    @Test
     public void testBooleanDelegate() throws Exception
     {
         ObjectMapper m = newObjectMapper();
@@ -71,6 +76,7 @@ public class TestCreatorsDelegating extends BlackbirdTestBase
         assertEquals(Boolean.TRUE, bb.value);
     }
     
+    @Test
     public void testWithCtorAndDelegate() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()
@@ -82,6 +88,7 @@ public class TestCreatorsDelegating extends BlackbirdTestBase
         assertEquals("Pooka", bean.name);
     }
 
+    @Test
     public void testWithFactoryAndDelegate() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()

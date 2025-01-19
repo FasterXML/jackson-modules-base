@@ -5,14 +5,15 @@ module tools.jackson.module.blackbird
     // need to depend on Main artifact -- but need its dependencies
 
     requires java.logging;
-
+    
     requires com.fasterxml.jackson.annotation;
     requires tools.jackson.core;
     requires tools.jackson.databind;
 
     // Additional test lib/framework dependencies
 
-    requires junit; // JUnit4 To Be Removed in future
+    requires org.junit.jupiter.api;
+    requires org.junit.jupiter.params;
 
     // Other test dependencies
     requires java.xml;

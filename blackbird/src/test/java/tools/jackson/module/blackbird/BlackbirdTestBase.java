@@ -1,7 +1,7 @@
 package tools.jackson.module.blackbird;
 
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -13,7 +13,9 @@ import tools.jackson.databind.json.JsonMapper;
 
 import tools.jackson.module.blackbird.testutil.NoCheckSubTypeValidator;
 
-public abstract class BlackbirdTestBase extends junit.framework.TestCase
+import static org.junit.jupiter.api.Assertions.*;
+
+public abstract class BlackbirdTestBase
 {
     // // // First some "shared" classes from databind's `BaseMapTest`
 
@@ -279,7 +281,6 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
     }
 
     protected void verifyIntValue(JsonParser p, long expValue)
-        throws IOException
     {
         // First, via textual
         assertEquals(String.valueOf(expValue), p.getString());
@@ -321,10 +322,6 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
     }
     
     protected byte[] utf8Bytes(String str) {
-        try {
-            return str.getBytes("UTF-8");
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
+        return str.getBytes(StandardCharsets.UTF_8);
     }
 }

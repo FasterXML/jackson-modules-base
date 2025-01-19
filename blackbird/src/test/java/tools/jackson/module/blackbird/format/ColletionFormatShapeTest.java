@@ -3,11 +3,15 @@ package tools.jackson.module.blackbird.format;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ColletionFormatShapeTest extends BlackbirdTestBase
 {
@@ -46,6 +50,7 @@ public class ColletionFormatShapeTest extends BlackbirdTestBase
 
     private final static ObjectMapper MAPPER = newObjectMapper();    
 
+    @Test
     public void testListAsObjectRoundtrip() throws Exception
     {
         // First, serialize a "POJO-List"

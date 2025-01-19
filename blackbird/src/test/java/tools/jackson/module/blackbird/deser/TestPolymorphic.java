@@ -1,9 +1,13 @@
 package tools.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestPolymorphic extends BlackbirdTestBase
 {
@@ -36,6 +40,7 @@ public class TestPolymorphic extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
     
+    @Test
     public void testBasicPolymorphic() throws Exception
     {
         Envelope envelope = new Envelope(new Payload("test"));
@@ -48,6 +53,7 @@ public class TestPolymorphic extends BlackbirdTestBase
     }
 
     // for [module-afterburner#58]; although seems to be due to databind issue
+    @Test
     public void testPolymorphicIssue58() throws Exception
     {
         final String CLASS = Payload.class.getName();

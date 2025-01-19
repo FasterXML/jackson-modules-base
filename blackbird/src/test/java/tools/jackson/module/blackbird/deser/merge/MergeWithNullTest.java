@@ -1,5 +1,7 @@
 package tools.jackson.module.blackbird.deser.merge;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
@@ -7,6 +9,8 @@ import com.fasterxml.jackson.annotation.Nulls;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MergeWithNullTest extends BlackbirdTestBase
 {
@@ -73,6 +77,7 @@ public class MergeWithNullTest extends BlackbirdTestBase
             .build()
     ;
 
+    @Test
     public void testBeanMergingWithNullDefault() throws Exception
     {
         // By default `null` should simply overwrite value
@@ -106,6 +111,7 @@ public class MergeWithNullTest extends BlackbirdTestBase
         assertEquals(34, config.loc.b);
     }
 
+    @Test
     public void testBeanMergingWithNullSkip() throws Exception
     {
         ConfigSkipNull config = MAPPER.readerForUpdating(new ConfigSkipNull(5, 7))
@@ -116,6 +122,7 @@ public class MergeWithNullTest extends BlackbirdTestBase
         assertEquals(7, config.loc.b);
     }
 
+    @Test
     public void testBeanMergingWithNullSet() throws Exception
     {
         ConfigAllowNullOverwrite config = MAPPER.readerForUpdating(new ConfigAllowNullOverwrite(5, 7))
@@ -124,6 +131,7 @@ public class MergeWithNullTest extends BlackbirdTestBase
         assertNull(config.loc);
     }
     
+    @Test
     public void testSetterlessMergingWithNull() throws Exception
     {
         NoSetterConfig input = new NoSetterConfig();

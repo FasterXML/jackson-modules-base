@@ -1,5 +1,7 @@
 package tools.jackson.module.blackbird.ser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.core.JsonGenerator;
@@ -11,6 +13,8 @@ import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.ser.std.StdSerializer;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestStdSerializerOverrides extends BlackbirdTestBase
 {
@@ -79,6 +83,7 @@ public class TestStdSerializerOverrides extends BlackbirdTestBase
 
     private final ObjectMapper VANILLA_MAPPER = newVanillaJSONMapper();
     
+    @Test
     public void testStringSerWith() throws Exception
     {
         ObjectMapper abMapper = newObjectMapper();
@@ -88,6 +93,7 @@ public class TestStdSerializerOverrides extends BlackbirdTestBase
         assertEquals(jsonPlain, jsonAb);
     }
 
+    @Test
     public void testStringSerOverideNoVanilla() throws Exception
     {
         String json = JsonMapper.builder()
@@ -98,6 +104,7 @@ public class TestStdSerializerOverrides extends BlackbirdTestBase
         assertEquals("{\"field\":\"Foo:value\"}", json);
     }
 
+    @Test
     public void testStringSerOverideWithBlackbird() throws Exception
     {
         String json = mapperBuilder()
@@ -114,6 +121,7 @@ public class TestStdSerializerOverrides extends BlackbirdTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testIntSerOverideVanilla() throws Exception
     {
         // First, baseline, no custom serializer
@@ -130,6 +138,7 @@ public class TestStdSerializerOverrides extends BlackbirdTestBase
         assertEquals(aposToQuotes("{'value':-42}"), json);
     }
 
+    @Test
     public void testIntSerOverideWithBlackbird() throws Exception
     {
         String json = mapperBuilder()
@@ -141,6 +150,7 @@ public class TestStdSerializerOverrides extends BlackbirdTestBase
                 assertEquals(aposToQuotes("{'value':-42}"), json);
     }
 
+    @Test
     public void testLongSerOverideVanilla() throws Exception
     {
         // First, baseline, no custom serializer
@@ -157,6 +167,7 @@ public class TestStdSerializerOverrides extends BlackbirdTestBase
         assertEquals(aposToQuotes("{'value':-999}"), json);
     }
 
+    @Test
     public void testLongSerOverideWithBlackbird() throws Exception
     {
         String json = mapperBuilder()

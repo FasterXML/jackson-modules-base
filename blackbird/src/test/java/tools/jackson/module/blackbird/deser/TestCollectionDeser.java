@@ -2,8 +2,12 @@ package tools.jackson.module.blackbird.deser;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.*;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestCollectionDeser extends BlackbirdTestBase
 {
@@ -25,6 +29,8 @@ public class TestCollectionDeser extends BlackbirdTestBase
     /**********************************************************************
      */
 
+    // [module-afterburner#36]
+    @Test
     public void testIntMethod() throws Exception
     {
         final ObjectMapper mapper = mapperBuilder()
@@ -36,6 +42,8 @@ public class TestCollectionDeser extends BlackbirdTestBase
         assertEquals(TreeSet.class, bean.x.getClass());
     }
 
+    // [module-afterburner#56]
+    @Test
     public void testUnwrapSingleArray() throws Exception
     {
         final ObjectMapper mapper = mapperBuilder()

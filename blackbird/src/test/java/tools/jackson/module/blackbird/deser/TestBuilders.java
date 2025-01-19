@@ -1,8 +1,12 @@
 package tools.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestBuilders extends BlackbirdTestBase
 {
@@ -37,6 +41,7 @@ public class TestBuilders extends BlackbirdTestBase
     
     private final ObjectMapper MAPPER = newObjectMapper();
     
+    @Test
     public void testSimpleBuilder() throws Exception
     {
         final Thing expected = new ThingBuilder().withFoo("bar").build();

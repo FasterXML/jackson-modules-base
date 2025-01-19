@@ -4,6 +4,8 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.type.TypeReference;
 
 import tools.jackson.databind.*;
@@ -13,6 +15,8 @@ import tools.jackson.databind.exc.InvalidFormatException;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.type.LogicalType;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 //Copied from "jackson-databind" as of 2.12.1
 public class CoerceFloatToIntTest extends BlackbirdTestBase
@@ -47,6 +51,7 @@ public class CoerceFloatToIntTest extends BlackbirdTestBase
     /********************************************************
      */
     
+    @Test
     public void testLegacyDoubleToIntCoercion() throws Exception
     {
         // by default, should be ok
@@ -75,6 +80,7 @@ public class CoerceFloatToIntTest extends BlackbirdTestBase
         assertEquals(95L, biggie.longValue());
     }
 
+    @Test
     public void testLegacyFailDoubleToInt() throws Exception
     {
         _verifyCoerceFail(READER_LEGACY_FAIL, Integer.class, "1.5", "java.lang.Integer");
@@ -83,6 +89,7 @@ public class CoerceFloatToIntTest extends BlackbirdTestBase
         _verifyCoerceFail(READER_LEGACY_FAIL, int[].class, "[ 2.5 ]", "to `int` value");
     }
 
+    @Test
     public void testLegacyFailDoubleToLong() throws Exception
     {
         _verifyCoerceFail(READER_LEGACY_FAIL, Long.class, "0.5");
@@ -91,6 +98,7 @@ public class CoerceFloatToIntTest extends BlackbirdTestBase
         _verifyCoerceFail(READER_LEGACY_FAIL, long[].class, "[ -1.35 ]", "to `long` value");
     }
 
+    @Test
     public void testLegacyFailDoubleToOther() throws Exception
     {
         _verifyCoerceFail(READER_LEGACY_FAIL, Short.class, "0.5");
@@ -113,6 +121,7 @@ public class CoerceFloatToIntTest extends BlackbirdTestBase
      */
     
     // [databind#2804]
+    @Test
     public void testLegacyFail2804() throws Exception
     {
         _testLegacyFail2804("5.5", Integer.class);
@@ -151,6 +160,7 @@ public class CoerceFloatToIntTest extends BlackbirdTestBase
     /********************************************************
      */
 
+    @Test
     public void testCoerceConfigFloatToNull() throws Exception
     {
         assertNull(MAPPER_TO_NULL.readValue("1.5", Integer.class));
@@ -204,6 +214,7 @@ public class CoerceFloatToIntTest extends BlackbirdTestBase
     /********************************************************
      */
 
+    @Test
     public void testCoerceConfigFloatToEmpty() throws Exception
     {
         assertEquals(Integer.valueOf(0), MAPPER_TO_EMPTY.readValue("1.2", Integer.class));
@@ -241,6 +252,7 @@ public class CoerceFloatToIntTest extends BlackbirdTestBase
     /********************************************************
      */
 
+    @Test
     public void testCoerceConfigFloatSuccess() throws Exception
     {
         assertEquals(Integer.valueOf(1), MAPPER_TRY_CONVERT.readValue("1.2", Integer.class));
@@ -278,6 +290,7 @@ public class CoerceFloatToIntTest extends BlackbirdTestBase
     /********************************************************
      */
 
+    @Test
     public void testCoerceConfigFailFromFloat() throws Exception
     {
         _verifyCoerceFail(MAPPER_TO_FAIL, Integer.class, "1.5");

@@ -1,9 +1,13 @@
 package tools.jackson.module.blackbird.deser.convert;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBase
 {
@@ -42,6 +46,7 @@ public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBas
             .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
             .build();
 
+    @Test
     public void testPassPrimitiveFromNull() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()
@@ -58,6 +63,7 @@ public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBas
         assertEquals(doubleBean.value, 0.0);
     }
 
+    @Test
     public void testFailPrimitiveFromNull() throws Exception
     {
         try {

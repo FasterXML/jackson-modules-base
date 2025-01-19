@@ -1,5 +1,7 @@
 package tools.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.core.*;
 
 import tools.jackson.databind.*;
@@ -8,7 +10,10 @@ import tools.jackson.databind.deser.Deserializers;
 import tools.jackson.databind.deser.std.StdDeserializer;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
+
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("serial")
 public class TestStdDeserializerOverrides extends BlackbirdTestBase
@@ -52,6 +57,7 @@ public class TestStdDeserializerOverrides extends BlackbirdTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testFiveMinuteDoc() throws Exception
     {
         ObjectMapper plainMapper = new ObjectMapper();
@@ -68,6 +74,7 @@ public class TestStdDeserializerOverrides extends BlackbirdTestBase
         assertEquals("Foo:b", burnt.b);
     }
 
+    @Test
     public void testStringDeserOverideNoAfterburner() throws Exception
     {
         final String json = "{\"field\": \"value &amp; value\"}";
@@ -81,6 +88,7 @@ public class TestStdDeserializerOverrides extends BlackbirdTestBase
     }
 
     // for [module-afterburner#59]
+    @Test
     public void testStringDeserOverideWithAfterburner() throws Exception
     {
         final String json = "{\"field\": \"value &amp; value\"}";

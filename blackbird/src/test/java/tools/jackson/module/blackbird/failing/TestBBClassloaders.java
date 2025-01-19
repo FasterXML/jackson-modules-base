@@ -4,10 +4,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestBBClassloaders extends BlackbirdTestBase
 {

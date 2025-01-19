@@ -2,6 +2,8 @@ package tools.jackson.module.blackbird.deser.merge;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonMerge;
 
 import tools.jackson.core.type.TypeReference;
@@ -9,6 +11,8 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CollectionMergeTest extends BlackbirdTestBase
 {
@@ -57,6 +61,7 @@ public class CollectionMergeTest extends BlackbirdTestBase
             .disable(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE)
             .build();
 
+    @Test
     public void testCollectionMerging() throws Exception
     {
         CollectionWrapper w = MAPPER.readValue(aposToQuotes("{'bag':['b']}"), CollectionWrapper.class);
@@ -65,6 +70,7 @@ public class CollectionMergeTest extends BlackbirdTestBase
         assertTrue(w.bag.contains("b"));
     }
 
+    @Test
     public void testListMerging() throws Exception
     {
         MergedList w = MAPPER.readValue(aposToQuotes("{'values':['x']}"), MergedList.class);
@@ -74,6 +80,7 @@ public class CollectionMergeTest extends BlackbirdTestBase
     }
 
     // Test that uses generic type
+    @Test
     public void testGenericListMerging() throws Exception
     {
         Collection<String> l = new ArrayList<>();
@@ -91,6 +98,7 @@ public class CollectionMergeTest extends BlackbirdTestBase
         assertEquals("bar", it.next());
     }
 
+    @Test
     public void testEnumSetMerging() throws Exception
     {
         MergedEnumSet result = MAPPER.readValue(aposToQuotes("{'abc':['A']}"), MergedEnumSet.class);

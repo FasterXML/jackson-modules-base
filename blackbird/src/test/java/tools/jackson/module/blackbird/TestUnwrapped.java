@@ -1,8 +1,13 @@
 package tools.jackson.module.blackbird;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 import tools.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestUnwrapped extends BlackbirdTestBase
 {
@@ -34,6 +39,7 @@ public class TestUnwrapped extends BlackbirdTestBase
     /**********************************************************
      */
 
+    @Test
     public void testSimpleSerialize() throws Exception
     {
         final ObjectMapper VANILLA = new ObjectMapper();
@@ -43,6 +49,7 @@ public class TestUnwrapped extends BlackbirdTestBase
         assertEquals(json, BURNER.writeValueAsString(input));
     }
     
+    @Test
     public void testUnwrappedDeserialize() throws Exception
     {
         final ObjectMapper VANILLA = new ObjectMapper();

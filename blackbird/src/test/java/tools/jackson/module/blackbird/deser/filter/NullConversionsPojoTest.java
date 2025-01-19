@@ -1,11 +1,15 @@
 package tools.jackson.module.blackbird.deser.filter;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.exc.InvalidNullException;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [databind#1402]; configurable null handling, for values themselves
 public class NullConversionsPojoTest extends BlackbirdTestBase
@@ -47,6 +51,7 @@ public class NullConversionsPojoTest extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testFailOnNull() throws Exception
     {
         // first, ok if assigning non-null to not-nullable, null for nullable
@@ -65,6 +70,7 @@ public class NullConversionsPojoTest extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testFailOnNullWithDefaults() throws Exception
     {
         // also: config overrides by type should work
@@ -84,6 +90,7 @@ public class NullConversionsPojoTest extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testNullsToEmptyScalar() throws Exception
     {
         NullAsEmpty result = MAPPER.readValue(aposToQuotes("{'nullAsEmpty':'foo', 'nullsOk':null}"),

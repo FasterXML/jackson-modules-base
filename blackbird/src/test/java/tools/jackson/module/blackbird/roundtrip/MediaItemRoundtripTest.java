@@ -1,7 +1,11 @@
 package tools.jackson.module.blackbird.roundtrip;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Let's use a non-trivial POJO from "jvm-serializers" benchmark as
@@ -11,6 +15,7 @@ public class MediaItemRoundtripTest extends BlackbirdTestBase
 {
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testSimple() throws Exception
     {
         MediaItem input = buildItem();

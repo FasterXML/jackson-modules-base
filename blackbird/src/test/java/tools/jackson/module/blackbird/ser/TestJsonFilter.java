@@ -1,5 +1,7 @@
 package tools.jackson.module.blackbird.ser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 
 import tools.jackson.databind.*;
@@ -8,6 +10,8 @@ import tools.jackson.databind.ser.FilterProvider;
 import tools.jackson.databind.ser.std.SimpleBeanPropertyFilter;
 import tools.jackson.databind.ser.std.SimpleFilterProvider;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for verifying that bean property filtering using JsonFilter
@@ -70,6 +74,7 @@ public class TestJsonFilter extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
     
+    @Test
     public void testSimpleInclusionFilter() throws Exception
     {
         FilterProvider prov = new SimpleFilterProvider().addFilter("RootFilter",
@@ -82,6 +87,7 @@ public class TestJsonFilter extends BlackbirdTestBase
         assertEquals("{\"a\":\"a\"}", mapper.writeValueAsString(new Bean()));
     }
 
+    @Test
     public void testSimpleExclusionFilter() throws Exception
     {
         FilterProvider prov = new SimpleFilterProvider().addFilter("RootFilter",
@@ -90,6 +96,7 @@ public class TestJsonFilter extends BlackbirdTestBase
     }
 
     // should handle missing case gracefully
+    @Test
     public void testMissingFilter() throws Exception
     {
         // First: default behavior should be to throw an exception
@@ -110,6 +117,7 @@ public class TestJsonFilter extends BlackbirdTestBase
     }
     
     // defaulting, as per [JACKSON-449]
+    @Test
     public void testDefaultFilter() throws Exception
     {
         FilterProvider prov = new SimpleFilterProvider().setDefaultFilter(SimpleBeanPropertyFilter.filterOutAllExcept("b"));
@@ -117,6 +125,7 @@ public class TestJsonFilter extends BlackbirdTestBase
     }
     
     // [Issue#89] combining @JsonIgnore, @JsonProperty
+    @Test
     public void testIssue89() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -134,6 +143,7 @@ public class TestJsonFilter extends BlackbirdTestBase
     }
 
     // Wrt [Issue#306]
+    @Test
     public void testFilterOnProperty() throws Exception
     {
         FilterProvider prov = new SimpleFilterProvider()

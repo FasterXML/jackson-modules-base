@@ -2,6 +2,8 @@ package tools.jackson.module.blackbird.deser.filter;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 
@@ -10,6 +12,8 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.*;
 import tools.jackson.databind.exc.InvalidNullException;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // For [databind#1402]; configurable null handling, for contents of
 // Collections, Maps, arrays
@@ -46,6 +50,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
     private final ObjectMapper MAPPER = newObjectMapper();
 
     // Tests to verify that we can set default settings for failure
+    @Test
     public void testFailOnNullFromDefaults() throws Exception
     {
         final String JSON = aposToQuotes("{'values':[null]}");
@@ -81,6 +86,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         }
     }
     
+    @Test
     public void testFailOnNullWithCollections() throws Exception
     {
         TypeReference<NullContentFail<List<Integer>>> typeRef = new TypeReference<NullContentFail<List<Integer>>>() { };
@@ -112,6 +118,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testFailOnNullWithArrays() throws Exception
     {
         final String JSON = aposToQuotes("{'noNulls':[null]}");
@@ -132,6 +139,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testFailOnNullWithPrimitiveArrays() throws Exception
     {
         final String JSON = aposToQuotes("{'noNulls':[null]}");
@@ -159,6 +167,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testFailOnNullWithMaps() throws Exception
     {
         // Then: Map<String,String>
@@ -186,6 +195,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
     /**********************************************************
      */
 
+    @Test
     public void testNullsAsEmptyWithCollections() throws Exception
     {
         final String JSON = aposToQuotes("{'values':[null]}");
@@ -207,6 +217,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testNullsAsEmptyUsingDefaults() throws Exception
     {
         final String JSON = aposToQuotes("{'values':[null]}");
@@ -230,6 +241,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         assertEquals(Integer.valueOf(0), result.values.get(0));
     }        
     
+    @Test
     public void testNullsAsEmptyWithArrays() throws Exception
     {
         // Note: skip `Object[]`, no default empty value at this point
@@ -244,6 +256,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testNullsAsEmptyWithPrimitiveArrays() throws Exception
     {
         ObjectReader r = MAPPER.reader().without(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
@@ -278,6 +291,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         }
 }
     
+    @Test
     public void testNullsAsEmptyWithMaps() throws Exception
     {
         // Then: Map<String,String>
@@ -306,6 +320,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
     /**********************************************************
      */
 
+    @Test
     public void testNullsSkipUsingDefaults() throws Exception
     {
         final String JSON = aposToQuotes("{'values':[null]}");
@@ -328,6 +343,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
     }        
 
     // Test to verify that per-property setting overrides defaults:
+    @Test
     public void testNullsSkipWithOverrides() throws Exception
     {
         final String JSON = aposToQuotes("{'values':[null]}");
@@ -349,6 +365,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         assertEquals(0, result.values.size());
     }        
 
+    @Test
     public void testNullsSkipWithCollections() throws Exception
     {
         // List<Integer>
@@ -372,6 +389,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testNullsSkipWithArrays() throws Exception
     {
         final String JSON = aposToQuotes("{'values':['a',null,'xy']}");
@@ -393,6 +411,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testNullsSkipWithPrimitiveArrays() throws Exception
     {
         // int[]
@@ -426,6 +445,7 @@ public class NullConversionsForContentTest extends BlackbirdTestBase
         }
     }
     
+    @Test
     public void testNullsSkipWithMaps() throws Exception
     {
         // Then: Map<String,String>

@@ -1,10 +1,14 @@
 package tools.jackson.module.blackbird.deser.filter;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 
 import tools.jackson.databind.*;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [databind#1402]; configurable null handling, specifically with SKIP
 public class NullConversionsSkipTest extends BlackbirdTestBase
@@ -46,6 +50,7 @@ public class NullConversionsSkipTest extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testSkipNullField() throws Exception
     {
         // first, ok if assigning non-null to not-nullable, null for nullable
@@ -61,6 +66,7 @@ public class NullConversionsSkipTest extends BlackbirdTestBase
         assertEquals("a", result.nullsOk);
     }
 
+    @Test
     public void testSkipNullMethod() throws Exception
     {
         NullSkipMethod result = MAPPER.readValue(aposToQuotes("{'noNulls':'foo', 'nullsOk':null}"),
@@ -80,6 +86,7 @@ public class NullConversionsSkipTest extends BlackbirdTestBase
     /**********************************************************
      */
     
+    @Test
     public void testSkipNullWithDefaults() throws Exception
     {
         String json = aposToQuotes("{'value':null}");
