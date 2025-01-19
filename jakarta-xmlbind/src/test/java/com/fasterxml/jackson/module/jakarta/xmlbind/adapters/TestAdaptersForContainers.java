@@ -6,11 +6,15 @@ import java.util.Map.Entry;
 import jakarta.xml.bind.annotation.*;
 import jakarta.xml.bind.annotation.adapters.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
 import com.fasterxml.jackson.module.jakarta.xmlbind.introspect.JakartaXmlBindAnnotationIntrospectorTest.KeyValuePair;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests to check that {@link XmlAdapter}s also work with
@@ -113,12 +117,14 @@ public class TestAdaptersForContainers extends ModuleTestBase
     /**********************************************************
      */
  
+    @Test
     public void testAdapterForList() throws Exception
     {
         Wrapper w = new Wrapper(123L);
         assertEquals("{\"values\":[\"XXX\"]}", getJaxbMapper().writeValueAsString(w));
     }
 
+    @Test
     public void testSimpleAdapterDeserialization() throws Exception
     {
         Wrapper w = getJaxbMapper().readValue("{\"values\":[\"abc\"]}", Wrapper.class);
@@ -128,12 +134,14 @@ public class TestAdaptersForContainers extends ModuleTestBase
         assertEquals(29L, w.values.get(0).getTime());
     }
 
+    @Test
     public void testAdapterOnGetterSerialization() throws Exception
     {
         WrapperWithGetterAndSetter w = new WrapperWithGetterAndSetter(123L);
         assertEquals("{\"values\":[\"XXX\"]}", getJaxbMapper().writeValueAsString(w));
     }
 
+    @Test
     public void testAdapterOnGetterDeserialization() throws Exception
     {
         WrapperWithGetterAndSetter w = getJaxbMapper().readValue("{\"values\":[\"abc\"]}",
@@ -150,6 +158,7 @@ public class TestAdaptersForContainers extends ModuleTestBase
     /**********************************************************
      */
     
+    @Test
     public void testAdapterForBeanWithMap() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

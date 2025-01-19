@@ -6,9 +6,13 @@ import java.util.List;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlID;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [modules-base#46]: XmlId semantics can not be supported by Jackson/JAXB-annotation-mapper
 public class TestXmlID3 extends ModuleTestBase
@@ -46,6 +50,7 @@ public class TestXmlID3 extends ModuleTestBase
         public HasID getParent() { return parent; }
     }
 
+    @Test
     public void testIssue46() throws Exception
     {
         ObjectMapper mapper = getJaxbAndJacksonMapper();
