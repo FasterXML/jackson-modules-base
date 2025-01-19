@@ -7,6 +7,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.namespace.QName;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.*;
 import tools.jackson.databind.introspect.AnnotatedClass;
 import tools.jackson.databind.introspect.AnnotatedClassResolver;
@@ -14,6 +16,8 @@ import tools.jackson.databind.introspect.AnnotatedField;
 import tools.jackson.databind.type.TypeFactory;
 import tools.jackson.module.jaxb.BaseJaxbTest;
 import tools.jackson.module.jaxb.JaxbAnnotationIntrospector;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for verifying that JAXB annotation based introspector
@@ -205,6 +209,7 @@ public class JaxbAnnotationIntrospectorTest
 
     private final ObjectMapper MAPPER = getJaxbMapper();
     
+    @Test
     public void testDetection() throws Exception
     {
         Map<String,Object> result = writeAndMap(MAPPER, new SimpleBean());
@@ -223,6 +228,7 @@ public class JaxbAnnotationIntrospectorTest
     /**
      * tests getting serializer/deserializer instances.
      */
+    @Test
     public void testSerializeDeserializeWithJaxbAnnotations() throws Exception
     {
         ObjectMapper mapper = getJaxbMapperBuilder()
@@ -269,6 +275,7 @@ public class JaxbAnnotationIntrospectorTest
         assertNull(readEx.propertyToIgnore);
     }
 
+    @Test
     public void testRootNameAccess() throws Exception
     {
         final TypeFactory tf = MAPPER.getTypeFactory();
@@ -295,6 +302,7 @@ public class JaxbAnnotationIntrospectorTest
     }
 
     // JAXB can specify that properties are to be written in alphabetic order...
+    @Test
     public void testSerializationAlphaOrdering() throws Exception
     {
         assertEquals("{\"a\":1,\"b\":2,\"c\":3}", MAPPER.writeValueAsString(new AlphaBean()));
@@ -304,6 +312,7 @@ public class JaxbAnnotationIntrospectorTest
      * Additional simple tests to ensure we will retain basic namespace information
      * now that it can be included
      */
+    @Test
     public void testNamespaces() throws Exception
     {
         final TypeFactory tf = MAPPER.getTypeFactory();

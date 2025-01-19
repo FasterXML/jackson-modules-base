@@ -2,13 +2,18 @@ package tools.jackson.module.jaxb.failing;
 
 import javax.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.introspect.AnnotationIntrospectorPair;
 import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
+
 import tools.jackson.module.jaxb.BaseJaxbTest;
 import tools.jackson.module.jaxb.JaxbAnnotationIntrospector;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestUnwrapping extends BaseJaxbTest
 {
@@ -52,6 +57,7 @@ public class TestUnwrapping extends BaseJaxbTest
      */
     
     // not asserting anything
+    @Test
     public void testXmlElementAndXmlElementRefs() throws Exception
     {
         Bean<A> bean = new Bean<A>();

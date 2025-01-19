@@ -1,12 +1,8 @@
 package tools.jackson.module.jaxb.adapters;
 
+import java.util.*;
+
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-
-
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 public class MapAdapter<K, V> extends XmlAdapter<MapType<K, V>, Map<K, V>>
 {

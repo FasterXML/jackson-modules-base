@@ -2,8 +2,12 @@ package tools.jackson.module.jaxb.introspect;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit test(s) to verify that annotations from super classes and
@@ -48,6 +52,7 @@ public class TestAnnotationPriority extends BaseJaxbTest
     /**********************************************************
      */
 
+    @Test
     public void testInterfacesAndClasses() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

@@ -2,6 +2,8 @@ package tools.jackson.module.jaxb.types;
 
 import javax.xml.bind.annotation.XmlSeeAlso;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
@@ -9,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import tools.jackson.databind.ObjectMapper;
 
 import tools.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class XmlSeeAlsoForSubtypes195Test
     extends BaseJaxbTest
@@ -38,6 +42,7 @@ public class XmlSeeAlsoForSubtypes195Test
     private final ObjectMapper MAPPER = getJaxbAndJacksonMapper();
 
     // [modules-base#195]
+    @Test
     public void testXmlSeeAlso195() throws Exception
     {
         String json = MAPPER.writeValueAsString(new Root195(new Sub195B()));

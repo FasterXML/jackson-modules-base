@@ -4,6 +4,8 @@ import java.util.*;
 
 import javax.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.core.type.TypeReference;
@@ -12,6 +14,8 @@ import tools.jackson.databind.*;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.module.jaxb.BaseJaxbTest;
 import tools.jackson.module.jaxb.JaxbAnnotationIntrospector;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestXmlID2 extends BaseJaxbTest
 {
@@ -113,6 +117,7 @@ public class TestXmlID2 extends BaseJaxbTest
         return resultList;
     }
     
+    @Test
     public void testIdWithJacksonRules() throws Exception
     {
         ObjectMapper mapper = JsonMapper.builder()
@@ -143,6 +148,7 @@ public class TestXmlID2 extends BaseJaxbTest
         assertEquals(null, result.get(2).department);
     }
     
+    @Test
     public void testIdWithJaxbRules() throws Exception
     {
         ObjectMapper mapper = JsonMapper.builder()

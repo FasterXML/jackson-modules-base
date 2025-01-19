@@ -2,8 +2,12 @@ package tools.jackson.module.jaxb.types;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // [jaxb-annotations#63]
 public class OptionalTypeRefinementTest extends BaseJaxbTest
@@ -12,6 +16,7 @@ public class OptionalTypeRefinementTest extends BaseJaxbTest
         public AtomicReference<String> value = new AtomicReference<String>("abc");
     }
 
+    @Test
     public void testWithReferenceType() throws Exception
     {
         final ObjectMapper mapper = getJaxbMapper();

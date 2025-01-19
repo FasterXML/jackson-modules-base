@@ -3,8 +3,12 @@ package tools.jackson.module.jaxb.failing;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestEnums256 extends BaseJaxbTest
 {
@@ -40,6 +44,7 @@ public class TestEnums256 extends BaseJaxbTest
     private final ObjectMapper MAPPER = getJaxbMapper();
 
     // [modules-base#256]
+    @Test
     public void testEnumSerialize256() throws Exception
     {
         final Document256 document = new Document256(Code.RED);

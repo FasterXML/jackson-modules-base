@@ -4,8 +4,12 @@ import java.util.*;
 
 import javax.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Simple testing to verify that XmlID and XMLIDREF handling works
@@ -55,6 +59,7 @@ public class TestXmlID extends BaseJaxbTest
     /**********************************************************
      */
 
+    @Test
     public void testSimpleRefs() throws Exception
     {
         final ObjectMapper mapper = getJaxbMapper();

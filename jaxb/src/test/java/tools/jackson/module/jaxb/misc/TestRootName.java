@@ -6,6 +6,8 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.module.jaxb.BaseJaxbTest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class TestRootName extends BaseJaxbTest
 {
     @XmlRootElement(name="rooty")

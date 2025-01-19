@@ -4,6 +4,8 @@ import java.util.*;
 
 import javax.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 import tools.jackson.databind.*;
 import tools.jackson.databind.introspect.AnnotatedClassResolver;
@@ -12,6 +14,8 @@ import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import tools.jackson.databind.type.TypeFactory;
 import tools.jackson.module.jaxb.BaseJaxbTest;
 import tools.jackson.module.jaxb.JaxbAnnotationIntrospector;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Simple testing that <code>AnnotationIntrospector.Pair</code> works as
@@ -108,6 +112,7 @@ public class TestIntrospectorPair
     private final static AnnotationIntrospector _jacksonAI = new JacksonAnnotationIntrospector();
     private final static AnnotationIntrospector _jaxbAI = new JaxbAnnotationIntrospector();
 
+    @Test
     public void testSimple() throws Exception
     {
         ObjectMapper mapper;
@@ -140,6 +145,7 @@ public class TestIntrospectorPair
         assertEquals("3", result.get("bothJaxb"));
     }
 
+    @Test
     public void testNaming() throws Exception
     {
         ObjectMapper mapper;
@@ -170,6 +176,7 @@ public class TestIntrospectorPair
         //assertEquals("123", result.get("jackson"));
     }
 
+    @Test
     public void testSimpleIgnore() throws Exception
     {
         // first: only Jackson introspector (default)
@@ -209,6 +216,7 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
     }
 
+    @Test
     public void testSimpleFieldIgnore() throws Exception
     {
         ObjectMapper mapper;
@@ -250,6 +258,7 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
     }
 
+    @Test
     public void testRootName() throws Exception
     {
         // first: test with Jackson/Jaxb pair (jackson having precedence)
@@ -287,6 +296,7 @@ public class TestIntrospectorPair
      * Test that will just use Jackson annotations, but did trigger [JACKSON-495] due to a bug
      * in JAXB annotation introspector.
      */
+    @Test
     public void testIssue495() throws Exception
     {
         ObjectMapper mapper = objectMapperBuilder()

@@ -1,8 +1,5 @@
 package tools.jackson.module.jaxb.adapters;
 
-/**
- * @author Ryan Heaton
- */
 public class EntryType<K, V> {
 
   private K key;

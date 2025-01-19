@@ -4,8 +4,12 @@ import java.io.IOException;
 
 import javax.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.*;
 import tools.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestJaxbFieldAccess extends BaseJaxbTest
 {
@@ -30,6 +34,7 @@ public class TestJaxbFieldAccess extends BaseJaxbTest
      */
 
     // Verify serialization wrt [JACKSON-202]
+    @Test
     public void testFieldSerialization() throws IOException
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -37,6 +42,7 @@ public class TestJaxbFieldAccess extends BaseJaxbTest
     }
 
     // Verify deserialization wrt [JACKSON-202]
+    @Test
     public void testFieldDeserialization() throws IOException
     {
         ObjectMapper mapper = getJaxbMapper();

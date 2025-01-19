@@ -2,12 +2,16 @@ package tools.jackson.module.jaxb.misc;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests to verify handling of @XmlElementWrapper annotation.
@@ -74,7 +78,7 @@ public class TestElementWrapper extends BaseJaxbTest
     /**********************************************************
      */
 
-    // [JACKSON-436]
+    @Test
     public void testWrapperWithCollection() throws Exception
     {
         ObjectMapper mapper = getJaxbMapperBuilder()
@@ -99,6 +103,7 @@ public class TestElementWrapper extends BaseJaxbTest
         assertEquals("555-6666", result.phone.iterator().next().getNumber());
     }
 
+    @Test
     public void testWrapperRenaming() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -114,6 +119,7 @@ public class TestElementWrapper extends BaseJaxbTest
         assertEquals("{\"wrap\":3}", mapper.writeValueAsString(input));
     }
 
+    @Test
     public void testWrapperDefaultName() throws Exception
     {
         ObjectMapper mapper = getJaxbMapperBuilder()

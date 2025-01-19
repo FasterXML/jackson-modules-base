@@ -4,8 +4,13 @@ import java.util.*;
 
 import javax.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import tools.jackson.databind.*;
+
 import tools.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Simple unit tests to verify that it is possible to handle
@@ -48,6 +53,7 @@ public class TestCyclicTypes
     /* Added to check for [JACKSON-171], i.e. that type its being
      * cyclic is not a problem (instances are).
      */
+    @Test
     public void testWithJAXB() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
