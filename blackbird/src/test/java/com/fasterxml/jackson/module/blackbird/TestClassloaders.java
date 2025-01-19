@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.blackbird.tofix;
+package com.fasterxml.jackson.module.blackbird;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -6,9 +6,7 @@ import java.lang.reflect.Constructor;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.blackbird.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,7 +18,6 @@ public class TestClassloaders extends BlackbirdTestBase
 
     // Note: this test always passes in Java 8, even if the issue is not fixed,
     // so it is duplicated in jackson-jdk11-compat-test for now
-    @JacksonTestFailureExpected
     @Test
     public void testLoadInChildClassloader() throws Exception {
         TestLoader loader = new TestLoader(getClass().getClassLoader());
