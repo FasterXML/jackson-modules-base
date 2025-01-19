@@ -1,8 +1,12 @@
 package com.fasterxml.jackson.module.blackbird.roundtrip;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [issue#47]
 public class AbstractSettersTest extends BlackbirdTestBase
@@ -45,6 +49,7 @@ public class AbstractSettersTest extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
     
+    @Test
     public void testSimpleConstructor() throws Exception
     {
         FooImpl1 item = new FooImpl1();

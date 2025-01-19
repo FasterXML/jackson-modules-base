@@ -1,9 +1,13 @@
 package com.fasterxml.jackson.module.blackbird.codegen;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [afterburner#51], where re-generation of classes does not work
 // as expected
@@ -50,7 +54,8 @@ public class GenerateWithMixinsTest extends BlackbirdTestBase
         public abstract byte[] getField3();
       }
 
-      public void testIssue51() throws JsonProcessingException
+      @Test
+    public void testIssue51() throws JsonProcessingException
       {
           SampleObject sampleObject = new SampleObject("field1", 2, "field3".getBytes());
 

@@ -1,9 +1,13 @@
 package com.fasterxml.jackson.module.blackbird.format;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // [databind#1480]
 public class BooleanFormatTest extends BlackbirdTestBase
@@ -48,6 +52,7 @@ public class BooleanFormatTest extends BlackbirdTestBase
 
     private final static ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testShapeViaDefaults() throws Exception
     {
         assertEquals(aposToQuotes("{'b':true}"),
@@ -59,6 +64,7 @@ public class BooleanFormatTest extends BlackbirdTestBase
                 m.writeValueAsString(new BooleanWrapper(true)));
     }
 
+    @Test
     public void testShapeOnProperty() throws Exception
     {
         assertEquals(aposToQuotes("{'b1':1,'b2':0,'b3':true}"),

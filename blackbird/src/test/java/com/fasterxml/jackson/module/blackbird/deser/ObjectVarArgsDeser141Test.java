@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,6 +9,8 @@ import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // [modules-base#141]
 public class ObjectVarArgsDeser141Test extends BlackbirdTestBase
@@ -34,6 +38,7 @@ public class ObjectVarArgsDeser141Test extends BlackbirdTestBase
     private final ObjectMapper MAPPER = newObjectMapper();
 
     // [modules-base#141]
+    @Test
     public void testObjectVarargsCreator() throws Exception
     {
         Foo141 foo = new Foo141(new Bar("a"), new Bar("b"));

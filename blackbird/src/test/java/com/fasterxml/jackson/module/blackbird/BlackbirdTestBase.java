@@ -9,7 +9,9 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
-public abstract class BlackbirdTestBase extends junit.framework.TestCase
+import static org.junit.jupiter.api.Assertions.*;
+
+public abstract class BlackbirdTestBase
 {
     // // // First some "shared" classes from databind's `BaseMapTest`
 

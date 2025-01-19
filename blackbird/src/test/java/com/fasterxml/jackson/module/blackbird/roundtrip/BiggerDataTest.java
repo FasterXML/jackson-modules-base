@@ -2,8 +2,12 @@ package com.fasterxml.jackson.module.blackbird.roundtrip;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Bigger test to try to do smoke-testing of overall functionality,
@@ -80,6 +84,7 @@ public class BiggerDataTest extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newBlackbirdMapper();
 
+    @Test
     public void testReading() throws Exception
     {
         Citm citm0 = MAPPER.readValue(getClass().getResourceAsStream("/data/citm_catalog.json"),

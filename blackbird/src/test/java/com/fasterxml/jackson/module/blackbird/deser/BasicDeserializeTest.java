@@ -2,12 +2,16 @@ package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BasicDeserializeTest extends BlackbirdTestBase
 {
@@ -153,11 +157,13 @@ public class BasicDeserializeTest extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testIntMethod() throws Exception {
         IntBean bean = MAPPER.readValue("{\"x\":13}", IntBean.class);
         assertEquals(13, bean._x);
     }
 
+    @Test
     public void testMultiIntMethod() throws Exception {
         IntsBean bean = MAPPER.readValue("{\"c\":3,\"a\":9,\"b\":111,\"e\":-9999,\"d\":1}", IntsBean.class);
         assertEquals(9, bean._a);
@@ -167,16 +173,19 @@ public class BasicDeserializeTest extends BlackbirdTestBase
         assertEquals(-9999, bean._e);
     }
 
+    @Test
     public void testLongMethod() throws Exception {
         LongBean bean = MAPPER.readValue("{\"x\":-1}", LongBean.class);
         assertEquals(-1, bean._x);
     }
 
+    @Test
     public void testStringMethod() throws Exception {
         StringBean bean = MAPPER.readValue("{\"x\":\"zoobar\"}", StringBean.class);
         assertEquals("zoobar", bean._x);
     }
 
+    @Test
     public void testObjectMethod() throws Exception {
         EnumBean bean = MAPPER.readValue("{\"x\":\"A\"}", EnumBean.class);
         assertEquals(MyEnum.A, bean._x);
@@ -188,16 +197,19 @@ public class BasicDeserializeTest extends BlackbirdTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testIntField() throws Exception {
         IntFieldBean bean = MAPPER.readValue("{\"value\":-92}", IntFieldBean.class);
         assertEquals(-92, bean.x);
     }
 
+    @Test
     public void testLongField() throws Exception {
         LongFieldBean bean = MAPPER.readValue("{\"value\":-92}", LongFieldBean.class);
         assertEquals(-92, bean.value);
     }
 
+    @Test
     public void testStringField() throws Exception {
         StringFieldBean bean = MAPPER.readValue("{\"x\":\"\"}", StringFieldBean.class);
         assertEquals("", bean.x);
@@ -207,12 +219,14 @@ public class BasicDeserializeTest extends BlackbirdTestBase
         assertNull(bean.x);
     }
 
+    @Test
     public void testEnumField() throws Exception {
         EnumFieldBean bean = MAPPER.readValue("{\"x\":\"C\"}", EnumFieldBean.class);
         assertEquals(MyEnum.C, bean.x);
     }
 
     // Verify [Issue#10], so that nulls do not get coerced to String "null"
+    @Test
     public void testStringAsObjectField() throws Exception {
         StringAsObject bean = MAPPER.readValue("{\"value\":null}", StringAsObject.class);
         assertNotNull(bean);
@@ -225,6 +239,7 @@ public class BasicDeserializeTest extends BlackbirdTestBase
     /**********************************************************************
      */
 
+    @Test
     public void testFiveMinuteDoc() throws Exception
     {
         FiveMinuteUser input = new FiveMinuteUser("First", "Name", true,
@@ -237,6 +252,7 @@ public class BasicDeserializeTest extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testMixed() throws Exception
     {
         MixedBean bean = MAPPER.readValue("{"
@@ -261,6 +277,7 @@ public class BasicDeserializeTest extends BlackbirdTestBase
     }
 
     // Test for [Issue-5]
+    @Test
     public void testNonVoidProperty() throws Exception
     {
         final String json = "{ \"stringField\" : \"zoobar\", \"stringField2\" : \"barzoo\" }";
@@ -276,6 +293,7 @@ public class BasicDeserializeTest extends BlackbirdTestBase
     }
 
     // Test for [module-afterburner#16]
+    @Test
     public void testBigNonVoidProperty() throws Exception
     {
         final String json = "{ \"stringField\" : \"zoobar\" }";
@@ -290,12 +308,14 @@ public class BasicDeserializeTest extends BlackbirdTestBase
     }
 
     // NOTE: failed with databind-2.5.0; fixed for 2.5.1
+    @Test
     public void testStringBuilder() throws Exception
     {
         StringBuilder sb = MAPPER.readValue(quote("foobar"), StringBuilder.class);
         assertEquals("foobar", sb.toString());
     }
 
+    @Test
     public void testBooleans() throws Exception
     {
         BooleansBean bean = MAPPER.readValue(aposToQuotes("{'a':true, 'b':true}"),
@@ -306,6 +326,7 @@ public class BasicDeserializeTest extends BlackbirdTestBase
     }
 
     // for [module-afterburner#60] (caused by a bug in jackson-core up to 2.6.2, fixed in 2.6.3)
+    @Test
     public void testProblemWithIndentation() throws Exception {
         final String JSON = "{\n"
 +"            \"foos\" :\n"

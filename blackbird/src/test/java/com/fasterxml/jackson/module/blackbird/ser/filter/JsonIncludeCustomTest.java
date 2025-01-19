@@ -4,11 +4,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 
 // Tests for [databind#888]
 public class JsonIncludeCustomTest extends BlackbirdTestBase
@@ -95,12 +100,14 @@ public class JsonIncludeCustomTest extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testSimpleCustomFilter() throws Exception
     {
         assertEquals(a2q("{'value':'x'}"), MAPPER.writeValueAsString(new FooBean("x")));
         assertEquals("{}", MAPPER.writeValueAsString(new FooBean("foo")));
     }
 
+    @Test
     public void testCustomFilterWithMap() throws Exception
     {
         FooMapBean input = new FooMapBean()
@@ -112,6 +119,7 @@ public class JsonIncludeCustomTest extends BlackbirdTestBase
     }
 
     // [databind#3481]
+    @Test
     public void testRepeatedCalls() throws Exception
     {
         CountingFooFilter.counter.set(0);
@@ -134,6 +142,7 @@ public class JsonIncludeCustomTest extends BlackbirdTestBase
     /**********************************************************
      */
 
+    @Test
     public void testBrokenFilterString() throws Exception
     {
         try {
@@ -146,6 +155,7 @@ public class JsonIncludeCustomTest extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testBrokenFilterMap() throws Exception
     {
         try {

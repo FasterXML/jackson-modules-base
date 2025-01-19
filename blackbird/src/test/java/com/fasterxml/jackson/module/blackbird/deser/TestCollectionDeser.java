@@ -2,8 +2,12 @@ package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestCollectionDeser extends BlackbirdTestBase
 {
@@ -26,6 +30,7 @@ public class TestCollectionDeser extends BlackbirdTestBase
      */
 
     // [module-afterburner#36]
+    @Test
     public void testIntMethod() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()
@@ -38,6 +43,7 @@ public class TestCollectionDeser extends BlackbirdTestBase
     }
 
     // [module-afterburner#56]
+    @Test
     public void testUnwrapSingleArray() throws Exception
     {
         final ObjectMapper mapper = newObjectMapper();

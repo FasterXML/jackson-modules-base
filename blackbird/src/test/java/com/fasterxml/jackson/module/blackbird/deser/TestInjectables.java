@@ -1,9 +1,13 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestInjectables extends BlackbirdTestBase
 {
@@ -44,6 +48,7 @@ public class TestInjectables extends BlackbirdTestBase
     /**********************************************************
      */
 
+    @Test
     public void testIssueGH471() throws Exception
     {
         final Object constructorInjected = "constructorInjected";
