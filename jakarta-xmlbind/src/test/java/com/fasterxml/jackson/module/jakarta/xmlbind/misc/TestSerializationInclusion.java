@@ -4,12 +4,16 @@ import java.util.List;
 
 import jakarta.xml.bind.annotation.XmlElement;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestSerializationInclusion extends ModuleTestBase
 {
@@ -22,6 +26,7 @@ public class TestSerializationInclusion extends ModuleTestBase
         }
     }    
 
+    @Test
     public void testIssue39() throws Exception
     {
         // First: use plain JAXB introspector:

@@ -4,10 +4,14 @@ import java.io.IOException;
 
 import javax.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.*;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestPropertyVisibility
     extends BaseJaxbTest
@@ -84,12 +88,14 @@ public class TestPropertyVisibility
     // Verify serialization wrt [JACKSON-354]
     //
     // NOTE: fails currently because we use Bean Introspector which only sees public methods -- need to rewrite
+    @Test
     public void testJackson354Serialization() throws IOException
     {
         assertEquals("{\"name\":\"foo\"}", MAPPER.writeValueAsString(new Bean354()));
     }
 
     // For [JACKSON-539]
+    @Test
     public void testJacksonSerialization()
             throws Exception
     {
@@ -110,6 +116,7 @@ public class TestPropertyVisibility
     }
 
     // for [modules-base#44]
+    @Test
     public void testNoneAccessWithXmlElements() throws Exception
     {
         NoneAccessBean input = new NoneAccessBean(new Foo44());

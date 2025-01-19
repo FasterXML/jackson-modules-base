@@ -3,6 +3,8 @@ package com.fasterxml.jackson.module.jakarta.xmlbind.misc;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +13,8 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntr
 import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests to ensure that handling of writing of null properties (or not)
@@ -67,6 +71,7 @@ public class NullPropertiesTest
 
     private final ObjectMapper MAPPER = getJaxbMapper();
     
+    @Test
     public void testWriteNulls() throws Exception
     {
         BeanWithNillable bean = new BeanWithNillable();
@@ -74,6 +79,7 @@ public class NullPropertiesTest
         assertEquals("{\"X\":{\"Z\":null}}", MAPPER.writeValueAsString(bean));
     }
 
+    @Test
     public void testNullProps() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -81,6 +87,7 @@ public class NullPropertiesTest
         assertEquals("{\"x\":\"y\"}", mapper.writeValueAsString(new Bean()));
     }
 
+    @Test
     public void testNillability() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

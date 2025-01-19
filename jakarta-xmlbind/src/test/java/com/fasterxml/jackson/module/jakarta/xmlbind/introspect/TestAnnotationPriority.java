@@ -10,6 +10,9 @@ import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
  * Unit test(s) to verify that annotations from super classes and
  * interfaces are properly used (for example, wrt [JACKSON-450])
  */
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 public class TestAnnotationPriority extends ModuleTestBase
 {
     /*
@@ -49,6 +52,7 @@ public class TestAnnotationPriority extends ModuleTestBase
     /**********************************************************
      */
 
+    @Test
     public void testInterfacesAndClasses() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

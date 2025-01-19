@@ -2,10 +2,14 @@ package com.fasterxml.jackson.module.jaxb.misc;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestRootName extends BaseJaxbTest
 {
@@ -27,6 +31,7 @@ public class TestRootName extends BaseJaxbTest
     /**********************************************************
      */
     
+    @Test
     public void testRootName() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

@@ -1,10 +1,14 @@
 package com.fasterxml.jackson.module.paranamer;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleTest extends ModuleTestBase
 {
@@ -27,6 +31,7 @@ public class SimpleTest extends ModuleTestBase
     /**********************************************************
      */
 
+    @Test
     public void testSimple() throws Exception
     {
         final String JSON = "{\"name\":\"Bob\", \"age\":40}";
@@ -60,6 +65,7 @@ public class SimpleTest extends ModuleTestBase
 
     // Let's test handling of case where parameter names are not found; for example when
     // trying to access things for JDK types
+    @Test
     public void testWrapper() throws Exception
     {
         ObjectMapper mapper = JsonMapper.builder()
