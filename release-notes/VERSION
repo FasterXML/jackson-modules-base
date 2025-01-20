@@ -34,3 +34,4 @@ Active maintainers:
  (contributed by Georgios A))
 #269: Change 3.0 to use `module-info.java` directly [JSTEP-11]
 - Minimum Java baseline: Java 17
+- Maven artifact packaging changed to "jar" from "bundle" (to retain 'module-info.class')

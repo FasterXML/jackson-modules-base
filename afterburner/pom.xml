@@ -12,7 +12,7 @@
   </parent>
   <artifactId>jackson-module-afterburner</artifactId>
   <name>Jackson module: Afterburner</name>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <description>Jackson (https://github.com/FasterXML/jackson) extension module
 used to enhance performance using bytecode generation to replace use of Reflection for
 field access and method calls

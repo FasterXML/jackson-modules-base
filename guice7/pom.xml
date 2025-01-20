@@ -13,7 +13,7 @@
     </parent>
     <artifactId>jackson-module-guice7</artifactId>
     <name>Jackson module: Guice 7+ (jakarta.inject)</name>
-    <packaging>bundle</packaging>
+    <packaging>jar</packaging>
 
     <description>Stuff to make integration with Guice 7+ a bit easier</description>
     <url>https://github.com/FasterXML/jackson-modules-base</url>

@@ -13,7 +13,7 @@
   </parent>
   <artifactId>jackson-module-jaxb-annotations</artifactId>
   <name>Jackson module: JAXB Annotations (javax.xml.bind)</name>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
 
   <description>Support for using JAXB annotations as an alternative to "native" Jackson annotations,
  for configuring data-binding.

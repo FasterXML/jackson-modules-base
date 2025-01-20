@@ -13,7 +13,7 @@
 
   <artifactId>jackson-module-android-record</artifactId>
   <name>Jackson module: Android Record Support</name>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
 
   <description>Support deserialization into records on Android</description>
   <url>https://github.com/FasterXML/jackson-modules-base</url>

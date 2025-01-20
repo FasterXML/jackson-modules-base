@@ -14,7 +14,7 @@
 
     <artifactId>jackson-module-no-ctor-deser</artifactId>
     <name>Jackson module: No-constructor Deserialization</name>
-    <packaging>bundle</packaging>
+    <packaging>jar</packaging>
 
     <description>Support deserialization of POJO classes without default constructor</description>
     <url>https://github.com/FasterXML/jackson-modules-base</url>

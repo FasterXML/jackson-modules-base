@@ -12,7 +12,7 @@
   </parent>
   <artifactId>jackson-module-blackbird</artifactId>
   <name>Jackson module: Blackbird</name>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <description>Jackson (https://github.com/FasterXML/jackson) extension module
 that uses LambdaMetafactory based code generation to replace reflection calls.
   </description>
