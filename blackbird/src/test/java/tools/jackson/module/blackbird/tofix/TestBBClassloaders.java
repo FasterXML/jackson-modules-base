@@ -1,4 +1,4 @@
-package tools.jackson.module.blackbird.failing;
+package tools.jackson.module.blackbird.tofix;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+import tools.jackson.module.blackbird.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,10 +18,19 @@ public class TestBBClassloaders extends BlackbirdTestBase
             (TestBBClassloaders.class.getName() + "$Data")
                 .replace('.', '/').concat(".class");
 
-    // Note: this test always passes in Java 8, even if the issue is not fixed,
-    // so it is duplicated in jackson-jdk11-compat-test for now
+    // Note: looks this test: passes on JDKs OTHER than 11 for Jackson 2.x,
+    // but fails for JDK 17+ for Jackson 3.x.
     @Test
-    public void testLoadInChildClassloader() throws Exception {
+    @JacksonTestFailureExpected
+    public void testLoadInChildClassloader() throws Exception
+    {
+        // 19-Jan-2025, tatu: only fails on JDK 11 specifically, not on JDK 17 or later
+        //
+        // So just skip on that
+        if (System.getProperty("java.version").startsWith("11.")) {
+             System.out.println("Skipping `testLoadInChildClassloader()` on JDK 11");
+             return;
+        }
         TestLoader loader = new TestLoader(getClass().getClassLoader());
         Class<?> clazz = Class.forName(Data.class.getName(), true, loader);
         ObjectMapper mapper = newObjectMapper();

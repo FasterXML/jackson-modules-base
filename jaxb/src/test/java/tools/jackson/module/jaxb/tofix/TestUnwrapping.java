@@ -1,8 +1,8 @@
-package tools.jackson.module.jakarta.xmlbind.failing;
+package tools.jackson.module.jaxb.tofix;
+
+import javax.xml.bind.annotation.*;
 
 import org.junit.jupiter.api.Test;
-
-import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
@@ -10,12 +10,13 @@ import tools.jackson.databind.*;
 import tools.jackson.databind.introspect.AnnotationIntrospectorPair;
 import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
 
-import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
-import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+import tools.jackson.module.jaxb.BaseJaxbTest;
+import tools.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import tools.jackson.module.jaxb.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestUnwrapping extends ModuleTestBase
+public class TestUnwrapping extends BaseJaxbTest
 {
     @XmlRootElement
     static class Bean<R>
@@ -51,12 +52,13 @@ public class TestUnwrapping extends ModuleTestBase
     }
 
     /*
-    /**********************************************************************
+    /**********************************************************
     /* Unit tests
-    /**********************************************************************
+    /**********************************************************
      */
-
+    
     // not asserting anything
+    @JacksonTestFailureExpected
     @Test
     public void testXmlElementAndXmlElementRefs() throws Exception
     {
@@ -65,7 +67,7 @@ public class TestUnwrapping extends ModuleTestBase
         bean.name = "test";
         AnnotationIntrospector pair = new AnnotationIntrospectorPair(
                 new JacksonAnnotationIntrospector(),
-                new JakartaXmlBindAnnotationIntrospector());
+                new JaxbAnnotationIntrospector());
         ObjectMapper mapper = objectMapperBuilder()
                 .annotationIntrospector(pair)
                 .build();

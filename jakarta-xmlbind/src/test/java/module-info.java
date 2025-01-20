@@ -19,10 +19,11 @@ module tools.jackson.module.jakarta.xmlbind
     // Further, need to open up some packages for JUnit et al
     opens tools.jackson.module.jakarta.xmlbind;
     opens tools.jackson.module.jakarta.xmlbind.adapters;
-    opens tools.jackson.module.jakarta.xmlbind.failing;
     opens tools.jackson.module.jakarta.xmlbind.id;
     opens tools.jackson.module.jakarta.xmlbind.introspect;
     opens tools.jackson.module.jakarta.xmlbind.misc;
     opens tools.jackson.module.jakarta.xmlbind.ser;
+    opens tools.jackson.module.jakarta.xmlbind.testutil.failure;
+    opens tools.jackson.module.jakarta.xmlbind.tofix;
     opens tools.jackson.module.jakarta.xmlbind.types;
 }

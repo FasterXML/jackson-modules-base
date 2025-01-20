@@ -16,5 +16,6 @@ module tools.jackson.module.androidrecord
     // Further, need to open up some packages for JUnit et al
 
     opens tools.jackson.module.androidrecord;
-    opens tools.jackson.module.androidrecord.failing;
+    opens tools.jackson.module.androidrecord.testutil.failure;
+    opens tools.jackson.module.androidrecord.tofix;
 }

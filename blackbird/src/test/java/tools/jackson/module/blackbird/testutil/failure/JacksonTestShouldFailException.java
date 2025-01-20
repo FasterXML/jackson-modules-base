@@ -1,4 +1,4 @@
-package tools.jackson.module.blackbird.util.failure;
+package tools.jackson.module.blackbird.testutil.failure;
 
 /**
  * Exception used to alert that a test is passing, but should be failing.

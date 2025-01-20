@@ -1,8 +1,8 @@
-package tools.jackson.module.jaxb.failing;
-
-import javax.xml.bind.annotation.*;
+package tools.jackson.module.jakarta.xmlbind.tofix;
 
 import org.junit.jupiter.api.Test;
+
+import jakarta.xml.bind.annotation.*;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
@@ -10,12 +10,13 @@ import tools.jackson.databind.*;
 import tools.jackson.databind.introspect.AnnotationIntrospectorPair;
 import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
 
-import tools.jackson.module.jaxb.BaseJaxbTest;
-import tools.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationIntrospector;
+import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+import tools.jackson.module.jakarta.xmlbind.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestUnwrapping extends BaseJaxbTest
+public class TestUnwrapping extends ModuleTestBase
 {
     @XmlRootElement
     static class Bean<R>
@@ -51,12 +52,13 @@ public class TestUnwrapping extends BaseJaxbTest
     }
 
     /*
-    /**********************************************************
+    /**********************************************************************
     /* Unit tests
-    /**********************************************************
+    /**********************************************************************
      */
-    
+
     // not asserting anything
+    @JacksonTestFailureExpected
     @Test
     public void testXmlElementAndXmlElementRefs() throws Exception
     {
@@ -65,7 +67,7 @@ public class TestUnwrapping extends BaseJaxbTest
         bean.name = "test";
         AnnotationIntrospector pair = new AnnotationIntrospectorPair(
                 new JacksonAnnotationIntrospector(),
-                new JaxbAnnotationIntrospector());
+                new JakartaXmlBindAnnotationIntrospector());
         ObjectMapper mapper = objectMapperBuilder()
                 .annotationIntrospector(pair)
                 .build();

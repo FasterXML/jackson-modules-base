@@ -1,4 +1,4 @@
-package tools.jackson.module.blackbird.util.failure;
+package tools.jackson.module.blackbird.testutil.failure;
 
 import java.lang.reflect.Method;
 

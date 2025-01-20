@@ -30,12 +30,13 @@ module tools.jackson.module.blackbird
     opens tools.jackson.module.blackbird.deser.jdk;
     opens tools.jackson.module.blackbird.deser.merge;
     opens tools.jackson.module.blackbird.deser.struct;
-    opens tools.jackson.module.blackbird.failing;
     opens tools.jackson.module.blackbird.format;
     opens tools.jackson.module.blackbird.misc;
     opens tools.jackson.module.blackbird.objectid;
     opens tools.jackson.module.blackbird.roundtrip;
     opens tools.jackson.module.blackbird.ser;
     opens tools.jackson.module.blackbird.ser.filter;
+    opens tools.jackson.module.blackbird.tofix;
     opens tools.jackson.module.blackbird.testutil;
+    opens tools.jackson.module.blackbird.testutil.failure;
 }

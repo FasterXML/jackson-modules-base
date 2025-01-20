@@ -1,4 +1,4 @@
-package tools.jackson.module.androidrecord.failing;
+package tools.jackson.module.androidrecord.tofix;
 
 import org.junit.jupiter.api.Test;
 
@@ -10,6 +10,7 @@ import tools.jackson.databind.*;
 
 import tools.jackson.module.androidrecord.BaseMapTest;
 import tools.jackson.module.androidrecord.RecordBasicsTest;
+import tools.jackson.module.androidrecord.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -48,6 +49,7 @@ public class RecordBasicsFailingTest extends BaseMapTest
    *
    * @see RecordBasicsTest#testDeserializeConstructorInjectRecord()
    */
+  @JacksonTestFailureExpected
   @Test
   public void testDeserializeHeaderInjectRecord_WillFail() throws Exception {
       ObjectReader r = MAPPER.readerFor(RecordWithHeaderInject.class)

@@ -1,20 +1,21 @@
-package tools.jackson.module.jakarta.xmlbind.failing;
+package tools.jackson.module.jaxb.tofix;
 
 import java.util.Arrays;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlID;
+
 import org.junit.jupiter.api.Test;
 
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlID;
-
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.module.jakarta.xmlbind.ModuleTestBase;
+import tools.jackson.module.jaxb.BaseJaxbTest;
+import tools.jackson.module.jaxb.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 // for [modules-base#46]: XmlId semantics can not be supported by Jackson/JAXB-annotation-mapper
-public class TestXmlID3 extends ModuleTestBase
+public class TestXmlID3 extends BaseJaxbTest
 {
     static class HasID
     {
@@ -49,6 +50,7 @@ public class TestXmlID3 extends ModuleTestBase
         public HasID getParent() { return parent; }
     }
 
+    @JacksonTestFailureExpected
     @Test
     public void testIssue46() throws Exception
     {

@@ -1,4 +1,4 @@
-package tools.jackson.module.jaxb.failing;
+package tools.jackson.module.jaxb.tofix;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.*;
@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jaxb.BaseJaxbTest;
+import tools.jackson.module.jaxb.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -44,6 +45,7 @@ public class TestEnums256 extends BaseJaxbTest
     private final ObjectMapper MAPPER = getJaxbMapper();
 
     // [modules-base#256]
+    @JacksonTestFailureExpected
     @Test
     public void testEnumSerialize256() throws Exception
     {

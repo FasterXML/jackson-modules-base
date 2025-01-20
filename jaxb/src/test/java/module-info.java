@@ -21,10 +21,11 @@ module tools.jackson.module.jaxb
 
     opens tools.jackson.module.jaxb;
     opens tools.jackson.module.jaxb.adapters;
-    opens tools.jackson.module.jaxb.failing;
     opens tools.jackson.module.jaxb.id;
     opens tools.jackson.module.jaxb.introspect;
     opens tools.jackson.module.jaxb.misc;
     opens tools.jackson.module.jaxb.ser;
+    opens tools.jackson.module.jaxb.testutil.failure;
+    opens tools.jackson.module.jaxb.tofix;
     opens tools.jackson.module.jaxb.types;
 }
