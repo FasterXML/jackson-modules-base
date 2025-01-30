@@ -111,7 +111,9 @@ public class ProblemHandlerTest extends AfterburnerTestBase
         public Object handleMissingInstantiator(DeserializationContext ctxt,
                 Class<?> instClass, ValueInstantiator inst, JsonParser p, String msg)
         {
-            p.skipChildren();
+            while (p.currentToken() != JsonToken.END_OBJECT) {
+                p.nextToken();
+            }
             return value;
         }
     }
@@ -130,6 +132,7 @@ public class ProblemHandlerTest extends AfterburnerTestBase
                 JavaType targetType, JsonToken t, JsonParser p,
                 String failureMsg)
         {
+            p.skipChildren();
             return value;
         }
     }
