@@ -14,7 +14,6 @@ module tools.jackson.module.jakarta.xmlbind
     // Additional test lib/framework dependencies
 
     requires org.junit.jupiter.api;
-    requires org.junit.jupiter.params;
 
     // Further, need to open up some packages for JUnit et al
     opens tools.jackson.module.jakarta.xmlbind;
