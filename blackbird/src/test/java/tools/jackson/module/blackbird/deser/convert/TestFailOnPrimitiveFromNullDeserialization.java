@@ -41,7 +41,6 @@ public class TestFailOnPrimitiveFromNullDeserialization extends BlackbirdTestBas
 
     private final static String BEAN_WITH_NULL_VALUE = "{\"value\": null}";
 
-    private final ObjectMapper MAPPER = newObjectMapper();
     private final ObjectMapper FAIL_ON_NULL_MAPPER = mapperBuilder()
             .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
             .build();

@@ -111,7 +111,9 @@ public class ProblemHandlerTest extends BlackbirdTestBase
         public Object handleMissingInstantiator(DeserializationContext ctxt,
                 Class<?> instClass, ValueInstantiator inst, JsonParser p, String msg)
         {
-            p.skipChildren();
+            while (p.currentToken() != JsonToken.END_OBJECT) {
+                p.nextToken();
+            }
             return value;
         }
     }

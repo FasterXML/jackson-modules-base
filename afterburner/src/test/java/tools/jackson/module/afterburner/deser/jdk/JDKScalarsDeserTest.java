@@ -560,12 +560,15 @@ public class JDKScalarsDeserTest
             sb.append(" ");
             sb.append(i);
         }
-        JsonParser p = MAPPER.createParser(sb.toString());
-        for (int i = 0; i < NR_OF_INTS; ++i) {
-            Integer result = MAPPER.readValue(p, Integer.class);
-            assertEquals(Integer.valueOf(i), result);
+        ObjectMapper mapper = afterburnerMapperBuilder()
+                .disable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
+                .build();
+        try (JsonParser p = mapper.createParser(sb.toString())) {
+            for (int i = 0; i < NR_OF_INTS; ++i) {
+                Integer result = mapper.readValue(p, Integer.class);
+                assertEquals(Integer.valueOf(i), result);
+            }
         }
-        p.close();
     }
 
     /*

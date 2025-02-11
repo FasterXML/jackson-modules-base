@@ -13,7 +13,7 @@
   </parent>
   <artifactId>jackson-module-mrbean</artifactId>
   <name>Jackson module: Mr Bean</name>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
 
   <description>Functionality for implementing interfaces and abstract types
 dynamically ("bean materialization"), integrated with Jackson (although usable externally as well)

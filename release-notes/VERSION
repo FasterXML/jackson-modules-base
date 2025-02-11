@@ -33,5 +33,6 @@ Active maintainers:
 #225: Afterburner 3.0 fails to handle interface "default" methods
  (contributed by Georgios A))
 #269: Change 3.0 to use `module-info.java` directly [JSTEP-11]
+#282 (afterburner) Remove shade plugin from 3.0 Afterburner
 - Minimum Java baseline: Java 17
 - Maven artifact packaging changed to "jar" from "bundle" (to retain 'module-info.class')

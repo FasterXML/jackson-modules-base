@@ -77,47 +77,15 @@ field access and method calls
         <artifactId>replacer</artifactId>
       </plugin>
 
-      <!-- 27-Apr-2023, tatu: [modules-base#204] GMM plugin needs help -->
       <plugin>
         <groupId>de.jjohannes</groupId>
         <artifactId>gradle-module-metadata-maven-plugin</artifactId>
-        <configuration>
-          <removedDependencies>
-            <dependency>
-              <groupId>net.bytebuddy</groupId>
-              <artifactId>byte-buddy</artifactId>
-            </dependency>
-          </removedDependencies>
-        </configuration>
       </plugin>
 
+      <!-- 03-Feb-2025, tatu: No more shading of ByteBuddy
+	   (see [modules-base#284])
+        -->
       <plugin>
-        <!--  We will shade ByteBuddy, to simplify deployment, avoid version conflicts -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <artifactSet>
-                <includes>
-                  <include>net.bytebuddy:byte-buddy</include>
-                </includes>
-              </artifactSet>
-              <relocations>
-                <relocation>
-                  <pattern>net.bytebuddy</pattern>
-                  <shadedPattern>tools.jackson.module.afterburner.bytebuddy</shadedPattern>
-                </relocation>
-              </relocations>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-     <plugin>
         <groupId>io.github.floverfelt</groupId>
         <artifactId>find-and-replace-maven-plugin</artifactId>
         <version>1.1.0</version>
