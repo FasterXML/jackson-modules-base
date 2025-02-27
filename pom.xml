@@ -3,12 +3,12 @@
   <parent>
     <groupId>tools.jackson</groupId>
     <artifactId>jackson-base</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0-rc1-SNAPSHOT</version>
   </parent>
   <groupId>tools.jackson.module</groupId>
   <artifactId>jackson-modules-base</artifactId>
   <name>Jackson modules: Base</name>
-  <version>3.0.0-SNAPSHOT</version>
+  <version>3.0.0-rc1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <description>Parent pom for Jackson "base" modules: modules that build directly on databind, and are
 not datatype, data format, or JAX-RS provider modules.
@@ -137,16 +137,6 @@ not datatype, data format, or JAX-RS provider modules.
               <phase>generate-sources</phase>
             </execution>
           </executions>
-	</plugin>
-
-	<plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <excludes>
-              <exclude>tools/jackson/module/**/failing/*.java</exclude>
-            </excludes>
-          </configuration>
 	</plugin>
       </plugins>
     </pluginManagement>
