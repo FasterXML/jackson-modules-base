@@ -72,20 +72,6 @@ field access and method calls
         <artifactId>replacer</artifactId>
       </plugin>
 
-      <!-- 27-Apr-2023, tatu: [modules-base#204] GMM plugin needs help -->
-      <plugin>
-        <groupId>de.jjohannes</groupId>
-        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
-        <configuration>
-          <removedDependencies>
-            <dependency>
-              <groupId>org.ow2.asm</groupId>
-              <artifactId>asm</artifactId>
-            </dependency>
-          </removedDependencies>
-        </configuration>
-      </plugin>
-
       <plugin>
         <!--  We will shade ASM, to simplify deployment, avoid version conflicts -->
         <groupId>org.apache.maven.plugins</groupId>
@@ -119,35 +105,22 @@ field access and method calls
         <groupId>org.moditect</groupId>
         <artifactId>moditect-maven-plugin</artifactId>
       </plugin>
+      <!-- 05-Jul-2020, tatu: Add generation of Gradle Module Metadata -->
+      <!-- 28-Feb-2025, jjohannes: Apply plugin last as it has to be the last of all 'package phase' plugins -->
       <plugin>
-        <groupId>io.github.floverfelt</groupId>
-        <artifactId>find-and-replace-maven-plugin</artifactId>
-        <version>1.1.0</version>
-        <executions>
-          <execution>
-            <id>exec</id>
-            <phase>package</phase>
-            <goals>
-              <goal>find-and-replace</goal>
-            </goals>
-            <configuration>
-              <replacementType>file-contents</replacementType>
-              <baseDir>${basedir}</baseDir>
-              <findRegex><![CDATA[<modelVersion>4.0.0</modelVersion>]]></findRegex>
-              <fileMask>dependency-reduced-pom.xml</fileMask>
-              <replaceValue><![CDATA[  <!-- This module was also published with a richer model, Gradle metadata,  -->
-  <!-- which should be used instead. Do not delete the following line which  -->
-  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
-  <!-- that they should prefer consuming it instead. -->
-  <!-- do_not_remove: published-with-gradle-metadata -->
-  <modelVersion>4.0.0</modelVersion>]]></replaceValue>
-              <recursive>false</recursive>
-            </configuration>
-          </execution>
-        </executions>
+        <groupId>org.gradlex</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+        <configuration>
+          <!-- 28-Feb-2025, jjohannes: remove shaded dependency-->
+          <removedDependencies>
+            <dependency>
+              <groupId>org.ow2.asm</groupId>
+              <artifactId>asm</artifactId>
+            </dependency>
+          </removedDependencies>
+        </configuration>
       </plugin>
     </plugins>
-
   </build>
 
   <profiles>
