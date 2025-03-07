@@ -27,6 +27,7 @@ Active maintainers:
 
 #268: Unify testing structure/tools [JSTEP-10]
  (contributed by Joo-Hyuk K)
+#290: Update Paranamer dep from 2.8 to 2.8.2
 
 2.18.3 (28-Feb-2025)
 2.18.2 (27-Nov-2024)

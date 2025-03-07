@@ -2,6 +2,7 @@ package com.fasterxml.jackson.module.paranamer;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Executable;
 
 import com.fasterxml.jackson.databind.introspect.AnnotatedParameter;
 import com.thoughtworks.paranamer.BytecodeReadingParanamer;
@@ -47,7 +48,7 @@ public class SerializableParanamer
     {
         int index = param.getIndex();
         AnnotatedElement ctor = param.getOwner().getAnnotated();
-        String[] names = _paranamer.lookupParameterNames((AccessibleObject) ctor, false);
+        String[] names = _paranamer.lookupParameterNames((Executable)ctor, false);
         if (names != null && index < names.length) {
             return names[index];
         }
