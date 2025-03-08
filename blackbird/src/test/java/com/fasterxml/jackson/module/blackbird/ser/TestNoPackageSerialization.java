@@ -25,8 +25,7 @@ public class TestNoPackageSerialization extends BlackbirdTestBase
     public void testSerializeDeserializeDefaultPackageClass() throws Exception {
         // Define the source code for a class in the default package (no package
         // declaration)
-        String source = "package dynamicClassTest;" +
-                "public class Person {" +
+        String source = "public class Person {" +
                 "    public String name;" +
                 "    public int age;" +
                 "    public Person() {}" +
@@ -55,7 +54,7 @@ public class TestNoPackageSerialization extends BlackbirdTestBase
 
         // Load the compiled class using a URLClassLoader
         try (URLClassLoader classLoader = new URLClassLoader(new URL[] { tempDir.toUri().toURL() })) {
-            Class<?> personClass = classLoader.loadClass("dynamicClassTest.Person");
+            Class<?> personClass = classLoader.loadClass("Person");
 
             // Instantiate the Person object using reflection
             Object personInstance = personClass.getConstructor(String.class, int.class)
