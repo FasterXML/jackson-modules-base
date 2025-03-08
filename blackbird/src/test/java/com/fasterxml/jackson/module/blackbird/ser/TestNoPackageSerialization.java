@@ -1,15 +1,5 @@
 package com.fasterxml.jackson.module.blackbird.ser;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
-
-import javax.tools.*;
-
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.File;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -19,8 +9,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-public class TestNoPackageSerialization extends BlackbirdTestBase {
+import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import javax.tools.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class TestNoPackageSerialization extends BlackbirdTestBase
+{
     @Test
     public void testSerializeDeserializeDefaultPackageClass() throws Exception {
         // Define the source code for a class in the default package (no package
@@ -39,7 +39,7 @@ public class TestNoPackageSerialization extends BlackbirdTestBase {
         // Create a temporary directory for the compiled class
         Path tempDir = Files.createTempDirectory("dynamicClassTest");
         File sourceFile = new File(tempDir.toFile(), "Person.java");
-        System.out.println(sourceFile.getAbsolutePath());
+        //System.out.println(sourceFile.getAbsolutePath());
         Files.write(sourceFile.toPath(), source.getBytes(StandardCharsets.UTF_8));
 
         // Compile the source file using the JDK compiler
@@ -60,8 +60,7 @@ public class TestNoPackageSerialization extends BlackbirdTestBase {
             // Instantiate the Person object using reflection
             Object personInstance = personClass.getConstructor(String.class, int.class)
                     .newInstance("John Doe", 42);
-
-            ObjectMapper mapper = newObjectMapper();
+            final ObjectMapper mapper = newObjectMapper();
 
             // Perform serialization and deserialization
             String json = mapper.writeValueAsString(personInstance);
