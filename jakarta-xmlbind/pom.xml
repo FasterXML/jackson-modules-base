@@ -9,7 +9,7 @@
   <parent>
     <groupId>tools.jackson.module</groupId>
     <artifactId>jackson-modules-base</artifactId>
-    <version>3.0.0-rc1-SNAPSHOT</version>
+    <version>3.0.0-rc1</version>
   </parent>
   <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
   <name>Jackson module: Jakarta XML Bind Annotations (jakarta.xml.bind)</name>
