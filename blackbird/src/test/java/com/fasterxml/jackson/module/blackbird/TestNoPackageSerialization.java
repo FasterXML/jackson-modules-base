@@ -24,7 +24,6 @@ public class TestNoPackageSerialization {
     public void testSerializeDeserializeDefaultPackageClass() throws Exception {
         // Define the source code for a class in the default package (no package declaration)
         String source =
-                  "package dynamicClassTest;" +
                   "public class Person {" +
                   "    public String name;" +
                   "    public int age;" +
@@ -55,7 +54,7 @@ public class TestNoPackageSerialization {
         
         // Load the compiled class using a URLClassLoader
         URLClassLoader classLoader = new URLClassLoader(new URL[] { tempDir.toUri().toURL() });
-        Class<?> personClass = classLoader.loadClass("dynamicClassTest.Person");
+        Class<?> personClass = classLoader.loadClass("Person");
         
         // Instantiate the Person object using reflection
         Object personInstance = personClass.getConstructor(String.class, int.class)
