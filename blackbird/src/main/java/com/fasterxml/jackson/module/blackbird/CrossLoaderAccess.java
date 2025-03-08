@@ -106,7 +106,7 @@ class CrossLoaderAccess implements UnaryOperator<MethodHandles.Lookup> {
 
     private static Class<?> accessClassIn(MethodHandles.Lookup lookup) throws IOException, ReflectiveOperationException {
         Package pkg = lookup.lookupClass().getPackage();
-        String accessClassName = pkg.getName() + "." + CLASS_NAME;
+        String accessClassName = (pkg.getName().isEmpty() ? "" : pkg.getName() + ".") + CLASS_NAME;
         ClassLoader lookupClassLoader = lookup.lookupClass().getClassLoader();
         try {
             return Class.forName(accessClassName, true, lookupClassLoader);
@@ -115,9 +115,8 @@ class CrossLoaderAccess implements UnaryOperator<MethodHandles.Lookup> {
             try {
                 return Class.forName(accessClassName, true, lookupClassLoader);
             } catch (ClassNotFoundException ign) { }
-            String fqcn = pkg.getName()
-                    .replace('.', '/')
-                + "/" + CLASS_NAME;
+            String fqcn = (pkg.getName().isEmpty() ? "" : pkg.getName().replace('.', '/') + "/") + CLASS_NAME;
+
             ByteArrayOutputStream classBytes = new ByteArrayOutputStream(HEADER.length + FOOTER.length + fqcn.length() + 16);
             DataOutputStream dataOut = new DataOutputStream(classBytes);
             for (int b : HEADER) {
