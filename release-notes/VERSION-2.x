@@ -27,6 +27,9 @@ Active maintainers:
 
 #268: Unify testing structure/tools [JSTEP-10]
  (contributed by Joo-Hyuk K)
+#285: `JacksonBlackbirdAccess` Class access exception with Groovy Script
+  serialization using `BlackbirdModule`
+ (reported, fix contributed by Apoorva M)
 
 2.18.3 (28-Feb-2025)
 2.18.2 (27-Nov-2024)
