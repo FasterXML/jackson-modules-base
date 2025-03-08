@@ -160,3 +160,9 @@ Jack Dunning (@JDUNNIN)
 * Contributed #251: Constructor is not recognized when a record uses both arrays
   and generic types
  (2.18.0)
+
+Apoorva Manjunath (@apoorvam)
+
+* Reported, contributed fix for #285: `JacksonBlackbirdAccess` Class access
+  exception with Groovy Script serialization using `BlackbirdModule`
+ (2.19.0)
