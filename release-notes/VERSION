@@ -22,7 +22,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-3.0.0 (not yet released)
+3.0.0-rc1 (07-Mar-2025)
 
 #26: Improve handling of parent class loader for generated classes
  (suggested by hatgaei@github)
