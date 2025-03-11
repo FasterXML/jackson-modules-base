@@ -30,6 +30,7 @@ Active maintainers:
 #285: `JacksonBlackbirdAccess` Class access exception with Groovy Script
   serialization using `BlackbirdModule`
  (reported, fix contributed by Apoorva M)
+#290: Update Paranamer dep from 2.8 to 2.8.3
 
 2.18.3 (28-Feb-2025)
 2.18.2 (27-Nov-2024)
