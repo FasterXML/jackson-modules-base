@@ -553,7 +553,12 @@ public class RecordBasicsTest extends BaseMapTest
   public static class StringTrimmer implements Converter<String, String> {
 
     @Override
-    public String convert(String value) {
+    public String convert(DeserializationContext ctxt, String value) {
+      return value.trim();
+    }
+
+    @Override
+    public String convert(SerializationContext ctxt, String value) {
       return value.trim();
     }
 
