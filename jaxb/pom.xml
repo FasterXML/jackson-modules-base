@@ -9,7 +9,7 @@
   <parent>
     <groupId>tools.jackson.module</groupId>
     <artifactId>jackson-modules-base</artifactId>
-    <version>3.0.0-rc2-SNAPSHOT</version>
+    <version>3.0.0-rc2</version>
   </parent>
   <artifactId>jackson-module-jaxb-annotations</artifactId>
   <name>Jackson module: JAXB Annotations (javax.xml.bind)</name>
