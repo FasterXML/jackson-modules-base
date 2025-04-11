@@ -1,13 +1,13 @@
 package tools.jackson.module.afterburner.deser;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.deser.*;
-import tools.jackson.databind.deser.impl.FieldProperty;
-import tools.jackson.databind.deser.impl.MethodProperty;
 import tools.jackson.databind.deser.std.StdValueInstantiator;
 import tools.jackson.databind.introspect.*;
 import tools.jackson.databind.util.ClassUtil;
@@ -125,7 +125,8 @@ public class ABDeserializerModifier extends ValueDeserializerModifier
                 }
             }
 
-            if (prop instanceof MethodProperty) { // simple setter methods
+            Member reflectMember = prop.getMember().getMember();
+            if (reflectMember instanceof Method) { // simple setter methods
                 Class<?> type = ((AnnotatedMethod) member).getRawParameterType(0);
                 if (type.isPrimitive()) {
                     if (type == Integer.TYPE) {
@@ -142,10 +143,10 @@ public class ABDeserializerModifier extends ValueDeserializerModifier
                         newProps.add(collector.addObjectSetter(prop));
                     }
                 }
-            } else if (prop instanceof FieldProperty) { // regular fields
+            } else if (reflectMember instanceof Field) { // regular fields
                 // And as to fields, can not overwrite final fields (which may
                 // be overwritable via Reflection)
-                if (Modifier.isFinal(prop.getMember().getMember().getModifiers())) {
+                if (Modifier.isFinal(reflectMember.getModifiers())) {
                     continue;
                 }
                 
