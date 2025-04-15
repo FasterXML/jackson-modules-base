@@ -38,9 +38,9 @@ public class BBSerializerModifier extends ValueSerializerModifier
 
     @Override
     public List<BeanPropertyWriter> changeProperties(SerializationConfig config,
-            BeanDescription beanDesc, List<BeanPropertyWriter> beanProperties)
+            BeanDescription.Supplier beanDescRef, List<BeanPropertyWriter> beanProperties)
     {
-        final Class<?> beanClass = beanDesc.getBeanClass();
+        final Class<?> beanClass = beanDescRef.getBeanClass();
 
         /* Hmmh. Can we access stuff from private classes?
          * Possibly, if we can use parent class loader.

@@ -36,7 +36,8 @@ public class CustomBeanPropertyWriterTest extends BlackbirdTestBase
         private static final long serialVersionUID = 1L;
 
         @Override
-        public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc, List<BeanPropertyWriter> props)
+        public List<BeanPropertyWriter> changeProperties(SerializationConfig config,
+                BeanDescription.Supplier beanDescRef, List<BeanPropertyWriter> props)
         {
             for (int i = 0, len = props.size(); i < len; ++i) {
                 BeanPropertyWriter w = props.get(i);

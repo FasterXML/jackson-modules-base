@@ -28,9 +28,9 @@ public class ABSerializerModifier extends ValueSerializerModifier
 
     @Override
     public List<BeanPropertyWriter> changeProperties(SerializationConfig config,
-            BeanDescription beanDesc, List<BeanPropertyWriter> beanProperties)
+            BeanDescription.Supplier beanDescRef, List<BeanPropertyWriter> beanProperties)
     {
-        final Class<?> beanClass = beanDesc.getBeanClass();
+        final Class<?> beanClass = beanDescRef.getBeanClass();
         // [Issue#21]: Can't force access to sealed packages, or anything within "java."
         //    namespace. (how about javax.?)
         if (!MyClassLoader.canAddClassInPackageOf(beanClass)) {
