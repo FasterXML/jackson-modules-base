@@ -190,9 +190,9 @@ public class AbstractTypeMaterializer
      * an abstract type.
      */
     @Override
-    public JavaType resolveAbstractType(DeserializationConfig config, BeanDescription beanDesc)
+    public JavaType resolveAbstractType(DeserializationConfig config, BeanDescription.Supplier beanDescRef)
     {
-        final JavaType type = beanDesc.getType();
+        final JavaType type = beanDescRef.getType();
         if (!_suitableType(type)) {
             return null;
         }
@@ -204,7 +204,7 @@ public class AbstractTypeMaterializer
         if (type.hasGenericTypes()) {
             materializedType = materializeGenericType(config, type);
         } else {
-            materializedType = materializeRawType(config, beanDesc.getClassInfo());
+            materializedType = materializeRawType(config, beanDescRef.getClassInfo());
         }
         return config.constructType(materializedType);
     }

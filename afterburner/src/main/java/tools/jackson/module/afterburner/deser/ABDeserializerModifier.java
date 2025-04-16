@@ -40,9 +40,9 @@ public class ABDeserializerModifier extends ValueDeserializerModifier
    
     @Override
     public BeanDeserializerBuilder updateBuilder(DeserializationConfig config,
-            BeanDescription beanDesc, BeanDeserializerBuilder builder) 
+            BeanDescription.Supplier beanDescRef, BeanDeserializerBuilder builder) 
     {
-        final Class<?> beanClass = beanDesc.getBeanClass();
+        final Class<?> beanClass = beanDescRef.getBeanClass();
         // [module-afterburner#21]: Can't force access to sealed packages, or anything within "java."
         if (!MyClassLoader.canAddClassInPackageOf(beanClass)) {
             return builder;

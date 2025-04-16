@@ -53,13 +53,13 @@ public class TestDeserializerCaching extends BaseJaxbTest
 
         @Override
         public ValueDeserializer<?> modifyDeserializer(DeserializationConfig config,
-                BeanDescription beanDesc, ValueDeserializer<?> deserializer)
+                BeanDescription.Supplier beanDescRef, ValueDeserializer<?> deserializer)
         {
-            if (MyType.class.isAssignableFrom(beanDesc.getBeanClass())) {
+            if (MyType.class.isAssignableFrom(beanDescRef.getBeanClass())) {
                 count++;
                 return new MyBeanDeserializer((BeanDeserializer)deserializer);
             }
-            return super.modifyDeserializer(config, beanDesc, deserializer);
+            return super.modifyDeserializer(config, beanDescRef, deserializer);
         }
     }
 

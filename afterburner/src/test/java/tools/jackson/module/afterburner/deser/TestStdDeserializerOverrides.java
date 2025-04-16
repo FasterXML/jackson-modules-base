@@ -103,7 +103,7 @@ public class TestStdDeserializerOverrides extends AfterburnerTestBase
                             public ValueDeserializer<?> findBeanDeserializer(
                                     JavaType type,
                                     DeserializationConfig config,
-                                    BeanDescription beanDesc) {
+                                    BeanDescription.Supplier beanDescRef) {
                                 if (type.hasRawClass(String.class)) {
                                     return new DeAmpDeserializer();
                                 }

@@ -62,9 +62,9 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
 
     @Override
     public BeanDeserializerBuilder updateBuilder(DeserializationConfig config,
-            BeanDescription beanDesc, BeanDeserializerBuilder builder)
+            BeanDescription.Supplier beanDescRef, BeanDeserializerBuilder builder)
     {
-        final Class<?> beanClass = beanDesc.getBeanClass();
+        final Class<?> beanClass = beanDescRef.getBeanClass();
         MethodHandles.Lookup lookup = _lookups.apply(beanClass);
         if (lookup == null) {
             return builder;
