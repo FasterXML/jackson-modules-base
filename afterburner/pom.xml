@@ -76,6 +76,11 @@ field access and method calls
         <groupId>com.google.code.maven-replacer-plugin</groupId>
         <artifactId>replacer</artifactId>
       </plugin>
+      <!-- 29-Apr-2025, tatu: SBOM generation [JSTEP-14] -->
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+      </plugin>
 
       <!-- 03-Feb-2025, tatu: No more shading of ByteBuddy
 	   (see [modules-base#284])

@@ -30,6 +30,8 @@
         <version.osgi.core>5.0.0</version.osgi.core>
         <version.mockito>5.15.2</version.mockito>
 
+        <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
+
         <!-- Generate PackageVersion.java into this directory. -->
         <packageVersion.dir>tools/jackson/module/osgi</packageVersion.dir>
         <packageVersion.package>${project.groupId}.osgi</packageVersion.package>
@@ -61,6 +63,11 @@
         <groupId>com.google.code.maven-replacer-plugin</groupId>
         <artifactId>replacer</artifactId>
       </plugin>
+      <!-- 29-Apr-2025, tatu: SBOM generation [JSTEP-14] -->
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+      </plugin>
       <!-- 05-Jul-2020, tatu: Add generation of Gradle Module Metadata -->
       <!-- 28-Feb-2025, jjohannes: Apply plugin last as it has to be the last of all 'package phase' plugins -->
       <plugin>
@@ -71,9 +78,9 @@
 
   </build>
 
+<!--
   <profiles>
     <profile>
-      <!-- And different set up for JDK 17+ -->
       <id>java17+</id>
       <activation>
         <jdk>[17,)</jdk>
@@ -91,5 +98,6 @@
       </build>
     </profile>
   </profiles>
+  -->
 
 </project>

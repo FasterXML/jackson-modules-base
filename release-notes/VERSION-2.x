@@ -25,7 +25,7 @@ Active maintainers:
 
 2.20.0 (not yet released)
 
--
+- Generate SBOMs [JSTEP-14]
 
 2.19.0 (24-Apr-2025)
 
