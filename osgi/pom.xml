@@ -30,6 +30,9 @@
         <version.osgi.core>5.0.0</version.osgi.core>
         <version.mockito>5.15.2</version.mockito>
 
+        <!-- 29-Apr-2025, tatu: Copied from earlier 'maven-surefire-plugin'
+            settings from JDK17 profile. Not 100% sure needed but left for now.
+          -->
         <argLine>--add-opens java.base/java.lang=ALL-UNNAMED</argLine>
 
         <!-- Generate PackageVersion.java into this directory. -->
@@ -75,29 +78,6 @@
         <artifactId>gradle-module-metadata-maven-plugin</artifactId>
       </plugin>
     </plugins>
-
   </build>
-
-<!--
-  <profiles>
-    <profile>
-      <id>java17+</id>
-      <activation>
-        <jdk>[17,)</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <argLine>- -add-opens java.base/java.lang=ALL-UNNAMED</argLine>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
-  -->
 
 </project>
