@@ -1,12 +1,5 @@
 package com.fasterxml.jackson.module.jaxb.adapters;
 
-/**
- * @author Ryan Heaton
- */
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 public class EntryType<K, V> {
 
   private K key;

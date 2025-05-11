@@ -2,15 +2,10 @@ package com.fasterxml.jackson.module.jaxb.adapters;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class MapAdapter<K, V> extends XmlAdapter<MapType<K, V>, Map<K, V>>
 {

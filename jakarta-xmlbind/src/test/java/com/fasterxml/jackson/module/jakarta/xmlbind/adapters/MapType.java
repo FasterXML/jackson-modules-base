@@ -2,9 +2,6 @@ package com.fasterxml.jackson.module.jakarta.xmlbind.adapters;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-
 public class MapType<K,V>
 {
   public List<EntryType<K, V>> entries;

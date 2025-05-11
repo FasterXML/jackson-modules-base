@@ -21,8 +21,8 @@ public class GuiceInjectableValues extends InjectableValues
   }
 
   @Override
-  public Object findInjectableValue(
-      Object valueId, DeserializationContext ctxt, BeanProperty forProperty, Object beanInstance,
+  public Object findInjectableValue(DeserializationContext ctxt,
+      Object valueId, BeanProperty forProperty, Object beanInstance,
       Boolean optional)
   {
     return injector.getInstance((Key<?>) valueId);

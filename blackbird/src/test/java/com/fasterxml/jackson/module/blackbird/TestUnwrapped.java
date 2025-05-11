@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 public class TestUnwrapped extends BlackbirdTestBase
 {
     @JsonPropertyOrder({ "a", "b" })

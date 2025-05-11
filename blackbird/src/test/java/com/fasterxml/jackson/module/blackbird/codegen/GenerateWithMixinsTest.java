@@ -7,8 +7,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 // for [afterburner#51], where re-generation of classes does not work
 // as expected
 public class GenerateWithMixinsTest extends BlackbirdTestBase
