@@ -107,11 +107,14 @@ not datatype, data format, or JAX-RS provider modules.
   <!-- 14-Jul-2022, tatu: Worse. We need both "new" and "old" Snapshot repositories
        because "jackson-annotations" is published via "old"
     -->
+  <!-- 13-May-2025, tatu: And now "old new" to Sonatype Central Portal...
+    -->
   <repositories>
+    <!-- 13-May-2025, tatu: and now moving to Central Portal -->
     <repository>
-      <id>sonatype-nexus-snapshots-new</id>
-      <name>Sonatype Nexus Snapshots</name>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+      <id>central-snapshots</id>
+      <name>Sonatype Central Portal (snapshots)</name>
+      <url>https://central.sonatype.com/repository/maven-snapshots</url>
       <releases><enabled>false</enabled></releases>
       <snapshots><enabled>true</enabled></snapshots>
     </repository>
