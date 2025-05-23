@@ -25,6 +25,7 @@ Active maintainers:
 
 2.20.0 (not yet released)
 
+#303: Add unit tests to verify goodness of SPI metadata for Modules
 - Generate SBOMs [JSTEP-14]
 
 2.19.0 (24-Apr-2025)
