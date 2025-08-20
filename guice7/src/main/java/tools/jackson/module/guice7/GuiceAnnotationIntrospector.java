@@ -11,6 +11,7 @@ import com.google.inject.Key;
 import jakarta.inject.Qualifier;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 public class GuiceAnnotationIntrospector extends NopAnnotationIntrospector
 {
@@ -53,8 +54,7 @@ public class GuiceAnnotationIntrospector extends NopAnnotationIntrospector
             * inject are the member itself, so, nothing to do here...
             */
             guiceMember = m;
-            AnnotationMap anns = ((AnnotatedMember) m).getAllAnnotations();
-            guiceAnnotation = findBindingAnnotation(anns.annotations());
+            guiceAnnotation = findBindingAnnotation(m.annotations());
         } else if (m instanceof AnnotatedMethod) {
            /* For method injection, the @Qualifier and type to inject are
             * specified on the parameter. Here, we only consider methods with
@@ -71,7 +71,7 @@ public class GuiceAnnotationIntrospector extends NopAnnotationIntrospector
             */
             guiceMember = a.getParameter(0);
             final Annotation[] annotations = a.getMember().getParameterAnnotations()[0];
-            guiceAnnotation = findBindingAnnotation(Arrays.asList(annotations));
+            guiceAnnotation = findBindingAnnotation(Stream.of(annotations));
         } else {
             /* Ignore constructors */
             return null;
@@ -96,16 +96,14 @@ public class GuiceAnnotationIntrospector extends NopAnnotationIntrospector
      * annotation are present on what we're trying to inject.
      * Those annotations are only possible on fields or parameters.
      */
-    private Annotation findBindingAnnotation(Iterable<Annotation> annotations)
+    private Annotation findBindingAnnotation(Stream<Annotation> annotations)
     {
-        for (Annotation annotation : annotations) {
-            // Check on guice (BindingAnnotation) & jakarta (Qualifier) based injections
-            if (annotation.annotationType().isAnnotationPresent(BindingAnnotation.class) ||
-                annotation.annotationType().isAnnotationPresent(Qualifier.class))
-            {
-                return annotation;
-            }
-        }
-        return null;
+        return annotations.filter(ann ->  {
+            Class<?> type = ann.annotationType();
+            return type.isAnnotationPresent(BindingAnnotation.class)
+                    || type.isAnnotationPresent(Qualifier.class);
+        })
+        .findFirst()
+        .orElse(null);
     }
 }
