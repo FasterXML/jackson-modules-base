@@ -1,7 +1,11 @@
 package com.fasterxml.jackson.module.mrbean;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestAbstractClassesWithOverrides
     extends BaseTest
@@ -74,6 +78,7 @@ public class TestAbstractClassesWithOverrides
     /**********************************************************
      */
 
+    @Test
     public void testOverrides() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -85,6 +90,8 @@ public class TestAbstractClassesWithOverrides
         verifyBean(bean2);
     }
 
+    @SuppressWarnings("synthetic-access")
+    @Test
     public void testReAbstractedMethods() throws Exception
     {
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
@@ -129,6 +136,7 @@ public class TestAbstractClassesWithOverrides
         assertEquals("Another Foo!", beanWithOtherFoo.getFoo());
     }
 
+    @Test
     public void testEagerFailureOnReAbstractedMethods() throws Exception
     {
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
@@ -161,6 +169,7 @@ public class TestAbstractClassesWithOverrides
         }
     }
 
+    @SuppressWarnings("synthetic-access")
     private void verifyBean(Bean bean) {
         assertNotNull(bean);
         assertEquals("abc", bean.getX());

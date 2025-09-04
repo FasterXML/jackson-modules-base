@@ -4,6 +4,8 @@ import java.util.*;
 
 import javax.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
@@ -11,6 +13,8 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // Reproduction of [Issue-9]
 public class TestXmlID2 extends BaseJaxbTest
@@ -113,6 +117,7 @@ public class TestXmlID2 extends BaseJaxbTest
         return resultList;
     }
     
+    @Test
     public void testIdWithJacksonRules() throws Exception
     {
         ObjectMapper mapper = JsonMapper.builder()
@@ -144,6 +149,7 @@ public class TestXmlID2 extends BaseJaxbTest
         assertEquals(null, result.get(2).department);
     }
     
+    @Test
     public void testIdWithJaxbRules() throws Exception
     {
         // but then also variant where ID is ALWAYS used for XmlID / XmlIDREF

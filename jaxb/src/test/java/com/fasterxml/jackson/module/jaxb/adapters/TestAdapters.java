@@ -6,8 +6,12 @@ import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for checking that JAXB type adapters work (to some
@@ -164,12 +168,14 @@ public class TestAdapters extends BaseJaxbTest
     /**********************************************************
      */
 
+    @Test
     public void testSimpleAdapterSerialization() throws Exception
     {
         Bean bean = new Bean(123L);
         assertEquals("{\"value\":\"XXX\"}", getJaxbMapper().writeValueAsString(bean));
     }
 
+    @Test
     public void testSimpleAdapterDeserialization() throws Exception
     {
         Bean bean = getJaxbMapper().readValue("{\"value\":\"abc\"}", Bean.class);
@@ -178,6 +184,7 @@ public class TestAdapters extends BaseJaxbTest
     }
 
     // [JACKSON-288]
+    @Test
     public void testDateAdapter() throws Exception
     {
         Bean288 input = new Bean288("test");
@@ -189,6 +196,7 @@ public class TestAdapters extends BaseJaxbTest
 
     // [JACKSON-656]
 
+    @Test
     public void testJackson656() throws Exception
     {
         Bean656 bean = new Bean656();

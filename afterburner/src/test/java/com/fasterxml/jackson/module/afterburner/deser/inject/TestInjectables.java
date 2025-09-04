@@ -6,6 +6,10 @@ import com.fasterxml.jackson.databind.*;
 
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+
 public class TestInjectables extends AfterburnerTestBase
 {
     static class InjectedBean
@@ -95,6 +99,7 @@ public class TestInjectables extends AfterburnerTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
     
+    @Test
     public void testSimple() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();
@@ -110,6 +115,7 @@ public class TestInjectables extends AfterburnerTestBase
         assertEquals(37L, bean.third);
     }
     
+    @Test
     public void testWithCtors() throws Exception
     {
         CtorBean bean = MAPPER.readerFor(CtorBean.class)
@@ -120,6 +126,7 @@ public class TestInjectables extends AfterburnerTestBase
         assertEquals("Bubba", bean.name);
     }
 
+    @Test
     public void testTwoInjectablesViaCreator() throws Exception
     {
         CtorBean2 bean = MAPPER.readerFor(CtorBean2.class)
@@ -132,6 +139,7 @@ public class TestInjectables extends AfterburnerTestBase
     }
 
     // [databind#77]
+    @Test
     public void testTransientField() throws Exception
     {
         TransientBean bean = MAPPER.readerFor(TransientBean.class)
@@ -142,6 +150,7 @@ public class TestInjectables extends AfterburnerTestBase
         assertEquals("Injected!", bean.injected);
     }
 
+    @Test
     public void testIssueGH471() throws Exception
     {
         final Object constructorInjected = "constructorInjected";

@@ -1,8 +1,12 @@
 package com.fasterxml.jackson.module.blackbird.ser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SerializeWithViewTest extends BlackbirdTestBase
 {
@@ -15,6 +19,7 @@ public class SerializeWithViewTest extends BlackbirdTestBase
         public int b;
     }
     
+    @Test
     public void testWriterWithView() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();

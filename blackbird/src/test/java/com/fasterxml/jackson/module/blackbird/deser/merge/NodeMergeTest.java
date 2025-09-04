@@ -1,11 +1,15 @@
 package com.fasterxml.jackson.module.blackbird.deser.merge;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonMerge;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class NodeMergeTest extends BlackbirdTestBase
 {
@@ -37,6 +41,7 @@ public class NodeMergeTest extends BlackbirdTestBase
     /********************************************************
      */
 
+    @Test
     public void testObjectNodeUpdateValue() throws Exception
     {
         ObjectNode base = MAPPER.createObjectNode();
@@ -51,6 +56,7 @@ public class NodeMergeTest extends BlackbirdTestBase
         assertTrue(base.path("fourth").asBoolean());
     }
 
+    @Test
     public void testObjectNodeMerge() throws Exception
     {
         ObjectNodeWrapper w = MAPPER.readValue(aposToQuotes("{'props':{'stuff':'xyz'}}"),
@@ -60,6 +66,7 @@ public class NodeMergeTest extends BlackbirdTestBase
         assertEquals("xyz", w.props.path("stuff").asText());
     }
 
+    @Test
     public void testObjectDeepUpdate() throws Exception
     {
         ObjectNode base = MAPPER.createObjectNode();
@@ -86,6 +93,7 @@ public class NodeMergeTest extends BlackbirdTestBase
         assertEquals(3, n.get(1).asInt());
     }
 
+    @Test
     public void testArrayNodeUpdateValue() throws Exception
     {
         ArrayNode base = MAPPER.createArrayNode();
@@ -100,6 +108,7 @@ public class NodeMergeTest extends BlackbirdTestBase
         assertTrue(base.path(3).isNull());
     }
 
+    @Test
     public void testArrayNodeMerge() throws Exception
     {
         ArrayNodeWrapper w = MAPPER.readValue(aposToQuotes("{'list':[456,true,{},  [], 'foo']}"),

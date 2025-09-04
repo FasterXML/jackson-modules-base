@@ -138,4 +138,31 @@ Marco Descher (@col-panic)
 Eran Leshem (@eranl)
 
 * Contributed #227: Add `jackson-module-android-record
+ (2.16.0)
 
+Sammy Chu (@sammyhk)
+
+* Reported #231: (jakarta-xmlbind) Missed change of `javax.activation;resolution:=optional`
+  to `jakarta.activation;resolution:=optional` in `jakarta-xmlbind/pom.xml`
+ (2.16.1)
+
+Jack Dunning (@JDUNNIN)
+
+* Contributed #233: (jaxb) Tolerate JAX-RS 2.2 in jackson-module-jaxb-annotations so
+  that it can be deployed in Liberty alongside features which use 2.2
+ (2.18.0)
+
+@HelloOO7
+
+* Contributed #248: (android-record) jClass annotations and polymorphic types are ignored
+  when deserializing Android Record fields*
+ (2.18.0)
+* Contributed #251: Constructor is not recognized when a record uses both arrays
+  and generic types
+ (2.18.0)
+
+Apoorva Manjunath (@apoorvam)
+
+* Reported, contributed fix for #285: `JacksonBlackbirdAccess` Class access
+  exception with Groovy Script serialization using `BlackbirdModule`
+ (2.19.0)

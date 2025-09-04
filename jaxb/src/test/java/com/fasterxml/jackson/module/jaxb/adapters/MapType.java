@@ -5,6 +5,7 @@ import java.util.List;
 /**
  * @author Ryan Heaton
  */
+
 public class MapType<K,V> {
 
   public List<EntryType<K, V>> entries;

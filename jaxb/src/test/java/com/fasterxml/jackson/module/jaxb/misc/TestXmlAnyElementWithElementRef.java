@@ -4,8 +4,12 @@ import java.util.*;
 
 import javax.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestXmlAnyElementWithElementRef
     extends BaseJaxbTest
@@ -40,6 +44,7 @@ public class TestXmlAnyElementWithElementRef
      */
 
     // [JACKSON-254]: verify that things do work
+    @Test
     public void testXmlAnyElementWithElementRef() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

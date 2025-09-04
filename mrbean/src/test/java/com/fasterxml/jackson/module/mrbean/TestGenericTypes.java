@@ -6,6 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class TestGenericTypes
     extends BaseTest
 {
@@ -37,6 +41,7 @@ public class TestGenericTypes
     /**
      * Test simple leaf-level bean with 2 implied _beanProperties
      */
+    @Test
     public void testSimpleInterface() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper().registerModule(new MrBeanModule());
@@ -50,6 +55,7 @@ public class TestGenericTypes
         assertEquals("foo", leaves.get(0).value);
     }
 
+    @Test
     public void testGenericInterface() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -68,6 +74,7 @@ public class TestGenericTypes
         }
     }
 
+    @Test
     public void testGenericClass() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper()
@@ -87,6 +94,7 @@ public class TestGenericTypes
     }
 
     // for [mrbean#8]
+    @Test
     public void testWithGenericReferenceType() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper()

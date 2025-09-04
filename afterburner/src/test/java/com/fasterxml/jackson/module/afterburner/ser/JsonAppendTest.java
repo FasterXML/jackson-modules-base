@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonAppend;
@@ -9,6 +11,8 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.ser.VirtualBeanPropertyWriter;
 import com.fasterxml.jackson.databind.util.Annotations;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // most for [module-afterburner#57]
 public class JsonAppendTest extends AfterburnerTestBase
@@ -40,6 +44,7 @@ public class JsonAppendTest extends AfterburnerTestBase
         }
     }
 
+    @Test
     public void testSimpleAppend() throws Exception
     {
         final ObjectMapper mapper = newAfterburnerMapper();

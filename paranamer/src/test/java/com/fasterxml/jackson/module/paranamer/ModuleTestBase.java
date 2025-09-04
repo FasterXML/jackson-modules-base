@@ -2,10 +2,9 @@ package com.fasterxml.jackson.module.paranamer;
 
 import java.util.Arrays;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class ModuleTestBase
-    extends TestCase
 {
     protected void verifyException(Throwable e, String... matches)
     {

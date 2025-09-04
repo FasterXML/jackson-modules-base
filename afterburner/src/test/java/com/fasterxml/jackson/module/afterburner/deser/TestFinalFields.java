@@ -1,8 +1,12 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestFinalFields extends AfterburnerTestBase
 {
@@ -42,6 +46,7 @@ public class TestFinalFields extends AfterburnerTestBase
 
     private final ObjectMapper MAPPER = newAfterburnerMapper();
 
+    @Test
     public void testFinalFields() throws Exception
     {
         String json = MAPPER.writeValueAsString(new Organization[] {
@@ -56,7 +61,8 @@ public class TestFinalFields extends AfterburnerTestBase
     }
 
     // For [Afterburner#42]
-    
+
+    @Test
     public void testFinalFields42() throws Exception
     {
         JsonAddress address = new JsonAddress(-1L, "line1", "line2", "city", "state", "zip", "locale", "timezone");

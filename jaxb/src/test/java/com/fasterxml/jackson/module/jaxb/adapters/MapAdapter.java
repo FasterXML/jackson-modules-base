@@ -2,7 +2,6 @@ package com.fasterxml.jackson.module.jaxb.adapters;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;

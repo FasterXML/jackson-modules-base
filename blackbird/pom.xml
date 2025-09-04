@@ -8,7 +8,7 @@
   <parent>
     <groupId>com.fasterxml.jackson.module</groupId>
     <artifactId>jackson-modules-base</artifactId>
-    <version>2.16.0-SNAPSHOT</version>
+    <version>2.21.0-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-module-blackbird</artifactId>
   <name>Jackson module: Blackbird</name>
@@ -43,11 +43,8 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
-    <dependency> <!--  tests use Jackson annotations -->
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <scope>provided</scope>
-    </dependency>
+
+    <!-- Test dependencies: -->
   </dependencies>
 
   <build>
@@ -56,12 +53,12 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
         <!-- Inherited from oss-base. Generate PackageVersion.java.-->
         <groupId>com.google.code.maven-replacer-plugin</groupId>
         <artifactId>replacer</artifactId>
-        <executions>
-          <execution>
-            <id>process-packageVersion</id>
-            <phase>generate-sources</phase>
-          </execution>
-        </executions>
+      </plugin>
+
+      <!-- 29-Apr-2025, tatu: SBOM generation [JSTEP-14] -->
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
       </plugin>
       <!--  14-Mar-2019, tatu: Add rudimentary JDK9+ module info. To build with JDK 8
              will have to use `moduleInfoFile` as anything else requires JDK 9+
@@ -69,6 +66,12 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
       <plugin>
         <groupId>org.moditect</groupId>
         <artifactId>moditect-maven-plugin</artifactId>
+      </plugin>
+      <!-- 05-Jul-2020, tatu: Add generation of Gradle Module Metadata -->
+      <!-- 28-Feb-2025, jjohannes: Apply plugin last as it has to be the last of all 'package phase' plugins -->
+      <plugin>
+        <groupId>org.gradlex</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
@@ -84,7 +87,6 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>3.0.0-M8</version>
             <configuration>
               <argLine>--add-opens java.base/javax.security.auth=ALL-UNNAMED</argLine>
             </configuration>

@@ -141,8 +141,8 @@ public class JakartaXmlBindAnnotationIntrospector
         /// Data handlers included dynamically, to try to prevent issues on
         // platforms with less than complete support for JAXB API
         try {
-            dataHandlerSerializer = (JsonSerializer<?>) DataHandlerSerializer.class.newInstance();
-            dataHandlerDeserializer = (JsonDeserializer<?>) DataHandlerDeserializer.class.newInstance();
+            dataHandlerSerializer = (JsonSerializer<?>) DataHandlerSerializer.class.getConstructor().newInstance();
+            dataHandlerDeserializer = (JsonDeserializer<?>) DataHandlerDeserializer.class.getConstructor().newInstance();
         } catch (Throwable e) {
             //dataHandlers not supported...
         }

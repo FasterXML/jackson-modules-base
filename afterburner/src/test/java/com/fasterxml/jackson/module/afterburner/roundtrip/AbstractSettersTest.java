@@ -1,8 +1,12 @@
 package com.fasterxml.jackson.module.afterburner.roundtrip;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [issue#47]
 public class AbstractSettersTest extends AfterburnerTestBase
@@ -44,7 +48,8 @@ public class AbstractSettersTest extends AfterburnerTestBase
      */
 
     private final ObjectMapper MAPPER = newObjectMapper();
-    
+
+    @Test
     public void testSimpleConstructor() throws Exception
     {
         FooImpl1 item = new FooImpl1();

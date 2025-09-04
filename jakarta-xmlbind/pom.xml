@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.fasterxml.jackson.module</groupId>
     <artifactId>jackson-modules-base</artifactId>
-    <version>2.16.0-SNAPSHOT</version>
+    <version>2.21.0-SNAPSHOT</version>
   </parent>
   <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
   <name>Jackson module: Jakarta XML Bind Annotations (jakarta.xml.bind)</name>
@@ -37,7 +37,9 @@
       -->
     <!-- 02-Oct-2023, tatu: [modules-base#219]: Need to relax constraints for bind-annotations
       -->
-    <osgi.import>javax.activation;resolution:=optional,
+    <!-- 20-Dec-2023, tatu: [modules-base#231]: And make sure to use "right" actiovation dep
+      -->
+    <osgi.import>jakarta.activation;resolution:=optional,
       jakarta.xml.bind;version="[3.0,4.0.100)",
       jakarta.xml.bind.*;version="[3.0,4.0.100)",
       *
@@ -89,11 +91,21 @@
         <groupId>com.google.code.maven-replacer-plugin</groupId>
         <artifactId>replacer</artifactId>
       </plugin>
+      <!-- 29-Apr-2025, tatu: SBOM generation [JSTEP-14] -->
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+      </plugin>
       <plugin>
         <groupId>org.moditect</groupId>
         <artifactId>moditect-maven-plugin</artifactId>
       </plugin>
-
+      <!-- 05-Jul-2020, tatu: Add generation of Gradle Module Metadata -->
+      <!-- 28-Feb-2025, jjohannes: Apply plugin last as it has to be the last of all 'package phase' plugins -->
+      <plugin>
+        <groupId>org.gradlex</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+      </plugin>
     </plugins>
   </build>
 </project>

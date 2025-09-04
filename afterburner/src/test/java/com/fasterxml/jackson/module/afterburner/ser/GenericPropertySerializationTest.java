@@ -1,7 +1,11 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GenericPropertySerializationTest extends AfterburnerTestBase
 {
@@ -36,6 +40,7 @@ public class GenericPropertySerializationTest extends AfterburnerTestBase
 
     final private ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testGenericIssue4() throws Exception
     {
         MyClass input = new MyClass("foo");

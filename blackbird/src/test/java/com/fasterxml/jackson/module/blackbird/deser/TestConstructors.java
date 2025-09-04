@@ -1,8 +1,12 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestConstructors extends BlackbirdTestBase
 {
@@ -22,6 +26,7 @@ public class TestConstructors extends BlackbirdTestBase
      */
 
     // For [Issue#34]
+    @Test
     public void testPrivateConstructor() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();

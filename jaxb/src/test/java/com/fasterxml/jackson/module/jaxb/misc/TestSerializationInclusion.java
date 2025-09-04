@@ -4,10 +4,14 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestSerializationInclusion extends BaseJaxbTest
 {
@@ -20,6 +24,7 @@ public class TestSerializationInclusion extends BaseJaxbTest
         }
     }    
 
+    @Test
     public void testIssue39() throws Exception
     {
         // First: use plain JAXB introspector:
@@ -36,7 +41,7 @@ public class TestSerializationInclusion extends BaseJaxbTest
         
     private void _testInclusion(ObjectMapper mapper) throws Exception
     {
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
         String json = mapper.writeValueAsString(new Data());
         assertEquals("{}", json);
     }

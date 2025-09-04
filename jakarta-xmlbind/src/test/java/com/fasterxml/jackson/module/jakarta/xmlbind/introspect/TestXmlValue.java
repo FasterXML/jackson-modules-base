@@ -4,11 +4,15 @@ import java.io.IOException;
 
 import jakarta.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.databind.*;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestXmlValue extends ModuleTestBase
 {
@@ -50,6 +54,7 @@ public class TestXmlValue extends ModuleTestBase
      */
 
     // For [jaxb-annotations#30]
+    @Test
     public void testXmlValueDefault() throws IOException
     {
         ObjectMapper mapper = getJaxbAndJacksonMapper();
@@ -58,6 +63,7 @@ public class TestXmlValue extends ModuleTestBase
     }
 
     // For [jaxb-annotations#30]
+    @Test
     public void testXmlValueOverride() throws IOException
     {
         ObjectMapper mapper = getJaxbAndJacksonMapper();
@@ -66,6 +72,7 @@ public class TestXmlValue extends ModuleTestBase
     }
 
     // For [jaxb-annotations#31]
+    @Test
     public void testXmlValueDefault2() throws IOException
     {
         ObjectMapper mapper = getJaxbAndJacksonMapper();

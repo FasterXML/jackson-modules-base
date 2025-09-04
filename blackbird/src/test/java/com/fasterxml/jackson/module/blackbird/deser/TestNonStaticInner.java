@@ -1,7 +1,11 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestNonStaticInner extends BlackbirdTestBase
 {
@@ -30,6 +34,7 @@ public class TestNonStaticInner extends BlackbirdTestBase
         }
     }
 
+    @Test
     public void testInnerClass() throws  Exception {
         final ObjectMapper MAPPER = newObjectMapper();
 //        final ObjectMapper MAPPER = new ObjectMapper();

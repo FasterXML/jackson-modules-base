@@ -1,10 +1,15 @@
 package com.fasterxml.jackson.module.afterburner.deser;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JacksonInject;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestCreatorsDelegating extends AfterburnerTestBase
 {
@@ -59,6 +64,7 @@ public class TestCreatorsDelegating extends AfterburnerTestBase
     /**********************************************************
      */
 
+    @Test
     public void testBooleanDelegate() throws Exception
     {
         ObjectMapper m = newObjectMapper();
@@ -72,6 +78,7 @@ public class TestCreatorsDelegating extends AfterburnerTestBase
     }
     
     // As per [JACKSON-711]: should also work with delegate model (single non-annotated arg)
+    @Test
     public void testWithCtorAndDelegate() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();
@@ -88,6 +95,7 @@ public class TestCreatorsDelegating extends AfterburnerTestBase
         assertEquals("Pooka", bean.name);
     }
 
+    @Test
     public void testWithFactoryAndDelegate() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();

@@ -6,7 +6,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestJDKSerializability extends ModuleTestBase
 {
@@ -14,6 +18,7 @@ public class TestJDKSerializability extends ModuleTestBase
         public int x, y;
     }
 
+    @Test
     public void testMapper() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper().registerModule(new ParanamerModule());

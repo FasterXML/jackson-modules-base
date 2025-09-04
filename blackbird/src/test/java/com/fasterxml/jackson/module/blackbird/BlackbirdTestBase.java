@@ -9,7 +9,9 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
-public abstract class BlackbirdTestBase extends junit.framework.TestCase
+import static org.junit.jupiter.api.Assertions.*;
+
+public abstract class BlackbirdTestBase
 {
     // // // First some "shared" classes from databind's `BaseMapTest`
 
@@ -251,7 +253,7 @@ public abstract class BlackbirdTestBase extends junit.framework.TestCase
         throws IOException
     {
         assertEquals(expName, jp.getText());
-        assertEquals(expName, jp.getCurrentName());
+        assertEquals(expName, jp.currentName());
     }
 
     protected void verifyIntValue(JsonParser jp, long expValue)

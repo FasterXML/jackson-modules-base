@@ -3,12 +3,12 @@
   <parent>
     <groupId>com.fasterxml.jackson</groupId>
     <artifactId>jackson-base</artifactId>
-    <version>2.16.0-SNAPSHOT</version>
+    <version>2.21.0-SNAPSHOT</version>
   </parent>
   <groupId>com.fasterxml.jackson.module</groupId>
   <artifactId>jackson-modules-base</artifactId>
   <name>Jackson modules: Base</name>
-  <version>2.16.0-SNAPSHOT</version>
+  <version>2.21.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <description>Parent pom for Jackson "base" modules: modules that build directly on databind, and are
 not datatype, data format, or JAX-RS provider modules.
@@ -72,13 +72,27 @@ not datatype, data format, or JAX-RS provider modules.
     </dependencies>
   </dependencyManagement>
 
-  <!-- Alas, need to include snapshot reference since otherwise can not find
-       snapshot of parent... -->
+  <dependencies>
+    <!-- 11-Jan-2025, joohyukkim: For JSTEP-10, migrate to JUnit5 -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  
+  <!-- Need to include snapshot reference to find snapshot of parent -->
   <repositories>
+    <!-- 13-May-2025, tatu: now access snapshots via Central Portal -->
     <repository>
-      <id>sonatype-nexus-snapshots</id>
-      <name>Sonatype Nexus Snapshots</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <id>central-snapshots</id>
+      <name>Sonatype Central Portal (snapshots)</name>
+      <url>https://central.sonatype.com/repository/maven-snapshots</url>
       <releases><enabled>false</enabled></releases>
       <snapshots><enabled>true</enabled></snapshots>
     </repository>
@@ -102,21 +116,8 @@ not datatype, data format, or JAX-RS provider modules.
 	<plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <excludes>
-              <exclude>com/fasterxml/jackson/**/failing/*.java</exclude>
-            </excludes>
-          </configuration>
 	</plugin>
       </plugins>
     </pluginManagement>
-
-    <plugins>
-      <plugin>
-        <groupId>de.jjohannes</groupId>
-        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
-      </plugin>
-    </plugins>
   </build>
-
 </project>

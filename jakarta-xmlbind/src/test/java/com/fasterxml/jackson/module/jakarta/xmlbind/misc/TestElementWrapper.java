@@ -2,6 +2,8 @@ package com.fasterxml.jackson.module.jakarta.xmlbind.misc;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementWrapper;
 
@@ -9,6 +11,8 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests to verify handling of @XmlElementWrapper annotation.
@@ -76,6 +80,7 @@ public class TestElementWrapper extends ModuleTestBase
      */
 
     // [JACKSON-436]
+    @Test
     public void testWrapperWithCollection() throws Exception
     {
         ObjectMapper mapper = getJaxbMapperBuilder()
@@ -101,6 +106,7 @@ public class TestElementWrapper extends ModuleTestBase
     }
 
     // [Issue#13]
+    @Test
     public void testWrapperRenaming() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -117,6 +123,7 @@ public class TestElementWrapper extends ModuleTestBase
     }
 
     // [Issue#25]
+    @Test
     public void testWrapperDefaultName() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

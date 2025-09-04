@@ -2,6 +2,8 @@ package com.fasterxml.jackson.module.blackbird.ser;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
@@ -9,6 +11,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // for [afterburner#52]
 public class CustomBeanPropertyWriterTest extends BlackbirdTestBase
@@ -27,6 +31,8 @@ public class CustomBeanPropertyWriterTest extends BlackbirdTestBase
     }
 
     static class Only2BeanSerializerModifier extends BeanSerializerModifier {
+        private static final long serialVersionUID = 1L;
+
         @Override
         public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc, List<BeanPropertyWriter> props)
         {
@@ -57,13 +63,14 @@ public class CustomBeanPropertyWriterTest extends BlackbirdTestBase
         }
     }
     
+    @Test
     public void testCustomPropertyWriter() throws Exception
     {
         ObjectMapper objectMapper = newObjectMapper();
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.setSerializerModifier(new Only2BeanSerializerModifier());
         objectMapper.registerModule(simpleModule);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
 
         SampleObject sampleObject = new SampleObject(null, 2, 3);
         String json = objectMapper.writeValueAsString(sampleObject);

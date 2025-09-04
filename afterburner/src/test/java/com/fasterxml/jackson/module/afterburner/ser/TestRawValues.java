@@ -1,8 +1,12 @@
 package com.fasterxml.jackson.module.afterburner.ser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestRawValues extends AfterburnerTestBase
 {
@@ -22,6 +26,7 @@ public class TestRawValues extends AfterburnerTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
+    @Test
     public void testAfterBurner() throws Exception
     {
         SerializableObject so = new SerializableObject("[123]");

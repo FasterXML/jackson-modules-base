@@ -2,9 +2,13 @@ package com.fasterxml.jackson.module.mrbean;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestSimpleTypes extends BaseTest
 {
@@ -38,6 +42,7 @@ public class TestSimpleTypes extends BaseTest
 
     private final ObjectMapper MAPPER = newMrBeanMapper();
 
+    @Test
     public void testIssue19() throws Exception
     {
         final IntegerBean integerBean = new IntegerBean();
@@ -51,6 +56,7 @@ public class TestSimpleTypes extends BaseTest
     }
 
     // for [modules-base#42]: ignore `get()` and `set()`
+    @Test
     public void testPlainGetAndSet() throws Exception
     {
         JustGetAndSet value = MAPPER.readValue("{}", JustGetAndSet.class);

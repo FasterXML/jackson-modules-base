@@ -2,8 +2,12 @@ package com.fasterxml.jackson.module.mrbean;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests to verify whether generic declarations are properly handled by Mr Bean.
@@ -29,6 +33,7 @@ public class TestMrbeanNestedGeneric extends BaseTest
     /**********************************************************
      */
 
+    @Test
     public void testTypeReferenceNestedGeneric() throws Exception
     {
         final ObjectMapper mapper = new ObjectMapper();
@@ -41,6 +46,7 @@ public class TestMrbeanNestedGeneric extends BaseTest
         assertTrue(ob instanceof Dog);
     }
 
+    @Test
     public void testTypeReferenceNestedGenericList() throws Exception
     {
         final ObjectMapper mapper = new ObjectMapper();
@@ -55,6 +61,6 @@ public class TestMrbeanNestedGeneric extends BaseTest
         List<?> records = result.getRecords();
         assertEquals(1, records.size());
         Object ob = records.get(0);
-        assertTrue("Actual type: "+ob.getClass(), ob instanceof Dog);
+        assertTrue(ob instanceof Dog, "Actual type: "+ob.getClass());
     }
 }

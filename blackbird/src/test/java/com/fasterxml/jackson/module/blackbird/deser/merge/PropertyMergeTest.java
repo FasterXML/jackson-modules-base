@@ -1,5 +1,7 @@
 package com.fasterxml.jackson.module.blackbird.deser.merge;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.fasterxml.jackson.annotation.*;
@@ -9,6 +11,8 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests to make sure that the new "merging" property of
@@ -98,6 +102,7 @@ public class PropertyMergeTest extends BlackbirdTestBase
             .build()
     ;
 
+    @Test
     public void testBeanMergingViaProp() throws Exception
     {
         Config config = MAPPER.readValue(aposToQuotes("{'loc':{'b':3}}"), Config.class);
@@ -110,6 +115,7 @@ public class PropertyMergeTest extends BlackbirdTestBase
         assertEquals(2, config.loc.b);
     }
 
+    @Test
     public void testBeanMergingViaType() throws Exception
     {
         // by default, no merging
@@ -125,6 +131,7 @@ public class PropertyMergeTest extends BlackbirdTestBase
         assertEquals(2, config.loc.b); // original, merged
     }
 
+    @Test
     public void testBeanMergingViaGlobal() throws Exception
     {
         // but with type-overrides
@@ -145,6 +152,7 @@ public class PropertyMergeTest extends BlackbirdTestBase
     }
 
     // should even work with no setter
+    @Test
     public void testBeanMergingWithoutSetter() throws Exception
     {
         NoSetterConfig config = MAPPER.readValue(aposToQuotes("{'value':{'b':99}}"),
@@ -159,6 +167,7 @@ public class PropertyMergeTest extends BlackbirdTestBase
     /********************************************************
      */
 
+    @Test
     public void testBeanAsArrayMerging() throws Exception
     {
         ABAsArray input = new ABAsArray();
@@ -201,6 +210,7 @@ public class PropertyMergeTest extends BlackbirdTestBase
     /********************************************************
      */
 
+    @Test
     public void testReferenceMerging() throws Exception
     {
         MergedReference result = MAPPER.readValue(aposToQuotes("{'value':'override'}"),
@@ -214,6 +224,7 @@ public class PropertyMergeTest extends BlackbirdTestBase
     /********************************************************
      */
 
+    @Test
     public void testInvalidPropertyMerge() throws Exception
     {
         ObjectMapper mapper = mapperBuilder()

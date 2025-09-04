@@ -135,7 +135,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         }
         final Object bean = _valueInstantiator.createUsingDefault(ctxt);
         // [databind#631]: Assign current value, to be accessible by custom serializers
-        p.setCurrentValue(bean);
+        p.assignCurrentValue(bean);
         if (p.canReadObjectId()) {
             Object id = p.getObjectId();
             if (id != null) {
@@ -174,7 +174,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         throws IOException
     {
         // [databind#631]: Assign current value, to be accessible by custom deserializers
-        p.setCurrentValue(bean);
+        p.assignCurrentValue(bean);
         if (_injectables != null) {
             injectValues(ctxt, bean);
         }
@@ -191,7 +191,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
                 return super.deserialize(p,  ctxt, bean);
             }
         } else if (!p.hasToken(JsonToken.FIELD_NAME)
-                || !prop.getName().equals(p.getCurrentName())) {
+                || !prop.getName().equals(p.currentName())) {
             // no, something funky, use base impl for special cases
             return super.deserialize(p,  ctxt, bean);
         }
@@ -233,7 +233,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         // Allow Object Id references to come in as JSON Objects as well...
         if ((_objectIdReader != null) && _objectIdReader.maySerializeAsObject()) {
             if (p.hasTokenId(JsonTokenId.ID_FIELD_NAME)
-                    && _objectIdReader.isValidReferencePropertyName(p.getCurrentName(), p)) {
+                    && _objectIdReader.isValidReferencePropertyName(p.currentName(), p)) {
                 return deserializeFromObjectId(p, ctxt);
             }
         }
@@ -252,7 +252,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
         }
         final Object bean = _valueInstantiator.createUsingDefault(ctxt);
         // [databind#631]: Assign current value, to be accessible by custom serializers
-        p.setCurrentValue(bean);
+        p.assignCurrentValue(bean);
         if (p.canReadObjectId()) {
             Object id = p.getObjectId();
             if (id != null) {
@@ -269,7 +269,7 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
                 return super.deserialize(p,  ctxt, bean);
             }
         } else if (!p.hasToken(JsonToken.FIELD_NAME)
-                || !prop.getName().equals(p.getCurrentName())) {
+                || !prop.getName().equals(p.currentName())) {
             return super.deserialize(p,  ctxt, bean);
         }
         // and deserialize

@@ -3,16 +3,13 @@ package com.fasterxml.jackson.module.mrbean;
 import java.io.*;
 import java.util.Arrays;
 
-import junit.framework.TestCase;
-
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
-//import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class BaseTest
-    extends TestCase
 {
     /*
     /**********************************************************

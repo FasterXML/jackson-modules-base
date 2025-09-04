@@ -1,8 +1,14 @@
 package com.fasterxml.jackson.module.paranamer;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.JsonMappingException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleTest extends ModuleTestBase
 {
@@ -25,6 +31,7 @@ public class SimpleTest extends ModuleTestBase
     /**********************************************************
      */
 
+    @Test
     public void testSimple() throws Exception
     {
         final String JSON = "{\"name\":\"Bob\", \"age\":40}";
@@ -33,18 +40,24 @@ public class SimpleTest extends ModuleTestBase
         try {
             mapper.readValue(JSON, CreatorBean.class);
             fail("should fail");
-        } catch (JsonMappingException e) {
-            verifyException(e, "has no property name");
+        } catch (InvalidDefinitionException e) {
+            // pre-2.18:
+//            verifyException(e, "has no property name");
+            // 2.18 changes to:
+            verifyException(e, "More than one argument");
         }
 
         // then with two available modules:
-        mapper = new ObjectMapper().registerModule(new ParanamerModule());
+        mapper = JsonMapper.builder()
+                .addModule(new ParanamerModule())
+                .build();
         CreatorBean bean = mapper.readValue(JSON, CreatorBean.class);
         assertEquals("Bob", bean.name);
         assertEquals(40, bean.age);
 
-        mapper = new ObjectMapper();
-        mapper.setAnnotationIntrospector(new ParanamerOnJacksonAnnotationIntrospector());
+        mapper = JsonMapper.builder()
+                .annotationIntrospector(new ParanamerOnJacksonAnnotationIntrospector())
+                .build();
         bean = mapper.readValue(JSON, CreatorBean.class);
         assertEquals("Bob", bean.name);
         assertEquals(40, bean.age);
@@ -52,9 +65,12 @@ public class SimpleTest extends ModuleTestBase
 
     // Let's test handling of case where parameter names are not found; for example when
     // trying to access things for JDK types
+    @Test
     public void testWrapper() throws Exception
     {
-        ObjectMapper mapper = new ObjectMapper().registerModule(new ParanamerModule());
+        ObjectMapper mapper = JsonMapper.builder()
+                .addModule(new ParanamerModule())
+                .build();
         String json = mapper.writeValueAsString(Integer.valueOf(1));
         assertEquals("1", json);
     }

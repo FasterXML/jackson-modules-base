@@ -1,8 +1,12 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestSingleArgCtors extends BlackbirdTestBase
 {
@@ -28,6 +32,7 @@ public class TestSingleArgCtors extends BlackbirdTestBase
 
     private final ObjectMapper MAPPER = newObjectMapper();
     
+    @Test
     public void testSingleStringArgCtor() throws Exception
     {
         Node bean = MAPPER.readValue(quote("Foobar"), Node.class);

@@ -1,9 +1,5 @@
 package com.fasterxml.jackson.module.osgi;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -13,15 +9,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Filter;
@@ -32,7 +24,8 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
-@RunWith(value = Parameterized.class)
+import static org.junit.jupiter.api.Assertions.*;
+
 public class InjectOsgiServiceTest
 {
     private static final String OSGI_FILTER = "osgi.filter";
@@ -40,13 +33,9 @@ public class InjectOsgiServiceTest
     private BundleContext bundleContext;
 
     private ObjectMapper mapper;
-    
-    @Parameter
-    public Class<?> beanClass;
-    
-    @Parameters
-    public static Collection<Class<? extends VerifyableBean>> data() {
-        return Arrays.asList(
+
+    public static Stream<Class<? extends VerifyableBean>> data() {
+        return Stream.of(
             BeanWithServiceInConstructor.class, 
             BeanWithFilter.class, 
             BeanWithServiceInField.class,
@@ -54,7 +43,7 @@ public class InjectOsgiServiceTest
     }
     
     @SuppressWarnings("unchecked")
-    @Before
+    @BeforeEach
     public void setUp() throws Exception
     {
         bundleContext = mock(BundleContext.class);
@@ -69,9 +58,11 @@ public class InjectOsgiServiceTest
                 .addModule(new OsgiJacksonModule(bundleContext))
                 .build();
     }
-    
-    @Test
-    public void testServiceIsInjected() throws Exception
+
+    @MethodSource("data")
+    @ParameterizedTest
+    public void testServiceIsInjected(Class<?> beanClass)
+        throws Exception
     {
         // ACTION
         VerifyableBean result = mapper.reader().forType(beanClass)

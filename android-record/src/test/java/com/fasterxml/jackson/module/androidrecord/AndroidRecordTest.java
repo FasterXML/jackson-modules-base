@@ -1,28 +1,31 @@
 package com.fasterxml.jackson.module.androidrecord;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.Test;
+
 import com.android.tools.r8.RecordTag;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import junit.framework.TestCase;
-import org.junit.Assert;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Inner test classes simulate Android-desugared records.
  *
  * @author Eran Leshem
  **/
-public class AndroidRecordTest extends TestCase {
-  private static final class Simple extends RecordTag {
+public class AndroidRecordTest
+    extends BaseMapTest
+{
+  static final class Simple extends RecordTag {
     static int si = 7;
     private final int i;
     private final int j;
@@ -30,7 +33,7 @@ public class AndroidRecordTest extends TestCase {
     private final List<String> l;
     private final AtomicInteger ai;
 
-    private Simple(int i, int j, String s, List<String> l, AtomicInteger ai) {
+    Simple(int i, int j, String s, List<String> l, AtomicInteger ai) {
       this.i = i;
       this.j = j;
       this.s = s;
@@ -72,26 +75,26 @@ public class AndroidRecordTest extends TestCase {
     }
   }
 
-  private static final class MultipleConstructors extends RecordTag {
+  static final class MultipleConstructors extends RecordTag {
     private final int i;
     private final List<String> l;
 
-    private MultipleConstructors(int i, List<String> l) {
+    MultipleConstructors(int i, List<String> l) {
       this.i = i;
       this.l = l;
     }
 
-    private MultipleConstructors(String s, List<String> l) {
+    MultipleConstructors(String s, List<String> l) {
       i = Integer.parseInt(s);
       this.l = l;
     }
 
-    private MultipleConstructors(int i, String s, List<String> l) {
+    MultipleConstructors(int i, String s, List<String> l) {
       this.i = i;
       this.l = l;
     }
 
-    private MultipleConstructors(List<Integer> l, int i) {
+    MultipleConstructors(List<Integer> l, int i) {
       this.i = i;
       this.l = null;
     }
@@ -99,19 +102,23 @@ public class AndroidRecordTest extends TestCase {
     int i() {
       return i;
     }
+
+    List<String> l() {
+      return l;
+    }
   }
 
 
-  private static final class ConflictingConstructors extends RecordTag {
+  static final class ConflictingConstructors extends RecordTag {
     private final int i;
     private final String s;
 
-    private ConflictingConstructors(int i, String s) {
+    ConflictingConstructors(int i, String s) {
       this.i = i;
       this.s = s;
     }
 
-    private ConflictingConstructors(String s, int i) {
+    ConflictingConstructors(String s, int i) {
       this.i = i;
       this.s = s;
     }
@@ -125,16 +132,17 @@ public class AndroidRecordTest extends TestCase {
     }
   }
 
-
   private final ObjectMapper _objectMapper = JsonMapper.builder()
                   .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
                   .addModule(new AndroidRecordModule()).build();
 
+  @Test
   public void testSimple() throws JsonProcessingException {
     Simple simple = new Simple(9, 3, "foo", Arrays.asList("bar", "baz"), new AtomicInteger(8));
     assertEquals(simple, _objectMapper.readValue(_objectMapper.writeValueAsString(simple), Simple.class));
   }
 
+  @Test
   public void testMultipleConstructors() throws JsonProcessingException {
     List<String> l = Arrays.asList("bar", "baz");
     assertEquals(9, _objectMapper.readValue(_objectMapper.writeValueAsString(new MultipleConstructors(9, l)),
@@ -147,8 +155,9 @@ public class AndroidRecordTest extends TestCase {
                     new MultipleConstructors(Arrays.asList(1, 2), 9)), MultipleConstructors.class).i());
   }
 
+  @Test
   public void testConflictingConstructors() {
-    Assert.assertThrows(InvalidDefinitionException.class,
+    assertThrows(InvalidDefinitionException.class,
              () -> _objectMapper.readValue(_objectMapper.writeValueAsString(
                      new ConflictingConstructors(9, "foo")), ConflictingConstructors.class));
   }

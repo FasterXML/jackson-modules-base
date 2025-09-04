@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
 
-import static org.junit.Assert.assertArrayEquals;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestSimpleMaterializedInterfaces
     extends BaseTest
@@ -59,6 +61,7 @@ public class TestSimpleMaterializedInterfaces
     }
 
     public interface BeanWithDefaultForOtherInterface extends Bean, OtherInterface {
+        @Override
         public default boolean anyValuePresent() {
             return getX() > 0 || getA() != null;
         }
@@ -77,6 +80,7 @@ public class TestSimpleMaterializedInterfaces
     /**
      * First test verifies that bean builder works as expected
      */
+    @Test
     public void testLowLevelMaterializer() throws Exception
     {
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
@@ -97,6 +101,7 @@ public class TestSimpleMaterializedInterfaces
         assertSame(impl, impl2);
     }
 
+    @Test
     public void testLowLevelMaterializerFailOnIncompatible() throws Exception
     {
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
@@ -109,6 +114,7 @@ public class TestSimpleMaterializedInterfaces
         }
     }
 
+    @Test
     public void testLowLevelMaterializerFailOnUnrecognized() throws Exception
     {
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
@@ -140,6 +146,7 @@ public class TestSimpleMaterializedInterfaces
     /**
      * Test simple leaf-level bean with 2 implied _beanProperties
      */
+    @Test
     public void testSimpleInteface() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -152,6 +159,7 @@ public class TestSimpleMaterializedInterfaces
     /**
      * Then one bean holding a reference to another (leaf-level) bean
      */
+    @Test
     public void testBeanHolder() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -163,6 +171,7 @@ public class TestSimpleMaterializedInterfaces
         assertEquals(-4, bean.getX());
     }
 
+    @Test
     public void testArrayInterface() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -173,6 +182,7 @@ public class TestSimpleMaterializedInterfaces
         assertArrayEquals(new String[] { "cool", "beans" } , bean.getWords());
     }
 
+    @Test
     public void testSubInterface() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -184,6 +194,7 @@ public class TestSimpleMaterializedInterfaces
     }
 
     // [modules-base#109]
+    @Test
     public void testDefaultMethodInInterface() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -195,6 +206,7 @@ public class TestSimpleMaterializedInterfaces
     }
 
     // [modules-base#109]
+    @Test
     public void testInheritedDefaultMethodInInterface() throws Exception
     {
         ObjectMapper mapper = newMrBeanMapper();
@@ -215,6 +227,7 @@ public class TestSimpleMaterializedInterfaces
      * Test to verify that materializer will by default create exception-throwing methods
      * for "unknown" abstract methods
      */
+    @Test
     public void testPartialBean() throws Exception
     {
         AbstractTypeMaterializer mat = new AbstractTypeMaterializer();
@@ -234,6 +247,7 @@ public class TestSimpleMaterializedInterfaces
     }
 
     // Fail gracefully if super type not public
+    @Test
     public void testNonPublic() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();

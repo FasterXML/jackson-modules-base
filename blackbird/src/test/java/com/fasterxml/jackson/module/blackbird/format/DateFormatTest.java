@@ -3,9 +3,13 @@ package com.fasterxml.jackson.module.blackbird.format;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DateFormatTest extends BlackbirdTestBase
 {
@@ -17,6 +21,7 @@ public class DateFormatTest extends BlackbirdTestBase
         public DateWrapper(Date v) { value = v; }
     }
 
+    @Test
     public void testTypeDefaults() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();

@@ -3,8 +3,12 @@ package com.fasterxml.jackson.module.jaxb.adapters;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Failing unit tests related to Adapter handling.
@@ -60,6 +64,7 @@ public class TestIdentityAdapters extends BaseJaxbTest
      */
     
     // [Issue-10]
+    @Test
     public void testIdentityAdapterForClass() throws Exception
     {
         IdentityAdapterBean input = new IdentityAdapterBean("A");
@@ -73,6 +78,7 @@ public class TestIdentityAdapters extends BaseJaxbTest
     }
 
     // [Issue-10]
+    @Test
     public void testIdentityAdapterForProperty() throws Exception
     {
         IdentityAdapterPropertyBean input = new IdentityAdapterPropertyBean("B");

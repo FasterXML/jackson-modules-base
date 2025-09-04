@@ -7,6 +7,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.namespace.QName;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
@@ -15,6 +17,8 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for verifying that JAXB annotation based introspector
@@ -213,6 +217,7 @@ public class TestJaxbAnnotationIntrospector
 
     private final ObjectMapper MAPPER = getJaxbMapper();
     
+    @Test
     public void testDetection() throws Exception
     {
         Map<String,Object> result = writeAndMap(MAPPER, new SimpleBean());
@@ -231,6 +236,7 @@ public class TestJaxbAnnotationIntrospector
     /**
      * tests getting serializer/deserializer instances.
      */
+    @Test
     public void testSerializeDeserializeWithJaxbAnnotations() throws Exception
     {
         ObjectMapper mapper = getJaxbMapperBuilder()
@@ -278,6 +284,7 @@ public class TestJaxbAnnotationIntrospector
         assertNull(readEx.propertyToIgnore);
     }
 
+    @Test
     public void testRootNameAccess() throws Exception
     {
         final TypeFactory tf = TypeFactory.defaultInstance();
@@ -301,6 +308,7 @@ public class TestJaxbAnnotationIntrospector
     }
     
     // JAXB can specify that properties are to be written in alphabetic order...
+    @Test
     public void testSerializationAlphaOrdering() throws Exception
     {
         assertEquals("{\"a\":1,\"b\":2,\"c\":3}", MAPPER.writeValueAsString(new AlphaBean()));
@@ -312,6 +320,7 @@ public class TestJaxbAnnotationIntrospector
      * 
      * @since 2.1
      */
+    @Test
     public void testNamespaces() throws Exception
     {
         final TypeFactory tf = TypeFactory.defaultInstance();

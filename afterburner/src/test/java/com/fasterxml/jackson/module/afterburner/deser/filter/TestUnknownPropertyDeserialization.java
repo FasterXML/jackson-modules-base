@@ -3,12 +3,19 @@ package com.fasterxml.jackson.module.afterburner.deser.filter;
 import java.io.*;
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.type.TypeReference;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
+
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for checking handling of unknown properties
@@ -132,6 +139,7 @@ public class TestUnknownPropertyDeserialization
      * By default we should just get an exception if an unknown property
      * is encountered
      */
+    @Test
     public void testUnknownHandlingDefault() throws Exception
     {
         try {
@@ -145,6 +153,7 @@ public class TestUnknownPropertyDeserialization
      * Test that verifies that it is possible to ignore unknown properties using
      * {@link DeserializationProblemHandler}.
      */
+    @Test
     public void testUnknownHandlingIgnoreWithHandler() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();
@@ -161,6 +170,7 @@ public class TestUnknownPropertyDeserialization
      * Test that verifies that it is possible to ignore unknown properties using
      * {@link DeserializationProblemHandler} and an ObjectReader.
      */
+    @Test
     public void testUnknownHandlingIgnoreWithHandlerAndObjectReader() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();
@@ -176,6 +186,7 @@ public class TestUnknownPropertyDeserialization
      * Test for checking that it is also possible to simply suppress
      * error reporting for unknown properties.
      */
+    @Test
     public void testUnknownHandlingIgnoreWithFeature() throws Exception
     {
         ObjectMapper mapper = newObjectMapper();
@@ -192,6 +203,7 @@ public class TestUnknownPropertyDeserialization
         assertEquals(-1, result._b);
     }
 
+    @Test
     public void testWithClassIgnore() throws Exception
     {
         IgnoreSome result = MAPPER.readValue("{ \"a\":1,\"b\":2,\"c\":\"x\",\"d\":\"y\"}",
@@ -205,6 +217,7 @@ public class TestUnknownPropertyDeserialization
     }
 
     /// @since 1.4
+    @Test
     public void testClassIgnoreWithMap() throws Exception
     {
         // Let's actually use incompatible types for "a" and "d"; should not matter when ignored
@@ -222,6 +235,7 @@ public class TestUnknownPropertyDeserialization
         assertFalse(result.containsKey("d"));
     }
 
+    @Test
     public void testClassWithIgnoreUnknown() throws Exception
     {
         IgnoreUnknown result = MAPPER.readValue
@@ -233,6 +247,7 @@ public class TestUnknownPropertyDeserialization
      * Test that verifies that use of {@link JsonIgnore} will add implicit
      * skipping of matching properties.
      */
+    @Test
     public void testClassWithUnknownAndIgnore() throws Exception
     {
         // should be ok: "a" and "b" ignored, "c" mapped:
@@ -248,6 +263,7 @@ public class TestUnknownPropertyDeserialization
         }
     }
 
+    @Test
     public void testPropertyIgnoral() throws Exception
     {
         XYZWrapper1 result = MAPPER.readValue("{\"value\":{\"y\":2,\"x\":1,\"z\":3}}", XYZWrapper1.class);
@@ -255,6 +271,7 @@ public class TestUnknownPropertyDeserialization
         assertEquals(3, result.value.z);
     }
 
+    @Test
     public void testPropertyIgnoralWithClass() throws Exception
     {
         XYZWrapper2 result = MAPPER.readValue("{\"value\":{\"y\":2,\"x\":1,\"z\":3}}",
@@ -262,6 +279,7 @@ public class TestUnknownPropertyDeserialization
         assertEquals(1, result.value.x);
     }
 
+    @Test
     public void testPropertyIgnoralForMap() throws Exception
     {
         MapWithoutX result = MAPPER.readValue("{\"values\":{\"x\":1,\"y\":2}}", MapWithoutX.class);
@@ -270,6 +288,7 @@ public class TestUnknownPropertyDeserialization
         assertEquals(Integer.valueOf(2), result.values.get("y"));
     }
 
+    @Test
     public void testIssue987() throws Exception
     {
         ObjectMapper jsonMapper = newObjectMapper();

@@ -7,12 +7,16 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.Serializers;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Ryan Heaton
@@ -66,6 +70,7 @@ public class TestDomElementSerialization extends BaseJaxbTest
     /**********************************************************
      */
     
+    @Test
     public void testBasicDomElementSerializationDeserialization() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();

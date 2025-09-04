@@ -23,13 +23,66 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-#223: IncompatibleClassChangeError when deserializing a class implementing
-  an interface with default get/set implementations
- (reported by @avnersin)
-#227: Add `jackson-module-android-record
- (contributed by Eran L)
+2.21.0 (not yet released)
 
-2.16.0-rc1 (20-Oct-2023)
+No changes since 2.20
+
+2.20.0 (28-Aug-2025)
+
+#303: Add unit tests to verify goodness of SPI metadata for Modules
+- Generate SBOMs [JSTEP-14]
+
+2.19.2 (18-Jul-2025)
+2.19.1 (13-Jun-2025)
+
+No changes since 2.19.0
+
+2.19.0 (24-Apr-2025)
+
+#268: Unify testing structure/tools [JSTEP-10]
+ (contributed by Joo-Hyuk K)
+#285: `JacksonBlackbirdAccess` Class access exception with Groovy Script
+  serialization using `BlackbirdModule`
+ (reported, fix contributed by Apoorva M)
+#290: Update Paranamer dep from 2.8 to 2.8.3
+
+2.18.4 (06-May-2025)
+2.18.3 (28-Feb-2025)
+2.18.2 (27-Nov-2024)
+2.18.1 (28-Oct-2024)
+
+No changes since 2.18.0
+
+2.18.0 (26-Sep-2024)
+
+#233: (jaxb) Tolerate JAX-RS 2.2 in jackson-module-jaxb-annotations so
+  that it can be deployed in Liberty alongside features which use 2.2
+ (contributed by Jack D)
+#248: (android-record) jClass annotations and polymorphic types are ignored
+  when deserializing Android Record fields
+ (contributed by @HelloOO7)
+#251: (android-record) Constructor is not recognized when a record uses
+  both arrays and generic types
+ (contributed by @HelloOO7)
+
+2.17.3 (01-Nov-2024)
+2.17.2 (05-Jul-2024)
+2.17.1 (04-May-2024)
+2.17.0 (12-Mar-2024)
+
+No changes since 2.16
+
+2.16.2 (09-Mar-2024)
+
+No changes since 2.16.1
+
+2.16.1 (24-Dec-2023)
+
+#231: (jakarta-xmlbind) Missed change of `javax.activation;resolution:=optional`
+  to `jakarta.activation;resolution:=optional` in `jakarta-xmlbind/pom.xml`
+ (reported by Sammy C)
+
+2.16.0 (15-Nov-2023)
 
 #181: (blackbird) BlackBird proxy object error in Java 17
  (fix by Steven S)
@@ -40,8 +93,14 @@ Active maintainers:
 #219: (jakarta-xmlbind) Using `jackson-module-jakarta-xmlbind-annotations`
   2.15.2 fails in OSGi Environment with JAXB 4
  (fix contributed by Marco D)
+#223: (mrbean) IncompatibleClassChangeError when deserializing a class implementing
+  an interface with default get/set implementations
+ (reported by @avnersin)
+#227: Add `jackson-module-android-record`
+ (contributed by Eran L)
 - Update `asm` version 9.5 -> 9.6
 
+2.15.4 (15-Feb-2024)
 2.15.3 (12-Oct-2023)
 
 No changes since 2.15.2

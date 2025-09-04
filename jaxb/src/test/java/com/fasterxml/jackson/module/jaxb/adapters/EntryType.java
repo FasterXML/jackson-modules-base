@@ -1,8 +1,5 @@
 package com.fasterxml.jackson.module.jaxb.adapters;
 
-/**
- * @author Ryan Heaton
- */
 public class EntryType<K, V> {
 
   private K key;

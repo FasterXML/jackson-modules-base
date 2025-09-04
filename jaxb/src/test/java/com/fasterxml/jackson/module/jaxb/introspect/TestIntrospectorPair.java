@@ -4,6 +4,8 @@ import java.util.*;
 
 import javax.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
@@ -13,6 +15,8 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Simple testing that <code>AnnotationIntrospector.Pair</code> works as
@@ -115,6 +119,7 @@ public class TestIntrospectorPair
     /**********************************************************
      */
 
+    @Test
     public void testSimple() throws Exception
     {
         ObjectMapper mapper;
@@ -145,6 +150,7 @@ public class TestIntrospectorPair
         assertEquals("3", result.get("bothJaxb"));
     }
 
+    @Test
     public void testNaming() throws Exception
     {
         ObjectMapper mapper;
@@ -174,6 +180,7 @@ public class TestIntrospectorPair
         //assertEquals("123", result.get("jackson"));
     }
 
+    @Test
     public void testSimpleIgnore() throws Exception
     {
         // first: only Jackson introspector (default)
@@ -210,6 +217,7 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
     }
 
+    @Test
     public void testSimpleFieldIgnore() throws Exception
     {
         ObjectMapper mapper;
@@ -248,6 +256,7 @@ public class TestIntrospectorPair
         assertEquals(Boolean.TRUE, result.get("any"));
     }
 
+    @Test
     public void testRootName() throws Exception
     {
         // first: test with Jackson/Jaxb pair (jackson having precedence)
@@ -280,6 +289,7 @@ public class TestIntrospectorPair
      * Test that will just use Jackson annotations, but did trigger [JACKSON-495] due to a bug
      * in JAXB annotation introspector.
      */
+    @Test
     public void testIssue495() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();

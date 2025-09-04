@@ -2,11 +2,15 @@ package com.fasterxml.jackson.module.jaxb.misc;
 
 import javax.xml.bind.annotation.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.jsonschema.JsonSchema;
 import com.fasterxml.jackson.module.jaxb.BaseJaxbTest;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test(s) to see that JAXB annotations-based information is properly
@@ -55,6 +59,7 @@ public class TestSchemaGeneration extends BaseJaxbTest
      * 
      * @since 1.7
      */
+    @Test
     public void testWithJaxb() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();
@@ -62,8 +67,8 @@ public class TestSchemaGeneration extends BaseJaxbTest
         ObjectNode root = jsonSchema.getSchemaNode();
         // should find two properties ("city", "state"), not just one...
         JsonNode itemsNode = root.findValue("properties");
-        assertNotNull("Missing 'state' field", itemsNode.get("state"));
-        assertNotNull("Missing 'city' field", itemsNode.get("city"));
+        assertNotNull(itemsNode.get("state"), "Missing 'state' field");
+        assertNotNull(itemsNode.get("city"), "Missing 'city' field");
         assertEquals(2, itemsNode.size());
     }
 }

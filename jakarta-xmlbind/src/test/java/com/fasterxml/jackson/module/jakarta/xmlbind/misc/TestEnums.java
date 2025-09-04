@@ -2,9 +2,13 @@ package com.fasterxml.jackson.module.jakarta.xmlbind.misc;
 
 import jakarta.xml.bind.annotation.XmlEnum;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestEnums extends ModuleTestBase
 {
@@ -20,6 +24,7 @@ public class TestEnums extends ModuleTestBase
      */
 
     // [JACKSON-436]
+    @Test
     public void testWrapperWithCollection() throws Exception
     {
         ObjectMapper mapper = getJaxbMapper();

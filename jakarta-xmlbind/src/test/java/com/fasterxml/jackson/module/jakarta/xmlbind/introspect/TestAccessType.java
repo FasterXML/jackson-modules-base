@@ -6,9 +6,13 @@ import jakarta.xml.bind.annotation.*;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.*;
 
 import com.fasterxml.jackson.module.jakarta.xmlbind.ModuleTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit test(s) written for [JACKSON-303]; we should be able to detect setter
@@ -75,7 +79,8 @@ public class TestAccessType extends ModuleTestBase
     /**********************************************************
      */
 
-     public void testXmlElementTypeDeser() throws Exception
+     @Test
+    public void testXmlElementTypeDeser() throws Exception
      {
          ObjectMapper mapper = getJaxbMapper();
 
@@ -93,7 +98,8 @@ public class TestAccessType extends ModuleTestBase
          }
      }
 
-     public void testForJackson288() throws Exception
+     @Test
+    public void testForJackson288() throws Exception
      {
          final long TIMESTAMP = 12345678L;
          ObjectMapper mapper = getJaxbMapper();
@@ -104,7 +110,8 @@ public class TestAccessType extends ModuleTestBase
          assertEquals(TIMESTAMP, d.getTime());
      }
 
-     public void testInclusionIssue40() throws Exception
+     @Test
+    public void testInclusionIssue40() throws Exception
      {
          ObjectMapper mapper = getJaxbMapperBuilder()
                  .enable(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME)

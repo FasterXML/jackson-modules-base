@@ -2,13 +2,18 @@ package com.fasterxml.jackson.module.afterburner.deser.merge;
 
 import java.util.*;
 
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.annotation.JsonMerge;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.fasterxml.jackson.module.afterburner.AfterburnerTestBase;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CollectionMergeTest extends AfterburnerTestBase
 {
@@ -57,6 +62,7 @@ public class CollectionMergeTest extends AfterburnerTestBase
             .disable(MapperFeature.IGNORE_MERGE_FOR_UNMERGEABLE)
             .build();
 
+    @Test
     public void testCollectionMerging() throws Exception
     {
         CollectionWrapper w = MAPPER.readValue(aposToQuotes("{'bag':['b']}"), CollectionWrapper.class);
@@ -65,6 +71,7 @@ public class CollectionMergeTest extends AfterburnerTestBase
         assertTrue(w.bag.contains("b"));
     }
 
+    @Test
     public void testListMerging() throws Exception
     {
         MergedList w = MAPPER.readValue(aposToQuotes("{'values':['x']}"), MergedList.class);
@@ -74,6 +81,7 @@ public class CollectionMergeTest extends AfterburnerTestBase
     }
 
     // Test that uses generic type
+    @Test
     public void testGenericListMerging() throws Exception
     {
         Collection<String> l = new ArrayList<>();
@@ -91,6 +99,7 @@ public class CollectionMergeTest extends AfterburnerTestBase
         assertEquals("bar", it.next());
     }
 
+    @Test
     public void testEnumSetMerging() throws Exception
     {
         MergedEnumSet result = MAPPER.readValue(aposToQuotes("{'abc':['A']}"), MergedEnumSet.class);

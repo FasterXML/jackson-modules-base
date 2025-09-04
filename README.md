@@ -38,7 +38,7 @@ whereas 3.0 will use [ByteBuddy](https://github.com/raphw/byte-buddy) (licensed 
 
 ## Using Jakarta
 
-### Jackson 2.13 and later (once released)
+### Jackson 2.13 and later
 
 With 2.13, you need to choose either:
 
