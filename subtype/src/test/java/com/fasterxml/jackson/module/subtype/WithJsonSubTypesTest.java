@@ -4,23 +4,19 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auto.service.AutoService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * test {@link JsonSubType} work with {@link JsonSubTypes}
  */
-@RunWith(value = Parameterized.class)
 public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
 
     private final ObjectMapper mapper = new ObjectMapper().registerModule(new SubtypeModule());
@@ -35,12 +31,8 @@ public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
         }
     }
 
-    @Parameter
-    public Argument<T> argument;
-
-    @Parameters
-    public static Collection<Argument<?>> data() {
-        return Arrays.asList(
+    public static Stream<Argument<?>> data() {
+        return Stream.of(
                 new Argument<>(FirstChild.class, new FirstChild("hello")),
                 new Argument<>(SecondChild.class, new SecondChild("world")),
                 new Argument<>(FirstAppendChild.class, new FirstAppendChild(42)),
@@ -49,8 +41,9 @@ public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
         );
     }
 
-    @Test
-    public void test() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    void test(Argument<T> argument) throws Exception {
         final Parent parent = argument.expected;
         String json = mapper.writeValueAsString(parent);
         Parent unmarshal = mapper.readValue(json, Parent.class);
@@ -202,21 +195,17 @@ public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             if (!super.equals(o)) return false;
 
             ThirdAppendChild that = (ThirdAppendChild) o;
-
             return Double.compare(value, that.value) == 0;
         }
 
         @Override
         public int hashCode() {
             int result = super.hashCode();
-            long temp;
-            temp = Double.doubleToLongBits(value);
-            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            result = 31 * result + Double.hashCode(value);
             return result;
         }
     }
