@@ -101,6 +101,22 @@ ${project.groupId}.mrbean.*;version=${project.version}
                   <shadedPattern>tools.jackson.module.mrbean.bytebuddy</shadedPattern>
                 </relocation>
               </relocations>
+              <filters>
+                <filter>
+                  <!-- 31-Oct-2025, tatu: [modules-base#316] Exclude problematic MR-JAR files
+                       and metadata that cause classpath conflicts
+                    -->
+                  <artifact>net.bytebuddy:byte-buddy</artifact>
+                  <excludes>
+                    <!-- Multi-release JAR files have renamed class names but unchanged paths -->
+                    <exclude>META-INF/versions/**</exclude>
+                    <!-- ByteBuddy's module-info conflicts with our own -->
+                    <exclude>module-info.class</exclude>
+                    <!-- No need for ByteBuddy's Maven metadata -->
+                    <exclude>META-INF/maven/**</exclude>
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
           </execution>
         </executions>

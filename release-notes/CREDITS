@@ -15,3 +15,10 @@ Georgios Andrianakis (geoand@github)
  (3.0.0)
 * Contributed #225: Afterburner 3.0 fails to handle interface "default" methods
  (3.0.0)
+
+Josh Curry (@seadbrane)
+
+* Reported #316: Partially shaded Bytebuddy classes found under META-INF/versions/9 in
+  jackson-module-mrbean-3.0.0.jar
+ (3.0.2)
+

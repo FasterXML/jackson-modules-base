@@ -22,6 +22,17 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+3.1.0 (not yet released)
+
+-
+
+3.0.2 (not yet released)
+
+#316: Partially shaded Bytebuddy classes found under META-INF/versions/9 in
+  jackson-module-mrbean-3.0.0.jar
+ (reported by Josh C)
+ (fix by @cowtowncoder, w/ Claude code)
+
 3.0.1 (21-Oct-2025)
 
 No changes since 3.0.0
