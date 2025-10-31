@@ -25,6 +25,8 @@ Active maintainers:
 3.1.0 (not yet released)
 
 #317: (afterburner, mrbean) Update byte-buddy to latest (1.17.8) from 1.15.1
+#320: (mrbean) Remove shade plugin from 3.1 MrBean
+ (fix by @cowtowncoder, w/ Claude code)
 
 3.0.2 (not yet released)
 
