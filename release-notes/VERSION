@@ -26,6 +26,11 @@ Active maintainers:
 
 -
 
+3.0.3 (not yet released)
+
+#323: (reverts #283) Restore SPI metadata for non-module apps
+ (requested by Tiemen S)
+
 3.0.2 (07-Nov-2025)
 
 #316: Partially shaded Bytebuddy classes found under META-INF/versions/9 in

@@ -22,3 +22,6 @@ Josh Curry (@seadbrane)
   jackson-module-mrbean-3.0.0.jar
  (3.0.2)
 
+Tiemen Schut (@tschut)
+* Requested #323: (reverts #283) Restore SPI metadata for non-module apps
+ (3.0.3)
