@@ -27,11 +27,17 @@ Active maintainers:
 
 No changes since 2.20
 
+2.20.1 (30-Oct-2025)
+
+No changes since 2.20.0
+
 2.20.0 (28-Aug-2025)
 
 #303: Add unit tests to verify goodness of SPI metadata for Modules
 - Generate SBOMs [JSTEP-14]
 
+2.19.4 (29-Oct-2025)
+2.19.3 (29-Oct-2025)
 2.19.2 (18-Jul-2025)
 2.19.1 (13-Jun-2025)
 
@@ -46,6 +52,7 @@ No changes since 2.19.0
  (reported, fix contributed by Apoorva M)
 #290: Update Paranamer dep from 2.8 to 2.8.3
 
+2.18.5 (27-Oct-2025)
 2.18.4 (06-May-2025)
 2.18.3 (28-Feb-2025)
 2.18.2 (27-Nov-2024)
