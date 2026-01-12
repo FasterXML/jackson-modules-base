@@ -27,6 +27,8 @@ public interface Parent {
 2. provide a non-argument constructor (SPI requires it).
 
 ```java
+package org.example;
+
 import com.fasterxml.jackson.module.subtype.JsonSubType;
 
 @JsonSubType("first-child")
@@ -41,15 +43,17 @@ public class FirstChild {
 ```
 
 SPI: Put the subclasses in the `META-INF/services` directory under the interface.
-Example: `META-INF/services/package.Parent`
+Example: `META-INF/services/org.example.Parent`
 
 ```
-package.FirstChild
+org.example.FirstChild
 ```
 
 Alternatively, you can also use the `auto-service` to auto-generate these files:
 
 ```java
+package org.example;
+
 import io.github.black.jackson.JsonSubType;
 import com.google.auto.service.AutoService;
 
