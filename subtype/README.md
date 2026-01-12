@@ -10,7 +10,9 @@ Implementation on SPI.
 Registering modules.
 
 ```
-ObjectMapper mapper = new ObjectMapper().registerModule(new SubtypeModule());
+ObjectMapper mapper = JsonMapper.builder()
+    .addModule(new SubtypeModule())
+    .build();
 ```
 
 Ensure that the parent class has at least the `JsonTypeInfo` annotation.
@@ -22,7 +24,7 @@ public interface Parent {
 ```
 
 1. add the `JsonSubType` annotation to your subclass.
-2. provide a non-argument constructor (SPI require it).
+2. provide a non-argument constructor (SPI requires it).
 
 ```java
 import com.fasterxml.jackson.module.subtype.JsonSubType;
