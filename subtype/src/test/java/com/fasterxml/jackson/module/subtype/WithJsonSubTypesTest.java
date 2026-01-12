@@ -1,16 +1,17 @@
 package com.fasterxml.jackson.module.subtype;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.auto.service.AutoService;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.google.auto.service.AutoService;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
 
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new SubtypeModule());
+    private final ObjectMapper mapper = JsonMapper.builder().addModule(new SubtypeModule()).build();
 
     public static class Argument<T> {
         private final Class<T> clazz;

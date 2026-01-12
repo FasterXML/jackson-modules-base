@@ -1,12 +1,13 @@
 package com.fasterxml.jackson.module.subtype;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.auto.service.AutoService;
 import org.junit.jupiter.api.Test;
-
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * test {@link JsonSubType} works alone, without {@link JsonSubTypes}
  */
 public class WithoutJsonSubTypesTest {
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new SubtypeModule());
+    private final ObjectMapper mapper = JsonMapper.builder().addModule(new SubtypeModule()).build();
 
     @Test
     public void testFirstChild() throws Exception {
