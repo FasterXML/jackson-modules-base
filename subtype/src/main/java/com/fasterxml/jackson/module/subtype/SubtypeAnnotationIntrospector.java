@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
- * Annotation introspector that handles {@link JsonSubType} annotation.
+ * Annotation introspector that handles {@link JacksonSubType} annotation.
  * <p>
  * It caches the subclasses of a parent class, so it's not-real-time.
  * When the parent class not found in cache,
@@ -90,18 +90,18 @@ public class SubtypeAnnotationIntrospector extends AnnotationIntrospector {
     }
 
     /**
-     * find all {@link JsonSubType} names.
+     * find all {@link JacksonSubType} names.
      *
-     * @param clazz  class which annotate with {@link JsonSubType}.
+     * @param clazz  class which annotate with {@link JacksonSubType}.
      * @param getter getAnnotation.
      * @param <S>    class type.
      * @return all names.
      */
-    private <S> List<NamedType> _findSubtypes(Class<S> clazz, Function<Class<JsonSubType>, JsonSubType> getter) {
+    private <S> List<NamedType> _findSubtypes(Class<S> clazz, Function<Class<JacksonSubType>, JacksonSubType> getter) {
         if (clazz == null) {
             return Collections.emptyList();
         }
-        JsonSubType subtype = getter.apply(JsonSubType.class);
+        JacksonSubType subtype = getter.apply(JacksonSubType.class);
         if (subtype == null) {
             return Collections.emptyList();
         }

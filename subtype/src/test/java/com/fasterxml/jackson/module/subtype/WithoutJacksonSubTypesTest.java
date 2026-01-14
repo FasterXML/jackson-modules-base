@@ -14,9 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
- * test {@link JsonSubType} works alone, without {@link JsonSubTypes}
+ * test {@link JacksonSubType} works alone, without {@link JsonSubTypes}
  */
-public class WithoutJsonSubTypesTest {
+public class WithoutJacksonSubTypesTest {
     private final ObjectMapper mapper = JsonMapper.builder().addModule(new SubtypeModule()).build();
 
     @Test
@@ -54,7 +54,7 @@ public class WithoutJsonSubTypesTest {
     public interface Parent {
     }
 
-    @JsonSubType("first-child")
+    @JacksonSubType("first-child")
     @AutoService(Parent.class) // module requires spi
     public static class FirstChild implements Parent {
         public String foo;
@@ -79,7 +79,7 @@ public class WithoutJsonSubTypesTest {
     }
 
 
-    @JsonSubType("second-child")
+    @JacksonSubType("second-child")
     @AutoService(Parent.class) // module requires spi
     public static class SecondChild implements Parent {
         public String bar;

@@ -16,9 +16,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * test {@link JsonSubType} work with {@link JsonSubTypes}
+ * test {@link JacksonSubType} work with {@link JsonSubTypes}
  */
-public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
+public class WithJacksonSubTypesTest<T extends WithJacksonSubTypesTest.Parent> {
 
     private final ObjectMapper mapper = JsonMapper.builder().addModule(new SubtypeModule()).build();
 
@@ -118,7 +118,7 @@ public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
         }
     }
 
-    @JsonSubType("first-append-child")
+    @JacksonSubType("first-append-child")
     @AutoService(Parent.class)
     public static class FirstAppendChild implements Parent {
         public Integer integer;
@@ -148,7 +148,7 @@ public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
     }
 
 
-    @JsonSubType("second-append-child")
+    @JacksonSubType("second-append-child")
     @AutoService(Parent.class)
     public static class SecondAppendChild extends SecondChild {
         public List<String> list;
@@ -180,7 +180,7 @@ public class WithJsonSubTypesTest<T extends WithJsonSubTypesTest.Parent> {
         }
     }
 
-    @JsonSubType("third-append-child")
+    @JacksonSubType("third-append-child")
     @AutoService(Parent.class)
     public static class ThirdAppendChild extends SecondAppendChild {
         public double value;

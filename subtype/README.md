@@ -23,15 +23,15 @@ public interface Parent {
 }
 ```
 
-1. add the `JsonSubType` annotation to your subclass.
+1. add the `JacksonSubType` annotation to your subclass.
 2. provide a non-argument constructor (SPI requires it).
 
 ```java
 package org.example;
 
-import com.fasterxml.jackson.module.subtype.JsonSubType;
+import com.fasterxml.jackson.module.subtype.JacksonSubType;
 
-@JsonSubType("first-child")
+@JacksonSubType("first-child")
 public class FirstChild {
 
     private String foo;
@@ -54,11 +54,11 @@ Alternatively, you can also use the `auto-service` to auto-generate these files:
 ```java
 package org.example;
 
-import io.github.black.jackson.JsonSubType;
+import com.fasterxml.jackson.module.subtype.JacksonSubType;
 import com.google.auto.service.AutoService;
 
 @AutoService(Parent.class)
-@JsonSubType("first-child")
+@JacksonSubType("first-child")
 public class FirstChild {
 
     private String foo;

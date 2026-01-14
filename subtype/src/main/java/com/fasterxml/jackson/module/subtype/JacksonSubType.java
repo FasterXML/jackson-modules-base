@@ -21,7 +21,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @JacksonAnnotation
-public @interface JsonSubType {
+public @interface JacksonSubType {
     /**
      * Logical type name used as the type identifier for the class, if defined; empty
      * String means "not defined". Used unless {@link #names} is defined as non-empty.
