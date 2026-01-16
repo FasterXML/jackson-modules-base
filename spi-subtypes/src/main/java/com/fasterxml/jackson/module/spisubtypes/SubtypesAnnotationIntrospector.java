@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.subtype;
+package com.fasterxml.jackson.module.spisubtypes;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
@@ -20,7 +20,7 @@ import java.util.function.Function;
  * it will try to load all found child classes via SPI then cache it.
  * </p>
  */
-public class SubtypeAnnotationIntrospector extends AnnotationIntrospector {
+public class SubtypesAnnotationIntrospector extends AnnotationIntrospector {
     private final ConcurrentHashMap<Class<?>, List<NamedType>> subtypes = new ConcurrentHashMap<>();
 
     @Override

@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.subtype;
+package com.fasterxml.jackson.module.spisubtypes;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class WithJacksonSubTypesTest<T extends WithJacksonSubTypesTest.Parent> {
 
-    private final ObjectMapper mapper = JsonMapper.builder().addModule(new SubtypeModule()).build();
+    private final ObjectMapper mapper = JsonMapper.builder().addModule(new SubtypesModule()).build();
 
     public static class Argument<T> {
         private final Class<T> clazz;

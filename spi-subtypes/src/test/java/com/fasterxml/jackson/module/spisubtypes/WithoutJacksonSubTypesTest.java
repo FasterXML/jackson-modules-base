@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.subtype;
+package com.fasterxml.jackson.module.spisubtypes;
 
 import java.util.Objects;
 
@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * test {@link JacksonSubType} works alone, without {@link JsonSubTypes}
  */
 public class WithoutJacksonSubTypesTest {
-    private final ObjectMapper mapper = JsonMapper.builder().addModule(new SubtypeModule()).build();
+    private final ObjectMapper mapper = JsonMapper.builder().addModule(new SubtypesModule()).build();
 
     @Test
     public void testFirstChild() throws Exception {

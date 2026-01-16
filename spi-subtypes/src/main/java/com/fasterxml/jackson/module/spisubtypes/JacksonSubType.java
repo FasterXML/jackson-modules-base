@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.subtype;
+package com.fasterxml.jackson.module.spisubtypes;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotation;
 import com.fasterxml.jackson.annotation.JsonSubTypes;

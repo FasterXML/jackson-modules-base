@@ -11,7 +11,7 @@ Registering modules.
 
 ```
 ObjectMapper mapper = JsonMapper.builder()
-    .addModule(new SubtypeModule())
+    .addModule(new SubtypesModule())
     .build();
 ```
 
@@ -29,7 +29,7 @@ public interface Parent {
 ```java
 package org.example;
 
-import com.fasterxml.jackson.module.subtype.JacksonSubType;
+import com.fasterxml.jackson.module.spisubtypes.JacksonSubType;
 
 @JacksonSubType("first-child")
 public class FirstChild {
@@ -54,7 +54,7 @@ Alternatively, you can also use the `auto-service` to auto-generate these files:
 ```java
 package org.example;
 
-import com.fasterxml.jackson.module.subtype.JacksonSubType;
+import com.fasterxml.jackson.module.spisubtypes.JacksonSubType;
 import com.google.auto.service.AutoService;
 
 @AutoService(Parent.class)

@@ -13,10 +13,10 @@
         <version>2.21.0-SNAPSHOT</version>
     </parent>
     <artifactId>jackson-module-spi-subtypes</artifactId>
-    <name>Jackson module: Subtype Annotation Support</name>
+    <name>Jackson module: SPI Subtypes Annotation Support</name>
     <packaging>bundle</packaging>
 
-    <description>Registering subtypes without annotating the parent class</description>
+    <description>Registering subtypes through SPI without annotating the parent class.</description>
     <url>https://github.com/FasterXML/jackson-modules-base</url>
 
     <licenses>
@@ -29,8 +29,8 @@
 
     <properties>
         <!-- Generate PackageVersion.java into this directory. -->
-        <packageVersion.dir>com/fasterxml/jackson/module/subtype</packageVersion.dir>
-        <packageVersion.package>com.fasterxml.jackson.module.subtype</packageVersion.package>
+        <packageVersion.dir>com/fasterxml/jackson/module/spisubtypes</packageVersion.dir>
+        <packageVersion.package>com.fasterxml.jackson.module.spisubtypes</packageVersion.package>
     </properties>
 
     <dependencies>
