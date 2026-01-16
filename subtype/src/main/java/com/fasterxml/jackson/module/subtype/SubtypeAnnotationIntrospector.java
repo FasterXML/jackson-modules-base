@@ -18,7 +18,6 @@ import java.util.function.Function;
  * It caches the subclasses of a parent class, so it's not-real-time.
  * When the parent class not found in cache,
  * it will try to load all found child classes via SPI then cache it.
- * We can remove the parent class in the cache by {@link #unregisterType}.
  * </p>
  */
 public class SubtypeAnnotationIntrospector extends AnnotationIntrospector {
@@ -51,42 +50,17 @@ public class SubtypeAnnotationIntrospector extends AnnotationIntrospector {
      * @param <S>    parent class type.
      */
     @SuppressWarnings("unchecked")
-    public <S> void registerTypes(Class<S> parent) {
+    private <S> void registerTypes(Class<S> parent) {
         // If parent is already registered (either by spi or manually by the user), then skip it
         if (subtypes.containsKey(parent)) {
             return;
         }
-        List<Class<S>> subclasses = new ArrayList<>();
-        for (S instance : ServiceLoader.load(parent)) {
-            subclasses.add((Class<S>) instance.getClass());
-        }
-        this.registerTypes(parent, subclasses);
-    }
-
-    /**
-     * register subtypes without SPI.
-     * Of course, you need to provide them :)
-     *
-     * @param parent:     parent class.
-     * @param subclasses: children class.
-     * @param <S>:        parent class type.
-     */
-    public <S> void registerTypes(Class<S> parent, Iterable<Class<S>> subclasses) {
         List<NamedType> result = new ArrayList<>();
-        for (Class<S> subclass : subclasses) {
+        for (S instance : ServiceLoader.load(parent)) {
+            Class<S> subclass = (Class<S>) instance.getClass();
             result.addAll(_findSubtypes(subclass, subclass::getAnnotation));
         }
         subtypes.put(parent, result);
-    }
-
-    /**
-     * remove the parent class in the cache,
-     * so that {@link #registerTypes(Class)} can re-look by SPI.
-     *
-     * @param parent: parent class.
-     */
-    public void unregisterType(Class<?> parent) {
-        subtypes.remove(parent);
     }
 
     /**
