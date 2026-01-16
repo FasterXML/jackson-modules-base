@@ -12,7 +12,7 @@
         <artifactId>jackson-modules-base</artifactId>
         <version>2.21.0-SNAPSHOT</version>
     </parent>
-    <artifactId>jackson-module-subtype</artifactId>
+    <artifactId>jackson-module-spi-subtypes</artifactId>
     <name>Jackson module: Subtype Annotation Support</name>
     <packaging>bundle</packaging>
 

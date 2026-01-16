@@ -1,4 +1,4 @@
-# jackson-module-subtype
+# jackson-module-spi-subtypes
 
 Registering subtypes without annotating the parent class,
 see [this](https://github.com/FasterXML/jackson-databind/issues/2104).
