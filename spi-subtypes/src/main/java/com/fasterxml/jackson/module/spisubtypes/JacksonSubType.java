@@ -1,13 +1,13 @@
 package com.fasterxml.jackson.module.spisubtypes;
 
-import com.fasterxml.jackson.annotation.JacksonAnnotation;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import com.fasterxml.jackson.annotation.JacksonAnnotation;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 
 /**
  * Definition of a subtype, along with optional name(s). If no name is defined
@@ -17,6 +17,8 @@ import java.lang.annotation.Target;
  * Default name is usually based on class name.
  * <p>
  * It's the same as {@link  JsonSubTypes.Type}.
+ *
+ * @since 2.21 / 3.1
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.Module;
 /**
  * Subtypes module for registering subtypes without annotating the parent class.
  * See <a href="https://github.com/FasterXML/jackson-databind/issues/2104">this issues</a> in jackson-databind.
+ *
+ * @since 2.21 / 3.1
  */
 public class SubtypesModule extends Module {
 

@@ -1,16 +1,17 @@
 package com.fasterxml.jackson.module.spisubtypes;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
-import com.fasterxml.jackson.databind.introspect.Annotated;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+
+import com.fasterxml.jackson.core.Version;
+
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.introspect.Annotated;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 
 /**
  * Annotation introspector that handles {@link JacksonSubType} annotation.
@@ -19,6 +20,8 @@ import java.util.function.Function;
  * When the parent class not found in cache,
  * it will try to load all found child classes via SPI then cache it.
  * </p>
+ *
+ * @since 2.21 / 3.1
  */
 public class SubtypesAnnotationIntrospector extends AnnotationIntrospector {
     private final ConcurrentHashMap<Class<?>, List<NamedType>> subtypes = new ConcurrentHashMap<>();
