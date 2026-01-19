@@ -58,6 +58,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <!-- JDK 23+ disables annotation processing by default;
+                         need to re-enable for @AutoService to generate
+                         META-INF/services files during test compilation
+                      -->
+                    <proc>full</proc>
+                </configuration>
             </plugin>
             <!-- 19-Jan-2026: Tests must run on classpath (not module path)
                  because ServiceLoader.load() requires caller module to
