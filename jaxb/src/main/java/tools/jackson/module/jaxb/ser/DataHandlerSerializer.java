@@ -1,6 +1,5 @@
 package tools.jackson.module.jaxb.ser;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -8,42 +7,45 @@ import javax.activation.DataHandler;
 
 import tools.jackson.core.*;
 import tools.jackson.core.exc.JacksonIOException;
+import tools.jackson.core.type.WritableTypeId;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ser.std.StdSerializer;
 import tools.jackson.databind.jsonFormatVisitors.JsonArrayFormatVisitor;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
+import tools.jackson.databind.jsontype.TypeSerializer;
 
 public class DataHandlerSerializer extends StdSerializer<DataHandler>
 {
     public DataHandlerSerializer() { super(DataHandler.class); }
-    
+
     @Override
     public void serialize(DataHandler value, JsonGenerator g, SerializationContext ctxt)
         throws JacksonException
     {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        /* for copy-through, a small buffer should suffice: ideally
-         * we might want to reuse a generic byte buffer, but for now
-         * there's no serializer context to hold them.
-         * 
-         * Also: it'd be nice not to have buffer all data, but use a
-         * streaming output. But currently JsonGenerator won't allow
-         * that.
-         */
-        byte[] buffer = new byte[1024 * 4];
+        _writePayload(value, g, ctxt);
+    }
 
+    // Copied from `jackson-databind` `ByteArraySerializer`
+    @Override
+    public void serializeWithType(DataHandler value, JsonGenerator g, SerializationContext ctxt,
+            TypeSerializer typeSer)
+        throws JacksonException
+    {
+        WritableTypeId typeIdDef = typeSer.writeTypePrefix(g, ctxt,
+                typeSer.typeId(value, JsonToken.VALUE_EMBEDDED_OBJECT));
+        _writePayload(value, g, ctxt);
+        typeSer.writeTypeSuffix(g, ctxt, typeIdDef);
+    }
+    
+    protected void _writePayload(DataHandler value, JsonGenerator g, SerializationContext ctxt)
+    {
         try (InputStream in = value.getInputStream()) {
-            int len = in.read(buffer);
-            while (len > 0) {
-                out.write(buffer, 0, len);
-                len = in.read(buffer);
-            }
+            g.writeBinary(ctxt.getConfig().getBase64Variant(), in, -1);
         } catch (IOException e) {
             throw JacksonIOException.construct(e);
         }
-        g.writeBinary(out.toByteArray());
     }
 
     @Override
