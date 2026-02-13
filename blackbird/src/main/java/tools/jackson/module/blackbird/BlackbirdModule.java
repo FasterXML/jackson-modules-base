@@ -14,7 +14,11 @@ import tools.jackson.module.blackbird.deser.BBDeserializerModifier;
 import tools.jackson.module.blackbird.ser.BBSerializerModifier;
 
 public class BlackbirdModule extends JacksonModule
+    implements java.io.Serializable // @since 3.1
 {
+    private static final long serialVersionUID = 3L;
+
+    // !!! TODO: need to change for Serializability
     private Function<Class<?>, Lookup> _lookups;
 
     public BlackbirdModule() {

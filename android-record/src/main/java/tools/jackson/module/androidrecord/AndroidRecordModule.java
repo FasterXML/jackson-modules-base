@@ -35,9 +35,11 @@ import tools.jackson.databind.module.SimpleModule;
  *
  * @author Eran Leshem
  **/
-public class AndroidRecordModule extends SimpleModule
+public class AndroidRecordModule
+    extends SimpleModule
+    implements java.io.Serializable
 {
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 3L;
 
   static final class AndroidRecordNaming
     extends DefaultAccessorNamingStrategy
@@ -72,7 +74,7 @@ public class AndroidRecordModule extends SimpleModule
 
   static class AndroidRecordClassIntrospector extends BasicClassIntrospector
   {
-      private static final long serialVersionUID = 1L;
+      private static final long serialVersionUID = 3L;
 
       public AndroidRecordClassIntrospector() {
           super();
@@ -106,7 +108,7 @@ public class AndroidRecordModule extends SimpleModule
 
   static class AndroidRecordAnnotationIntrospector extends AnnotationIntrospector
   {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3L;
 
     @Override
     public Version version() {
