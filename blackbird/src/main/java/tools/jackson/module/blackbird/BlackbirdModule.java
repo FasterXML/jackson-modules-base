@@ -18,25 +18,73 @@ public class BlackbirdModule extends JacksonModule
 {
     private static final long serialVersionUID = 3L;
 
-    // !!! TODO: need to change for Serializability
-    private Function<Class<?>, Lookup> _lookups;
+    // 13-Feb-2026, tatu: [blackbird#334] This is a mess due to need for
+    //    backwards-compatibility... but has to be
+
+    private final Supplier<MethodHandles.Lookup> _lookupSupplier;
+
+    private final Function<Class<?>, MethodHandles.Lookup> _lookupFunction;
 
     public BlackbirdModule() {
-        this(MethodHandles::lookup);
+        _lookupSupplier = null;
+        _lookupFunction = null;
     }
 
-    public BlackbirdModule(Function<Class<?>, MethodHandles.Lookup> lookups) {
-        _lookups = lookups;
+    /**
+     * @since 3.1 Use default (no-args) constructor and override
+     *    {@link #findLookupSupplier()}) instead.
+     */
+    @Deprecated // @since 3.1
+    public BlackbirdModule(Supplier<MethodHandles.Lookup> lookupS) {
+        _lookupSupplier = lookupS;
+        _lookupFunction = null;
     }
 
-    public BlackbirdModule(Supplier<MethodHandles.Lookup> lookup) {
-        this(c -> {
+    /**
+     * @since 3.1 Use default (no-args) constructor and override
+     *  {@link #findLookup}) instead.
+     */
+    @Deprecated // @since 3.1
+    public BlackbirdModule(Function<Class<?>, MethodHandles.Lookup> lookupF) {
+        _lookupSupplier = null;
+        _lookupFunction = lookupF;
+    }
+
+    /**
+     * Overridable method module uses to access {@code MethodHandles.Lookup} supplier;
+     * needed to keep module itself {@link java.io.Serializable}.
+     *
+     * @since 3.1
+     */
+    protected Function<Class<?>, Lookup> findLookup() {
+        if (_lookupFunction != null) {
+            return _lookupFunction;
+        }
+        return _wrapWithJdkClassCheck(findLookupSupplier());
+    }
+
+    /**
+     * Overridable method module uses to access {@code MethodHandles.Lookup} supplier
+     * used to create actual lookup {@code Function}
+     *
+     * @since 3.1
+     */
+    protected Supplier<MethodHandles.Lookup> findLookupSupplier() {
+        return (_lookupSupplier != null)
+                ? _lookupSupplier
+                : MethodHandles::lookup;
+        
+    }
+    
+    protected Function<Class<?>, Lookup> _wrapWithJdkClassCheck(Supplier<MethodHandles.Lookup> lookup)
+    {
+        return c -> {
             final String className = c.getName();
             return (className.startsWith("java.")
                     // 23-Apr-2021, tatu: [modules-base#131] "sun.misc" problematic too
                     || className.startsWith("sun.misc."))
                 ? null : lookup.get();
-        });
+        };
     }
 
     @Override
@@ -47,9 +95,10 @@ public class BlackbirdModule extends JacksonModule
         {
             return;
         }
+        Function<Class<?>, Lookup> lookup = findLookup();
         CrossLoaderAccess openSesame = new CrossLoaderAccess();
-        context.addDeserializerModifier(new BBDeserializerModifier(_lookups, openSesame));
-        context.addSerializerModifier(new BBSerializerModifier(_lookups, openSesame));
+        context.addDeserializerModifier(new BBDeserializerModifier(lookup, openSesame));
+        context.addSerializerModifier(new BBSerializerModifier(lookup, openSesame));
     }
 
     @Override

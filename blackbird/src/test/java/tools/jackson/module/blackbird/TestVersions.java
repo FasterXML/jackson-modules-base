@@ -1,7 +1,6 @@
 package tools.jackson.module.blackbird;
 
 import java.io.*;
-import java.lang.invoke.MethodHandles;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +17,7 @@ public class TestVersions extends BlackbirdTestBase
     @Test
     public void testMapperVersions() throws IOException
     {
-        BlackbirdModule module = new BlackbirdModule(c -> MethodHandles.lookup());
+        BlackbirdModule module = new BlackbirdModule();
         assertVersion(module);
     }
 

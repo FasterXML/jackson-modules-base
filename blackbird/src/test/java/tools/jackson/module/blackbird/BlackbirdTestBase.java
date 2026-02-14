@@ -1,6 +1,5 @@
 package tools.jackson.module.blackbird;
 
-import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -217,7 +216,7 @@ public abstract class BlackbirdTestBase
     protected static JsonMapper.Builder mapperBuilder() {
         return JsonMapper.builder()
                 .polymorphicTypeValidator(new NoCheckSubTypeValidator())
-                .addModule(new BlackbirdModule(MethodHandles::lookup));
+                .addModule(new BlackbirdModule());
     }
 
     protected static JsonMapper newVanillaJSONMapper() {
