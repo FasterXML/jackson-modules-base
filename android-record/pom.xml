@@ -82,14 +82,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <version>${version.plugin.animal-sniffer}</version>
-        <configuration>
-          <signature>
-            <groupId>com.toasttab.android</groupId>
-            <artifactId>gummy-bears-api-${version.android.sdk}</artifactId>
-            <version>${version.android.sdk.signature}</version>
-          </signature>
-        </configuration>
+        <!-- 24-Feb-2026, tatu: With 3.2, use project defaults (ASDK 34) -->
       </plugin>
     </plugins>
   </build>

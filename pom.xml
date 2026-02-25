@@ -64,10 +64,6 @@ not datatype, data format, or JAX-RS provider modules.
           starting with 3.0
       -->
     <version.bytebuddy>1.17.8</version.bytebuddy>
-
-    <version.android.sdk>26</version.android.sdk>
-    <version.android.sdk.signature>0.5.1</version.android.sdk.signature>
-    <version.plugin.animal-sniffer>1.23</version.plugin.animal-sniffer>
   </properties>
 
   <dependencyManagement>
