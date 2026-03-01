@@ -8,7 +8,7 @@ Module is considered stable and has been used in production environments since v
 There is, however, a potential future replacement available (as of Jackson 2.12): Blackbird module.
 See the parent README for details.
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-afterburner/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.fasterxml.jackson.module/jackson-module-afterburner/)
+[![Maven Central](https://img.shields.io/maven-central/v/com.fasterxml.jackson.module/jackson-module-afterburner.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/com.fasterxml.jackson.module/jackson-module-afterburner)
 [![Javadoc](https://javadoc.io/badge/com.fasterxml.jackson.module/jackson-module-afterburner.svg)](http://www.javadoc.io/doc/com.fasterxml.jackson.module/jackson-module-afterburner)
 
 ## Usage

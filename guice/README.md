@@ -1,5 +1,7 @@
 # jackson-module-guice
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.fasterxml.jackson.module/jackson-module-guice.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/com.fasterxml.jackson.module/jackson-module-guice)
+
 ## Documentation
 
 This extension allows Jackson to delegate ObjectMapper creation and value injection to Guice when handling data bindings.

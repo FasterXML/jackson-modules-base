@@ -1,5 +1,7 @@
 # jackson-module-guice7
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.fasterxml.jackson.module/jackson-module-guice7.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/com.fasterxml.jackson.module/jackson-module-guice7)
+
 ## Documentation
 
 This is a copy of jackson-module-guice that works with guice version 7, using the jakarta.inject namespace.

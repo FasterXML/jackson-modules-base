@@ -1,5 +1,7 @@
 # jackson-module-spi-subtypes
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.fasterxml.jackson.module/jackson-module-spi-subtypes.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/com.fasterxml.jackson.module/jackson-module-spi-subtypes)
+
 Registering subtypes without annotating the parent class,
 see [this](https://github.com/FasterXML/jackson-databind/issues/2104).
 

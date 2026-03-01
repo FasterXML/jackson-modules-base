@@ -12,6 +12,8 @@ For older `java.xml.bind` package, look at "jackson-module-jaxb-annotations".
 
 ## Maven dependency
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.fasterxml.jackson.module/jackson-module-jakarta-xmlbind-annotations.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/com.fasterxml.jackson.module/jackson-module-jakarta-xmlbind-annotations)
+
 To use this extension on Maven-based projects, use following dependency:
 
 ```xml

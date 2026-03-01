@@ -35,6 +35,8 @@ ObjectMapper mapper = JsonMapper.builder() // or mapper for other dataformats
 
 Maven information for jar is:
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.fasterxml.jackson.module/jackson-module-android-record.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/com.fasterxml.jackson.module/jackson-module-android-record)
+
 * Group id: `com.fasterxml.jackson.module`
 * Artifact id: `jackson-module-android-record`
 

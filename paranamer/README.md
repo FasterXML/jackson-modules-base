@@ -22,6 +22,8 @@ mapper.setAnnotationIntrospector(new ParanamerOnJacksonAnnotationIntrospector())
 
 Maven information for jar is:
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.fasterxml.jackson.module/jackson-module-paranamer.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/com.fasterxml.jackson.module/jackson-module-paranamer)
+
 * Group id: `com.fasterxml.jackson.module`
 * Artifact id: `jackson-module-paranamer`
 
