@@ -4,6 +4,8 @@ import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.PropertyName;
 import tools.jackson.databind.cfg.MapperConfig;
@@ -65,7 +67,8 @@ public class TestAccessorGeneration extends AfterburnerTestBase
                 annMethod, null,
                 null,
                 null, null, null,
-                false, null, null);
+                false, null, null,
+                JsonInclude.Value.empty());
         coll.addIntGetter(bpw);
         BeanPropertyAccessor acc = coll.findAccessor(null);
         Bean1 bean = new Bean1();
@@ -99,7 +102,8 @@ public class TestAccessorGeneration extends AfterburnerTestBase
                     annMethod, null,
                     null,
                     null, null, null,
-                    false, null, null));
+                    false, null, null,
+                    JsonInclude.Value.empty()));
         }
 
         BeanPropertyAccessor acc = coll.findAccessor(null);
@@ -126,7 +130,8 @@ public class TestAccessorGeneration extends AfterburnerTestBase
                     annMethod, null,
                     null,
                     null, null, null,
-                    false, null, null));
+                    false, null, null,
+                    JsonInclude.Value.empty()));
         }
 
         BeanPropertyAccessor acc = coll.findAccessor(null);

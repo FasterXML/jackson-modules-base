@@ -29,8 +29,8 @@ public class OverloadedMethodSerTest extends AfterburnerTestBase
             return getContent("whatever");
         }
 
-        // Private static overload: same name, different signature
-        private static String getContent(String mystring) {
+        // static "overload": same name, different signature
+        public static String getContent(String mystring) {
             return mystring;
         }
     }
@@ -53,7 +53,7 @@ public class OverloadedMethodSerTest extends AfterburnerTestBase
         }
 
         // Non-static overload: same name, different parameter count
-        private String getValue(String prefix) {
+        public String getValue(String prefix) {
             return prefix + "-" + value;
         }
     }
