@@ -32,7 +32,10 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 import static net.bytebuddy.description.type.TypeDescription.ForLoadedType;
+import static net.bytebuddy.matcher.ElementMatchers.isStatic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.not;
+import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 /**
  * Simple collector used to keep track of properties for which code-generated
@@ -583,7 +586,10 @@ public class PropertyMutatorCollector
         }
 
         private MethodList<MethodDescription> getMatchingMethods(TypeDefinition beanClassDescription, String methodName) {
-            return (MethodList<MethodDescription>) beanClassDescription.getDeclaredMethods().filter(named(methodName));
+            // Filter by name, non-static, and parameter count (1 for setters) to handle
+            // overloaded methods with same name but different signatures [modules-base#314]
+            return (MethodList<MethodDescription>) beanClassDescription.getDeclaredMethods()
+                    .filter(named(methodName).and(not(isStatic())).and(takesArguments(1)));
         }
     }
 
