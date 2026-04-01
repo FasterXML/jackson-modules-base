@@ -173,6 +173,11 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
     public final Object deserialize(JsonParser p, DeserializationContext ctxt, Object bean)
         throws IOException
     {
+        // [modules-base#339]: Need to delegate to base implementation for
+        //   proper @JsonView handling during deserialization
+        if (_needViewProcesing) {
+            return super.deserialize(p, ctxt, bean);
+        }
         // [databind#631]: Assign current value, to be accessible by custom deserializers
         p.assignCurrentValue(bean);
         if (_injectables != null) {
@@ -229,6 +234,11 @@ final class SuperSonicBeanDeserializer extends BeanDeserializer
     @Override
     public final Object deserializeFromObject(JsonParser p, DeserializationContext ctxt) throws IOException
     {
+        // [modules-base#339]: Need to delegate to base implementation for
+        //   proper @JsonView handling during deserialization
+        if (_needViewProcesing) {
+            return super.deserializeFromObject(p, ctxt);
+        }
         // See BeanDeserializer.deserializeFromObject [databind#622]
         // Allow Object Id references to come in as JSON Objects as well...
         if ((_objectIdReader != null) && _objectIdReader.maySerializeAsObject()) {
