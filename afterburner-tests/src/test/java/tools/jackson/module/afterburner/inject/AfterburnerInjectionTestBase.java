@@ -86,45 +86,48 @@ abstract class AfterburnerInjectionTestBase
         }
     }
 
-    /** Returns the `_propsByIndex` array from a bean deserializer, walking up the
-     *  class hierarchy because the field is declared on a base class. */
+    /** Returns the `_propsByIndex` array from a bean deserializer. */
     protected static SettableBeanProperty[] propsOf(ValueDeserializer<?> deser) {
         if (!(deser instanceof BeanDeserializer)) {
             throw new AssertionError("not a BeanDeserializer: " + deser.getClass().getName());
         }
-        Class<?> c = deser.getClass();
-        while (c != null) {
-            try {
-                Field f = c.getDeclaredField("_propsByIndex");
-                f.setAccessible(true);
-                return (SettableBeanProperty[]) f.get(deser);
-            } catch (NoSuchFieldException ignore) {
-                c = c.getSuperclass();
-            } catch (IllegalAccessException e) {
-                throw new AssertionError(e);
-            }
-        }
-        throw new AssertionError("_propsByIndex not found on " + deser.getClass());
+        return (SettableBeanProperty[]) reflectField(deser, "_propsByIndex");
     }
 
-    /** Returns the BeanPropertyWriter[] from a bean serializer, walking up. */
+    /** Returns the BeanPropertyWriter[] from a bean serializer, as a list. */
     protected static List<BeanPropertyWriter> writersOf(ValueSerializer<?> ser) {
-        Class<?> c = ser.getClass();
+        BeanPropertyWriter[] arr = (BeanPropertyWriter[]) reflectField(ser, "_props");
+        List<BeanPropertyWriter> out = new ArrayList<>(arr.length);
+        for (BeanPropertyWriter w : arr) {
+            out.add(w);
+        }
+        return out;
+    }
+
+    /** Walks the class chain of {@code instance} looking for a declared field
+     *  named {@code fieldName}, sets it accessible, and returns its value.
+     *  Throws a descriptive AssertionError if the field isn't found — on the
+     *  assumption that a missing field usually means databind renamed/removed
+     *  something, not a bug in the test. */
+    protected static Object reflectField(Object instance, String fieldName) {
+        Class<?> c = instance.getClass();
         while (c != null) {
             try {
-                Field f = c.getDeclaredField("_props");
+                Field f = c.getDeclaredField(fieldName);
                 f.setAccessible(true);
-                BeanPropertyWriter[] arr = (BeanPropertyWriter[]) f.get(ser);
-                List<BeanPropertyWriter> out = new ArrayList<>(arr.length);
-                for (BeanPropertyWriter w : arr) out.add(w);
-                return out;
+                return f.get(instance);
             } catch (NoSuchFieldException ignore) {
                 c = c.getSuperclass();
             } catch (IllegalAccessException e) {
-                throw new AssertionError(e);
+                throw new AssertionError("cannot read field '" + fieldName + "' on "
+                        + instance.getClass().getName(), e);
             }
         }
-        throw new AssertionError("_props not found on " + ser.getClass());
+        throw new AssertionError("expected databind field '" + fieldName + "' on "
+                + instance.getClass().getName()
+                + " (walked up full class chain) — databind may have renamed or"
+                + " removed it; update " + AfterburnerInjectionTestBase.class.getSimpleName()
+                + " to match.");
     }
 
     /** True if `prop`'s class chain contains Afterburner's OptimizedSettableBeanProperty. */

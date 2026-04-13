@@ -101,6 +101,20 @@ never published.</description>
           </execution>
         </executions>
       </plugin>
+      <!-- Jacoco report analyzes 0 classes in this module (no main sources) and
+           only produces log noise. Unbind the `report` execution. Leave
+           `prepare-agent` alone: it is silent and sets the surefire agent which
+           is harmless even when no main classes exist. -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>report</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
       <!-- Force surefire to classpath mode: this module has no module-info.java,
            so tests must run on the classpath (unnamed module) to keep test POJO
            packages unsealed. -->
