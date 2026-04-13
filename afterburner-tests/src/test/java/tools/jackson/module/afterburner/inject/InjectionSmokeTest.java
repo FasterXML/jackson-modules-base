@@ -1,4 +1,4 @@
-package classpath;
+package tools.jackson.module.afterburner.inject;
 
 import org.junit.jupiter.api.Test;
 
