@@ -168,6 +168,12 @@ public final class SuperSonicBeanDeserializer
     public Object deserialize(JsonParser p, DeserializationContext ctxt, Object bean)
         throws JacksonException
     {
+        // The ordered-property fast path below is only safe when no view filtering,
+        // non-standard creation or other non-vanilla features are in play; otherwise
+        // fall back to the parent implementation which handles all of those.
+        if (!_vanillaProcessing) {
+            return super.deserialize(p, ctxt, bean);
+        }
         // [databind#631]: Assign current value, to be accessible by custom serializers
         p.assignCurrentValue(bean);
         if (_injectables != null) {
@@ -244,6 +250,12 @@ public final class SuperSonicBeanDeserializer
     public Object deserializeFromObject(JsonParser p, DeserializationContext ctxt)
         throws JacksonException
     {
+        // The ordered-property fast path below is only safe when no view filtering,
+        // non-standard creation or other non-vanilla features are in play; otherwise
+        // fall back to the parent implementation which handles all of those.
+        if (!_vanillaProcessing) {
+            return super.deserializeFromObject(p, ctxt);
+        }
         // See BeanDeserializer.deserializeFromObject [databind#622]
         // Allow Object Id references to come in as JSON Objects as well...
         if ((_objectIdReader != null) && _objectIdReader.maySerializeAsObject()) {

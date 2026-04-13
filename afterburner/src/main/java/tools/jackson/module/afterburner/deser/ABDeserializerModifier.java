@@ -43,41 +43,43 @@ public class ABDeserializerModifier extends ValueDeserializerModifier
             BeanDescription.Supplier beanDescRef, BeanDeserializerBuilder builder) 
     {
         final Class<?> beanClass = beanDescRef.getBeanClass();
-        // [module-afterburner#21]: Can't force access to sealed packages, or anything within "java."
-        if (!MyClassLoader.canAddClassInPackageOf(beanClass)) {
-            return builder;
-        }
-        /* Hmmh. Can we access stuff from private classes?
-         * Possibly, if we can use parent class loader.
-         * (should probably skip all non-public?)
-         */
-        if (_classLoader != null) {
-            if (Modifier.isPrivate(beanClass.getModifiers())) {
-                return builder;
+        // Mutator/creator bytecode injection requires being able to define a class
+        // in the target's package. [module-afterburner#21] rules out sealed packages
+        // (which in 3.x also covers every package in a named JPMS module) and core
+        // "java.*" / "sun.misc" / etc. Also: private classes are unreachable when
+        // using our own classloader rather than the target's.
+        //
+        // Note: the SuperSonic deserializer wrapping below is independent of bytecode
+        // injection — it reuses whichever `SettableBeanProperty` instances the builder
+        // holds, optimized or not — so we still apply it even when injection is
+        // disallowed. This lets JPMS users benefit from the ordered-property fast
+        // path even though afterburner can't inject mutators into their modules.
+        final boolean canInject = MyClassLoader.canAddClassInPackageOf(beanClass)
+                && !(_classLoader != null && Modifier.isPrivate(beanClass.getModifiers()));
+
+        if (canInject) {
+            PropertyMutatorCollector collector = new PropertyMutatorCollector(beanClass);
+            List<OptimizedSettableBeanProperty<?>> newProps = findOptimizableProperties(
+                    config, collector, builder.getProperties());
+            // and if we found any, create mutator proxy, replace property objects
+            if (!newProps.isEmpty()) {
+                BeanPropertyMutator baseMutator = collector.buildMutator(_classLoader);
+                for (OptimizedSettableBeanProperty<?> prop : newProps) {
+                    builder.addOrReplaceProperty(prop.withMutator(baseMutator), true);
+                }
             }
-        }
-        PropertyMutatorCollector collector = new PropertyMutatorCollector(beanClass);
-        List<OptimizedSettableBeanProperty<?>> newProps = findOptimizableProperties(
-                config, collector, builder.getProperties());
-        // and if we found any, create mutator proxy, replace property objects
-        if (!newProps.isEmpty()) {
-            BeanPropertyMutator baseMutator = collector.buildMutator(_classLoader);
-            for (OptimizedSettableBeanProperty<?> prop : newProps) {
-                builder.addOrReplaceProperty(prop.withMutator(baseMutator), true);
-            }
-        }
-        // Second thing: see if we could (re)generate Creator(s):
-        ValueInstantiator inst = builder.getValueInstantiator();
-        /* Hmmh. Probably better to require exact default implementation
-         * and not sub-class; chances are sub-class uses its own
-         * construction anyway.
-         */
-        if (inst.getClass() == StdValueInstantiator.class) {
-            // also, only override if using default creator (no-arg ctor, no-arg static factory)
-            if (inst.canCreateUsingDefault()) {
-                inst = new CreatorOptimizer(beanClass, _classLoader, (StdValueInstantiator) inst).createOptimized();
-                if (inst != null) {
-                    builder.setValueInstantiator(inst);
+            // Second thing: see if we could (re)generate Creator(s):
+            ValueInstantiator inst = builder.getValueInstantiator();
+            // Hmmh. Probably better to require exact default implementation
+            // and not sub-class; chances are sub-class uses its own
+            // construction anyway.
+            if (inst.getClass() == StdValueInstantiator.class) {
+                // also, only override if using default creator (no-arg ctor, no-arg static factory)
+                if (inst.canCreateUsingDefault()) {
+                    inst = new CreatorOptimizer(beanClass, _classLoader, (StdValueInstantiator) inst).createOptimized();
+                    if (inst != null) {
+                        builder.setValueInstantiator(inst);
+                    }
                 }
             }
         }
