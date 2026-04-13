@@ -24,6 +24,8 @@ not datatype, data format, or JAX-RS provider modules.
 
   <modules>
     <module>afterburner</module>
+    <!-- Classpath-mode integration tests for afterburner; not published. See module pom for why. -->
+    <module>afterburner-tests</module>
     <module>android-record</module>
     <module>blackbird</module>
     <module>guice</module>

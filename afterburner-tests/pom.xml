@@ -1,0 +1,107 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>tools.jackson.module</groupId>
+    <artifactId>jackson-modules-base</artifactId>
+    <version>3.2.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>jackson-module-afterburner-tests</artifactId>
+  <name>Jackson module: Afterburner integration tests</name>
+  <packaging>jar</packaging>
+
+  <description>Classpath-mode integration tests for jackson-module-afterburner. This module
+intentionally has no module-info.java so that its test POJOs live in the unnamed module, where
+their packages are not sealed-by-module. That lets Afterburner exercise its bytecode injection
+paths (PropertyMutatorCollector, CreatorOptimizer, PropertyAccessorCollector) — paths that are
+gated off when the target bean sits in a named JPMS module. This module is test-only and is
+never published.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>tools.jackson.module</groupId>
+      <artifactId>jackson-module-afterburner</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- This module is test-only and must never produce a publishable artifact.
+           Packaging stays `jar` so the compile + test lifecycle runs normally, but
+           every artifact-producing / artifact-publishing plugin inherited from the
+           parent chain is unbound here. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-install-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <!-- Parent chain pulls in the Felix bundle plugin for OSGi manifests and
+           a few other "package phase" plugins; none make sense for a test-only
+           module, so unbind them. -->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>bundle-manifest</id>
+            <phase>none</phase>
+          </execution>
+          <execution>
+            <id>default-install</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.gradlex</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Force surefire to classpath mode: this module has no module-info.java,
+           so tests must run on the classpath (unnamed module) to keep test POJO
+           packages unsealed. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <useModulePath>false</useModulePath>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
