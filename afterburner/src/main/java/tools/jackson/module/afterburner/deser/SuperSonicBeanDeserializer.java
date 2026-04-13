@@ -332,7 +332,8 @@ public final class SuperSonicBeanDeserializer
         }
         // also, need to ensure we get closing END_OBJECT...
         if (p.nextToken() != JsonToken.END_OBJECT) {
-            return _handleUnexpectedWithin(p, ctxt, bean);
+            // [modules-base#343]: trailing (possibly unknown) properties remain
+            return _deserializeDisordered(p, ctxt, bean);
         }
         return bean;
     }
