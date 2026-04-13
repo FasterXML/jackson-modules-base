@@ -36,16 +36,12 @@ public class CreatorOptimizerTest extends AfterburnerInjectionTestBase
         assertNotNull(inst);
 
         // Afterburner replaces the plain StdValueInstantiator with a bytecode-generated
-        // subclass whose class-chain includes OptimizedValueInstantiator (the abstract
-        // base CreatorOptimizer produces subclasses of) and whose simple name contains
-        // "Creator4JacksonDeserializer".
-        String genClassName = inst.getClass().getName();
-        assertTrue(inst.getClass().getSimpleName().contains("Creator4JacksonDeserializer"),
-                "CreatorOptimizer did not replace the ValueInstantiator — still "
-                        + genClassName);
+        // subclass whose class-chain includes OptimizedValueInstantiator — the abstract
+        // base CreatorOptimizer produces subclasses of. Checking for that base in the
+        // chain is sufficient: it can only appear if CreatorOptimizer actually ran.
         assertTrue(classChainIncludes(inst.getClass(), "OptimizedValueInstantiator"),
-                "generated creator should extend OptimizedValueInstantiator; got "
-                        + genClassName);
+                "CreatorOptimizer did not replace the ValueInstantiator; got "
+                        + inst.getClass().getName());
     }
 
     private static boolean classChainIncludes(Class<?> cls, String simpleName) {

@@ -28,9 +28,15 @@ never published.</description>
   <build>
     <plugins>
       <!-- This module is test-only and must never produce a publishable artifact.
-           Packaging stays `jar` so the compile + test lifecycle runs normally, but
-           every artifact-producing / artifact-publishing plugin inherited from the
-           parent chain is unbound here. -->
+           Packaging stays `jar` so the compile + test lifecycle runs normally,
+           but every artifact-producing / artifact-publishing plugin inherited
+           from the parent chain is unbound here.
+
+           Verified via `mvn help:effective-pom -pl afterburner-tests`: every
+           execution listed below appears in the merged model at phase=none or
+           with skip=true. If you rename an execution here, re-verify with that
+           command — a typo turns into silent dead config and stale artifacts
+           in target/ rather than a build error. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -55,9 +61,8 @@ never published.</description>
           <skip>true</skip>
         </configuration>
       </plugin>
-      <!-- Parent chain pulls in the Felix bundle plugin for OSGi manifests and
-           a few other "package phase" plugins; none make sense for a test-only
-           module, so unbind them. -->
+      <!-- Felix bundle plugin: the parent POM binds two explicit executions
+           (`bundle-manifest` and `default-install`) so we override both by id. -->
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
@@ -72,16 +77,20 @@ never published.</description>
           </execution>
         </executions>
       </plugin>
+      <!-- CycloneDX SBOM plugin has a plugin-level `skip` flag, which disables
+           it independently of execution id merging. More robust than binding a
+           phase-override to an unnamed parent execution. -->
       <plugin>
         <groupId>org.cyclonedx</groupId>
         <artifactId>cyclonedx-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>default</id>
-            <phase>none</phase>
-          </execution>
-        </executions>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
       </plugin>
+      <!-- Gradle module metadata plugin has no `skip` parameter, so we unbind
+           the parent's unnamed execution via id-based merge. Maven treats
+           `default` as the id for unnamed executions when merging child POM
+           overrides. Verified in the effective POM. -->
       <plugin>
         <groupId>org.gradlex</groupId>
         <artifactId>gradle-module-metadata-maven-plugin</artifactId>
