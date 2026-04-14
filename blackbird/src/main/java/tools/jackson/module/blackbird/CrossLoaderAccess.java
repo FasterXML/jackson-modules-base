@@ -10,6 +10,13 @@ import java.util.function.UnaryOperator;
 
 class CrossLoaderAccess implements UnaryOperator<MethodHandles.Lookup> {
     private static final MethodHandle DEFINE_CLASS, HAS_FULL_ACCESS;
+
+    /**
+     * @deprecated Since 3.2. Only referenced by {@link #accessClassIn}, which
+     *     is dead code on JDK 9+ for all known inputs. Scheduled for removal
+     *     together with the companion-class slow path.
+     */
+    @Deprecated(since = "3.2", forRemoval = true)
     private static final String CLASS_NAME = "$$JacksonBlackbirdAccess";
 
     // Pre-compiled Java 8 bytecode:
@@ -18,6 +25,10 @@ class CrossLoaderAccess implements UnaryOperator<MethodHandles.Lookup> {
     //   public static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
     // }
 
+    /**
+     * @deprecated Since 3.2. See {@link #accessClassIn}.
+     */
+    @Deprecated(since = "3.2", forRemoval = true)
     private static final int[] HEADER = new int[] {
         0xca, 0xfe, 0xba, 0xbe, 0x00, 0x00, 0x00, 0x34, 0x00, 0x1c, 0x0a, 0x00,
         0x02, 0x00, 0x03, 0x07, 0x00, 0x04, 0x0c, 0x00, 0x05, 0x00, 0x06, 0x01,
@@ -35,6 +46,10 @@ class CrossLoaderAccess implements UnaryOperator<MethodHandles.Lookup> {
         0x09, 0x00, 0x0e, 0x00, 0x0f, 0x07, 0x00, 0x10, 0x0c, 0x00, 0x11, 0x00,
         0x12, 0x01
     };
+    /**
+     * @deprecated Since 3.2. See {@link #accessClassIn}.
+     */
+    @Deprecated(since = "3.2", forRemoval = true)
     private static final int[] FOOTER = new int[] {
         0x01, 0x00, 0x06, 0x4c, 0x4f, 0x4f, 0x4b, 0x55, 0x50, 0x01, 0x00, 0x27,
         0x4c, 0x6a, 0x61, 0x76, 0x61, 0x2f, 0x6c, 0x61, 0x6e, 0x67, 0x2f, 0x69,
@@ -88,9 +103,17 @@ class CrossLoaderAccess implements UnaryOperator<MethodHandles.Lookup> {
     }
 
     private static MethodHandles.Lookup grantAccess(MethodHandles.Lookup lookup) throws IOException, ReflectiveOperationException {
+        // Fast path: on JDK 9+, privateLookupIn always yields a full-privilege
+        // lookup for any bean class Blackbird can see, so this branch is taken
+        // for every real-world call and the companion-class slow path below
+        // is effectively unreachable. Verified by `blackbird-tests`
+        // CrossLoaderAccessTest; see that test's javadoc for the full rationale.
         if (DEFINE_CLASS == null || hasFullAccess(lookup)) {
             return lookup;
         }
+        // Legacy slow path, retained while we finish verifying it has no live
+        // callers in any supported JDK / lookup configuration. Scheduled for
+        // removal — see `accessClassIn` javadoc.
         return (MethodHandles.Lookup) accessClassIn(lookup).getField("LOOKUP").get(null);
     }
 
@@ -104,6 +127,27 @@ class CrossLoaderAccess implements UnaryOperator<MethodHandles.Lookup> {
         }
     }
 
+    /**
+     * Defines a {@code $$JacksonBlackbirdAccess} companion class in the same
+     * package as {@code lookup.lookupClass()} and returns it. The companion
+     * class exposes a {@code public static final MethodHandles.Lookup LOOKUP}
+     * field (initialized from a class-initializer calling
+     * {@link MethodHandles#lookup()}), which callers then use as a
+     * full-privilege lookup for operations in that package.
+     *
+     * @deprecated Since 3.2. This is legacy Java 8 / pre-{@code privateLookupIn}
+     *     fallback logic that is no longer reachable for any known input on
+     *     JDK 9+. The {@link #grantAccess} fast path always wins because
+     *     {@link MethodHandles#privateLookupIn} returns a lookup with
+     *     {@link MethodHandles.Lookup#hasFullPrivilegeAccess()} {@code == true}
+     *     for any bean class Blackbird can see. The
+     *     {@code jackson-module-blackbird-tests} module
+     *     {@code CrossLoaderAccessTest} pins this behavior. If a real live
+     *     caller for this slow path is identified before 4.0, remove the
+     *     {@link Deprecated} marker and keep the method; otherwise, delete
+     *     along with {@link #CLASS_NAME}, {@link #HEADER}, and {@link #FOOTER}.
+     */
+    @Deprecated(since = "3.2", forRemoval = true)
     private static Class<?> accessClassIn(MethodHandles.Lookup lookup) throws IOException, ReflectiveOperationException {
         Package pkg = lookup.lookupClass().getPackage();
         final String pkgName = pkg.getName();

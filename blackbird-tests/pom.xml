@@ -1,0 +1,123 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>tools.jackson.module</groupId>
+    <artifactId>jackson-modules-base</artifactId>
+    <version>3.2.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>jackson-module-blackbird-tests</artifactId>
+  <name>Jackson module: Blackbird integration tests</name>
+  <packaging>jar</packaging>
+
+  <description>Classpath-mode integration tests for jackson-module-blackbird. Unlike
+jackson-module-afterburner-tests, Blackbird's in-tree tests already exercise most of
+the optimizer because Blackbird uses the JDK 9+ supported MethodHandles.Lookup API
+rather than reflective ClassLoader access. What this module adds is coverage of the
+classpath/unnamed-module path: when a POJO lives outside Blackbird's own JPMS module,
+Blackbird's CrossLoaderAccess has to define a $$JacksonBlackbirdAccess companion class
+via Lookup.defineClass to upgrade the caller lookup to one with full privilege access
+over the target package. That path is not exercised by in-tree tests (caller and bean
+share a module, so privateLookupIn already has full privilege). This module is test-only
+and is never published.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>tools.jackson.module</groupId>
+      <artifactId>jackson-module-blackbird</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- This module is test-only and must never produce a publishable artifact.
+           Packaging stays `jar` so the compile + test lifecycle runs normally,
+           but every artifact-producing / artifact-publishing plugin inherited
+           from the parent chain is unbound here.
+
+           Verified via `mvn help:effective-pom -pl blackbird-tests`: every
+           execution listed below appears in the merged model at phase=none or
+           with skip=true. If you rename an execution here, re-verify with that
+           command — a typo turns into silent dead config and stale artifacts
+           in target/ rather than a build error. See afterburner-tests/pom.xml
+           for the same pattern with more detailed comments. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-install-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>bundle-manifest</id>
+            <phase>none</phase>
+          </execution>
+          <execution>
+            <id>default-install</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.gradlex</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>report</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Force surefire to classpath mode: this module has no module-info.java,
+           so tests must run on the classpath (unnamed module). That's the whole
+           point — Blackbird's in-tree tests run as a named module and take the
+           easy privateLookupIn path that doesn't exercise CrossLoaderAccess. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <useModulePath>false</useModulePath>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

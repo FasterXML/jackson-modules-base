@@ -28,6 +28,8 @@ not datatype, data format, or JAX-RS provider modules.
     <module>afterburner-tests</module>
     <module>android-record</module>
     <module>blackbird</module>
+    <!-- Classpath-mode integration tests for blackbird; not published. See module pom for why. -->
+    <module>blackbird-tests</module>
     <module>guice</module>
     <module>guice7</module>
     <module>jakarta-xmlbind</module>
