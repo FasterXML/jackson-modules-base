@@ -132,10 +132,21 @@ abstract class AfterburnerInjectionTestBase
 
     /** True if `prop`'s class chain contains Afterburner's OptimizedSettableBeanProperty. */
     protected static boolean isOptimizedProperty(SettableBeanProperty prop) {
-        Class<?> c = prop.getClass();
+        return afterburnerClassChainIncludes(prop.getClass(), "OptimizedSettableBeanProperty");
+    }
+
+    /** True if `writer`'s class chain contains Afterburner's OptimizedBeanPropertyWriter. */
+    protected static boolean isOptimizedWriter(BeanPropertyWriter writer) {
+        return afterburnerClassChainIncludes(writer.getClass(), "OptimizedBeanPropertyWriter");
+    }
+
+    /** Walks the superclass chain of {@code cls} looking for a class whose simple
+     *  name is {@code simpleName}. Used to recognize Afterburner's package-private
+     *  optimized types without importing them. */
+    protected static boolean classChainIncludes(Class<?> cls, String simpleName) {
+        Class<?> c = cls;
         while (c != null) {
-            if ("OptimizedSettableBeanProperty".equals(c.getSimpleName())
-                    && c.getPackageName().startsWith("tools.jackson.module.afterburner")) {
+            if (simpleName.equals(c.getSimpleName())) {
                 return true;
             }
             c = c.getSuperclass();
@@ -143,11 +154,13 @@ abstract class AfterburnerInjectionTestBase
         return false;
     }
 
-    /** True if `writer`'s class chain contains Afterburner's OptimizedBeanPropertyWriter. */
-    protected static boolean isOptimizedWriter(BeanPropertyWriter writer) {
-        Class<?> c = writer.getClass();
+    /** Like {@link #classChainIncludes} but additionally requires the matched
+     *  class to live inside an afterburner package. Guards against false positives
+     *  from unrelated classes that happen to share a simple name. */
+    protected static boolean afterburnerClassChainIncludes(Class<?> cls, String simpleName) {
+        Class<?> c = cls;
         while (c != null) {
-            if ("OptimizedBeanPropertyWriter".equals(c.getSimpleName())
+            if (simpleName.equals(c.getSimpleName())
                     && c.getPackageName().startsWith("tools.jackson.module.afterburner")) {
                 return true;
             }

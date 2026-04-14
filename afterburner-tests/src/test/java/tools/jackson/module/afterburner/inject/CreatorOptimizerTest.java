@@ -114,13 +114,4 @@ public class CreatorOptimizerTest extends AfterburnerInjectionTestBase
         assertNotNull(inst);
         return inst;
     }
-
-    private static boolean classChainIncludes(Class<?> cls, String simpleName) {
-        Class<?> c = cls;
-        while (c != null) {
-            if (simpleName.equals(c.getSimpleName())) return true;
-            c = c.getSuperclass();
-        }
-        return false;
-    }
 }

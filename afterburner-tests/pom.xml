@@ -117,12 +117,32 @@ never published.</description>
       </plugin>
       <!-- Force surefire to classpath mode: this module has no module-info.java,
            so tests must run on the classpath (unnamed module) to keep test POJO
-           packages unsealed. -->
+           packages unsealed.
+
+           The add-opens flag below is required by Afterburner itself, not by
+           the tests. Afterburner's MyClassLoader reflectively invokes
+           ClassLoader#findLoadedClass and ClassLoader#defineClass on the bean's
+           parent classloader so that generated mutator classes are cached on
+           that parent and reused across mappers. Both methods live in
+           java.base/java.lang and on Java 17+ are only reachable when the
+           module is opened to the unnamed module. Without this flag,
+           Afterburner silently falls back to defining each generated class in
+           a fresh throwaway MyClassLoader, which leaks classloaders under load
+           (and which GeneratedClassCachingTest catches as a regression).
+
+           Note: reflection into databind internals from the tests themselves
+           works without opens because this module runs on the classpath, where
+           setAccessible(true) from the unnamed module is unrestricted.
+
+           Note 2: surefire's argLine is additive when jacoco's prepare-agent
+           already set a value, so we reference @{argLine} to preserve the
+           jacoco agent config. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <useModulePath>false</useModulePath>
+          <argLine>@{argLine} --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
         </configuration>
       </plugin>
     </plugins>
