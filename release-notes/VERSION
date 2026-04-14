@@ -33,7 +33,7 @@ Active maintainers:
 #347: (afterburner) Added module "afterburner-tests" for better Afterburner-in-classpath
   testing
  (fix by @cowtowncoder, w/ Claude code)
-- (blackbird) Added module "blackbird-tests" for classpath-mode Blackbird coverage
+#349 (blackbird) Added module "blackbird-tests" for classpath-mode Blackbird coverage
   (setter specializations, field-access limitation, CrossLoaderAccess fast-path)
  (fix by @cowtowncoder, w/ Claude code)
 - Removed project Android SDK level overrides, use defaults (ASDK 34)
