@@ -106,11 +106,12 @@ abstract class AfterburnerInjectionTestBase
 
     /** Walks the class chain of {@code instance} looking for a declared field
      *  named {@code fieldName}, sets it accessible, and returns its value.
-     *  Throws a descriptive AssertionError if the field isn't found — on the
-     *  assumption that a missing field usually means databind renamed/removed
-     *  something, not a bug in the test. */
+     *  Throws a descriptive AssertionError if the field isn't found, picking
+     *  the hypothesis (databind rename vs caller passed the wrong receiver)
+     *  based on the class's package. */
     protected static Object reflectField(Object instance, String fieldName) {
-        Class<?> c = instance.getClass();
+        Class<?> origClass = instance.getClass();
+        Class<?> c = origClass;
         while (c != null) {
             try {
                 Field f = c.getDeclaredField(fieldName);
@@ -120,14 +121,25 @@ abstract class AfterburnerInjectionTestBase
                 c = c.getSuperclass();
             } catch (IllegalAccessException e) {
                 throw new AssertionError("cannot read field '" + fieldName + "' on "
-                        + instance.getClass().getName(), e);
+                        + origClass.getName(), e);
             }
         }
-        throw new AssertionError("expected databind field '" + fieldName + "' on "
-                + instance.getClass().getName()
-                + " (walked up full class chain) — databind may have renamed or"
-                + " removed it; update " + AfterburnerInjectionTestBase.class.getSimpleName()
-                + " to match.");
+        // Field genuinely not found anywhere in the class chain. Give the caller
+        // a hypothesis to start from rather than a bare "not found".
+        String pkg = origClass.getPackageName();
+        String hint;
+        if (pkg.startsWith("tools.jackson.databind")
+                || pkg.startsWith("tools.jackson.module.afterburner")) {
+            hint = "databind or afterburner may have renamed or removed it;"
+                    + " update " + AfterburnerInjectionTestBase.class.getSimpleName()
+                    + " to match.";
+        } else {
+            hint = "this looks like the wrong receiver type — '" + fieldName
+                    + "' is an internal Jackson field and the caller passed an"
+                    + " instance of " + origClass.getName() + ".";
+        }
+        throw new AssertionError("field '" + fieldName + "' not found on "
+                + origClass.getName() + " (walked up full class chain) — " + hint);
     }
 
     /** True if `prop`'s class chain contains Afterburner's OptimizedSettableBeanProperty. */
