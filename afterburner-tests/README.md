@@ -71,11 +71,35 @@ artifacts in `target/` rather than a build error.
 
 - Private-class guard (`_classLoader != null && isPrivate(beanClass)`).
 - `setUseValueClassLoader(false)` toggle.
-- Generated-class caching across multiple POJOs with the same shape.
 - Concurrent deserializer construction.
 - Fallback path when afterburner correctly refuses to optimize (e.g. a bean
   whose package really is sealed — the in-tree afterburner tests inadvertently
   cover this).
 - GraalVM native-image disable path in `AfterburnerModule.setupModule`.
 
-See PR #347 for the rationale behind the current coverage and the open follow-ups.
+## Known findings from this module
+
+### Afterburner parent-classloader caching silently broken on Java 9+ (#348)
+
+While writing `GeneratedClassCachingTest`, we discovered that Afterburner's
+parent-classloader cache — the mechanism that's supposed to make two
+independent `ObjectMapper` instances share a single generated mutator class
+per POJO — does not work on Java 9+ unless the JVM is launched with
+`--add-opens java.base/java.lang=ALL-UNNAMED`. `MyClassLoader` reflects into
+`ClassLoader#findLoadedClass` and `ClassLoader#defineClass`, both protected
+members of `java.lang.ClassLoader`; on modern JDKs the reflective access
+throws `InaccessibleObjectException`, which Afterburner catches silently and
+falls back to defining each generated class in a fresh throwaway loader.
+
+That's why this module's `pom.xml` sets
+`--add-opens java.base/java.lang=ALL-UNNAMED` on the surefire `argLine`.
+Without it, `testSameBeanAcrossMappersReusesSameMutatorClass` fails with two
+distinct `Class<?>` instances carrying identical fully-qualified names — the
+exact fingerprint of the leak. This is **not a test-environment quirk**; it
+affects every real Afterburner user on Java 9+. See issue #348 for the fix
+plan.
+
+## References
+
+- PR #347: rationale for the module's structure and initial coverage
+- Issue #348: afterburner classloader caching regression (surfaced here)
