@@ -19,6 +19,70 @@ public class MyClassLoader extends ClassLoader
     private final static ConcurrentHashMap<String, Object> parentParallelLockMap = new ConcurrentHashMap<>();
 
     /**
+     * True if {@link ClassLoader#findLoadedClass(String)} and
+     * {@link ClassLoader#defineClass(String, byte[], int, int)} are reflectively
+     * accessible from this class. On JDK 9+ both methods live in a non-open
+     * package of {@code java.base}, so reflective access requires the JVM to be
+     * launched with {@code --add-opens java.base/java.lang=ALL-UNNAMED}. Without
+     * that flag, {@link #loadAndResolveUsingParentClassloader} cannot cache
+     * generated classes on the bean's parent classloader and each call to
+     * {@link #loadAndResolve} ends up defining the class in a throwaway
+     * {@link MyClassLoader} instance — correctness is preserved but class
+     * metaspace grows with mapper count. See
+     * <a href="https://github.com/FasterXML/jackson-modules-base/issues/348">issue #348</a>.
+     *
+     * Checked once in a static initializer; cached here for the rest of this
+     * class's lifetime. When {@code false}, {@link #loadAndResolveUsingParentClassloader}
+     * short-circuits immediately rather than paying the per-call
+     * try/catch + logging cost.
+     *
+     * @since 3.2
+     */
+    private static final boolean PARENT_CL_REFLECTION_AVAILABLE;
+    static {
+        boolean ok = false;
+        try {
+            // Probe both methods we'll later try to invoke. Either one failing
+            // is enough to disable the parent-classloader cache path.
+            Method find = ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
+            find.setAccessible(true);
+            Method define = ClassLoader.class.getDeclaredMethod("defineClass",
+                    String.class, byte[].class, int.class, int.class);
+            define.setAccessible(true);
+            ok = true;
+        } catch (Throwable t) {
+            // Swallow; ok stays false. We log once below at WARNING level so
+            // users running on JDK 9+ without the required --add-opens flag
+            // see a clear, actionable message instead of silent degradation.
+            Logger.getLogger(MyClassLoader.class.getName()).log(Level.WARNING,
+                    "Afterburner: unable to reflectively access ClassLoader#findLoadedClass"
+                    + " / ClassLoader#defineClass on the parent class loader."
+                    + " On JDK 9+ this requires launching the JVM with"
+                    + " `--add-opens java.base/java.lang=ALL-UNNAMED`."
+                    + " Without it, Afterburner cannot cache generated mutator/accessor"
+                    + " classes on the bean's classloader, so each new ObjectMapper"
+                    + " generates fresh classes per POJO — functional behavior is"
+                    + " preserved but classloader count grows with mapper count."
+                    + " See https://github.com/FasterXML/jackson-modules-base/issues/348"
+                    + " for context. Reason: " + t);
+        }
+        PARENT_CL_REFLECTION_AVAILABLE = ok;
+    }
+
+    /**
+     * Returns {@code true} iff Afterburner can use the parent class loader to
+     * cache generated mutator / accessor classes across {@code ObjectMapper}
+     * instances. See {@link #PARENT_CL_REFLECTION_AVAILABLE} for details and
+     * <a href="https://github.com/FasterXML/jackson-modules-base/issues/348">issue #348</a>
+     * for the user-facing symptom when this returns {@code false}.
+     *
+     * @since 3.2
+     */
+    public static boolean isParentClassLoaderReflectionAvailable() {
+        return PARENT_CL_REFLECTION_AVAILABLE;
+    }
+
+    /**
      * Flag that determines if we should first try to load new class
      * using parent class loader or not; this may be done to try to
      * force access to protected/package-access properties.
@@ -121,6 +185,12 @@ public class MyClassLoader extends ClassLoader
      */
     private Class<?> loadAndResolveUsingParentClassloader(ClassName className, byte[] byteCode)
     {
+        // Short-circuit when we already know the reflective path into ClassLoader
+        // isn't available (e.g. running on JDK 9+ without --add-opens java.base/java.lang).
+        // Avoids per-call try/catch overhead and keeps FINE-level log noise down.
+        if (!PARENT_CL_REFLECTION_AVAILABLE) {
+            return null;
+        }
         ClassLoader parentClassLoader;
         if (!_cfgUseParentLoader || (parentClassLoader = getParent()) == null) {
             return null;

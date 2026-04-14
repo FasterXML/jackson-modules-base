@@ -33,6 +33,9 @@ Active maintainers:
 #347: (afterburner) Added module "afterburner-tests" for better Afterburner-in-classpath
   testing
  (fix by @cowtowncoder, w/ Claude code)
+#348 (afterburner) Afterburner parent-classloader caching silently broken on
+  Java 9+ without `--add-opens java.base/java.lang=ALL-UNNAMED`
+ (fix by @cowtowncoder, w/ Claude code)
 #349 (blackbird) Added module "blackbird-tests" for classpath-mode Blackbird coverage
   (setter specializations, field-access limitation, CrossLoaderAccess fast-path)
  (fix by @cowtowncoder, w/ Claude code)
