@@ -23,7 +23,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.21.3 (not yet released)
+2.21.3 (28-Apr-2026)
 
 #339: `@JsonView` deserialization filtering is broken when `BlackbirdModule`
   is registered
