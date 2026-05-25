@@ -1,6 +1,6 @@
 # jackson-module-guice
 
-[![Maven Central](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Ftools%2Fjackson%2Fmodule%2Fjackson-module-guice%2Fmaven-metadata.xml&label=Maven%20Central)](https://central.sonatype.com/artifact/tools.jackson.module/jackson-module-guice)
+[![Maven Central](https://img.shields.io/maven-central/v/tools.jackson.module/jackson-module-guice.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/tools.jackson.module/jackson-module-guice)
 
 ## Documentation
 

@@ -5,7 +5,7 @@ It is most often used to make it easier to reuse existing data beans that used w
 
 ## Maven dependency
 
-[![Maven Central](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Ftools%2Fjackson%2Fmodule%2Fjackson-module-jaxb-annotations%2Fmaven-metadata.xml&label=Maven%20Central)](https://central.sonatype.com/artifact/tools.jackson.module/jackson-module-jaxb-annotations)
+[![Maven Central](https://img.shields.io/maven-central/v/tools.jackson.module/jackson-module-jaxb-annotations.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/tools.jackson.module/jackson-module-jaxb-annotations)
 
 To use this extension on Maven-based projects, use following dependency:
 

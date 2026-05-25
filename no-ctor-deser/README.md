@@ -24,7 +24,7 @@ ObjectMapper mapper = JsonMapper.builder() // or mapper for other dataformats
 
 Maven information for jar is:
 
-[![Maven Central](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Ftools%2Fjackson%2Fmodule%2Fjackson-module-no-ctor-deser%2Fmaven-metadata.xml&label=Maven%20Central)](https://central.sonatype.com/artifact/tools.jackson.module/jackson-module-no-ctor-deser)
+[![Maven Central](https://img.shields.io/maven-central/v/tools.jackson.module/jackson-module-no-ctor-deser.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/tools.jackson.module/jackson-module-no-ctor-deser)
 
 * Group id: `tools.jackson.module`
 * Artifact id: `jackson-module-no-ctor-deser`
