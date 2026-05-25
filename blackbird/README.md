@@ -2,7 +2,7 @@
 
 _Upgrade your Afterburner for your Java 11+ Environment 🚀_
 
-The [Afterburner](https://github.com/FasterXML/jackson-modules-base/tree/master/afterburner)
+The [Afterburner](../afterburner/)
 has long been your engine of choice for maximum Jackson performance.
 But in the brave new Java 11 world, the trusty Afterburner is showing its age.
 It uses horrifying bytecode manipulation and cracks `Unsafe.defineClass` which will
@@ -27,7 +27,7 @@ have a monomorphic call profile and easily inline for maximum performance.
 
 ## Status
 
-[![Maven Central](https://img.shields.io/maven-central/v/tools.jackson.module/jackson-module-blackbird.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/tools.jackson.module/jackson-module-blackbird)
+[![Maven Central](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo1.maven.org%2Fmaven2%2Ftools%2Fjackson%2Fmodule%2Fjackson-module-blackbird%2Fmaven-metadata.xml&label=Maven%20Central)](https://central.sonatype.com/artifact/tools.jackson.module/jackson-module-blackbird)
 
 Blackbird is new and not as mature as Afterburner, but has been tested and runs well.
 The code is written to fail-fast and explode on the tarmac rather than later at runtime.
