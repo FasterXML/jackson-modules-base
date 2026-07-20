@@ -8,6 +8,7 @@ import tools.jackson.core.*;
 import tools.jackson.databind.*;
 import tools.jackson.databind.deser.*;
 import tools.jackson.databind.deser.impl.NullsConstantProvider;
+import tools.jackson.databind.ext.jdk8.Jdk8OptionalDeserializer;
 import tools.jackson.databind.util.ClassUtil;
 
 /**
@@ -157,6 +158,9 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     protected boolean _isDefaultDeserializer(ValueDeserializer<?> deser) {
         return (deser == null)
                 || (deser instanceof SuperSonicBeanDeserializer)
+                // [modules-base#355]: support databind versions before the
+                // built-in Optional handler was marked with @JacksonStdImpl
+                || (deser.getClass() == Jdk8OptionalDeserializer.class)
                 || ClassUtil.isJacksonStdImpl(deser);
     }
 }
