@@ -26,6 +26,13 @@ Active maintainers:
 
 No changes since 3.2
 
+3.2.2 (not yet released)
+
+#355: Blackbird silently reverts Optional<T> (reference-type) properties to reflection
+  MethodProperty: Jdk8OptionalDeserializer fails isDefaultDeserializer check
+ (reported by @pavel-ptashyts)
+ (fix by @dlwldnjs1009)
+
 3.2.1 (10-Jul-2026)
 
 No changes since 3.2.0
@@ -49,6 +56,13 @@ No changes since 3.2.0
  (fix by @cowtowncoder, w/ Claude code)
 - Removed project Android SDK level overrides, use defaults (ASDK 34)
  (affects `android-records` module's verification; was validating ASDK 26)
+
+3.1.6 (not yet released)
+
+#355: Blackbird silently reverts Optional<T> (reference-type) properties to reflection
+  MethodProperty: Jdk8OptionalDeserializer fails isDefaultDeserializer check
+ (reported by @pavel-ptashyts)
+ (fix by @dlwldnjs1009)
 
 3.1.5 (07-Jul-2026)
 3.1.4 (29-May-2026)

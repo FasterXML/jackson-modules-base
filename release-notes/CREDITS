@@ -25,3 +25,13 @@ Josh Curry (@seadbrane)
 Tiemen Schut (@tschut)
 * Requested #323: (reverts #283) Restore SPI metadata for non-module apps
  (3.0.3)
+
+Pavel Ptashyts (@pavel-ptashyts)
+* Reported #355: Blackbird silently reverts Optional<T> (reference-type) properties to reflection
+  MethodProperty: Jdk8OptionalDeserializer fails isDefaultDeserializer check
+ (3.1.6)
+
+Lee Jiwon (@dlwldnjs1009)
+* Contributed fix for #355: Blackbird silently reverts Optional<T> (reference-type) properties to reflection
+  MethodProperty: Jdk8OptionalDeserializer fails isDefaultDeserializer check
+ (3.1.6)
