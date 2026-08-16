@@ -80,6 +80,7 @@ No changes since 2.19.0
  (reported, fix contributed by Apoorva M)
 #290: Update Paranamer dep from 2.8 to 2.8.3
 
+2.18.10 (15-Aug-2026)
 2.18.9 (07-Jul-2026)
 2.18.8 (28-May-2026)
 2.18.7 (24-Apr-2026)
