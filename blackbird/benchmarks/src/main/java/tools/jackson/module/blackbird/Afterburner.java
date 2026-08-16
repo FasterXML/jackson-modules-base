@@ -1,7 +1,8 @@
-package com.fasterxml.jackson.module.blackbird;
+package tools.jackson.module.blackbird;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.module.afterburner.AfterburnerModule;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -18,6 +19,6 @@ public class Afterburner extends BaseBenchmark {
 
     @Override
     protected ObjectMapper createObjectMapper() {
-        return new ObjectMapper().registerModule(new AfterburnerModule());
+        return JsonMapper.builder().addModule(new AfterburnerModule()).build();
     }
 }
