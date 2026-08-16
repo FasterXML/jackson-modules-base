@@ -21,9 +21,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.fasterxml.jackson.module</groupId>
+        <groupId>tools.jackson.module</groupId>
         <artifactId>jackson-modules-base</artifactId>
-        <version>2.19.0</version>
+        <version>3.1.6</version>
+        <!-- Not part of the reactor: resolve parent (and the module artifacts
+             benchmarked below) from the repository, as released versions
+          -->
+        <relativePath />
     </parent>
 
     <artifactId>jackson-module-blackbird-benchmark</artifactId>
@@ -31,8 +35,6 @@
     <name>Jackson Blackbird JMH benchmarks</name>
 
     <properties>
-        <javac.src.version>1.8</javac.src.version>
-        <javac.target.version>1.8</javac.target.version>
         <jmh.version>1.25</jmh.version>
         <maven.deploy.skip>true</maven.deploy.skip>
         <uberjar.name>benchmarks</uberjar.name>
@@ -46,12 +48,12 @@
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
+            <groupId>tools.jackson.module</groupId>
             <artifactId>jackson-module-blackbird</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
+            <groupId>tools.jackson.module</groupId>
             <artifactId>jackson-module-afterburner</artifactId>
         </dependency>
 
