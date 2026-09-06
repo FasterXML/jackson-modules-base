@@ -21,6 +21,7 @@ import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.GenProp;
+import tools.jackson.module.blackbird.codegen.GeneratedCodecBase;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.Kind;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator;
 
@@ -105,7 +106,7 @@ final class BBCodecFactory
                 if (DEBUG) System.err.println("bbdebug gate: prop " + prop.getName());
                 return null;
             }
-            props.add(classify(prop));
+            props.add(classify(prop, beanClass, lookups));
             names.add(Named.fromString(prop.getName()));
         }
         if (props.isEmpty()) {
@@ -164,25 +165,21 @@ final class BBCodecFactory
     }
 
     private static GenProp classifyBuilder(SettableBeanProperty prop, Class<?> builderClass) {
-        Kind kind = scalarKind(prop.getType().getRawClass());
-        if (kind == null) {
+        Class<?> raw = prop.getType().getRawClass();
+        Method setter = setterOf(prop, raw);
+        if (setter == null || !Modifier.isPublic(setter.getModifiers())
+                || setter.getDeclaringClass() != builderClass
+                || (setter.getReturnType() != void.class
+                        && setter.getReturnType() != builderClass)) {
             return stock(prop);
         }
         ValueDeserializer<?> valueDeser = prop.getValueDeserializer();
-        if (valueDeser == null
+        if (valueDeser instanceof GeneratedCodecBase child) {
+            return new GenProp(prop.getName(), Kind.CHILD, setter, prop, raw, child, null);
+        }
+        Kind kind = scalarKind(raw);
+        if (kind == null || valueDeser == null
                 || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass().getName())) {
-            return stock(prop);
-        }
-        if (!(prop.getMember() instanceof AnnotatedMethod am)) {
-            return stock(prop);
-        }
-        Method setter = am.getAnnotated();
-        if (setter == null || setter.getParameterCount() != 1
-                || !Modifier.isPublic(setter.getModifiers())
-                || setter.getDeclaringClass() != builderClass
-                || setter.getParameterTypes()[0] != prop.getType().getRawClass()
-                || (setter.getReturnType() != void.class
-                        && setter.getReturnType() != builderClass)) {
             return stock(prop);
         }
         return new GenProp(prop.getName(), kind, setter, prop);
@@ -233,8 +230,14 @@ final class BBCodecFactory
         for (int i = 0; i < comps.length; i++) {
             paramTypes[i] = comps[i].getType();
             SettableBeanProperty prop = byIndex[i];
-            Kind kind = scalarKind(paramTypes[i]);
             ValueDeserializer<?> valueDeser = prop.getValueDeserializer();
+            if (valueDeser instanceof GeneratedCodecBase child) {
+                props.add(new GenProp(prop.getName(), Kind.CHILD, null, prop,
+                        paramTypes[i], child, null));
+                names.add(Named.fromString(prop.getName()));
+                continue;
+            }
+            Kind kind = scalarKind(paramTypes[i]);
             if (kind == null || valueDeser == null
                     || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass().getName())) {
                 kind = Kind.STOCK;
@@ -248,27 +251,53 @@ final class BBCodecFactory
         return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, recordCtor);
     }
 
-    private static GenProp classify(SettableBeanProperty prop) {
-        Kind kind = scalarKind(prop.getType().getRawClass());
-        if (kind == null) {
+    private static GenProp classify(SettableBeanProperty prop, Class<?> beanClass,
+            Function<Class<?>, MethodHandles.Lookup> lookups) {
+        Class<?> raw = prop.getType().getRawClass();
+        ValueDeserializer<?> valueDeser = prop.getValueDeserializer();
+        Method setter = setterOf(prop, raw);
+        if (setter == null) {
             return stock(prop);
         }
-        ValueDeserializer<?> valueDeser = prop.getValueDeserializer();
-        if (valueDeser == null
+        if (valueDeser instanceof GeneratedCodecBase child
+                && Modifier.isPublic(setter.getModifiers())
+                && Modifier.isPublic(setter.getDeclaringClass().getModifiers())) {
+            return new GenProp(prop.getName(), Kind.CHILD, setter, prop, raw, child, null);
+        }
+        Kind kind = scalarKind(raw);
+        if (kind == null || valueDeser == null
                 || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass().getName())) {
             return stock(prop);
         }
-        if (!(prop.getMember() instanceof AnnotatedMethod am)) {
+        if (Modifier.isPublic(setter.getModifiers())
+                && Modifier.isPublic(setter.getDeclaringClass().getModifiers())) {
+            return new GenProp(prop.getName(), kind, setter, prop);
+        }
+        // Non-public setter: reach it through the user-supplied lookup; any
+        // access failure keeps the property on the stock path.
+        try {
+            MethodHandles.Lookup lookup = lookups.apply(beanClass);
+            if (lookup == null) {
+                return stock(prop);
+            }
+            MethodHandle mh = lookup.unreflect(setter)
+                    .asType(MethodType.methodType(void.class, beanClass, raw));
+            return new GenProp(prop.getName(), kind, null, prop, raw, null, mh);
+        } catch (ReflectiveOperationException | RuntimeException e) {
             return stock(prop);
+        }
+    }
+
+    private static Method setterOf(SettableBeanProperty prop, Class<?> raw) {
+        if (!(prop.getMember() instanceof AnnotatedMethod am)) {
+            return null;
         }
         Method setter = am.getAnnotated();
         if (setter == null || setter.getParameterCount() != 1
-                || !Modifier.isPublic(setter.getModifiers())
-                || !Modifier.isPublic(setter.getDeclaringClass().getModifiers())
-                || setter.getParameterTypes()[0] != prop.getType().getRawClass()) {
-            return stock(prop);
+                || setter.getParameterTypes()[0] != raw) {
+            return null;
         }
-        return new GenProp(prop.getName(), kind, setter, prop);
+        return setter;
     }
 
     private static GenProp stock(SettableBeanProperty prop) {

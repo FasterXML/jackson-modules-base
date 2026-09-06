@@ -63,7 +63,39 @@ public class BBCodecEngagementTest extends BlackbirdTestBase
         }
     }
 
+    public static class PublicParent {
+        private String label;
+        private PublicBean child;
+        private PublicRec rec;
+
+        public String getLabel() { return label; }
+        public void setLabel(String label) { this.label = label; }
+        public PublicBean getChild() { return child; }
+        public void setChild(PublicBean child) { this.child = child; }
+        public PublicRec getRec() { return rec; }
+        public void setRec(PublicRec rec) { this.rec = rec; }
+    }
+
     private final ObjectMapper MAPPER = newObjectMapper();
+
+    @Test
+    public void testNestedChildCodecs() throws Exception {
+        String doc = "{\"label\":\"p\",\"child\":{\"name\":\"c\",\"count\":2},"
+                + "\"rec\":{\"name\":\"r\",\"count\":5,\"total\":6,\"active\":true,\"tags\":[]}}";
+        PublicParent parent = MAPPER.readValue(doc, PublicParent.class);
+        assertEquals("p", parent.getLabel());
+        assertEquals("c", parent.getChild().getName());
+        assertEquals(2, parent.getChild().getCount());
+        assertEquals(new PublicRec("r", 5, 6L, true, List.of()), parent.getRec());
+
+        PublicParent nulls = MAPPER.readValue("{\"child\":null,\"rec\":null}", PublicParent.class);
+        assertNull(nulls.getChild());
+        assertNull(nulls.getRec());
+
+        PublicParent vanillaParent = newVanillaJSONMapper().readValue(doc, PublicParent.class);
+        assertEquals(vanillaParent.getRec(), parent.getRec());
+        assertEquals(vanillaParent.getChild().getName(), parent.getChild().getName());
+    }
 
     @Test
     public void testGeneratedRecordCodecValues() throws Exception {
@@ -104,20 +136,51 @@ public class BBCodecEngagementTest extends BlackbirdTestBase
         assertEquals(vanillaBean.getTags(), bean.getTags());
     }
 
+    // A non-object where a bean is expected reports MismatchedInputException
+    // from the generated codecs, same as stock.
     @Test
-    public void testEngineEngagesForBuilderBean() throws Exception {
-        assertThrows(IllegalStateException.class,
-                () -> MAPPER.readValue("[1]", BuilderBean.class));
-        assertThrows(MismatchedInputException.class,
-                () -> newVanillaJSONMapper().readValue("[1]", BuilderBean.class));
+    public void testOddTokenMatchesStock() throws Exception {
+        for (Class<?> type : new Class<?>[] {
+                PublicBean.class, PublicRec.class, BuilderBean.class }) {
+            assertThrows(MismatchedInputException.class,
+                    () -> MAPPER.readValue("[1]", type));
+            assertThrows(MismatchedInputException.class,
+                    () -> newVanillaJSONMapper().readValue("[1]", type));
+        }
     }
 
     @Test
-    public void testEngineEngagesForPublicRecord() throws Exception {
-        assertThrows(IllegalStateException.class,
-                () -> MAPPER.readValue("[1]", PublicRec.class));
-        assertThrows(MismatchedInputException.class,
-                () -> newVanillaJSONMapper().readValue("[1]", PublicRec.class));
+    public void testEngineEngagesForAllShapes() throws Exception {
+        java.util.Map<Class<?>, tools.jackson.databind.ValueDeserializer<?>> seen =
+                new java.util.concurrent.ConcurrentHashMap<>();
+        tools.jackson.databind.deser.ValueDeserializerModifier capture =
+                new tools.jackson.databind.deser.ValueDeserializerModifier() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public tools.jackson.databind.ValueDeserializer<?> modifyDeserializer(
+                    tools.jackson.databind.DeserializationConfig config,
+                    tools.jackson.databind.BeanDescription.Supplier beanDescRef,
+                    tools.jackson.databind.ValueDeserializer<?> deserializer) {
+                seen.put(beanDescRef.getBeanClass(), deserializer);
+                return deserializer;
+            }
+        };
+        ObjectMapper m = tools.jackson.databind.json.JsonMapper.builder()
+                .addModule(new tools.jackson.databind.module.SimpleModule("capture")
+                        .setDeserializerModifier(capture))
+                .addModule(new tools.jackson.module.blackbird.BlackbirdModule())
+                .build();
+        m.readValue("{\"name\":\"a\"}", PublicBean.class);
+        m.readValue("{\"name\":\"a\"}", PublicRec.class);
+        m.readValue("{\"name\":\"a\"}", BuilderBean.class);
+        assertEquals("BBCodecPlaceholder",
+                seen.get(PublicBean.class).getClass().getSimpleName());
+        assertEquals("BBCodecPlaceholder",
+                seen.get(PublicRec.class).getClass().getSimpleName());
+        // Builder flow keys the modifier by the builder class.
+        assertEquals("BBCodecPlaceholder",
+                seen.get(BuilderBean.Builder.class).getClass().getSimpleName());
     }
 
     @Test
@@ -147,16 +210,4 @@ public class BBCodecEngagementTest extends BlackbirdTestBase
                 () -> newVanillaJSONMapper().readValue("{\"count\":null}", PublicBean.class));
     }
 
-    // The generated codec rejects a non-object where a property name is
-    // expected with IllegalStateException, where the stock deserializer
-    // reports MismatchedInputException: the distinct failure type proves the
-    // codec, not the stock path, handled the read.
-    @Test
-    public void testEngineEngagesForPublicBean() throws Exception {
-        assertThrows(IllegalStateException.class,
-                () -> MAPPER.readValue("[1]", PublicBean.class));
-        ObjectMapper vanilla = newVanillaJSONMapper();
-        assertThrows(MismatchedInputException.class,
-                () -> vanilla.readValue("[1]", PublicBean.class));
-    }
 }

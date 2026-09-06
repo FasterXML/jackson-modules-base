@@ -91,4 +91,11 @@ public abstract class GeneratedCodecBase extends ValueDeserializer<Object>
     public boolean isCachable() {
         return _fallback.isCachable();
     }
+
+    // Called by generated code when a property name was expected but the
+    // stream holds something else; reports through the context the way the
+    // stock deserializer does.
+    protected final Object _unexpectedToken(JsonParser p, DeserializationContext ctxt) {
+        return ctxt.handleUnexpectedToken(_fallback.handledType(), p);
+    }
 }
