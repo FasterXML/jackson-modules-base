@@ -27,6 +27,7 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
   </licenses>
 
   <properties>
+    <maven.compiler.release>25</maven.compiler.release>
     <packageVersion.dir>tools/jackson/module/blackbird</packageVersion.dir>
     <packageVersion.package>${project.groupId}.blackbird</packageVersion.package>
   </properties>
