@@ -39,10 +39,13 @@ public final class BeanCodecGenerator
     private static final ClassDesc CD_DESER_CONTEXT = ClassDesc.of("tools.jackson.databind.DeserializationContext");
     private static final ClassDesc CD_NAME_MATCHER = ClassDesc.of("tools.jackson.core.sym.PropertyNameMatcher");
     private static final ClassDesc CD_SETTABLE_PROP = ClassDesc.of("tools.jackson.databind.deser.SettableBeanProperty");
-    // Derived from the class literal rather than a name: the hidden-class
-    // definition does not reliably trigger loading of its superclass when this
-    // module is deployed on the module path (observed as NoClassDefFoundError
-    // from defineClass0), so the superclass must be loaded before generation.
+    // Derived from the class literal rather than a name: the test build
+    // compiles main sources into target/test-classes through --patch-module,
+    // and javac emits only compile-time-referenced classes there. The class
+    // literal makes sure that GeneratedCodecBase.class is present in the test
+    // module, which shadows target/classes at run time. Every same-module
+    // class that generated code names only as a string needs such a
+    // compile-time reference.
     private static final ClassDesc CD_BASE =
             GeneratedCodecBase.class.describeConstable().orElseThrow();
     private static final ClassDesc CD_BEAN_DESER_BASE = ClassDesc.of("tools.jackson.databind.deser.bean.BeanDeserializerBase");
