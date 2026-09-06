@@ -1,168 +1,52 @@
 package tools.jackson.module.blackbird.ser;
 
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
 import java.util.function.Function;
-import java.util.function.ToIntFunction;
-import java.util.function.ToLongFunction;
 import java.util.function.UnaryOperator;
 
-import tools.jackson.databind.*;
-import tools.jackson.databind.annotation.JacksonStdImpl;
-import tools.jackson.databind.introspect.AnnotatedMember;
-import tools.jackson.databind.introspect.AnnotatedMethod;
-import tools.jackson.databind.ser.*;
-import tools.jackson.module.blackbird.util.ReflectionHack;
-import tools.jackson.module.blackbird.util.Unchecked;
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.SerializationConfig;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.ser.BeanSerializer;
+import tools.jackson.databind.ser.UnrolledBeanSerializer;
+import tools.jackson.databind.ser.ValueSerializerModifier;
+import tools.jackson.databind.ser.bean.BeanSerializerBase;
 
-import static java.lang.invoke.MethodType.*;
-
+/**
+ * Wraps eligible stock bean serializers in a placeholder that generates a
+ * per-bean writer at resolve time. Every gate that fails leaves the stock
+ * serializer in place.
+ */
 public class BBSerializerModifier extends ValueSerializerModifier
 {
     private static final long serialVersionUID = 1L;
 
-    private final Function<Class<?>, Lookup> _lookups;
-    private final UnaryOperator<Lookup> _accessGrant;
+    // Reserved for member access beyond public API; the v1 writer generator
+    // only touches public getters.
+    private final Function<Class<?>, MethodHandles.Lookup> _lookups;
+    private final UnaryOperator<MethodHandles.Lookup> _accessGrant;
 
-    public BBSerializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups, UnaryOperator<MethodHandles.Lookup> accessGrant)
-    {
+    public BBSerializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups,
+            UnaryOperator<MethodHandles.Lookup> accessGrant) {
         _lookups = lookups;
         _accessGrant = accessGrant;
     }
 
     @Override
-    public List<BeanPropertyWriter> changeProperties(SerializationConfig config,
-            BeanDescription.Supplier beanDescRef, List<BeanPropertyWriter> beanProperties)
+    public ValueSerializer<?> modifySerializer(SerializationConfig config,
+            BeanDescription.Supplier beanDescRef, ValueSerializer<?> serializer)
     {
-        final Class<?> beanClass = beanDescRef.getBeanClass();
-
-        /* Hmmh. Can we access stuff from private classes?
-         * Possibly, if we can use parent class loader.
-         * (should probably skip all non-public?)
-         */
-        if (Modifier.isPrivate(beanClass.getModifiers())) { // TODO?
-            return beanProperties;
+        if (serializer.getClass() != BeanSerializer.class
+                && serializer.getClass() != UnrolledBeanSerializer.class) {
+            return serializer;
         }
-
-        findProperties(beanClass, config, beanProperties);
-        return beanProperties;
-    }
-
-    protected void findProperties(Class<?> beanClass,
-            SerializationConfig config, List<BeanPropertyWriter> beanProperties)
-    {
-        MethodHandles.Lookup lookup = _lookups.apply(beanClass);
-        if (lookup == null) {
-            return;
+        Class<?> beanClass = beanDescRef.getBeanClass();
+        if (!Modifier.isPublic(beanClass.getModifiers())
+                || (beanClass.getEnclosingClass() != null
+                        && !Modifier.isStatic(beanClass.getModifiers()))) {
+            return serializer;
         }
-
-        ListIterator<BeanPropertyWriter> it = beanProperties.listIterator();
-        while (it.hasNext()) {
-            Unchecked.runnable(() ->
-                    createProperty(it, ReflectionHack.privateLookupIn(beanClass, lookup), config))
-                .run();
-        }
-    }
-
-    protected void createProperty(ListIterator<BeanPropertyWriter> it, Lookup lookup, SerializationConfig config) throws Throwable {
-        BeanPropertyWriter bpw = it.next();
-        AnnotatedMember member = bpw.getMember();
-
-        Member jdkMember = member.getMember();
-        // 11-Sep-2015, tatu: Let's skip virtual members (related to #57)
-        if (jdkMember == null) {
-            return;
-        }
-        // We can't access private fields or methods, skip:
-        if (Modifier.isPrivate(jdkMember.getModifiers())) {
-            return;
-        }
-        // (although, interestingly enough, can seem to access private classes...)
-
-        // 30-Jul-2012, tatu: [#6]: Needs to skip custom serializers, if any.
-        if (bpw.hasSerializer() && !SerializerUtil.isDefaultSerializer(bpw.getSerializer())) {
-            return;
-        }
-        // [#9]: also skip unwrapping stuff...
-        if (bpw.isUnwrapping()) {
-            return;
-        }
-
-        if (!bpw.getClass().isAnnotationPresent(JacksonStdImpl.class)) {
-            return;
-        }
-
-        Class<?> type = bpw.getMember().getRawType();
-        MethodHandle getter;
-        if (member instanceof AnnotatedMethod) {
-            getter = lookup.unreflect((Method) member.getMember());
-        } else {
-            // TODO: currently VarHandles aren't considered direct MH
-            return;
-            //getter = lookup.unreflectGetter((Field) member.getMember());
-        }
-        lookup = _accessGrant.apply(lookup);
-
-        if (type.isPrimitive()) {
-            if (type == Integer.TYPE) {
-                ToIntFunction<Object> accessor = (ToIntFunction<Object>) LambdaMetafactory.metafactory(
-                        lookup,
-                        "applyAsInt",
-                        methodType(ToIntFunction.class),
-                        methodType(int.class, Object.class),
-                        getter,
-                        getter.type())
-                    .getTarget().invokeExact();
-                it.set(new IntPropertyWriter(bpw, accessor, null));
-            } else if (type == Long.TYPE) {
-                ToLongFunction<Object> accessor = (ToLongFunction<Object>) LambdaMetafactory.metafactory(
-                        lookup,
-                        "applyAsLong",
-                        methodType(ToLongFunction.class),
-                        methodType(long.class, Object.class),
-                        getter,
-                        getter.type())
-                    .getTarget().invokeExact();
-                it.set(new LongPropertyWriter(bpw, accessor, null));
-            } else if (type == Boolean.TYPE) {
-                ToBooleanFunction accessor = (ToBooleanFunction) LambdaMetafactory.metafactory(
-                        lookup,
-                        "applyAsBoolean",
-                        methodType(ToBooleanFunction.class),
-                        methodType(boolean.class, Object.class),
-                        getter,
-                        getter.type())
-                    .getTarget().invokeExact();
-                it.set(new BooleanPropertyWriter(bpw, accessor, null));
-            }
-        } else {
-            if (type == String.class) {
-                Function<Object, String> accessor = (Function<Object, String>) LambdaMetafactory.metafactory(
-                        lookup,
-                        "apply",
-                        methodType(Function.class),
-                        methodType(Object.class, Object.class),
-                        getter,
-                        getter.type())
-                    .getTarget().invokeExact();
-                it.set(new StringPropertyWriter(bpw, accessor, null));
-            } else {
-                Function<Object, Object> accessor = (Function<Object, Object>) LambdaMetafactory.metafactory(
-                        lookup,
-                        "apply",
-                        methodType(Function.class),
-                        methodType(Object.class, Object.class),
-                        getter,
-                        getter.type())
-                    .getTarget().invokeExact();
-                it.set(new ObjectPropertyWriter(bpw, accessor, null));
-            }
-        }
+        return new BBSerCodecPlaceholder((BeanSerializerBase) serializer);
     }
 }
