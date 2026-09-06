@@ -1,11 +1,16 @@
 package tools.jackson.module.blackbird.deser;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import tools.jackson.core.sym.PropertyNameMatcher;
 import tools.jackson.core.util.Named;
@@ -38,9 +43,10 @@ final class BBCodecFactory
     private static final boolean DEBUG = Boolean.getBoolean("blackbird.debug.codegen");
 
     static ValueDeserializer<Object> tryGenerate(BeanDeserializerBase delegate,
-            DeserializationContext ctxt) {
+            DeserializationContext ctxt,
+            Function<Class<?>, MethodHandles.Lookup> lookups) {
         try {
-            ValueDeserializer<Object> codec = generate(delegate, ctxt);
+            ValueDeserializer<Object> codec = generate(delegate, ctxt, lookups);
             if (DEBUG) {
                 System.err.println("bbdebug tryGenerate " + delegate.handledType().getName()
                         + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
@@ -56,7 +62,9 @@ final class BBCodecFactory
     }
 
     private static ValueDeserializer<Object> generate(BeanDeserializerBase delegate,
-            DeserializationContext ctxt) throws ReflectiveOperationException {
+            DeserializationContext ctxt,
+            Function<Class<?>, MethodHandles.Lookup> lookups)
+            throws ReflectiveOperationException {
         // Deliberately no delegate.hasViews() gate: 3.x disables
         // DEFAULT_VIEW_INCLUSION by default, which marks every bean as needing
         // view processing; the generated codec instead checks
@@ -70,6 +78,9 @@ final class BBCodecFactory
                 || Modifier.isAbstract(beanClass.getModifiers())) {
             if (DEBUG) System.err.println("bbdebug gate: class modifiers");
             return null;
+        }
+        if (beanClass.isRecord()) {
+            return generateRecord(delegate, ctxt, beanClass, lookups);
         }
         if (!delegate.getValueInstantiator().canCreateUsingDefault()) {
             if (DEBUG) System.err.println("bbdebug gate: instantiator");
@@ -98,6 +109,66 @@ final class BBCodecFactory
         }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
         return BeanCodecGenerator.generate(beanClass, props, matcher, delegate);
+    }
+
+    // Records collect components into typed locals and construct through the
+    // canonical constructor; every property must be a CreatorProperty whose
+    // creator index and type line up with the record components.
+    private static ValueDeserializer<Object> generateRecord(BeanDeserializerBase delegate,
+            DeserializationContext ctxt, Class<?> beanClass,
+            Function<Class<?>, MethodHandles.Lookup> lookups)
+            throws ReflectiveOperationException {
+        if (!delegate.getValueInstantiator().canCreateFromObjectWith()) {
+            if (DEBUG) System.err.println("bbdebug gate: record instantiator");
+            return null;
+        }
+        RecordComponent[] comps = beanClass.getRecordComponents();
+        SettableBeanProperty[] byIndex = new SettableBeanProperty[comps.length];
+        int count = 0;
+        for (Iterator<SettableBeanProperty> it = delegate.properties(); it.hasNext(); ) {
+            SettableBeanProperty prop = it.next();
+            if (!(prop instanceof CreatorProperty)
+                    || prop.getMetadata().getMergeInfo() != null) {
+                if (DEBUG) System.err.println("bbdebug gate: record prop " + prop.getName());
+                return null;
+            }
+            int idx = prop.getCreatorIndex();
+            if (idx < 0 || idx >= comps.length || byIndex[idx] != null
+                    || prop.getType().getRawClass() != comps[idx].getType()) {
+                if (DEBUG) System.err.println("bbdebug gate: record index " + prop.getName());
+                return null;
+            }
+            byIndex[idx] = prop;
+            count++;
+        }
+        if (count != comps.length || count == 0) {
+            if (DEBUG) System.err.println("bbdebug gate: record count");
+            return null;
+        }
+        MethodHandles.Lookup lookup = lookups.apply(beanClass);
+        if (lookup == null) {
+            if (DEBUG) System.err.println("bbdebug gate: record lookup");
+            return null;
+        }
+        Class<?>[] paramTypes = new Class<?>[comps.length];
+        List<GenProp> props = new ArrayList<>(comps.length);
+        List<Named> names = new ArrayList<>(comps.length);
+        for (int i = 0; i < comps.length; i++) {
+            paramTypes[i] = comps[i].getType();
+            SettableBeanProperty prop = byIndex[i];
+            Kind kind = scalarKind(paramTypes[i]);
+            ValueDeserializer<?> valueDeser = prop.getValueDeserializer();
+            if (kind == null || valueDeser == null
+                    || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass().getName())) {
+                kind = Kind.STOCK;
+            }
+            props.add(new GenProp(prop.getName(), kind, null, prop, paramTypes[i]));
+            names.add(Named.fromString(prop.getName()));
+        }
+        MethodHandle recordCtor = lookup.findConstructor(beanClass,
+                MethodType.methodType(void.class, paramTypes));
+        PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
+        return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, recordCtor);
     }
 
     private static GenProp classify(SettableBeanProperty prop) {

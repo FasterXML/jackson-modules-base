@@ -57,12 +57,19 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
                         && !Modifier.isStatic(beanClass.getModifiers()))) {
             return deserializer;
         }
-        try {
-            if (!Modifier.isPublic(beanClass.getConstructor().getModifiers())) {
+        if (beanClass.isRecord()) {
+            if (config.isEnabled(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES)
+                    || config.isEnabled(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES)) {
                 return deserializer;
             }
-        } catch (NoSuchMethodException e) {
-            return deserializer;
+        } else {
+            try {
+                if (!Modifier.isPublic(beanClass.getConstructor().getModifiers())) {
+                    return deserializer;
+                }
+            } catch (NoSuchMethodException e) {
+                return deserializer;
+            }
         }
         if (beanDesc.findAnySetterAccessor() != null) {
             return deserializer;
@@ -80,6 +87,6 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
                 return deserializer;
             }
         }
-        return new BBCodecPlaceholder((BeanDeserializer) deserializer);
+        return new BBCodecPlaceholder((BeanDeserializer) deserializer, _lookups);
     }
 }

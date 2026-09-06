@@ -1,6 +1,8 @@
 package tools.jackson.module.blackbird.deser;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
+import java.util.function.Function;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.BeanProperty;
@@ -25,10 +27,14 @@ final class BBCodecPlaceholder extends ValueDeserializer<Object>
 {
     private final BeanDeserializerBase _delegate;
 
+    private final Function<Class<?>, MethodHandles.Lookup> _lookups;
+
     private volatile ValueDeserializer<Object> _codec;
 
-    BBCodecPlaceholder(BeanDeserializerBase delegate) {
+    BBCodecPlaceholder(BeanDeserializerBase delegate,
+            Function<Class<?>, MethodHandles.Lookup> lookups) {
         _delegate = delegate;
+        _lookups = lookups;
     }
 
     @Override
@@ -37,7 +43,7 @@ final class BBCodecPlaceholder extends ValueDeserializer<Object>
             System.err.println("bbdebug resolve " + _delegate.handledType().getName());
         }
         _delegate.resolve(ctxt);
-        _codec = BBCodecFactory.tryGenerate(_delegate, ctxt);
+        _codec = BBCodecFactory.tryGenerate(_delegate, ctxt, _lookups);
     }
 
     @Override

@@ -32,7 +32,43 @@ public class BBCodecEngagementTest extends BlackbirdTestBase
         public void setTags(List<String> tags) { this.tags = tags; }
     }
 
+    public record PublicRec(String name, int count, long total, boolean active, List<String> tags) {}
+
     private final ObjectMapper MAPPER = newObjectMapper();
+
+    @Test
+    public void testGeneratedRecordCodecValues() throws Exception {
+        PublicRec rec = MAPPER.readValue(
+                "{\"name\":\"a\",\"count\":3,\"total\":9000000000,\"active\":true,\"tags\":[\"x\"]}",
+                PublicRec.class);
+        assertEquals(new PublicRec("a", 3, 9000000000L, true, List.of("x")), rec);
+
+        PublicRec reversed = MAPPER.readValue(
+                "{\"tags\":[\"x\"],\"active\":true,\"total\":9000000000,\"count\":3,\"name\":\"a\"}",
+                PublicRec.class);
+        assertEquals(rec, reversed);
+    }
+
+    @Test
+    public void testGeneratedRecordCodecNullsUnknownsMissing() throws Exception {
+        ObjectMapper vanilla = newVanillaJSONMapper();
+        String doc = "{\"name\":null,\"junk\":{\"a\":[1]},\"count\":3}";
+        assertEquals(vanilla.readValue(doc, PublicRec.class),
+                MAPPER.readValue(doc, PublicRec.class));
+        String primNull = "{\"count\":null,\"name\":\"n\"}";
+        assertThrows(MismatchedInputException.class,
+                () -> vanilla.readValue(primNull, PublicRec.class));
+        assertThrows(MismatchedInputException.class,
+                () -> MAPPER.readValue(primNull, PublicRec.class));
+    }
+
+    @Test
+    public void testEngineEngagesForPublicRecord() throws Exception {
+        assertThrows(IllegalStateException.class,
+                () -> MAPPER.readValue("[1]", PublicRec.class));
+        assertThrows(MismatchedInputException.class,
+                () -> newVanillaJSONMapper().readValue("[1]", PublicRec.class));
+    }
 
     @Test
     public void testGeneratedCodecValues() throws Exception {

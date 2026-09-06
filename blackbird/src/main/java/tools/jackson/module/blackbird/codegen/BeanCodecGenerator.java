@@ -19,6 +19,7 @@ import tools.jackson.core.sym.PropertyNameMatcher;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
+import tools.jackson.databind.util.ClassUtil;
 
 /**
  * Emits a hidden-class deserializer for one bean: a loop on nextNameMatch, a
@@ -32,7 +33,14 @@ public final class BeanCodecGenerator
 {
     public enum Kind { STRING, INT, LONG, BOOLEAN, STOCK }
 
-    public record GenProp(String name, Kind kind, Method setter, SettableBeanProperty stock) {}
+    // setter applies to POJO mode; type is the record component type in
+    // record mode (null for POJO mode, where the setter carries the type).
+    public record GenProp(String name, Kind kind, Method setter, SettableBeanProperty stock,
+            Class<?> type) {
+        public GenProp(String name, Kind kind, Method setter, SettableBeanProperty stock) {
+            this(name, kind, setter, stock, null);
+        }
+    }
 
     private static final ClassDesc CD_JSON_PARSER = ClassDesc.of("tools.jackson.core.JsonParser");
     private static final ClassDesc CD_JSON_TOKEN = ClassDesc.of("tools.jackson.core.JsonToken");
@@ -70,9 +78,18 @@ public final class BeanCodecGenerator
 
     private BeanCodecGenerator() {}
 
-    @SuppressWarnings("unchecked")
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback)
+            throws ReflectiveOperationException {
+        return generate(beanClass, props, matcher, fallback, null);
+    }
+
+    // recordCtor non-null selects record mode: props are in canonical
+    // constructor order, values collect into typed locals, and the
+    // constructor MethodHandle (exact component signature) builds the value.
+    @SuppressWarnings("unchecked")
+    public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
+            PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor)
             throws ReflectiveOperationException {
         List<Object> classData = new ArrayList<>();
         classData.add(matcher);
@@ -84,8 +101,13 @@ public final class BeanCodecGenerator
             stockIndex[i] = classData.size();
             classData.add(props.get(i).stock());
         }
+        int ctorIndex = -1;
+        if (recordCtor != null) {
+            ctorIndex = classData.size();
+            classData.add(recordCtor);
+        }
 
-        byte[] bytes = buildClass(beanClass, props, stockIndex);
+        byte[] bytes = buildClass(beanClass, props, stockIndex, ctorIndex);
         // No ClassOption.STRONG: the codec instance held by the mapper's
         // deserializer cache anchors the class, so codecs unload with the
         // mapper instead of pinning metaspace for the loader's lifetime.
@@ -100,7 +122,8 @@ public final class BeanCodecGenerator
         }
     }
 
-    private static byte[] buildClass(Class<?> beanClass, List<GenProp> props, int[] stockIndex) {
+    private static byte[] buildClass(Class<?> beanClass, List<GenProp> props,
+            int[] stockIndex, int ctorIndex) {
         ClassDesc thisClass = ClassDesc.of(
                 "tools.jackson.module.blackbird.codegen.BBCodec_" + beanClass.getSimpleName());
         return ClassFile.of().build(thisClass, clb -> {
@@ -111,7 +134,13 @@ public final class BeanCodecGenerator
                             .invokespecial(CD_BASE, ConstantDescs.INIT_NAME, MTD_CTOR)
                             .return_());
             clb.withMethodBody("deserialize", MTD_DESERIALIZE, ClassFile.ACC_PUBLIC,
-                    cob -> buildDeserialize(cob, beanClass, props, stockIndex));
+                    cob -> {
+                        if (ctorIndex < 0) {
+                            buildDeserialize(cob, beanClass, props, stockIndex);
+                        } else {
+                            buildRecordDeserialize(cob, beanClass, props, stockIndex, ctorIndex);
+                        }
+                    });
         });
     }
 
@@ -205,6 +234,187 @@ public final class BeanCodecGenerator
 
         cob.labelBinding(oddToken);
         throwIse(cob, "unexpected token while matching a property name");
+    }
+
+    private static final MethodTypeDesc MTD_PROP_DESERIALIZE =
+            MethodTypeDesc.of(ConstantDescs.CD_Object, CD_JSON_PARSER, CD_DESER_CONTEXT);
+
+    private static void buildRecordDeserialize(CodeBuilder cob, Class<?> beanClass,
+            List<GenProp> props, int[] stockIndex, int ctorIndex) {
+        final int parser = 1;
+        final int ctxt = 2;
+
+        int next = 3;
+        int[] componentSlot = new int[props.size()];
+        for (int i = 0; i < props.size(); i++) {
+            componentSlot[i] = next;
+            Class<?> t = props.get(i).type();
+            next += (t == long.class || t == double.class) ? 2 : 1;
+        }
+        final int matcherSlot = next++;
+        final int ixSlot = next;
+
+        ClassDesc recordDesc = beanClass.describeConstable().orElseThrow();
+
+        Label noView = cob.newLabel();
+        cob.aload(ctxt).invokevirtual(CD_DESER_CONTEXT, "getActiveView",
+                MethodTypeDesc.of(ConstantDescs.CD_Class));
+        cob.ifnull(noView);
+        cob.aload(0).getfield(CD_BASE, "_fallback", CD_BEAN_DESER_BASE);
+        cob.aload(parser).aload(ctxt);
+        cob.invokevirtual(CD_BEAN_DESER_BASE, "deserialize", MTD_DESERIALIZE);
+        cob.areturn();
+        cob.labelBinding(noView);
+
+        for (int i = 0; i < props.size(); i++) {
+            Class<?> t = props.get(i).type();
+            if (t == long.class) {
+                cob.lconst_0().lstore(componentSlot[i]);
+            } else if (t == double.class) {
+                cob.dconst_0().dstore(componentSlot[i]);
+            } else if (t == float.class) {
+                cob.fconst_0().fstore(componentSlot[i]);
+            } else if (t.isPrimitive()) {
+                cob.iconst_0().istore(componentSlot[i]);
+            } else {
+                cob.aconst_null().astore(componentSlot[i]);
+            }
+        }
+
+        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
+                ConstantDescs.DEFAULT_NAME, CD_NAME_MATCHER, 0));
+        cob.astore(matcherSlot);
+
+        Label loop = cob.newLabel();
+        Label switchPart = cob.newLabel();
+        Label endObject = cob.newLabel();
+        Label unknown = cob.newLabel();
+        Label oddToken = cob.newLabel();
+        Label defaultCase = cob.newLabel();
+
+        nextNameMatch(cob, parser, matcherSlot, ixSlot);
+
+        cob.labelBinding(loop);
+        cob.iload(ixSlot).ifge(switchPart);
+        cob.iload(ixSlot).iconst_m1().if_icmpeq(endObject);
+        cob.iload(ixSlot).ldc(-2).if_icmpeq(unknown);
+        cob.goto_(oddToken);
+
+        cob.labelBinding(switchPart);
+        List<SwitchCase> cases = new ArrayList<>(props.size());
+        Label[] caseLabels = new Label[props.size()];
+        for (int i = 0; i < props.size(); i++) {
+            caseLabels[i] = cob.newLabel();
+            cases.add(SwitchCase.of(i, caseLabels[i]));
+        }
+        cob.iload(ixSlot);
+        cob.tableswitch(0, props.size() - 1, defaultCase, cases);
+
+        for (int i = 0; i < props.size(); i++) {
+            cob.labelBinding(caseLabels[i]);
+            GenProp prop = props.get(i);
+            Class<?> t = prop.type();
+            switch (prop.kind()) {
+                case STRING -> emitRecordScalar(cob, parser, ctxt, componentSlot[i], t,
+                        "getString", MTD_GET_STRING, stockIndex[i]);
+                case INT -> emitRecordScalar(cob, parser, ctxt, componentSlot[i], t,
+                        "getIntValue", MTD_GET_INT, stockIndex[i]);
+                case LONG -> emitRecordScalar(cob, parser, ctxt, componentSlot[i], t,
+                        "getLongValue", MTD_GET_LONG, stockIndex[i]);
+                case BOOLEAN -> emitRecordScalar(cob, parser, ctxt, componentSlot[i], t,
+                        "getBooleanValue", MTD_GET_BOOLEAN, stockIndex[i]);
+                case STOCK -> {
+                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
+                    emitStockValueToLocal(cob, parser, ctxt, componentSlot[i], t, stockIndex[i]);
+                }
+            }
+            nextNameMatch(cob, parser, matcherSlot, ixSlot);
+            cob.goto_(loop);
+        }
+
+        cob.labelBinding(defaultCase);
+        throwIse(cob, "bad property index");
+
+        cob.labelBinding(endObject);
+        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
+                ConstantDescs.DEFAULT_NAME, ConstantDescs.CD_MethodHandle, ctorIndex));
+        ClassDesc[] paramDescs = new ClassDesc[props.size()];
+        for (int i = 0; i < props.size(); i++) {
+            Class<?> t = props.get(i).type();
+            paramDescs[i] = t.describeConstable().orElseThrow();
+            if (t == long.class) {
+                cob.lload(componentSlot[i]);
+            } else if (t == double.class) {
+                cob.dload(componentSlot[i]);
+            } else if (t == float.class) {
+                cob.fload(componentSlot[i]);
+            } else if (t.isPrimitive()) {
+                cob.iload(componentSlot[i]);
+            } else {
+                cob.aload(componentSlot[i]);
+            }
+        }
+        cob.invokevirtual(ConstantDescs.CD_MethodHandle, "invokeExact",
+                MethodTypeDesc.of(recordDesc, paramDescs));
+        cob.areturn();
+
+        cob.labelBinding(unknown);
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "skipChildren", MTD_SKIP_CHILDREN).pop();
+        nextNameMatch(cob, parser, matcherSlot, ixSlot);
+        cob.goto_(loop);
+
+        cob.labelBinding(oddToken);
+        throwIse(cob, "unexpected token while matching a property name");
+    }
+
+    private static void emitRecordScalar(CodeBuilder cob, int parser, int ctxt, int slot,
+            Class<?> type, String getter, MethodTypeDesc getterType, int stockIdx) {
+        Label isNull = cob.newLabel();
+        Label done = cob.newLabel();
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
+        cob.getstatic(CD_JSON_TOKEN, "VALUE_NULL", CD_JSON_TOKEN);
+        cob.if_acmpeq(isNull);
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, getter, getterType);
+        storeLocal(cob, type, slot);
+        cob.goto_(done);
+        cob.labelBinding(isNull);
+        emitStockValueToLocal(cob, parser, ctxt, slot, type, stockIdx);
+        cob.labelBinding(done);
+    }
+
+    // Reads the whole value through the stock property (parser positioned on
+    // the value token), then converts the boxed result to the component type.
+    private static void emitStockValueToLocal(CodeBuilder cob, int parser, int ctxt, int slot,
+            Class<?> type, int stockIdx) {
+        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
+                ConstantDescs.DEFAULT_NAME, CD_SETTABLE_PROP, stockIdx));
+        cob.aload(parser).aload(ctxt);
+        cob.invokevirtual(CD_SETTABLE_PROP, "deserialize", MTD_PROP_DESERIALIZE);
+        if (type.isPrimitive()) {
+            Class<?> box = ClassUtil.wrapperType(type);
+            ClassDesc boxDesc = box.describeConstable().orElseThrow();
+            cob.checkcast(boxDesc);
+            cob.invokevirtual(boxDesc, type.getName() + "Value",
+                    MethodTypeDesc.of(type.describeConstable().orElseThrow()));
+        } else {
+            cob.checkcast(type.describeConstable().orElseThrow());
+        }
+        storeLocal(cob, type, slot);
+    }
+
+    private static void storeLocal(CodeBuilder cob, Class<?> type, int slot) {
+        if (type == long.class) {
+            cob.lstore(slot);
+        } else if (type == double.class) {
+            cob.dstore(slot);
+        } else if (type == float.class) {
+            cob.fstore(slot);
+        } else if (type.isPrimitive()) {
+            cob.istore(slot);
+        } else {
+            cob.astore(slot);
+        }
     }
 
     // The null branch enters deserializeAndSet with the parser already on the
