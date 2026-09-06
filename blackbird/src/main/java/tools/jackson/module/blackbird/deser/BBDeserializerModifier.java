@@ -11,7 +11,11 @@ import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.ValueDeserializerModifier;
+import tools.jackson.databind.deser.BeanDeserializerBuilder;
 import tools.jackson.databind.deser.bean.BeanDeserializer;
+import tools.jackson.databind.deser.bean.BeanDeserializerBase;
+import tools.jackson.databind.deser.bean.BuilderBasedDeserializer;
+import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 
 /**
@@ -29,6 +33,11 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
     private final Function<Class<?>, MethodHandles.Lookup> _lookups;
     private final UnaryOperator<MethodHandles.Lookup> _accessGrant;
 
+    // The build method is only reachable from updateBuilder; the factory calls
+    // updateBuilder and modifyDeserializer for the same bean back to back on
+    // one thread, so a ThreadLocal hands it across.
+    private final transient ThreadLocal<AnnotatedMethod> _pendingBuildMethod = new ThreadLocal<>();
+
     public BBDeserializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups,
             UnaryOperator<MethodHandles.Lookup> accessGrant) {
         _lookups = lookups;
@@ -36,10 +45,21 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
     }
 
     @Override
+    public BeanDeserializerBuilder updateBuilder(DeserializationConfig config,
+            BeanDescription.Supplier beanDescRef, BeanDeserializerBuilder builder) {
+        _pendingBuildMethod.set(builder.getBuildMethod());
+        return builder;
+    }
+
+    @Override
     public ValueDeserializer<?> modifyDeserializer(DeserializationConfig config,
             BeanDescription.Supplier beanDescRef, ValueDeserializer<?> deserializer)
     {
-        if (deserializer.getClass() != BeanDeserializer.class) {
+        AnnotatedMethod buildMethod = _pendingBuildMethod.get();
+        _pendingBuildMethod.remove();
+        boolean builderBased = deserializer.getClass() == BuilderBasedDeserializer.class
+                && buildMethod != null;
+        if (!builderBased && deserializer.getClass() != BeanDeserializer.class) {
             return deserializer;
         }
         if (config.isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -52,16 +72,17 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
         BeanDescription beanDesc = beanDescRef.get();
         Class<?> beanClass = beanDesc.getBeanClass();
         if (!Modifier.isPublic(beanClass.getModifiers())
-                || Modifier.isAbstract(beanClass.getModifiers())
                 || (beanClass.getEnclosingClass() != null
                         && !Modifier.isStatic(beanClass.getModifiers()))) {
             return deserializer;
         }
-        if (beanClass.isRecord()) {
+        if (builderBased || beanClass.isRecord()) {
             if (config.isEnabled(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES)
                     || config.isEnabled(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES)) {
                 return deserializer;
             }
+        } else if (Modifier.isAbstract(beanClass.getModifiers())) {
+            return deserializer;
         } else {
             try {
                 if (!Modifier.isPublic(beanClass.getConstructor().getModifiers())) {
@@ -87,6 +108,7 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
                 return deserializer;
             }
         }
-        return new BBCodecPlaceholder((BeanDeserializer) deserializer, _lookups);
+        return new BBCodecPlaceholder((BeanDeserializerBase) deserializer, _lookups,
+                builderBased ? buildMethod : null);
     }
 }

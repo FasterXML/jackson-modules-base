@@ -11,6 +11,7 @@ import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
+import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.databind.jsontype.TypeDeserializer;
 import tools.jackson.databind.type.LogicalType;
 import tools.jackson.databind.util.AccessPattern;
@@ -29,12 +30,16 @@ final class BBCodecPlaceholder extends ValueDeserializer<Object>
 
     private final Function<Class<?>, MethodHandles.Lookup> _lookups;
 
+    private final AnnotatedMethod _buildMethod;
+
     private volatile ValueDeserializer<Object> _codec;
 
     BBCodecPlaceholder(BeanDeserializerBase delegate,
-            Function<Class<?>, MethodHandles.Lookup> lookups) {
+            Function<Class<?>, MethodHandles.Lookup> lookups,
+            AnnotatedMethod buildMethod) {
         _delegate = delegate;
         _lookups = lookups;
+        _buildMethod = buildMethod;
     }
 
     @Override
@@ -43,7 +48,7 @@ final class BBCodecPlaceholder extends ValueDeserializer<Object>
             System.err.println("bbdebug resolve " + _delegate.handledType().getName());
         }
         _delegate.resolve(ctxt);
-        _codec = BBCodecFactory.tryGenerate(_delegate, ctxt, _lookups);
+        _codec = BBCodecFactory.tryGenerate(_delegate, ctxt, _lookups, _buildMethod);
     }
 
     @Override

@@ -87,9 +87,23 @@ public final class BeanCodecGenerator
     // recordCtor non-null selects record mode: props are in canonical
     // constructor order, values collect into typed locals, and the
     // constructor MethodHandle (exact component signature) builds the value.
-    @SuppressWarnings("unchecked")
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor)
+            throws ReflectiveOperationException {
+        return generate(beanClass, props, matcher, fallback, recordCtor, null);
+    }
+
+    // builderSupport non-null selects builder mode: values apply to a builder
+    // instance created by the stock ValueInstantiator, fluent setter returns
+    // replace the builder local, and the build MethodHandle (asType'd to
+    // (Object)Object) produces the value.
+    public record BuilderSupport(tools.jackson.databind.deser.ValueInstantiator instantiator,
+            MethodHandle buildMethod, Class<?> builderClass) {}
+
+    @SuppressWarnings("unchecked")
+    public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
+            PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor,
+            BuilderSupport builder)
             throws ReflectiveOperationException {
         List<Object> classData = new ArrayList<>();
         classData.add(matcher);
@@ -106,8 +120,17 @@ public final class BeanCodecGenerator
             ctorIndex = classData.size();
             classData.add(recordCtor);
         }
+        int instIndex = -1;
+        int buildIndex = -1;
+        if (builder != null) {
+            instIndex = classData.size();
+            classData.add(builder.instantiator());
+            buildIndex = classData.size();
+            classData.add(builder.buildMethod());
+        }
 
-        byte[] bytes = buildClass(beanClass, props, stockIndex, ctorIndex);
+        byte[] bytes = buildClass(beanClass, props, stockIndex, ctorIndex,
+                builder == null ? null : builder.builderClass(), instIndex, buildIndex);
         // No ClassOption.STRONG: the codec instance held by the mapper's
         // deserializer cache anchors the class, so codecs unload with the
         // mapper instead of pinning metaspace for the loader's lifetime.
@@ -123,7 +146,7 @@ public final class BeanCodecGenerator
     }
 
     private static byte[] buildClass(Class<?> beanClass, List<GenProp> props,
-            int[] stockIndex, int ctorIndex) {
+            int[] stockIndex, int ctorIndex, Class<?> builderClass, int instIndex, int buildIndex) {
         ClassDesc thisClass = ClassDesc.of(
                 "tools.jackson.module.blackbird.codegen.BBCodec_" + beanClass.getSimpleName());
         return ClassFile.of().build(thisClass, clb -> {
@@ -135,7 +158,10 @@ public final class BeanCodecGenerator
                             .return_());
             clb.withMethodBody("deserialize", MTD_DESERIALIZE, ClassFile.ACC_PUBLIC,
                     cob -> {
-                        if (ctorIndex < 0) {
+                        if (builderClass != null) {
+                            buildBuilderDeserialize(cob, builderClass, props, stockIndex,
+                                    instIndex, buildIndex);
+                        } else if (ctorIndex < 0) {
                             buildDeserialize(cob, beanClass, props, stockIndex);
                         } else {
                             buildRecordDeserialize(cob, beanClass, props, stockIndex, ctorIndex);
@@ -238,6 +264,148 @@ public final class BeanCodecGenerator
 
     private static final MethodTypeDesc MTD_PROP_DESERIALIZE =
             MethodTypeDesc.of(ConstantDescs.CD_Object, CD_JSON_PARSER, CD_DESER_CONTEXT);
+    private static final ClassDesc CD_VALUE_INSTANTIATOR =
+            ClassDesc.of("tools.jackson.databind.deser.ValueInstantiator");
+    private static final MethodTypeDesc MTD_CREATE_DEFAULT =
+            MethodTypeDesc.of(ConstantDescs.CD_Object, CD_DESER_CONTEXT);
+    private static final MethodTypeDesc MTD_DESER_SET_RETURN = MethodTypeDesc.of(
+            ConstantDescs.CD_Object, CD_JSON_PARSER, CD_DESER_CONTEXT, ConstantDescs.CD_Object);
+    private static final MethodTypeDesc MTD_BUILD_INVOKE =
+            MethodTypeDesc.of(ConstantDescs.CD_Object, ConstantDescs.CD_Object);
+
+    private static void buildBuilderDeserialize(CodeBuilder cob, Class<?> builderClass,
+            List<GenProp> props, int[] stockIndex, int instIndex, int buildIndex) {
+        final int parser = 1;
+        final int ctxt = 2;
+        final int builderSlot = 3;
+        final int matcherSlot = 4;
+        final int ixSlot = 5;
+
+        ClassDesc builderDesc = builderClass.describeConstable().orElseThrow();
+
+        Label noView = cob.newLabel();
+        cob.aload(ctxt).invokevirtual(CD_DESER_CONTEXT, "getActiveView",
+                MethodTypeDesc.of(ConstantDescs.CD_Class));
+        cob.ifnull(noView);
+        cob.aload(0).getfield(CD_BASE, "_fallback", CD_BEAN_DESER_BASE);
+        cob.aload(parser).aload(ctxt);
+        cob.invokevirtual(CD_BEAN_DESER_BASE, "deserialize", MTD_DESERIALIZE);
+        cob.areturn();
+        cob.labelBinding(noView);
+
+        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
+                ConstantDescs.DEFAULT_NAME, CD_VALUE_INSTANTIATOR, instIndex));
+        cob.aload(ctxt);
+        cob.invokevirtual(CD_VALUE_INSTANTIATOR, "createUsingDefault", MTD_CREATE_DEFAULT);
+        cob.checkcast(builderDesc);
+        cob.astore(builderSlot);
+
+        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
+                ConstantDescs.DEFAULT_NAME, CD_NAME_MATCHER, 0));
+        cob.astore(matcherSlot);
+
+        Label loop = cob.newLabel();
+        Label switchPart = cob.newLabel();
+        Label endObject = cob.newLabel();
+        Label unknown = cob.newLabel();
+        Label oddToken = cob.newLabel();
+        Label defaultCase = cob.newLabel();
+
+        nextNameMatch(cob, parser, matcherSlot, ixSlot);
+
+        cob.labelBinding(loop);
+        cob.iload(ixSlot).ifge(switchPart);
+        cob.iload(ixSlot).iconst_m1().if_icmpeq(endObject);
+        cob.iload(ixSlot).ldc(-2).if_icmpeq(unknown);
+        cob.goto_(oddToken);
+
+        cob.labelBinding(switchPart);
+        List<SwitchCase> cases = new ArrayList<>(props.size());
+        Label[] caseLabels = new Label[props.size()];
+        for (int i = 0; i < props.size(); i++) {
+            caseLabels[i] = cob.newLabel();
+            cases.add(SwitchCase.of(i, caseLabels[i]));
+        }
+        cob.iload(ixSlot);
+        cob.tableswitch(0, props.size() - 1, defaultCase, cases);
+
+        for (int i = 0; i < props.size(); i++) {
+            cob.labelBinding(caseLabels[i]);
+            GenProp prop = props.get(i);
+            switch (prop.kind()) {
+                case STRING -> emitBuilderScalar(cob, parser, ctxt, builderSlot, builderDesc, prop,
+                        "getString", MTD_GET_STRING, ConstantDescs.CD_String, stockIndex[i]);
+                case INT -> emitBuilderScalar(cob, parser, ctxt, builderSlot, builderDesc, prop,
+                        "getIntValue", MTD_GET_INT, ConstantDescs.CD_int, stockIndex[i]);
+                case LONG -> emitBuilderScalar(cob, parser, ctxt, builderSlot, builderDesc, prop,
+                        "getLongValue", MTD_GET_LONG, ConstantDescs.CD_long, stockIndex[i]);
+                case BOOLEAN -> emitBuilderScalar(cob, parser, ctxt, builderSlot, builderDesc, prop,
+                        "getBooleanValue", MTD_GET_BOOLEAN, ConstantDescs.CD_boolean, stockIndex[i]);
+                case STOCK -> {
+                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
+                    emitStockSetReturn(cob, parser, ctxt, builderSlot, builderDesc, stockIndex[i]);
+                }
+            }
+            nextNameMatch(cob, parser, matcherSlot, ixSlot);
+            cob.goto_(loop);
+        }
+
+        cob.labelBinding(defaultCase);
+        throwIse(cob, "bad property index");
+
+        cob.labelBinding(endObject);
+        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
+                ConstantDescs.DEFAULT_NAME, ConstantDescs.CD_MethodHandle, buildIndex));
+        cob.aload(builderSlot);
+        cob.invokevirtual(ConstantDescs.CD_MethodHandle, "invokeExact", MTD_BUILD_INVOKE);
+        cob.areturn();
+
+        cob.labelBinding(unknown);
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "skipChildren", MTD_SKIP_CHILDREN).pop();
+        nextNameMatch(cob, parser, matcherSlot, ixSlot);
+        cob.goto_(loop);
+
+        cob.labelBinding(oddToken);
+        throwIse(cob, "unexpected token while matching a property name");
+    }
+
+    private static void emitBuilderScalar(CodeBuilder cob, int parser, int ctxt, int builderSlot,
+            ClassDesc builderDesc, GenProp prop, String getter, MethodTypeDesc getterType,
+            ClassDesc valueDesc, int stockIdx) {
+        Label isNull = cob.newLabel();
+        Label done = cob.newLabel();
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
+        cob.getstatic(CD_JSON_TOKEN, "VALUE_NULL", CD_JSON_TOKEN);
+        cob.if_acmpeq(isNull);
+        cob.aload(builderSlot);
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, getter, getterType);
+        Class<?> ret = prop.setter().getReturnType();
+        MethodTypeDesc setterType = MethodTypeDesc.of(
+                ret == void.class ? ConstantDescs.CD_void : ret.describeConstable().orElseThrow(),
+                valueDesc);
+        cob.invokevirtual(builderDesc, prop.setter().getName(), setterType);
+        if (ret != void.class) {
+            cob.astore(builderSlot);
+        }
+        cob.goto_(done);
+        cob.labelBinding(isNull);
+        emitStockSetReturn(cob, parser, ctxt, builderSlot, builderDesc, stockIdx);
+        cob.labelBinding(done);
+    }
+
+    // Builder properties apply through deserializeSetAndReturn: fluent
+    // builders may return a replacement instance, which becomes the new
+    // builder local.
+    private static void emitStockSetReturn(CodeBuilder cob, int parser, int ctxt, int builderSlot,
+            ClassDesc builderDesc, int stockIdx) {
+        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
+                ConstantDescs.DEFAULT_NAME, CD_SETTABLE_PROP, stockIdx));
+        cob.aload(parser).aload(ctxt).aload(builderSlot);
+        cob.invokevirtual(CD_SETTABLE_PROP, "deserializeSetAndReturn", MTD_DESER_SET_RETURN);
+        cob.checkcast(builderDesc);
+        cob.astore(builderSlot);
+    }
 
     private static void buildRecordDeserialize(CodeBuilder cob, Class<?> beanClass,
             List<GenProp> props, int[] stockIndex, int ctorIndex) {

@@ -34,6 +34,35 @@ public class BBCodecEngagementTest extends BlackbirdTestBase
 
     public record PublicRec(String name, int count, long total, boolean active, List<String> tags) {}
 
+    @tools.jackson.databind.annotation.JsonDeserialize(builder = BuilderBean.Builder.class)
+    public static class BuilderBean {
+        private final String name;
+        private final int count;
+        private final List<String> tags;
+
+        private BuilderBean(String name, int count, List<String> tags) {
+            this.name = name;
+            this.count = count;
+            this.tags = tags;
+        }
+
+        public String getName() { return name; }
+        public int getCount() { return count; }
+        public List<String> getTags() { return tags; }
+
+        @tools.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "")
+        public static class Builder {
+            private String name;
+            private int count;
+            private List<String> tags;
+
+            public Builder name(String name) { this.name = name; return this; }
+            public Builder count(int count) { this.count = count; return this; }
+            public Builder tags(List<String> tags) { this.tags = tags; return this; }
+            public BuilderBean build() { return new BuilderBean(name, count, tags); }
+        }
+    }
+
     private final ObjectMapper MAPPER = newObjectMapper();
 
     @Test
@@ -60,6 +89,27 @@ public class BBCodecEngagementTest extends BlackbirdTestBase
                 () -> vanilla.readValue(primNull, PublicRec.class));
         assertThrows(MismatchedInputException.class,
                 () -> MAPPER.readValue(primNull, PublicRec.class));
+    }
+
+    @Test
+    public void testGeneratedBuilderCodecValues() throws Exception {
+        String doc = "{\"name\":\"b\",\"junk\":[{}],\"count\":7,\"tags\":[\"t\"]}";
+        BuilderBean bean = MAPPER.readValue(doc, BuilderBean.class);
+        assertEquals("b", bean.getName());
+        assertEquals(7, bean.getCount());
+        assertEquals(List.of("t"), bean.getTags());
+        BuilderBean vanillaBean = newVanillaJSONMapper().readValue(doc, BuilderBean.class);
+        assertEquals(vanillaBean.getName(), bean.getName());
+        assertEquals(vanillaBean.getCount(), bean.getCount());
+        assertEquals(vanillaBean.getTags(), bean.getTags());
+    }
+
+    @Test
+    public void testEngineEngagesForBuilderBean() throws Exception {
+        assertThrows(IllegalStateException.class,
+                () -> MAPPER.readValue("[1]", BuilderBean.class));
+        assertThrows(MismatchedInputException.class,
+                () -> newVanillaJSONMapper().readValue("[1]", BuilderBean.class));
     }
 
     @Test

@@ -44,9 +44,10 @@ final class BBCodecFactory
 
     static ValueDeserializer<Object> tryGenerate(BeanDeserializerBase delegate,
             DeserializationContext ctxt,
-            Function<Class<?>, MethodHandles.Lookup> lookups) {
+            Function<Class<?>, MethodHandles.Lookup> lookups,
+            AnnotatedMethod buildMethod) {
         try {
-            ValueDeserializer<Object> codec = generate(delegate, ctxt, lookups);
+            ValueDeserializer<Object> codec = generate(delegate, ctxt, lookups, buildMethod);
             if (DEBUG) {
                 System.err.println("bbdebug tryGenerate " + delegate.handledType().getName()
                         + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
@@ -63,7 +64,8 @@ final class BBCodecFactory
 
     private static ValueDeserializer<Object> generate(BeanDeserializerBase delegate,
             DeserializationContext ctxt,
-            Function<Class<?>, MethodHandles.Lookup> lookups)
+            Function<Class<?>, MethodHandles.Lookup> lookups,
+            AnnotatedMethod buildMethod)
             throws ReflectiveOperationException {
         // Deliberately no delegate.hasViews() gate: 3.x disables
         // DEFAULT_VIEW_INCLUSION by default, which marks every bean as needing
@@ -78,6 +80,9 @@ final class BBCodecFactory
                 || Modifier.isAbstract(beanClass.getModifiers())) {
             if (DEBUG) System.err.println("bbdebug gate: class modifiers");
             return null;
+        }
+        if (buildMethod != null) {
+            return generateBuilder(delegate, ctxt, beanClass, lookups, buildMethod);
         }
         if (beanClass.isRecord()) {
             return generateRecord(delegate, ctxt, beanClass, lookups);
@@ -109,6 +114,78 @@ final class BBCodecFactory
         }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
         return BeanCodecGenerator.generate(beanClass, props, matcher, delegate);
+    }
+
+    // Builder-based beans: the stock ValueInstantiator creates the builder,
+    // properties apply to it (tier-A fluent setters must return void or the
+    // builder class exactly, or they demote to the stock path), and the build
+    // method - unreflected through the user lookup and asType'd to
+    // (Object)Object - produces the value.
+    private static ValueDeserializer<Object> generateBuilder(BeanDeserializerBase delegate,
+            DeserializationContext ctxt, Class<?> beanClass,
+            Function<Class<?>, MethodHandles.Lookup> lookups, AnnotatedMethod buildMethod)
+            throws ReflectiveOperationException {
+        Method build = buildMethod.getAnnotated();
+        Class<?> builderClass = build.getDeclaringClass();
+        if (!delegate.getValueInstantiator().canCreateUsingDefault()
+                || !Modifier.isPublic(builderClass.getModifiers())
+                || !Modifier.isPublic(build.getModifiers())
+                || build.getParameterCount() != 0) {
+            if (DEBUG) System.err.println("bbdebug gate: builder shape");
+            return null;
+        }
+        MethodHandles.Lookup lookup = lookups.apply(builderClass);
+        if (lookup == null) {
+            if (DEBUG) System.err.println("bbdebug gate: builder lookup");
+            return null;
+        }
+        List<GenProp> props = new ArrayList<>();
+        List<Named> names = new ArrayList<>();
+        for (Iterator<SettableBeanProperty> it = delegate.properties(); it.hasNext(); ) {
+            SettableBeanProperty prop = it.next();
+            if (prop instanceof CreatorProperty
+                    || prop.getMetadata().getMergeInfo() != null) {
+                if (DEBUG) System.err.println("bbdebug gate: builder prop " + prop.getName());
+                return null;
+            }
+            props.add(classifyBuilder(prop, builderClass));
+            names.add(Named.fromString(prop.getName()));
+        }
+        if (props.isEmpty()) {
+            if (DEBUG) System.err.println("bbdebug gate: builder no props");
+            return null;
+        }
+        MethodHandle buildMH = lookup.unreflect(build)
+                .asType(MethodType.methodType(Object.class, Object.class));
+        PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
+        return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, null,
+                new BeanCodecGenerator.BuilderSupport(
+                        delegate.getValueInstantiator(), buildMH, builderClass));
+    }
+
+    private static GenProp classifyBuilder(SettableBeanProperty prop, Class<?> builderClass) {
+        Kind kind = scalarKind(prop.getType().getRawClass());
+        if (kind == null) {
+            return stock(prop);
+        }
+        ValueDeserializer<?> valueDeser = prop.getValueDeserializer();
+        if (valueDeser == null
+                || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass().getName())) {
+            return stock(prop);
+        }
+        if (!(prop.getMember() instanceof AnnotatedMethod am)) {
+            return stock(prop);
+        }
+        Method setter = am.getAnnotated();
+        if (setter == null || setter.getParameterCount() != 1
+                || !Modifier.isPublic(setter.getModifiers())
+                || setter.getDeclaringClass() != builderClass
+                || setter.getParameterTypes()[0] != prop.getType().getRawClass()
+                || (setter.getReturnType() != void.class
+                        && setter.getReturnType() != builderClass)) {
+            return stock(prop);
+        }
+        return new GenProp(prop.getName(), kind, setter, prop);
     }
 
     // Records collect components into typed locals and construct through the
