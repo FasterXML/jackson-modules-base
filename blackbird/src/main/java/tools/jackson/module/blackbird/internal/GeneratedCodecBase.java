@@ -1,4 +1,4 @@
-package tools.jackson.module.blackbird.codegen;
+package tools.jackson.module.blackbird.internal;
 
 import java.util.Collection;
 import java.util.Iterator;

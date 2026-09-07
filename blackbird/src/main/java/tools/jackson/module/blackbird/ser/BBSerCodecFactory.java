@@ -21,7 +21,7 @@ import tools.jackson.module.blackbird.codegen.BeanWriterGenerator;
 import tools.jackson.module.blackbird.codegen.CodecAccess;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator.GenWProp;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator.WKind;
-import tools.jackson.module.blackbird.codegen.GeneratedWriterBase;
+import tools.jackson.module.blackbird.internal.GeneratedWriterBase;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
 /**

@@ -21,6 +21,7 @@ import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.util.ClassUtil;
+import tools.jackson.module.blackbird.internal.GeneratedCodecBase;
 
 /**
  * Emits a hidden-class deserializer for one bean: a loop on nextNameMatch, a
@@ -194,9 +195,9 @@ public final class BeanCodecGenerator
                 }
                 throw (LinkageError) e;
             }
-            // Bean-context defines can fail where the bean's module cannot
-            // read this module's codegen package (JPMS): an environment gate,
-            // so the bean stays on the stock path.
+            // Bean-context defines can fail where the bean's module does not
+            // read this module at all (the exported .internal package holds
+            // the supertype): an environment gate, stock path.
             return null;
         }
         MethodHandle ctor = hidden.findConstructor(hidden.lookupClass(),

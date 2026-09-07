@@ -23,7 +23,7 @@ import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.introspect.AnnotatedField;
 import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.GenProp;
-import tools.jackson.module.blackbird.codegen.GeneratedCodecBase;
+import tools.jackson.module.blackbird.internal.GeneratedCodecBase;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.Kind;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator;
 import tools.jackson.module.blackbird.codegen.CodecAccess;

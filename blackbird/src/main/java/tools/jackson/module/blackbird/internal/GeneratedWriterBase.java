@@ -1,4 +1,4 @@
-package tools.jackson.module.blackbird.codegen;
+package tools.jackson.module.blackbird.internal;
 
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.JavaType;

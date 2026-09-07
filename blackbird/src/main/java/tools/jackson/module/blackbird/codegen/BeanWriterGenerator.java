@@ -19,6 +19,7 @@ import tools.jackson.core.SerializableString;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
+import tools.jackson.module.blackbird.internal.GeneratedWriterBase;
 
 /**
  * Emits a hidden-class serializer for one bean: a straight-line sequence of
@@ -100,7 +101,8 @@ public final class BeanWriterGenerator
         }
 
         // Rationale in BeanCodecGenerator: non-public beans define in the
-        // bean's package context; a failure there is an environment gate.
+        // bean's package context; a define failure there is an environment
+        // gate (possible only when the bean's module does not read blackbird).
         MethodHandles.Lookup definer =
                 (defineLookup != null) ? defineLookup : MethodHandles.lookup();
         byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
