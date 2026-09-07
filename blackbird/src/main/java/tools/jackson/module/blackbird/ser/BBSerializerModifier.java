@@ -11,6 +11,7 @@ import tools.jackson.databind.ser.BeanSerializer;
 import tools.jackson.databind.ser.UnrolledBeanSerializer;
 import tools.jackson.databind.ser.ValueSerializerModifier;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
+import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
 /**
  * Wraps eligible stock bean serializers in a placeholder that generates a
@@ -41,6 +42,7 @@ public class BBSerializerModifier extends ValueSerializerModifier
         try {
             return doModify(beanDescRef, serializer);
         } catch (RuntimeException | LinkageError e) {
+            CodegenFallbacks.gateFailure(beanDescRef.getBeanClass(), e);
             return serializer;
         }
     }

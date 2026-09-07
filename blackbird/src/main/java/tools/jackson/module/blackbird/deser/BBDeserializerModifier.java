@@ -16,6 +16,7 @@ import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.deser.bean.BuilderBasedDeserializer;
 import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
+import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
 /**
  * Wraps eligible stock bean deserializers in a placeholder that generates a
@@ -59,6 +60,7 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
         try {
             return doModify(config, beanDescRef, deserializer);
         } catch (RuntimeException | LinkageError e) {
+            CodegenFallbacks.gateFailure(beanDescRef.getBeanClass(), e);
             return deserializer;
         }
     }

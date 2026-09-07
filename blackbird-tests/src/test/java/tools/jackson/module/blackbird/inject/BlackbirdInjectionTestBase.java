@@ -26,6 +26,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 // rationale.
 abstract class BlackbirdInjectionTestBase
 {
+    static {
+        // Strict mode: a codec-generation failure fails the test instead of
+        // demoting to the stock path (see CodegenFallbacks).
+        System.setProperty("tools.jackson.module.blackbird.failOnCodegenError", "true");
+    }
+
     protected static Harness newHarness() {
         return new Harness();
     }

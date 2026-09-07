@@ -26,6 +26,7 @@ import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.GenProp;
 import tools.jackson.module.blackbird.codegen.GeneratedCodecBase;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.Kind;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator;
+import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
 /**
  * Builds a generated codec from a resolved stock bean deserializer, or returns
@@ -61,6 +62,7 @@ final class BBCodecFactory
                 System.err.println("bbdebug tryGenerate " + delegate.handledType().getName() + " threw:");
                 t.printStackTrace();
             }
+            CodegenFallbacks.generationFailure(delegate.handledType(), t);
             return null;
         }
     }

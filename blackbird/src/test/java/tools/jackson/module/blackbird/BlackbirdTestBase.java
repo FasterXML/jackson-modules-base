@@ -213,6 +213,15 @@ public abstract class BlackbirdTestBase
         return mapperBuilder();
     }
 
+    static {
+        // The suite runs strict: a codec-generation failure fails the test
+        // instead of demoting to the stock path, so the lenient production
+        // fallback cannot mask a generator bug here.
+        System.setProperty(
+                tools.jackson.module.blackbird.codegen.CodegenFallbacks.FAIL_ON_ERROR_PROPERTY,
+                "true");
+    }
+
     protected static JsonMapper.Builder mapperBuilder() {
         return JsonMapper.builder()
                 .polymorphicTypeValidator(new NoCheckSubTypeValidator())

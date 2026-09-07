@@ -19,6 +19,7 @@ import tools.jackson.module.blackbird.codegen.BeanWriterGenerator;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator.GenWProp;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator.WKind;
 import tools.jackson.module.blackbird.codegen.GeneratedWriterBase;
+import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
 /**
  * Builds a generated serializer from a resolved stock bean serializer, or
@@ -41,6 +42,7 @@ final class BBSerCodecFactory
         try {
             return generate(delegate, ctxt);
         } catch (Throwable t) {
+            CodegenFallbacks.generationFailure(delegate.handledType(), t);
             return null;
         }
     }
