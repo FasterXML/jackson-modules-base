@@ -26,9 +26,7 @@ not datatype, data format, or JAX-RS provider modules.
     <!-- Classpath-mode integration tests for afterburner; not published. See module pom for why. -->
     <module>afterburner-tests</module>
     <module>android-record</module>
-    <module>blackbird</module>
-    <!-- Classpath-mode integration tests for blackbird; not published. See module pom for why. -->
-    <module>blackbird-tests</module>
+    <!-- blackbird and blackbird-tests build under the blackbird-jdk25 profile below -->
     <module>guice</module>
     <module>guice7</module>
     <module>jakarta-xmlbind</module>
@@ -45,6 +43,22 @@ not datatype, data format, or JAX-RS provider modules.
 -->
     <module>spi-subtypes</module>
   </modules>
+
+  <profiles>
+    <!-- Blackbird's generated-codec engine uses the ClassFile API and compiles
+         at release 25; the rest of the reactor keeps the JDK 17 floor. -->
+    <profile>
+      <id>blackbird-jdk25</id>
+      <activation>
+        <jdk>[25,)</jdk>
+      </activation>
+      <modules>
+        <module>blackbird</module>
+        <!-- Classpath-mode integration tests for blackbird; not published. See module pom for why. -->
+        <module>blackbird-tests</module>
+      </modules>
+    </profile>
+  </profiles>
 
   <url>https://github.com/FasterXML/jackson-modules-base</url>
   <scm>

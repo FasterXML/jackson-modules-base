@@ -18,9 +18,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java_version: ['17', '21', '24']
+        java_version: ['17', '21', '24', '25']
         include:
-          - java_version: '17'
+          # Release/deploy runs on 25 so the blackbird module (profile-gated
+          # to JDK 25+) is part of the deployed reactor.
+          - java_version: '25'
             release_build: 'R'
     env:
       JAVA_OPTS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
