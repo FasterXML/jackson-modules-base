@@ -71,6 +71,10 @@ record's canonical constructor.
 Deserialization (JSON to POJOs):
 
 - Setter-based POJOs: direct construction and direct setter calls.
+- Field-backed properties: a public non-final field is stored through a direct
+  putfield; a non-public field is reached through a lookup-derived handle, the
+  same as a non-public setter, so it needs a `Lookup` for that class. Old
+  Blackbird could not write fields at all. Final fields keep stock behavior.
 - Records: typed locals in canonical-constructor order and a single
   constructor call, replacing the generic creator buffering. This is the
   largest measured win.
@@ -81,10 +85,10 @@ Deserialization (JSON to POJOs):
   strings and of beans use inline loops.
 
 Serialization (POJOs to JSON): straight-line writers with pre-encoded name
-constants, direct getter calls, and inline list loops. Property writes go
-through per-type generated helpers sized to compile as standalone units,
-which avoids a C2 code-quality penalty for inlined copies of hot jackson-core
-methods inside looping writer bodies.
+constants, direct getter or public-field reads, and inline list loops.
+Property writes go through per-type generated helpers sized to compile as
+standalone units, which avoids a C2 code-quality penalty for inlined copies of
+hot jackson-core methods inside looping writer bodies.
 
 Properties and beans outside this coverage keep stock behavior by
 construction. A property with a custom deserializer, non-default coercion or

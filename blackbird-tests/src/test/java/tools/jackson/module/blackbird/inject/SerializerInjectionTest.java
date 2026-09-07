@@ -6,12 +6,10 @@ import tools.jackson.databind.json.JsonMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-// Verifies Blackbird's serializer codec generation engages end-to-end for a
-// getter POJO on the classpath and produces output identical to stock
-// databind. Field-backed writers are the serializer-side parallel of the
-// deserializer's field handling: the bean still engages a generated writer,
-// and the field property rides its stock-writer arm (WKind.STOCK in
-// BBSerCodecFactory).
+// Verifies Blackbird's serializer codec generation engages end-to-end on the
+// classpath and produces output identical to stock databind, for a getter POJO
+// and for a public-field POJO (whose values are read through a generated
+// getfield).
 public class SerializerInjectionTest extends BlackbirdInjectionTestBase
 {
     public static class GetterSerPojo {
@@ -57,7 +55,7 @@ public class SerializerInjectionTest extends BlackbirdInjectionTestBase
     }
 
     @Test
-    public void testFieldBackedWriterDelegatesToStockWriter() throws Exception
+    public void testFieldBackedWriterEngagesCodec() throws Exception
     {
         Harness h = newHarness();
         FieldSerPojo pojo = new FieldSerPojo(42);

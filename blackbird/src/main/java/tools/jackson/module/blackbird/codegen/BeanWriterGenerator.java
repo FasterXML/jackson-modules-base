@@ -10,6 +10,7 @@ import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +31,16 @@ public final class BeanWriterGenerator
 {
     public enum WKind { STRING, INT, LONG, BOOLEAN, CHILD, STOCK }
 
+    // getter carries a public getter; field carries a public field read
+    // through getfield instead. Exactly one of the two is set for a generated
+    // (non-STOCK) property.
     public record GenWProp(WKind kind, Method getter, PropertyWriter stock,
-            SerializableString name, GeneratedWriterBase child) {}
+            SerializableString name, GeneratedWriterBase child, Field field) {
+        public GenWProp(WKind kind, Method getter, PropertyWriter stock,
+                SerializableString name, GeneratedWriterBase child) {
+            this(kind, getter, stock, name, child, null);
+        }
+    }
 
     private static final ClassDesc CD_JSON_GENERATOR = ClassDesc.of("tools.jackson.core.JsonGenerator");
     private static final ClassDesc CD_SER_CONTEXT = ClassDesc.of("tools.jackson.databind.SerializationContext");
@@ -238,15 +247,15 @@ public final class BeanWriterGenerator
                 case STRING -> emitScalar(cob, thisClass, gen, beanSlot, beanDesc, itf, prop,
                         nameIndex[i], "$str", MTD_HELP_STRING, ConstantDescs.CD_String);
                 case CHILD -> {
-                    ClassDesc childType = prop.getter().getReturnType()
-                            .describeConstable().orElseThrow();
+                    Class<?> childRaw = prop.field() != null
+                            ? prop.field().getType() : prop.getter().getReturnType();
+                    ClassDesc childType = childRaw.describeConstable().orElseThrow();
                     cob.aload(gen);
                     cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
                             ConstantDescs.DEFAULT_NAME, CD_SERIALIZABLE_STRING, nameIndex[i]));
                     cob.invokestatic(thisClass, "$name", MTD_HELP_NAME);
                     cob.aload(beanSlot);
-                    emitGetter(cob, itf, beanDesc, prop.getter().getName(),
-                            MethodTypeDesc.of(childType));
+                    emitLoad(cob, itf, beanDesc, prop, childType);
                     cob.astore(refSlot);
                     final int childIdx = childIndex[i];
                     emitNullableRef(cob, gen, refSlot, () -> {
@@ -277,16 +286,21 @@ public final class BeanWriterGenerator
         cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
                 ConstantDescs.DEFAULT_NAME, CD_SERIALIZABLE_STRING, nameIdx));
         cob.aload(beanSlot);
-        emitGetter(cob, itf, beanDesc, prop.getter().getName(), MethodTypeDesc.of(valDesc));
+        emitLoad(cob, itf, beanDesc, prop, valDesc);
         cob.invokestatic(thisClass, helper, helperType);
     }
 
-    private static void emitGetter(CodeBuilder cob, boolean itf, ClassDesc beanDesc,
-            String name, MethodTypeDesc type) {
-        if (itf) {
-            cob.invokeinterface(beanDesc, name, type);
+    // Loads the property value from the bean already on the stack: a getfield
+    // for a public field, otherwise the getter call.
+    private static void emitLoad(CodeBuilder cob, boolean itf, ClassDesc beanDesc,
+            GenWProp prop, ClassDesc valDesc) {
+        if (prop.field() != null) {
+            ClassDesc owner = prop.field().getDeclaringClass().describeConstable().orElseThrow();
+            cob.getfield(owner, prop.field().getName(), valDesc);
+        } else if (itf) {
+            cob.invokeinterface(beanDesc, prop.getter().getName(), MethodTypeDesc.of(valDesc));
         } else {
-            cob.invokevirtual(beanDesc, name, type);
+            cob.invokevirtual(beanDesc, prop.getter().getName(), MethodTypeDesc.of(valDesc));
         }
     }
 

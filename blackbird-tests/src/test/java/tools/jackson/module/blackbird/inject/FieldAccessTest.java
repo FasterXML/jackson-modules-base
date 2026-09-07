@@ -4,13 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-// Documents how Blackbird treats direct public-field access: fields are not
-// read or written by generated code. The bean still engages a generated codec,
-// and each field-backed property routes through databind's stock
-// SettableBeanProperty from inside that codec (Kind.STOCK in BBCodecFactory).
-// Behavior therefore matches stock databind exactly; only setter-backed
-// properties get generated accessor code.
-public class FieldAccessNotOptimizedTest extends BlackbirdInjectionTestBase
+// Public-field access is generated: a bean whose properties are all public
+// fields engages a Blackbird codec that stores through putfield (read side) and
+// getfield (write side), the same as a setter/getter POJO. Values must match
+// stock databind.
+public class FieldAccessTest extends BlackbirdInjectionTestBase
 {
     public static class FieldOnlyBean {
         public int intField;
@@ -22,7 +20,7 @@ public class FieldAccessNotOptimizedTest extends BlackbirdInjectionTestBase
     private final Harness h = newHarness();
 
     @Test
-    public void testFieldBackedBeanDelegatesToStockProperties() throws Exception
+    public void testFieldBackedBeanEngagesCodec() throws Exception
     {
         FieldOnlyBean bean = h.mapper.readValue(
                 "{\"intField\":1,\"longField\":2,\"boolField\":true,\"stringField\":\"x\"}",
@@ -32,8 +30,6 @@ public class FieldAccessNotOptimizedTest extends BlackbirdInjectionTestBase
         assertTrue(bean.boolField);
         assertEquals("x", bean.stringField);
 
-        // The codec engages for the bean even though every property is
-        // field-backed; the fields ride the codec's stock-property arms.
         assertTrue(isBlackbirdDeserCodec(h.deserFor(FieldOnlyBean.class)),
                 "FieldOnlyBean did not engage a Blackbird codec: "
                         + h.deserFor(FieldOnlyBean.class).getClass().getName());

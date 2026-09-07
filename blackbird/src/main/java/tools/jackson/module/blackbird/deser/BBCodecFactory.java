@@ -3,6 +3,7 @@ package tools.jackson.module.blackbird.deser;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
@@ -19,6 +20,7 @@ import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.CreatorProperty;
 import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
+import tools.jackson.databind.introspect.AnnotatedField;
 import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.GenProp;
 import tools.jackson.module.blackbird.codegen.GeneratedCodecBase;
@@ -256,9 +258,19 @@ final class BBCodecFactory
         Class<?> raw = prop.getType().getRawClass();
         ValueDeserializer<?> valueDeser = prop.getValueDeserializer();
         Method setter = setterOf(prop, raw);
-        if (setter == null) {
-            return stock(prop);
+        if (setter != null) {
+            return classifySetter(prop, beanClass, lookups, raw, valueDeser, setter);
         }
+        Field field = fieldOf(prop, raw);
+        if (field != null) {
+            return classifyField(prop, beanClass, lookups, raw, valueDeser, field);
+        }
+        return stock(prop);
+    }
+
+    private static GenProp classifySetter(SettableBeanProperty prop, Class<?> beanClass,
+            Function<Class<?>, MethodHandles.Lookup> lookups, Class<?> raw,
+            ValueDeserializer<?> valueDeser, Method setter) {
         if (valueDeser instanceof GeneratedCodecBase child
                 && Modifier.isPublic(setter.getModifiers())
                 && Modifier.isPublic(setter.getDeclaringClass().getModifiers())) {
@@ -286,6 +298,55 @@ final class BBCodecFactory
         } catch (ReflectiveOperationException | RuntimeException e) {
             return stock(prop);
         }
+    }
+
+    // Field-backed properties store through a generated putfield (public,
+    // non-final field on a public declaring class) or, for a non-public field,
+    // an unreflected setter handle reached through the user lookup - the same
+    // fallback the non-public-setter path uses. Final fields stay on the stock
+    // path so their (stock-defined) behavior is preserved exactly.
+    private static GenProp classifyField(SettableBeanProperty prop, Class<?> beanClass,
+            Function<Class<?>, MethodHandles.Lookup> lookups, Class<?> raw,
+            ValueDeserializer<?> valueDeser, Field field) {
+        if (Modifier.isFinal(field.getModifiers())) {
+            return stock(prop);
+        }
+        boolean direct = Modifier.isPublic(field.getModifiers())
+                && Modifier.isPublic(field.getDeclaringClass().getModifiers());
+        if (valueDeser instanceof GeneratedCodecBase child && direct) {
+            return new GenProp(prop.getName(), Kind.CHILD, null, prop, raw, child, null, field);
+        }
+        Kind kind = scalarKind(raw);
+        if (kind == null || valueDeser == null
+                || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass().getName())) {
+            return stock(prop);
+        }
+        if (direct) {
+            return new GenProp(prop.getName(), kind, null, prop, raw, null, null, field);
+        }
+        try {
+            MethodHandles.Lookup lookup = lookups.apply(beanClass);
+            if (lookup == null) {
+                return stock(prop);
+            }
+            MethodHandle mh = lookup.unreflectSetter(field)
+                    .asType(MethodType.methodType(void.class, beanClass, raw));
+            return new GenProp(prop.getName(), kind, null, prop, raw, null, mh);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return stock(prop);
+        }
+    }
+
+    private static Field fieldOf(SettableBeanProperty prop, Class<?> raw) {
+        if (!(prop.getMember() instanceof AnnotatedField af)) {
+            return null;
+        }
+        Field field = af.getAnnotated();
+        if (field == null || Modifier.isStatic(field.getModifiers())
+                || field.getType() != raw) {
+            return null;
+        }
+        return field;
     }
 
     private static Method setterOf(SettableBeanProperty prop, Class<?> raw) {

@@ -1,5 +1,6 @@
 package tools.jackson.module.blackbird.ser;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.Set;
 
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.introspect.AnnotatedField;
 import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.PropertyWriter;
@@ -68,18 +70,27 @@ final class BBSerCodecFactory
             return stock(writer);
         }
         BeanPropertyWriter bpw = (BeanPropertyWriter) writer;
-        if (bpw.willSuppressNulls()
-                || !(bpw.getMember() instanceof AnnotatedMethod am)) {
+        if (bpw.willSuppressNulls()) {
             return stock(writer);
         }
-        Method getter = am.getAnnotated();
+        ValueSerializer<Object> valueSer = bpw.getSerializer();
+        if (bpw.getMember() instanceof AnnotatedMethod am) {
+            return classifyGetter(writer, beanClass, bpw, am.getAnnotated(), valueSer);
+        }
+        if (bpw.getMember() instanceof AnnotatedField af) {
+            return classifyField(writer, bpw, af.getAnnotated(), valueSer);
+        }
+        return stock(writer);
+    }
+
+    private static GenWProp classifyGetter(PropertyWriter writer, Class<?> beanClass,
+            BeanPropertyWriter bpw, Method getter, ValueSerializer<Object> valueSer) {
         if (getter == null || getter.getParameterCount() != 0
                 || !Modifier.isPublic(getter.getModifiers())
                 || !Modifier.isPublic(getter.getDeclaringClass().getModifiers())
                 || getter.getDeclaringClass() != beanClass) {
             return stock(writer);
         }
-        ValueSerializer<Object> valueSer = bpw.getSerializer();
         if (valueSer instanceof GeneratedWriterBase child
                 && !getter.getReturnType().isPrimitive()) {
             return new GenWProp(WKind.CHILD, getter, writer, bpw.getSerializedName(), child);
@@ -90,6 +101,29 @@ final class BBSerCodecFactory
             return stock(writer);
         }
         return new GenWProp(kind, getter, writer, bpw.getSerializedName(), null);
+    }
+
+    // Public fields (any finality - reads are unrestricted) load through a
+    // generated getfield. Non-public fields have no generated read path on the
+    // serializer side and stay on the stock writer, the same limitation
+    // non-public getters have.
+    private static GenWProp classifyField(PropertyWriter writer, BeanPropertyWriter bpw,
+            Field field, ValueSerializer<Object> valueSer) {
+        if (field == null || Modifier.isStatic(field.getModifiers())
+                || !Modifier.isPublic(field.getModifiers())
+                || !Modifier.isPublic(field.getDeclaringClass().getModifiers())) {
+            return stock(writer);
+        }
+        Class<?> raw = field.getType();
+        if (valueSer instanceof GeneratedWriterBase child && !raw.isPrimitive()) {
+            return new GenWProp(WKind.CHILD, null, writer, bpw.getSerializedName(), child, field);
+        }
+        WKind kind = scalarKind(raw);
+        if (kind == null || valueSer == null
+                || !STOCK_SCALAR_SERS.contains(valueSer.getClass().getName())) {
+            return stock(writer);
+        }
+        return new GenWProp(kind, null, writer, bpw.getSerializedName(), null, field);
     }
 
     private static GenWProp stock(PropertyWriter writer) {

@@ -11,6 +11,7 @@ import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,18 +35,24 @@ public final class BeanCodecGenerator
     public enum Kind { STRING, INT, LONG, BOOLEAN, CHILD, STOCK }
 
     // setter applies to POJO and builder modes (null when setterHandle carries
-    // a non-public setter instead); type is the record component type in
-    // record mode and the child value type for CHILD; child is the linked
-    // generated codec for CHILD.
+    // a non-public setter, or when field carries a public field, instead);
+    // type is the record component type in record mode and the child value
+    // type for CHILD; child is the linked generated codec for CHILD; field is
+    // set for a public field stored through putfield.
     public record GenProp(String name, Kind kind, Method setter, SettableBeanProperty stock,
-            Class<?> type, GeneratedCodecBase child, MethodHandle setterHandle) {
+            Class<?> type, GeneratedCodecBase child, MethodHandle setterHandle, Field field) {
         public GenProp(String name, Kind kind, Method setter, SettableBeanProperty stock) {
-            this(name, kind, setter, stock, null, null, null);
+            this(name, kind, setter, stock, null, null, null, null);
         }
 
         public GenProp(String name, Kind kind, Method setter, SettableBeanProperty stock,
                 Class<?> type) {
-            this(name, kind, setter, stock, type, null, null);
+            this(name, kind, setter, stock, type, null, null, null);
+        }
+
+        public GenProp(String name, Kind kind, Method setter, SettableBeanProperty stock,
+                Class<?> type, GeneratedCodecBase child, MethodHandle setterHandle) {
+            this(name, kind, setter, stock, type, child, setterHandle, null);
         }
     }
 
@@ -276,7 +283,7 @@ public final class BeanCodecGenerator
                     cob.aload(beanSlot);
                     emitChildCall(cob, parser, ctxt, childIndex[i]);
                     cob.checkcast(childType);
-                    invokeSetter(cob, beanDesc, prop, childType);
+                    emitStore(cob, beanDesc, prop, childType);
                     cob.goto_(childDone);
                     cob.labelBinding(childStock);
                     emitStockSet(cob, parser, ctxt, beanSlot, stockIndex[i]);
@@ -696,12 +703,24 @@ public final class BeanCodecGenerator
         } else {
             cob.aload(beanSlot);
             cob.aload(parser).invokevirtual(CD_JSON_PARSER, getter, getterType);
-            invokeSetter(cob, beanDesc, prop, valueDesc);
+            emitStore(cob, beanDesc, prop, valueDesc);
         }
         cob.goto_(done);
         cob.labelBinding(isNull);
         emitStockSet(cob, parser, ctxt, beanSlot, stockIdx);
         cob.labelBinding(done);
+    }
+
+    // Stores a value already on the stack (receiver, then value) into the bean:
+    // a putfield for a public field, otherwise the direct setter call.
+    private static void emitStore(CodeBuilder cob, ClassDesc beanDesc, GenProp prop,
+            ClassDesc valueDesc) {
+        if (prop.field() != null) {
+            ClassDesc owner = prop.field().getDeclaringClass().describeConstable().orElseThrow();
+            cob.putfield(owner, prop.field().getName(), valueDesc);
+        } else {
+            invokeSetter(cob, beanDesc, prop, valueDesc);
+        }
     }
 
     private static void emitChildCall(CodeBuilder cob, int parser, int ctxt, int childIdx) {
