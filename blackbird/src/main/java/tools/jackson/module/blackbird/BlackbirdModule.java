@@ -96,9 +96,8 @@ public class BlackbirdModule extends JacksonModule
             return;
         }
         Function<Class<?>, Lookup> lookup = findLookup();
-        CrossLoaderAccess openSesame = new CrossLoaderAccess();
-        context.addDeserializerModifier(new BBDeserializerModifier(lookup, openSesame));
-        context.addSerializerModifier(new BBSerializerModifier(lookup, openSesame));
+        context.addDeserializerModifier(new BBDeserializerModifier(lookup));
+        context.addSerializerModifier(new BBSerializerModifier(lookup));
     }
 
     @Override

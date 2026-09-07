@@ -3,7 +3,6 @@ package tools.jackson.module.blackbird.deser;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Modifier;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.DeserializationConfig;
@@ -31,17 +30,14 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
     // Reserved for member access beyond public API (private setters, creators
     // in non-exported packages); the v1 generator only touches public members.
     private final Function<Class<?>, MethodHandles.Lookup> _lookups;
-    private final UnaryOperator<MethodHandles.Lookup> _accessGrant;
 
     // The build method is only reachable from updateBuilder; the factory calls
     // updateBuilder and modifyDeserializer for the same bean back to back on
     // one thread, so a ThreadLocal hands it across.
     private final transient ThreadLocal<AnnotatedMethod> _pendingBuildMethod = new ThreadLocal<>();
 
-    public BBDeserializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups,
-            UnaryOperator<MethodHandles.Lookup> accessGrant) {
+    public BBDeserializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups) {
         _lookups = lookups;
-        _accessGrant = accessGrant;
     }
 
     @Override
