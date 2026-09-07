@@ -28,6 +28,10 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
 
   <properties>
     <maven.compiler.release>25</maven.compiler.release>
+    <!-- Keep the jar manifest's X-Compile-Source/Target-JDK entries (fed by
+         these properties through oss-parent) in step with release=25. -->
+    <javac.src.version>25</javac.src.version>
+    <javac.target.version>25</javac.target.version>
     <packageVersion.dir>tools/jackson/module/blackbird</packageVersion.dir>
     <packageVersion.package>${project.groupId}.blackbird</packageVersion.package>
   </properties>

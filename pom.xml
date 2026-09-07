@@ -72,6 +72,10 @@ not datatype, data format, or JAX-RS provider modules.
   </issueManagement>
 
   <properties>
+    <!-- The parent chain sets compiler source/target only; release pins the
+         17 floor against JDK 17 APIs (ct.sym) even when the build JDK is
+         newer. blackbird overrides this to 25. -->
+    <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- [databind#4820]: Java 17 baseline -->
