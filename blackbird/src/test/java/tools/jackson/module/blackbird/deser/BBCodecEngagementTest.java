@@ -8,6 +8,13 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.MismatchedInputException;
 
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonPOJOBuilder;
+import tools.jackson.databind.deser.ValueDeserializerModifier;
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.module.blackbird.BlackbirdModule;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,7 +41,7 @@ public class BBCodecEngagementTest extends BlackbirdTestBase
 
     public record PublicRec(String name, int count, long total, boolean active, List<String> tags) {}
 
-    @tools.jackson.databind.annotation.JsonDeserialize(builder = BuilderBean.Builder.class)
+    @JsonDeserialize(builder = BuilderBean.Builder.class)
     public static class BuilderBean {
         private final String name;
         private final int count;
@@ -50,7 +57,7 @@ public class BBCodecEngagementTest extends BlackbirdTestBase
         public int getCount() { return count; }
         public List<String> getTags() { return tags; }
 
-        @tools.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = "")
+        @JsonPOJOBuilder(withPrefix = "")
         public static class Builder {
             private String name;
             private int count;
@@ -154,22 +161,22 @@ public class BBCodecEngagementTest extends BlackbirdTestBase
         java.util.Map<Class<?>, tools.jackson.databind.ValueDeserializer<?>> seen =
                 new java.util.concurrent.ConcurrentHashMap<>();
         tools.jackson.databind.deser.ValueDeserializerModifier capture =
-                new tools.jackson.databind.deser.ValueDeserializerModifier() {
+                new ValueDeserializerModifier() {
             private static final long serialVersionUID = 1L;
 
             @Override
             public tools.jackson.databind.ValueDeserializer<?> modifyDeserializer(
                     tools.jackson.databind.DeserializationConfig config,
-                    tools.jackson.databind.BeanDescription.Supplier beanDescRef,
+                    BeanDescription.Supplier beanDescRef,
                     tools.jackson.databind.ValueDeserializer<?> deserializer) {
                 seen.put(beanDescRef.getBeanClass(), deserializer);
                 return deserializer;
             }
         };
-        ObjectMapper m = tools.jackson.databind.json.JsonMapper.builder()
-                .addModule(new tools.jackson.databind.module.SimpleModule("capture")
+        ObjectMapper m = JsonMapper.builder()
+                .addModule(new SimpleModule("capture")
                         .setDeserializerModifier(capture))
-                .addModule(new tools.jackson.module.blackbird.BlackbirdModule())
+                .addModule(new BlackbirdModule())
                 .build();
         m.readValue("{\"name\":\"a\"}", PublicBean.class);
         m.readValue("{\"name\":\"a\"}", PublicRec.class);
