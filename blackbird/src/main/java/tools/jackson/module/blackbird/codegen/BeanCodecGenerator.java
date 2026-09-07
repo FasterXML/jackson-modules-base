@@ -76,7 +76,6 @@ public final class BeanCodecGenerator
     private static final MethodTypeDesc MTD_NEXT_NAME_MATCH =
             MethodTypeDesc.of(ConstantDescs.CD_int, CD_NAME_MATCHER);
     private static final MethodTypeDesc MTD_NEXT_TOKEN = MethodTypeDesc.of(CD_JSON_TOKEN);
-    private static final MethodTypeDesc MTD_SKIP_CHILDREN = MethodTypeDesc.of(CD_JSON_PARSER);
     private static final MethodTypeDesc MTD_GET_STRING = MethodTypeDesc.of(ConstantDescs.CD_String);
     private static final MethodTypeDesc MTD_GET_INT = MethodTypeDesc.of(ConstantDescs.CD_int);
     private static final MethodTypeDesc MTD_GET_LONG = MethodTypeDesc.of(ConstantDescs.CD_long);
@@ -89,6 +88,10 @@ public final class BeanCodecGenerator
             MethodTypeDesc.of(ConstantDescs.CD_Object, CD_JSON_PARSER, CD_DESER_CONTEXT);
     private static final MethodTypeDesc MTD_CTOR =
             MethodTypeDesc.of(ConstantDescs.CD_void, CD_BEAN_DESER_BASE);
+    private static final MethodTypeDesc MTD_HANDLE_UNKNOWN = MethodTypeDesc.of(
+            ConstantDescs.CD_void, CD_JSON_PARSER, CD_DESER_CONTEXT, ConstantDescs.CD_Object);
+    private static final MethodTypeDesc MTD_CHECK_SEEN = MethodTypeDesc.of(
+            ConstantDescs.CD_void, CD_DESER_CONTEXT, ConstantDescs.CD_long, ConstantDescs.CD_int);
 
     private BeanCodecGenerator() {}
 
@@ -212,15 +215,7 @@ public final class BeanCodecGenerator
 
         ClassDesc beanDesc = beanClass.describeConstable().orElseThrow();
 
-        Label noView = cob.newLabel();
-        cob.aload(ctxt).invokevirtual(CD_DESER_CONTEXT, "getActiveView",
-                MethodTypeDesc.of(ConstantDescs.CD_Class));
-        cob.ifnull(noView);
-        cob.aload(0).getfield(CD_BASE, "_fallback", CD_BEAN_DESER_BASE);
-        cob.aload(parser).aload(ctxt);
-        cob.invokevirtual(CD_BEAN_DESER_BASE, "deserialize", MTD_DESERIALIZE);
-        cob.areturn();
-        cob.labelBinding(noView);
+        emitEntryGuard(cob, parser, ctxt);
 
         cob.new_(beanDesc).dup()
            .invokespecial(beanDesc, ConstantDescs.INIT_NAME, ConstantDescs.MTD_void)
@@ -263,16 +258,16 @@ public final class BeanCodecGenerator
             switch (prop.kind()) {
                 case STRING -> emitScalar(cob, beanSlot, parser, ctxt, beanDesc, prop,
                         "getString", MTD_GET_STRING, ConstantDescs.CD_String,
-                        stockIndex[i], setterMhIndex[i]);
+                        stockIndex[i], setterMhIndex[i], "VALUE_STRING");
                 case INT -> emitScalar(cob, beanSlot, parser, ctxt, beanDesc, prop,
                         "getIntValue", MTD_GET_INT, ConstantDescs.CD_int,
-                        stockIndex[i], setterMhIndex[i]);
+                        stockIndex[i], setterMhIndex[i], "VALUE_NUMBER_INT");
                 case LONG -> emitScalar(cob, beanSlot, parser, ctxt, beanDesc, prop,
                         "getLongValue", MTD_GET_LONG, ConstantDescs.CD_long,
-                        stockIndex[i], setterMhIndex[i]);
+                        stockIndex[i], setterMhIndex[i], "VALUE_NUMBER_INT");
                 case BOOLEAN -> emitScalar(cob, beanSlot, parser, ctxt, beanDesc, prop,
                         "getBooleanValue", MTD_GET_BOOLEAN, ConstantDescs.CD_boolean,
-                        stockIndex[i], setterMhIndex[i]);
+                        stockIndex[i], setterMhIndex[i], null);
                 case CHILD -> {
                     Label childStock = cob.newLabel();
                     Label childDone = cob.newLabel();
@@ -305,8 +300,9 @@ public final class BeanCodecGenerator
         cob.aload(beanSlot).areturn();
 
         cob.labelBinding(unknown);
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "skipChildren", MTD_SKIP_CHILDREN).pop();
+        cob.aload(0).aload(parser).aload(ctxt);
+        cob.aload(beanSlot);
+        cob.invokevirtual(CD_BASE, "_handleUnknown", MTD_HANDLE_UNKNOWN);
         nextNameMatch(cob, parser, matcherSlot, ixSlot);
         cob.goto_(loop);
 
@@ -337,15 +333,7 @@ public final class BeanCodecGenerator
 
         ClassDesc builderDesc = builderClass.describeConstable().orElseThrow();
 
-        Label noView = cob.newLabel();
-        cob.aload(ctxt).invokevirtual(CD_DESER_CONTEXT, "getActiveView",
-                MethodTypeDesc.of(ConstantDescs.CD_Class));
-        cob.ifnull(noView);
-        cob.aload(0).getfield(CD_BASE, "_fallback", CD_BEAN_DESER_BASE);
-        cob.aload(parser).aload(ctxt);
-        cob.invokevirtual(CD_BEAN_DESER_BASE, "deserialize", MTD_DESERIALIZE);
-        cob.areturn();
-        cob.labelBinding(noView);
+        emitEntryGuard(cob, parser, ctxt);
 
         cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
                 ConstantDescs.DEFAULT_NAME, CD_VALUE_INSTANTIATOR, instIndex));
@@ -388,13 +376,17 @@ public final class BeanCodecGenerator
             GenProp prop = props.get(i);
             switch (prop.kind()) {
                 case STRING -> emitBuilderScalar(cob, parser, ctxt, builderSlot, builderDesc, prop,
-                        "getString", MTD_GET_STRING, ConstantDescs.CD_String, stockIndex[i]);
+                        "getString", MTD_GET_STRING, ConstantDescs.CD_String, stockIndex[i],
+                        "VALUE_STRING");
                 case INT -> emitBuilderScalar(cob, parser, ctxt, builderSlot, builderDesc, prop,
-                        "getIntValue", MTD_GET_INT, ConstantDescs.CD_int, stockIndex[i]);
+                        "getIntValue", MTD_GET_INT, ConstantDescs.CD_int, stockIndex[i],
+                        "VALUE_NUMBER_INT");
                 case LONG -> emitBuilderScalar(cob, parser, ctxt, builderSlot, builderDesc, prop,
-                        "getLongValue", MTD_GET_LONG, ConstantDescs.CD_long, stockIndex[i]);
+                        "getLongValue", MTD_GET_LONG, ConstantDescs.CD_long, stockIndex[i],
+                        "VALUE_NUMBER_INT");
                 case BOOLEAN -> emitBuilderScalar(cob, parser, ctxt, builderSlot, builderDesc, prop,
-                        "getBooleanValue", MTD_GET_BOOLEAN, ConstantDescs.CD_boolean, stockIndex[i]);
+                        "getBooleanValue", MTD_GET_BOOLEAN, ConstantDescs.CD_boolean, stockIndex[i],
+                        null);
                 case CHILD -> {
                     Label childStock = cob.newLabel();
                     Label childDone = cob.newLabel();
@@ -439,8 +431,9 @@ public final class BeanCodecGenerator
         cob.areturn();
 
         cob.labelBinding(unknown);
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "skipChildren", MTD_SKIP_CHILDREN).pop();
+        cob.aload(0).aload(parser).aload(ctxt);
+        cob.aload(builderSlot);
+        cob.invokevirtual(CD_BASE, "_handleUnknown", MTD_HANDLE_UNKNOWN);
         nextNameMatch(cob, parser, matcherSlot, ixSlot);
         cob.goto_(loop);
 
@@ -452,12 +445,10 @@ public final class BeanCodecGenerator
 
     private static void emitBuilderScalar(CodeBuilder cob, int parser, int ctxt, int builderSlot,
             ClassDesc builderDesc, GenProp prop, String getter, MethodTypeDesc getterType,
-            ClassDesc valueDesc, int stockIdx) {
-        Label isNull = cob.newLabel();
+            ClassDesc valueDesc, int stockIdx, String expectedToken) {
+        Label useStock = cob.newLabel();
         Label done = cob.newLabel();
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
-        cob.getstatic(CD_JSON_TOKEN, "VALUE_NULL", CD_JSON_TOKEN);
-        cob.if_acmpeq(isNull);
+        emitExpectedTokenCheck(cob, parser, expectedToken, useStock);
         cob.aload(builderSlot);
         cob.aload(parser).invokevirtual(CD_JSON_PARSER, getter, getterType);
         Class<?> ret = prop.setter().getReturnType();
@@ -469,7 +460,7 @@ public final class BeanCodecGenerator
             cob.astore(builderSlot);
         }
         cob.goto_(done);
-        cob.labelBinding(isNull);
+        cob.labelBinding(useStock);
         emitStockSetReturn(cob, parser, ctxt, builderSlot, builderDesc, stockIdx);
         cob.labelBinding(done);
     }
@@ -500,19 +491,12 @@ public final class BeanCodecGenerator
             next += (t == long.class || t == double.class) ? 2 : 1;
         }
         final int matcherSlot = next++;
-        final int ixSlot = next;
+        final int ixSlot = next++;
+        final int seenSlot = next;
 
         ClassDesc recordDesc = beanClass.describeConstable().orElseThrow();
 
-        Label noView = cob.newLabel();
-        cob.aload(ctxt).invokevirtual(CD_DESER_CONTEXT, "getActiveView",
-                MethodTypeDesc.of(ConstantDescs.CD_Class));
-        cob.ifnull(noView);
-        cob.aload(0).getfield(CD_BASE, "_fallback", CD_BEAN_DESER_BASE);
-        cob.aload(parser).aload(ctxt);
-        cob.invokevirtual(CD_BEAN_DESER_BASE, "deserialize", MTD_DESERIALIZE);
-        cob.areturn();
-        cob.labelBinding(noView);
+        emitEntryGuard(cob, parser, ctxt);
 
         for (int i = 0; i < props.size(); i++) {
             Class<?> t = props.get(i).type();
@@ -528,6 +512,7 @@ public final class BeanCodecGenerator
                 cob.aconst_null().astore(componentSlot[i]);
             }
         }
+        cob.lconst_0().lstore(seenSlot);
 
         cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
                 ConstantDescs.DEFAULT_NAME, CD_NAME_MATCHER, 0));
@@ -564,13 +549,13 @@ public final class BeanCodecGenerator
             Class<?> t = prop.type();
             switch (prop.kind()) {
                 case STRING -> emitRecordScalar(cob, parser, ctxt, componentSlot[i], t,
-                        "getString", MTD_GET_STRING, stockIndex[i]);
+                        "getString", MTD_GET_STRING, stockIndex[i], "VALUE_STRING");
                 case INT -> emitRecordScalar(cob, parser, ctxt, componentSlot[i], t,
-                        "getIntValue", MTD_GET_INT, stockIndex[i]);
+                        "getIntValue", MTD_GET_INT, stockIndex[i], "VALUE_NUMBER_INT");
                 case LONG -> emitRecordScalar(cob, parser, ctxt, componentSlot[i], t,
-                        "getLongValue", MTD_GET_LONG, stockIndex[i]);
+                        "getLongValue", MTD_GET_LONG, stockIndex[i], "VALUE_NUMBER_INT");
                 case BOOLEAN -> emitRecordScalar(cob, parser, ctxt, componentSlot[i], t,
-                        "getBooleanValue", MTD_GET_BOOLEAN, stockIndex[i]);
+                        "getBooleanValue", MTD_GET_BOOLEAN, stockIndex[i], null);
                 case CHILD -> {
                     Label childStock = cob.newLabel();
                     Label childDone = cob.newLabel();
@@ -590,6 +575,10 @@ public final class BeanCodecGenerator
                     emitStockValueToLocal(cob, parser, ctxt, componentSlot[i], t, stockIndex[i]);
                 }
             }
+            cob.lload(seenSlot);
+            cob.loadConstant(1L << i);
+            cob.lor();
+            cob.lstore(seenSlot);
             nextNameMatch(cob, parser, matcherSlot, ixSlot);
             cob.goto_(loop);
         }
@@ -598,6 +587,18 @@ public final class BeanCodecGenerator
         throwIse(cob, "bad property index");
 
         cob.labelBinding(endObject);
+        // Missing components: the cold helper mirrors PropertyValueBuffer's
+        // required / FAIL_ON_MISSING_CREATOR_PROPERTIES reporting.
+        long allSeen = (props.size() == 64) ? -1L : (1L << props.size()) - 1;
+        Label allPresent = cob.newLabel();
+        cob.lload(seenSlot);
+        cob.loadConstant(allSeen);
+        cob.lcmp();
+        cob.ifeq(allPresent);
+        cob.aload(0).aload(ctxt).lload(seenSlot);
+        cob.loadConstant(props.size());
+        cob.invokevirtual(CD_BASE, "_checkRecordSeen", MTD_CHECK_SEEN);
+        cob.labelBinding(allPresent);
         cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
                 ConstantDescs.DEFAULT_NAME, ConstantDescs.CD_MethodHandle, ctorIndex));
         ClassDesc[] paramDescs = new ClassDesc[props.size()];
@@ -621,8 +622,9 @@ public final class BeanCodecGenerator
         cob.areturn();
 
         cob.labelBinding(unknown);
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "skipChildren", MTD_SKIP_CHILDREN).pop();
+        cob.aload(0).aload(parser).aload(ctxt);
+        cob.aconst_null();
+        cob.invokevirtual(CD_BASE, "_handleUnknown", MTD_HANDLE_UNKNOWN);
         nextNameMatch(cob, parser, matcherSlot, ixSlot);
         cob.goto_(loop);
 
@@ -633,16 +635,15 @@ public final class BeanCodecGenerator
     }
 
     private static void emitRecordScalar(CodeBuilder cob, int parser, int ctxt, int slot,
-            Class<?> type, String getter, MethodTypeDesc getterType, int stockIdx) {
-        Label isNull = cob.newLabel();
+            Class<?> type, String getter, MethodTypeDesc getterType, int stockIdx,
+            String expectedToken) {
+        Label useStock = cob.newLabel();
         Label done = cob.newLabel();
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
-        cob.getstatic(CD_JSON_TOKEN, "VALUE_NULL", CD_JSON_TOKEN);
-        cob.if_acmpeq(isNull);
+        emitExpectedTokenCheck(cob, parser, expectedToken, useStock);
         cob.aload(parser).invokevirtual(CD_JSON_PARSER, getter, getterType);
         storeLocal(cob, type, slot);
         cob.goto_(done);
-        cob.labelBinding(isNull);
+        cob.labelBinding(useStock);
         emitStockValueToLocal(cob, parser, ctxt, slot, type, stockIdx);
         cob.labelBinding(done);
     }
@@ -687,12 +688,10 @@ public final class BeanCodecGenerator
     // direct call.
     private static void emitScalar(CodeBuilder cob, int beanSlot, int parser, int ctxt,
             ClassDesc beanDesc, GenProp prop, String getter, MethodTypeDesc getterType,
-            ClassDesc valueDesc, int stockIdx, int setterMhIdx) {
-        Label isNull = cob.newLabel();
+            ClassDesc valueDesc, int stockIdx, int setterMhIdx, String expectedToken) {
+        Label useStock = cob.newLabel();
         Label done = cob.newLabel();
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
-        cob.getstatic(CD_JSON_TOKEN, "VALUE_NULL", CD_JSON_TOKEN);
-        cob.if_acmpeq(isNull);
+        emitExpectedTokenCheck(cob, parser, expectedToken, useStock);
         if (setterMhIdx >= 0) {
             cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
                     ConstantDescs.DEFAULT_NAME, ConstantDescs.CD_MethodHandle, setterMhIdx));
@@ -706,7 +705,7 @@ public final class BeanCodecGenerator
             emitStore(cob, beanDesc, prop, valueDesc);
         }
         cob.goto_(done);
-        cob.labelBinding(isNull);
+        cob.labelBinding(useStock);
         emitStockSet(cob, parser, ctxt, beanSlot, stockIdx);
         cob.labelBinding(done);
     }
@@ -744,6 +743,51 @@ public final class BeanCodecGenerator
         cob.invokevirtual(beanDesc, prop.setter().getName(), setter);
         if (prop.setter().getReturnType() != void.class) {
             cob.pop();
+        }
+    }
+
+    // Delegates to the stock deserializer for any entry the generated loop
+    // does not model: a stream not positioned on START_OBJECT (stock also
+    // accepts PROPERTY_NAME and other entry shapes) or an active view.
+    private static void emitEntryGuard(CodeBuilder cob, int parser, int ctxt) {
+        Label delegate = cob.newLabel();
+        Label proceed = cob.newLabel();
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
+        cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
+        cob.if_acmpne(delegate);
+        cob.aload(ctxt).invokevirtual(CD_DESER_CONTEXT, "getActiveView",
+                MethodTypeDesc.of(ConstantDescs.CD_Class));
+        cob.ifnull(proceed);
+        cob.labelBinding(delegate);
+        cob.aload(0).getfield(CD_BASE, "_fallback", CD_BEAN_DESER_BASE);
+        cob.aload(parser).aload(ctxt);
+        cob.invokevirtual(CD_BEAN_DESER_BASE, "deserialize", MTD_DESERIALIZE);
+        cob.areturn();
+        cob.labelBinding(proceed);
+    }
+
+    // Advances to the value token and branches to useStock unless it is the
+    // token the inline read expects. Null, quoted scalars, and mismatched
+    // shapes all take the stock property, which owns coercion and null
+    // handling. expectedToken null selects the boolean pair.
+    private static void emitExpectedTokenCheck(CodeBuilder cob, int parser,
+            String expectedToken, Label useStock) {
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
+        if (expectedToken != null) {
+            cob.getstatic(CD_JSON_TOKEN, expectedToken, CD_JSON_TOKEN);
+            cob.if_acmpne(useStock);
+        } else {
+            Label isTrue = cob.newLabel();
+            Label fast = cob.newLabel();
+            cob.dup();
+            cob.getstatic(CD_JSON_TOKEN, "VALUE_TRUE", CD_JSON_TOKEN);
+            cob.if_acmpeq(isTrue);
+            cob.getstatic(CD_JSON_TOKEN, "VALUE_FALSE", CD_JSON_TOKEN);
+            cob.if_acmpne(useStock);
+            cob.goto_(fast);
+            cob.labelBinding(isTrue);
+            cob.pop();
+            cob.labelBinding(fast);
         }
     }
 

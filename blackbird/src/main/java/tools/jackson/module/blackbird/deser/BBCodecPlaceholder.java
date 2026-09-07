@@ -15,6 +15,7 @@ import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.databind.jsontype.TypeDeserializer;
 import tools.jackson.databind.type.LogicalType;
 import tools.jackson.databind.util.AccessPattern;
+import tools.jackson.databind.util.NameTransformer;
 
 /**
  * Stands in for a stock bean deserializer until resolution: the codec needs
@@ -131,5 +132,13 @@ final class BBCodecPlaceholder extends ValueDeserializer<Object>
     @Override
     public boolean isCachable() {
         return _delegate.isCachable();
+    }
+
+    // Unwrapping must produce the stock unwrapping variant, never the codec
+    // (rationale in GeneratedCodecBase.unwrappingDeserializer).
+    @Override
+    public ValueDeserializer<Object> unwrappingDeserializer(DeserializationContext ctxt,
+            NameTransformer unwrapper) {
+        return _delegate.unwrappingDeserializer(ctxt, unwrapper);
     }
 }

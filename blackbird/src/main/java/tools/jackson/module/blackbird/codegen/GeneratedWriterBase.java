@@ -1,10 +1,13 @@
 package tools.jackson.module.blackbird.codegen;
 
 import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
+import tools.jackson.databind.util.NameTransformer;
 
 /**
  * Superclass for generated serializers: everything except the plain-object
@@ -37,5 +40,18 @@ public abstract class GeneratedWriterBase extends ValueSerializer<Object>
     @Override
     public Class<?> handledType() {
         return _fallback.handledType();
+    }
+
+    // Unwrapping must produce the stock unwrapping variant: the generated
+    // writer emits one JSON object, which is not the shape an unwrapped value
+    // has.
+    @Override
+    public ValueSerializer<Object> unwrappingSerializer(NameTransformer unwrapper) {
+        return _fallback.unwrappingSerializer(unwrapper);
+    }
+
+    @Override
+    public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType type) {
+        _fallback.acceptJsonFormatVisitor(visitor, type);
     }
 }

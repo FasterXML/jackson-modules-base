@@ -1,8 +1,13 @@
 package tools.jackson.module.blackbird.deser;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Modifier;
 import java.util.function.Function;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 
 import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.DeserializationConfig;
@@ -34,11 +39,17 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
 
     // The build method is only reachable from updateBuilder; the factory calls
     // updateBuilder and modifyDeserializer for the same bean back to back on
-    // one thread, so a ThreadLocal hands it across.
-    private final transient ThreadLocal<AnnotatedMethod> _pendingBuildMethod = new ThreadLocal<>();
+    // one thread, so a ThreadLocal hands it across. Not final: readObject
+    // recreates it, since transient fields deserialize as null.
+    private transient ThreadLocal<AnnotatedMethod> _pendingBuildMethod = new ThreadLocal<>();
 
     public BBDeserializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups) {
         _lookups = lookups;
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        _pendingBuildMethod = new ThreadLocal<>();
     }
 
     @Override
@@ -106,6 +117,23 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
             }
         }
         if (beanDesc.findAnySetterAccessor() != null) {
+            return deserializer;
+        }
+        // Ignored or included property sets change how unknown names are
+        // handled (silently skipped vs reported); the codec's unknown arm
+        // implements only the plain contract, so such beans stay stock.
+        JsonIgnoreProperties.Value ignorals =
+                config.getDefaultPropertyIgnorals(beanClass, beanDesc.getClassInfo());
+        if (ignorals != null
+                && (ignorals.getIgnoreUnknown() || !ignorals.getIgnored().isEmpty())) {
+            return deserializer;
+        }
+        JsonIncludeProperties.Value inclusions =
+                config.getDefaultPropertyInclusions(beanClass, beanDesc.getClassInfo());
+        if (inclusions != null && inclusions.getIncluded() != null) {
+            return deserializer;
+        }
+        if (!beanDesc.getIgnoredPropertyNames().isEmpty()) {
             return deserializer;
         }
         for (BeanPropertyDefinition def : beanDesc.findProperties()) {

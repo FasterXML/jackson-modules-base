@@ -210,12 +210,20 @@ final class BBCodecFactory
             return null;
         }
         RecordComponent[] comps = beanClass.getRecordComponents();
+        // The seen-component mask in the generated code is one long.
+        if (comps.length > 64) {
+            if (DEBUG) System.err.println("bbdebug gate: record size");
+            return null;
+        }
         SettableBeanProperty[] byIndex = new SettableBeanProperty[comps.length];
         int count = 0;
         for (Iterator<SettableBeanProperty> it = delegate.properties(); it.hasNext(); ) {
             SettableBeanProperty prop = it.next();
             if (!(prop instanceof CreatorProperty)
-                    || prop.getMetadata().getMergeInfo() != null) {
+                    || prop.getMetadata().getMergeInfo() != null
+                    // A missing injectable component takes its value from the
+                    // context, which the typed-locals loop does not model.
+                    || prop.getInjectionDefinition() != null) {
                 if (DEBUG) System.err.println("bbdebug gate: record prop " + prop.getName());
                 return null;
             }

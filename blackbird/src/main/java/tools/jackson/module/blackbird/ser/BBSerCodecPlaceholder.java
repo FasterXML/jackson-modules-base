@@ -2,10 +2,13 @@ package tools.jackson.module.blackbird.ser;
 
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
+import tools.jackson.databind.util.NameTransformer;
 
 /**
  * Stands in for a stock bean serializer until resolution, then hands out the
@@ -67,5 +70,17 @@ final class BBSerCodecPlaceholder extends ValueSerializer<Object>
     @Override
     public Class<?> handledType() {
         return _delegate.handledType();
+    }
+
+    // Unwrapping must produce the stock unwrapping variant, never the codec
+    // (rationale in GeneratedWriterBase.unwrappingSerializer).
+    @Override
+    public ValueSerializer<Object> unwrappingSerializer(NameTransformer unwrapper) {
+        return _delegate.unwrappingSerializer(unwrapper);
+    }
+
+    @Override
+    public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType type) {
+        _delegate.acceptJsonFormatVisitor(visitor, type);
     }
 }
