@@ -1,19 +1,17 @@
 package tools.jackson.module.blackbird.inject;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-// Verifies Blackbird's serializer-side optimization runs end-to-end for all
-// accessor-method specializations, and documents the parallel limitation with
-// the deserializer side: direct public-field writers are not optimized either.
-// BBSerializerModifier.createProperty skips properties whose backing JDK
-// member isn't an AnnotatedMethod (see BBSerializerModifier.java lines
-// 103-109), so public fields stay as plain BeanPropertyWriter instances.
+// Verifies Blackbird's serializer codec generation engages end-to-end for a
+// getter POJO on the classpath and produces output identical to stock
+// databind. Field-backed writers are the serializer-side parallel of the
+// deserializer's field handling: the bean still engages a generated writer,
+// and the field property rides its stock-writer arm (WKind.STOCK in
+// BBSerCodecFactory).
 public class SerializerInjectionTest extends BlackbirdInjectionTestBase
 {
     public static class GetterSerPojo {
@@ -44,44 +42,32 @@ public class SerializerInjectionTest extends BlackbirdInjectionTestBase
     }
 
     @Test
-    public void testAllGetterBasedWritersOptimized() throws Exception
+    public void testGetterPojoEngagesGeneratedWriter() throws Exception
     {
         Harness h = newHarness();
+        GetterSerPojo pojo = new GetterSerPojo(1, 2L, true, "x", java.util.Arrays.asList("a", "b"));
 
-        String json = h.mapper.writeValueAsString(
-                new GetterSerPojo(1, 2L, true, "x", java.util.Arrays.asList("a", "b")));
-        assertTrue(json.contains("\"intProp\":1"), json);
-        assertTrue(json.contains("\"longProp\":2"), json);
-        assertTrue(json.contains("\"boolProp\":true"), json);
-        assertTrue(json.contains("\"stringProp\":\"x\""), json);
-        assertTrue(json.contains("\"objectProp\":[\"a\",\"b\"]"), json);
+        String json = h.mapper.writeValueAsString(pojo);
+        assertEquals(new JsonMapper().writeValueAsString(pojo), json,
+                "generated writer output differs from stock databind");
 
-        List<BeanPropertyWriter> writers = writersOf(h.serFor(GetterSerPojo.class));
-        assertEquals(5, writers.size(), "expected 5 writers, got " + writers);
-        for (BeanPropertyWriter w : writers) {
-            assertTrue(isOptimizedWriter(w),
-                    "ser writer '" + w.getName() + "' not optimized (is "
-                            + w.getClass().getName() + "); BBSerializerModifier"
-                            + " did not replace it with a Blackbird-generated writer");
-        }
+        assertTrue(isBlackbirdSerCodec(h.serFor(GetterSerPojo.class)),
+                "GetterSerPojo did not engage a Blackbird writer codec: "
+                        + h.serFor(GetterSerPojo.class).getClass().getName());
     }
 
     @Test
-    public void testFieldBackedWriterNotOptimized() throws Exception
+    public void testFieldBackedWriterDelegatesToStockWriter() throws Exception
     {
         Harness h = newHarness();
+        FieldSerPojo pojo = new FieldSerPojo(42);
 
-        // Serialization still works end-to-end, just not via a Blackbird-generated accessor.
-        String json = h.mapper.writeValueAsString(new FieldSerPojo(42));
-        assertTrue(json.contains("\"value\":42"), json);
+        String json = h.mapper.writeValueAsString(pojo);
+        assertEquals(new JsonMapper().writeValueAsString(pojo), json,
+                "field-backed output differs from stock databind");
 
-        List<BeanPropertyWriter> writers = writersOf(h.serFor(FieldSerPojo.class));
-        assertEquals(1, writers.size());
-        BeanPropertyWriter w = writers.get(0);
-        assertFalse(isOptimizedWriter(w),
-                "Blackbird unexpectedly optimized a field-backed writer '" + w.getName()
-                        + "' (is " + w.getClass().getName() + "). If BBSerializerModifier"
-                        + " has grown field-access support, update this test to assert"
-                        + " the positive case instead.");
+        assertTrue(isBlackbirdSerCodec(h.serFor(FieldSerPojo.class)),
+                "FieldSerPojo did not engage a Blackbird writer codec: "
+                        + h.serFor(FieldSerPojo.class).getClass().getName());
     }
 }
