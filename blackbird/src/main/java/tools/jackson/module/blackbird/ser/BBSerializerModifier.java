@@ -33,6 +33,21 @@ public class BBSerializerModifier extends ValueSerializerModifier
     public ValueSerializer<?> modifySerializer(SerializationConfig config,
             BeanDescription.Supplier beanDescRef, ValueSerializer<?> serializer)
     {
+        // Gate failures of any kind leave the stock serializer in place. The
+        // reflective gates can throw for exotic classes (a bean from a foreign
+        // classloader with inconsistent InnerClasses metadata raises
+        // IncompatibleClassChangeError from getEnclosingClass), and an
+        // acceleration modifier must never break a bean stock databind handles.
+        try {
+            return doModify(beanDescRef, serializer);
+        } catch (RuntimeException | LinkageError e) {
+            return serializer;
+        }
+    }
+
+    private ValueSerializer<?> doModify(BeanDescription.Supplier beanDescRef,
+            ValueSerializer<?> serializer)
+    {
         if (serializer.getClass() != BeanSerializer.class
                 && serializer.getClass() != UnrolledBeanSerializer.class) {
             return serializer;

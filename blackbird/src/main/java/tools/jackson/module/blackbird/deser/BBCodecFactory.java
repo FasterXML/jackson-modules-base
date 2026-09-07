@@ -84,6 +84,14 @@ final class BBCodecFactory
             if (DEBUG) System.err.println("bbdebug gate: class modifiers");
             return null;
         }
+        // Generated code refers to the bean class by name, which the hidden
+        // class resolves through this module's loader. A bean from a foreign
+        // classloader would resolve to a different (or no) class, so it stays
+        // on the stock path.
+        if (!visibleToGenerator(beanClass)) {
+            if (DEBUG) System.err.println("bbdebug gate: foreign classloader");
+            return null;
+        }
         if (buildMethod != null) {
             return generateBuilder(delegate, ctxt, beanClass, lookups, buildMethod);
         }
@@ -132,6 +140,7 @@ final class BBCodecFactory
         Class<?> builderClass = build.getDeclaringClass();
         if (!delegate.getValueInstantiator().canCreateUsingDefault()
                 || !Modifier.isPublic(builderClass.getModifiers())
+                || !visibleToGenerator(builderClass)
                 || !Modifier.isPublic(build.getModifiers())
                 || build.getParameterCount() != 0) {
             if (DEBUG) System.err.println("bbdebug gate: builder shape");
@@ -363,6 +372,15 @@ final class BBCodecFactory
 
     private static GenProp stock(SettableBeanProperty prop) {
         return new GenProp(prop.getName(), Kind.STOCK, null, prop);
+    }
+
+    static boolean visibleToGenerator(Class<?> cls) {
+        try {
+            return Class.forName(cls.getName(), false,
+                    GeneratedCodecBase.class.getClassLoader()) == cls;
+        } catch (ClassNotFoundException | LinkageError e) {
+            return false;
+        }
     }
 
     private static Kind scalarKind(Class<?> raw) {

@@ -54,6 +54,9 @@ final class BBSerCodecFactory
         if (!Modifier.isPublic(beanClass.getModifiers())) {
             return null;
         }
+        if (!visibleToGenerator(beanClass)) {
+            return null;
+        }
         List<GenWProp> props = new ArrayList<>();
         for (Iterator<PropertyWriter> it = delegate.properties(); it.hasNext(); ) {
             PropertyWriter writer = it.next();
@@ -128,6 +131,17 @@ final class BBSerCodecFactory
 
     private static GenWProp stock(PropertyWriter writer) {
         return new GenWProp(WKind.STOCK, null, writer, null, null);
+    }
+
+    // Rationale in BBCodecFactory.visibleToGenerator: generated code refers to
+    // the bean class by name, resolved through this module's loader.
+    private static boolean visibleToGenerator(Class<?> cls) {
+        try {
+            return Class.forName(cls.getName(), false,
+                    GeneratedWriterBase.class.getClassLoader()) == cls;
+        } catch (ClassNotFoundException | LinkageError e) {
+            return false;
+        }
     }
 
     private static WKind scalarKind(Class<?> raw) {

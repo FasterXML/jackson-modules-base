@@ -51,6 +51,21 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
     public ValueDeserializer<?> modifyDeserializer(DeserializationConfig config,
             BeanDescription.Supplier beanDescRef, ValueDeserializer<?> deserializer)
     {
+        // Gate failures of any kind leave the stock deserializer in place. The
+        // reflective gates can throw for exotic classes (a bean from a foreign
+        // classloader with inconsistent InnerClasses metadata raises
+        // IncompatibleClassChangeError from getEnclosingClass), and an
+        // acceleration modifier must never break a bean stock databind handles.
+        try {
+            return doModify(config, beanDescRef, deserializer);
+        } catch (RuntimeException | LinkageError e) {
+            return deserializer;
+        }
+    }
+
+    private ValueDeserializer<?> doModify(DeserializationConfig config,
+            BeanDescription.Supplier beanDescRef, ValueDeserializer<?> deserializer)
+    {
         AnnotatedMethod buildMethod = _pendingBuildMethod.get();
         _pendingBuildMethod.remove();
         boolean builderBased = deserializer.getClass() == BuilderBasedDeserializer.class
