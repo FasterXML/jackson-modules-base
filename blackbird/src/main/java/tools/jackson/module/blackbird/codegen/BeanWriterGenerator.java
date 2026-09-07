@@ -101,6 +101,25 @@ public final class BeanWriterGenerator
         }
     }
 
+    // C2 refuses to inline a hot method whose bytecode exceeds FreqInlineSize
+    // (default 325). The scalar helpers are padded past that limit so each
+    // compiles standalone: on aarch64, inlined copies of writeName and the
+    // NumberOutput digit paths inside a large generated body run 2-3x slower
+    // than their standalone compilations, which costs number-heavy shapes ~24%.
+    // Out-of-line helper calls measure at parity with the best inlined layout.
+    private static final int INLINE_PAD = 384;
+
+    private static final MethodTypeDesc MTD_HELP_STRING = MethodTypeDesc.of(ConstantDescs.CD_void,
+            CD_JSON_GENERATOR, CD_SERIALIZABLE_STRING, ConstantDescs.CD_String);
+    private static final MethodTypeDesc MTD_HELP_INT = MethodTypeDesc.of(ConstantDescs.CD_void,
+            CD_JSON_GENERATOR, CD_SERIALIZABLE_STRING, ConstantDescs.CD_int);
+    private static final MethodTypeDesc MTD_HELP_LONG = MethodTypeDesc.of(ConstantDescs.CD_void,
+            CD_JSON_GENERATOR, CD_SERIALIZABLE_STRING, ConstantDescs.CD_long);
+    private static final MethodTypeDesc MTD_HELP_BOOLEAN = MethodTypeDesc.of(ConstantDescs.CD_void,
+            CD_JSON_GENERATOR, CD_SERIALIZABLE_STRING, ConstantDescs.CD_boolean);
+    private static final MethodTypeDesc MTD_HELP_NAME = MethodTypeDesc.of(ConstantDescs.CD_void,
+            CD_JSON_GENERATOR, CD_SERIALIZABLE_STRING);
+
     private static byte[] buildClass(Class<?> beanClass, List<GenWProp> props,
             int[] stockIndex, int[] nameIndex, int[] childIndex) {
         ClassDesc thisClass = ClassDesc.of(
@@ -113,12 +132,78 @@ public final class BeanWriterGenerator
                             .invokespecial(CD_WRITER_BASE, ConstantDescs.INIT_NAME, MTD_CTOR)
                             .return_());
             clb.withMethodBody("serialize", MTD_SERIALIZE, ClassFile.ACC_PUBLIC,
-                    cob -> buildSerialize(cob, beanClass, props, stockIndex, nameIndex, childIndex));
+                    cob -> buildSerialize(cob, thisClass, beanClass, props,
+                            stockIndex, nameIndex, childIndex));
+            emitHelpers(clb, thisClass, props);
         });
     }
 
-    private static void buildSerialize(CodeBuilder cob, Class<?> beanClass, List<GenWProp> props,
-            int[] stockIndex, int[] nameIndex, int[] childIndex) {
+    private static void emitHelpers(java.lang.classfile.ClassBuilder clb, ClassDesc thisClass,
+            List<GenWProp> props) {
+        boolean needName = false;
+        boolean[] kinds = new boolean[WKind.values().length];
+        for (GenWProp p : props) {
+            kinds[p.kind().ordinal()] = true;
+            if (p.kind() == WKind.CHILD) {
+                needName = true;
+            }
+        }
+        if (kinds[WKind.STRING.ordinal()]) {
+            emitPadded(clb, "$str", MTD_HELP_STRING, cob -> {
+                cob.aload(0).aload(1)
+                   .invokevirtual(CD_JSON_GENERATOR, "writeName", MTD_WRITE_NAME).pop();
+                Label isNull = cob.newLabel();
+                Label done = cob.newLabel();
+                cob.aload(2).ifnull(isNull);
+                cob.aload(0).aload(2)
+                   .invokevirtual(CD_JSON_GENERATOR, "writeString", MTD_WRITE_STRING).pop();
+                cob.goto_(done);
+                cob.labelBinding(isNull);
+                cob.aload(0).invokevirtual(CD_JSON_GENERATOR, "writeNull", MTD_WRITE_NULL).pop();
+                cob.labelBinding(done);
+                cob.return_();
+            });
+        }
+        if (kinds[WKind.INT.ordinal()]) {
+            emitPadded(clb, "$int", MTD_HELP_INT, cob -> cob.aload(0).aload(1)
+                    .invokevirtual(CD_JSON_GENERATOR, "writeName", MTD_WRITE_NAME).pop()
+                    .aload(0).iload(2)
+                    .invokevirtual(CD_JSON_GENERATOR, "writeNumber", MTD_WRITE_INT).pop()
+                    .return_());
+        }
+        if (kinds[WKind.LONG.ordinal()]) {
+            emitPadded(clb, "$long", MTD_HELP_LONG, cob -> cob.aload(0).aload(1)
+                    .invokevirtual(CD_JSON_GENERATOR, "writeName", MTD_WRITE_NAME).pop()
+                    .aload(0).lload(2)
+                    .invokevirtual(CD_JSON_GENERATOR, "writeNumber", MTD_WRITE_LONG).pop()
+                    .return_());
+        }
+        if (kinds[WKind.BOOLEAN.ordinal()]) {
+            emitPadded(clb, "$bool", MTD_HELP_BOOLEAN, cob -> cob.aload(0).aload(1)
+                    .invokevirtual(CD_JSON_GENERATOR, "writeName", MTD_WRITE_NAME).pop()
+                    .aload(0).iload(2)
+                    .invokevirtual(CD_JSON_GENERATOR, "writeBoolean", MTD_WRITE_BOOLEAN).pop()
+                    .return_());
+        }
+        if (needName) {
+            emitPadded(clb, "$name", MTD_HELP_NAME, cob -> cob.aload(0).aload(1)
+                    .invokevirtual(CD_JSON_GENERATOR, "writeName", MTD_WRITE_NAME).pop()
+                    .return_());
+        }
+    }
+
+    private static void emitPadded(java.lang.classfile.ClassBuilder clb, String name,
+            MethodTypeDesc type, java.util.function.Consumer<CodeBuilder> body) {
+        clb.withMethodBody(name, type, ClassFile.ACC_PRIVATE | ClassFile.ACC_STATIC, cob -> {
+            for (int i = 0; i < INLINE_PAD; i++) {
+                cob.nop();
+            }
+            body.accept(cob);
+        });
+    }
+
+    private static void buildSerialize(CodeBuilder cob, ClassDesc thisClass, Class<?> beanClass,
+            List<GenWProp> props, int[] stockIndex, int[] nameIndex, int[] childIndex) {
         final int gen = 2;
         final int ctxt = 3;
         final int beanSlot = 4;
@@ -144,26 +229,21 @@ public final class BeanWriterGenerator
         for (int i = 0; i < props.size(); i++) {
             GenWProp prop = props.get(i);
             switch (prop.kind()) {
-                case INT -> emitPrimitive(cob, gen, beanSlot, beanDesc, itf, prop, nameIndex[i],
-                        "writeNumber", MTD_WRITE_INT, ConstantDescs.CD_int);
-                case LONG -> emitPrimitive(cob, gen, beanSlot, beanDesc, itf, prop, nameIndex[i],
-                        "writeNumber", MTD_WRITE_LONG, ConstantDescs.CD_long);
-                case BOOLEAN -> emitPrimitive(cob, gen, beanSlot, beanDesc, itf, prop, nameIndex[i],
-                        "writeBoolean", MTD_WRITE_BOOLEAN, ConstantDescs.CD_boolean);
-                case STRING -> {
-                    emitName(cob, gen, nameIndex[i]);
-                    cob.aload(beanSlot);
-                    emitGetter(cob, itf, beanDesc, prop.getter().getName(),
-                            MethodTypeDesc.of(ConstantDescs.CD_String));
-                    cob.astore(refSlot);
-                    emitNullableRef(cob, gen, refSlot, () ->
-                            cob.aload(gen).aload(refSlot)
-                               .invokevirtual(CD_JSON_GENERATOR, "writeString", MTD_WRITE_STRING).pop());
-                }
+                case INT -> emitScalar(cob, thisClass, gen, beanSlot, beanDesc, itf, prop,
+                        nameIndex[i], "$int", MTD_HELP_INT, ConstantDescs.CD_int);
+                case LONG -> emitScalar(cob, thisClass, gen, beanSlot, beanDesc, itf, prop,
+                        nameIndex[i], "$long", MTD_HELP_LONG, ConstantDescs.CD_long);
+                case BOOLEAN -> emitScalar(cob, thisClass, gen, beanSlot, beanDesc, itf, prop,
+                        nameIndex[i], "$bool", MTD_HELP_BOOLEAN, ConstantDescs.CD_boolean);
+                case STRING -> emitScalar(cob, thisClass, gen, beanSlot, beanDesc, itf, prop,
+                        nameIndex[i], "$str", MTD_HELP_STRING, ConstantDescs.CD_String);
                 case CHILD -> {
                     ClassDesc childType = prop.getter().getReturnType()
                             .describeConstable().orElseThrow();
-                    emitName(cob, gen, nameIndex[i]);
+                    cob.aload(gen);
+                    cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
+                            ConstantDescs.DEFAULT_NAME, CD_SERIALIZABLE_STRING, nameIndex[i]));
+                    cob.invokestatic(thisClass, "$name", MTD_HELP_NAME);
                     cob.aload(beanSlot);
                     emitGetter(cob, itf, beanDesc, prop.getter().getName(),
                             MethodTypeDesc.of(childType));
@@ -190,14 +270,15 @@ public final class BeanWriterGenerator
         cob.return_();
     }
 
-    private static void emitPrimitive(CodeBuilder cob, int gen, int beanSlot, ClassDesc beanDesc,
-            boolean itf, GenWProp prop, int nameIdx, String writer, MethodTypeDesc writerType,
-            ClassDesc valDesc) {
-        emitName(cob, gen, nameIdx);
+    private static void emitScalar(CodeBuilder cob, ClassDesc thisClass, int gen, int beanSlot,
+            ClassDesc beanDesc, boolean itf, GenWProp prop, int nameIdx, String helper,
+            MethodTypeDesc helperType, ClassDesc valDesc) {
         cob.aload(gen);
+        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
+                ConstantDescs.DEFAULT_NAME, CD_SERIALIZABLE_STRING, nameIdx));
         cob.aload(beanSlot);
         emitGetter(cob, itf, beanDesc, prop.getter().getName(), MethodTypeDesc.of(valDesc));
-        cob.invokevirtual(CD_JSON_GENERATOR, writer, writerType).pop();
+        cob.invokestatic(thisClass, helper, helperType);
     }
 
     private static void emitGetter(CodeBuilder cob, boolean itf, ClassDesc beanDesc,
@@ -207,13 +288,6 @@ public final class BeanWriterGenerator
         } else {
             cob.invokevirtual(beanDesc, name, type);
         }
-    }
-
-    private static void emitName(CodeBuilder cob, int gen, int nameIdx) {
-        cob.aload(gen);
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, CD_SERIALIZABLE_STRING, nameIdx));
-        cob.invokevirtual(CD_JSON_GENERATOR, "writeName", MTD_WRITE_NAME).pop();
     }
 
     private static void emitNullableRef(CodeBuilder cob, int gen, int slot, Runnable nonNull) {
