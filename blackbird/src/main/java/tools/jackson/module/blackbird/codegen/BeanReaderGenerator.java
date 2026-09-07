@@ -374,7 +374,6 @@ public final class BeanReaderGenerator
         cob.lconst_0();
         cob.lcmp();
         cob.ifne(visible);
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
         cob.aload(0).aload(parser).aload(ctxt);
         ldcData(cob, stockName, CD_SETTABLE_PROP);
         cob.invokevirtual(CD_BASE, "_hiddenView", MTD_HIDDEN_VIEW);
@@ -468,7 +467,7 @@ public final class BeanReaderGenerator
                     Label childStock = cob.newLabel();
                     Label childDone = cob.newLabel();
                     ClassDesc childType = prop.type().describeConstable().orElseThrow();
-                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
+                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
                     cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
                     cob.if_acmpne(childStock);
                     cob.aload(beanSlot);
@@ -481,7 +480,6 @@ public final class BeanReaderGenerator
                     cob.labelBinding(childDone);
                 }
                 case STOCK -> {
-                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
                     emitStockSet(cob, parser, ctxt, beanSlot, stockName[i]);
                 }
             }
@@ -620,7 +618,7 @@ public final class BeanReaderGenerator
                     Label childStock = cob.newLabel();
                     Label childDone = cob.newLabel();
                     ClassDesc childType = prop.type().describeConstable().orElseThrow();
-                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
+                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
                     cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
                     cob.if_acmpne(childStock);
                     cob.aload(builderSlot);
@@ -641,7 +639,6 @@ public final class BeanReaderGenerator
                     cob.labelBinding(childDone);
                 }
                 case STOCK -> {
-                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
                     emitStockSetReturn(cob, parser, ctxt, builderSlot, builderDesc, stockName[i]);
                 }
             }
@@ -824,7 +821,7 @@ public final class BeanReaderGenerator
                 case CHILD -> {
                     Label childStock = cob.newLabel();
                     Label childDone = cob.newLabel();
-                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
+                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
                     cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
                     cob.if_acmpne(childStock);
                     emitChildCall(cob, parser, ctxt, childName[i]);
@@ -836,7 +833,6 @@ public final class BeanReaderGenerator
                     cob.labelBinding(childDone);
                 }
                 case STOCK -> {
-                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
                     emitStockValueToLocal(cob, parser, ctxt, componentSlot[i], t, stockName[i]);
                 }
             }
@@ -1095,7 +1091,7 @@ public final class BeanReaderGenerator
     // handling. expectedToken null selects the boolean pair.
     private static void emitExpectedTokenCheck(CodeBuilder cob, int parser,
             String expectedToken, Label useStock) {
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
         if (expectedToken != null) {
             cob.getstatic(CD_JSON_TOKEN, expectedToken, CD_JSON_TOKEN);
             cob.if_acmpne(useStock);
@@ -1147,14 +1143,17 @@ public final class BeanReaderGenerator
 
     private static void nextNameMatch(CodeBuilder cob, int parser, int matcherSlot, int ixSlot) {
         cob.aload(parser).aload(matcherSlot)
-                .invokevirtual(CD_JSON_PARSER, "nextNameMatch", MTD_NEXT_NAME_MATCH)
+                .invokevirtual(CD_JSON_PARSER, "nextNameMatchAndToken", MTD_NEXT_NAME_MATCH)
                 .istore(ixSlot);
     }
 
     // First match of the loop. The entry guard admits START_OBJECT and
     // PROPERTY_NAME; a name entry matches the CURRENT name, mirroring stock
-    // BeanDeserializer's currentNameMatch loop head, and dispatches into the
-    // same arms (each arm advances to its value token itself).
+    // BeanDeserializer's currentNameMatch loop head. The fused arms consume
+    // the current token, so a matched name entry advances to its value here;
+    // fusing the entry itself would double-advance (the current name is
+    // already consumed). Negative results stay on the name, as the unknown
+    // arm expects.
     private static void emitFirstMatch(CodeBuilder cob, int parser, int matcherSlot, int ixSlot) {
         Label nameEntry = cob.newLabel();
         Label done = cob.newLabel();
@@ -1167,6 +1166,8 @@ public final class BeanReaderGenerator
         cob.aload(parser).aload(matcherSlot)
                 .invokevirtual(CD_JSON_PARSER, "currentNameMatch", MTD_NEXT_NAME_MATCH)
                 .istore(ixSlot);
+        cob.iload(ixSlot).iflt(done);
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
         cob.labelBinding(done);
     }
 
