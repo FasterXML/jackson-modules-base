@@ -24,6 +24,21 @@ classes. Not published.</description>
     <gpg.skip>true</gpg.skip>
   </properties>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- These tests assert module-path semantics (what a named module
+               can and cannot reach); the reactor-wide classpath toggle
+               (-Dsurefire.useModulePath=false) must not apply here. -->
+          <useModulePath>true</useModulePath>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <dependencies>
     <dependency>
       <groupId>tools.jackson.module</groupId>
