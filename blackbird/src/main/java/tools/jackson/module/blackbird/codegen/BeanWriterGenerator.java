@@ -75,7 +75,8 @@ public final class BeanWriterGenerator
 
     @SuppressWarnings("unchecked")
     public static ValueSerializer<Object> generate(Class<?> beanClass, List<GenWProp> props,
-            BeanSerializerBase fallback) throws ReflectiveOperationException {
+            BeanSerializerBase fallback, MethodHandles.Lookup defineLookup)
+            throws ReflectiveOperationException {
         List<Object> classData = new ArrayList<>();
         int[] stockIndex = new int[props.size()];
         int[] nameIndex = new int[props.size()];
@@ -98,9 +99,28 @@ public final class BeanWriterGenerator
             }
         }
 
-        byte[] bytes = buildClass(beanClass, props, stockIndex, nameIndex, childIndex);
-        MethodHandles.Lookup hidden = MethodHandles.lookup().defineHiddenClassWithClassData(
-                bytes, List.copyOf(classData), true);
+        // Rationale in BeanCodecGenerator: non-public beans define in the
+        // bean's package context; a failure there is an environment gate.
+        MethodHandles.Lookup definer =
+                (defineLookup != null) ? defineLookup : MethodHandles.lookup();
+        byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
+                stockIndex, nameIndex, childIndex);
+        MethodHandles.Lookup hidden;
+        try {
+            hidden = definer.defineHiddenClassWithClassData(
+                    bytes, List.copyOf(classData), true);
+        } catch (IllegalAccessException | SecurityException | LinkageError e) {
+            if (defineLookup == null) {
+                if (e instanceof IllegalAccessException iae) {
+                    throw iae;
+                }
+                if (e instanceof RuntimeException re) {
+                    throw re;
+                }
+                throw (LinkageError) e;
+            }
+            return null;
+        }
         MethodHandle ctor = hidden.findConstructor(hidden.lookupClass(),
                 MethodType.methodType(void.class, BeanSerializerBase.class));
         try {
@@ -129,10 +149,12 @@ public final class BeanWriterGenerator
     private static final MethodTypeDesc MTD_HELP_NAME = MethodTypeDesc.of(ConstantDescs.CD_void,
             CD_JSON_GENERATOR, CD_SERIALIZABLE_STRING);
 
-    private static byte[] buildClass(Class<?> beanClass, List<GenWProp> props,
+    private static byte[] buildClass(String targetPackage, Class<?> beanClass,
+            List<GenWProp> props,
             int[] stockIndex, int[] nameIndex, int[] childIndex) {
+        // A hidden class must be named in its define context's package.
         ClassDesc thisClass = ClassDesc.of(
-                "tools.jackson.module.blackbird.codegen.BBWriter_" + beanClass.getSimpleName());
+                targetPackage + ".BBWriter_" + beanClass.getSimpleName());
         return ClassFile.of().build(thisClass, clb -> {
             clb.withFlags(ClassFile.ACC_PUBLIC | ClassFile.ACC_FINAL | ClassFile.ACC_SUPER);
             clb.withSuperclass(CD_WRITER_BASE);

@@ -55,11 +55,11 @@ public class BBSerializerModifier extends ValueSerializerModifier
             return serializer;
         }
         Class<?> beanClass = beanDescRef.getBeanClass();
-        if (!Modifier.isPublic(beanClass.getModifiers())
+        if (Modifier.isPrivate(beanClass.getModifiers())
                 || (beanClass.getEnclosingClass() != null
                         && !Modifier.isStatic(beanClass.getModifiers()))) {
             return serializer;
         }
-        return new BBSerCodecPlaceholder((BeanSerializerBase) serializer);
+        return new BBSerCodecPlaceholder((BeanSerializerBase) serializer, _lookups);
     }
 }

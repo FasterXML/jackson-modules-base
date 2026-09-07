@@ -110,6 +110,16 @@ public abstract class GeneratedCodecBase extends ValueDeserializer<Object>
         return ctxt.handleUnexpectedToken(_fallback.handledType(), p);
     }
 
+    // Called from the generated exception handler that covers every property
+    // arm: mirrors the stock loop's wrapAndThrow so property errors carry the
+    // reference path. Always throws; the return type only satisfies the
+    // generated athrow.
+    protected final RuntimeException _propertyException(Throwable t, Object beanOrNull,
+            SettableBeanProperty prop, DeserializationContext ctxt) {
+        Object ref = (beanOrNull == null) ? _fallback.handledType() : beanOrNull;
+        throw _fallback.wrapAndThrow(t, ref, prop.getName(), ctxt);
+    }
+
     // Called by generated code for a name the matcher does not know: runs the
     // configured problem handlers and honors FAIL_ON_UNKNOWN_PROPERTIES, like
     // the stock loop. Beans with ignored or included property sets never

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Modifier;
+import java.util.Map;
 import java.util.function.Function;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -95,7 +96,7 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
         }
         BeanDescription beanDesc = beanDescRef.get();
         Class<?> beanClass = beanDesc.getBeanClass();
-        if (!Modifier.isPublic(beanClass.getModifiers())
+        if (Modifier.isPrivate(beanClass.getModifiers())
                 || (beanClass.getEnclosingClass() != null
                         && !Modifier.isStatic(beanClass.getModifiers()))) {
             return deserializer;
@@ -109,7 +110,7 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
             return deserializer;
         } else {
             try {
-                if (!Modifier.isPublic(beanClass.getConstructor().getModifiers())) {
+                if (Modifier.isPrivate(beanClass.getDeclaredConstructor().getModifiers())) {
                     return deserializer;
                 }
             } catch (NoSuchMethodException e) {
@@ -117,6 +118,12 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
             }
         }
         if (beanDesc.findAnySetterAccessor() != null) {
+            return deserializer;
+        }
+        // Injected values arrive outside the property loop, which the
+        // generated codec does not model.
+        Map<Object, ?> injectables = beanDesc.findInjectables();
+        if (injectables != null && !injectables.isEmpty()) {
             return deserializer;
         }
         // Ignored or included property sets change how unknown names are

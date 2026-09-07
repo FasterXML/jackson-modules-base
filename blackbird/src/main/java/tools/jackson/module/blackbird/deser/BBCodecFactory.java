@@ -26,6 +26,7 @@ import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.GenProp;
 import tools.jackson.module.blackbird.codegen.GeneratedCodecBase;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.Kind;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator;
+import tools.jackson.module.blackbird.codegen.CodecAccess;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
 /**
@@ -81,7 +82,7 @@ final class BBCodecFactory
             return null;
         }
         Class<?> beanClass = delegate.handledType();
-        if (!Modifier.isPublic(beanClass.getModifiers())
+        if (Modifier.isPrivate(beanClass.getModifiers())
                 || Modifier.isAbstract(beanClass.getModifiers())) {
             if (DEBUG) System.err.println("bbdebug gate: class modifiers");
             return null;
@@ -94,18 +95,31 @@ final class BBCodecFactory
             if (DEBUG) System.err.println("bbdebug gate: foreign classloader");
             return null;
         }
+        MethodHandles.Lookup defineLookup = CodecAccess.defineContext(beanClass, lookups);
+        boolean gatedContext = !Modifier.isPublic(beanClass.getModifiers());
+        if (gatedContext && defineLookup == null) {
+            if (DEBUG) System.err.println("bbdebug gate: define context");
+            return null;
+        }
         if (buildMethod != null) {
-            return generateBuilder(delegate, ctxt, beanClass, lookups, buildMethod);
+            return generateBuilder(delegate, ctxt, beanClass, lookups, buildMethod, defineLookup);
         }
         if (beanClass.isRecord()) {
-            return generateRecord(delegate, ctxt, beanClass, lookups);
+            return generateRecord(delegate, ctxt, beanClass, lookups, defineLookup);
         }
         if (!delegate.getValueInstantiator().canCreateUsingDefault()) {
             if (DEBUG) System.err.println("bbdebug gate: instantiator");
             return null;
         }
-        if (!Modifier.isPublic(beanClass.getConstructor().getModifiers())) {
-            if (DEBUG) System.err.println("bbdebug gate: ctor modifiers");
+        try {
+            if (!CodecAccess.directlyAccessible(
+                    beanClass.getDeclaredConstructor().getModifiers(), beanClass,
+                    defineLookup == null ? null : defineLookup.lookupClass())) {
+                if (DEBUG) System.err.println("bbdebug gate: ctor modifiers");
+                return null;
+            }
+        } catch (NoSuchMethodException e) {
+            if (DEBUG) System.err.println("bbdebug gate: no ctor");
             return null;
         }
 
@@ -118,7 +132,8 @@ final class BBCodecFactory
                 if (DEBUG) System.err.println("bbdebug gate: prop " + prop.getName());
                 return null;
             }
-            props.add(classify(prop, beanClass, lookups));
+            props.add(classify(prop, beanClass, lookups,
+                    defineLookup == null ? null : defineLookup.lookupClass()));
             names.add(Named.fromString(prop.getName()));
         }
         if (props.isEmpty()) {
@@ -126,7 +141,7 @@ final class BBCodecFactory
             return null;
         }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
-        return BeanCodecGenerator.generate(beanClass, props, matcher, delegate);
+        return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, defineLookup);
     }
 
     // Builder-based beans: the stock ValueInstantiator creates the builder,
@@ -136,19 +151,33 @@ final class BBCodecFactory
     // (Object)Object - produces the value.
     private static ValueDeserializer<Object> generateBuilder(BeanDeserializerBase delegate,
             DeserializationContext ctxt, Class<?> beanClass,
-            Function<Class<?>, MethodHandles.Lookup> lookups, AnnotatedMethod buildMethod)
+            Function<Class<?>, MethodHandles.Lookup> lookups, AnnotatedMethod buildMethod,
+            MethodHandles.Lookup defineLookup)
             throws ReflectiveOperationException {
         Method build = buildMethod.getAnnotated();
         Class<?> builderClass = build.getDeclaringClass();
         if (!delegate.getValueInstantiator().canCreateUsingDefault()
-                || !Modifier.isPublic(builderClass.getModifiers())
+                || Modifier.isPrivate(builderClass.getModifiers())
                 || !visibleToGenerator(builderClass)
-                || !Modifier.isPublic(build.getModifiers())
+                || Modifier.isPrivate(build.getModifiers())
                 || build.getParameterCount() != 0) {
             if (DEBUG) System.err.println("bbdebug gate: builder shape");
             return null;
         }
-        MethodHandles.Lookup lookup = lookups.apply(builderClass);
+        // The generated code casts to and calls setters on the builder class,
+        // so a non-public builder needs a define context in its own package.
+        if (!Modifier.isPublic(builderClass.getModifiers())
+                && (defineLookup == null || !builderClass.getPackageName().equals(
+                        defineLookup.lookupClass().getPackageName()))) {
+            defineLookup = CodecAccess.defineContext(builderClass, lookups);
+            if (defineLookup == null) {
+                if (DEBUG) System.err.println("bbdebug gate: builder context");
+                return null;
+            }
+        }
+        Class<?> anchor = defineLookup == null ? null : defineLookup.lookupClass();
+        MethodHandles.Lookup lookup =
+                (defineLookup != null) ? defineLookup : lookups.apply(builderClass);
         if (lookup == null) {
             if (DEBUG) System.err.println("bbdebug gate: builder lookup");
             return null;
@@ -162,25 +191,33 @@ final class BBCodecFactory
                 if (DEBUG) System.err.println("bbdebug gate: builder prop " + prop.getName());
                 return null;
             }
-            props.add(classifyBuilder(prop, builderClass));
+            props.add(classifyBuilder(prop, builderClass, anchor));
             names.add(Named.fromString(prop.getName()));
         }
         if (props.isEmpty()) {
             if (DEBUG) System.err.println("bbdebug gate: builder no props");
             return null;
         }
-        MethodHandle buildMH = lookup.unreflect(build)
-                .asType(MethodType.methodType(Object.class, Object.class));
+        MethodHandle buildMH;
+        try {
+            buildMH = lookup.unreflect(build)
+                    .asType(MethodType.methodType(Object.class, Object.class));
+        } catch (IllegalAccessException e) {
+            if (DEBUG) System.err.println("bbdebug gate: build method access");
+            return null;
+        }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
         return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, null,
                 new BeanCodecGenerator.BuilderSupport(
-                        delegate.getValueInstantiator(), buildMH, builderClass));
+                        delegate.getValueInstantiator(), buildMH, builderClass), defineLookup);
     }
 
-    private static GenProp classifyBuilder(SettableBeanProperty prop, Class<?> builderClass) {
+    private static GenProp classifyBuilder(SettableBeanProperty prop, Class<?> builderClass,
+            Class<?> anchor) {
         Class<?> raw = prop.getType().getRawClass();
         Method setter = setterOf(prop, raw);
-        if (setter == null || !Modifier.isPublic(setter.getModifiers())
+        if (setter == null
+                || !CodecAccess.directlyAccessible(setter.getModifiers(), builderClass, anchor)
                 || setter.getDeclaringClass() != builderClass
                 || (setter.getReturnType() != void.class
                         && setter.getReturnType() != builderClass)) {
@@ -203,7 +240,7 @@ final class BBCodecFactory
     // creator index and type line up with the record components.
     private static ValueDeserializer<Object> generateRecord(BeanDeserializerBase delegate,
             DeserializationContext ctxt, Class<?> beanClass,
-            Function<Class<?>, MethodHandles.Lookup> lookups)
+            Function<Class<?>, MethodHandles.Lookup> lookups, MethodHandles.Lookup defineLookup)
             throws ReflectiveOperationException {
         if (!delegate.getValueInstantiator().canCreateFromObjectWith()) {
             if (DEBUG) System.err.println("bbdebug gate: record instantiator");
@@ -240,7 +277,8 @@ final class BBCodecFactory
             if (DEBUG) System.err.println("bbdebug gate: record count");
             return null;
         }
-        MethodHandles.Lookup lookup = lookups.apply(beanClass);
+        MethodHandles.Lookup lookup =
+                (defineLookup != null) ? defineLookup : lookups.apply(beanClass);
         if (lookup == null) {
             if (DEBUG) System.err.println("bbdebug gate: record lookup");
             return null;
@@ -266,33 +304,42 @@ final class BBCodecFactory
             props.add(new GenProp(prop.getName(), kind, null, prop, paramTypes[i]));
             names.add(Named.fromString(prop.getName()));
         }
-        MethodHandle recordCtor = lookup.findConstructor(beanClass,
-                MethodType.methodType(void.class, paramTypes));
+        MethodHandle recordCtor;
+        try {
+            recordCtor = lookup.findConstructor(beanClass,
+                    MethodType.methodType(void.class, paramTypes));
+        } catch (IllegalAccessException e) {
+            // The supplied lookup cannot reach the canonical constructor: an
+            // environment gate, same as no lookup at all.
+            if (DEBUG) System.err.println("bbdebug gate: record ctor access");
+            return null;
+        }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
-        return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, recordCtor);
+        return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, recordCtor,
+                defineLookup);
     }
 
     private static GenProp classify(SettableBeanProperty prop, Class<?> beanClass,
-            Function<Class<?>, MethodHandles.Lookup> lookups) {
+            Function<Class<?>, MethodHandles.Lookup> lookups, Class<?> anchor) {
         Class<?> raw = prop.getType().getRawClass();
         ValueDeserializer<?> valueDeser = prop.getValueDeserializer();
         Method setter = setterOf(prop, raw);
         if (setter != null) {
-            return classifySetter(prop, beanClass, lookups, raw, valueDeser, setter);
+            return classifySetter(prop, beanClass, lookups, raw, valueDeser, setter, anchor);
         }
         Field field = fieldOf(prop, raw);
         if (field != null) {
-            return classifyField(prop, beanClass, lookups, raw, valueDeser, field);
+            return classifyField(prop, beanClass, lookups, raw, valueDeser, field, anchor);
         }
         return stock(prop);
     }
 
     private static GenProp classifySetter(SettableBeanProperty prop, Class<?> beanClass,
             Function<Class<?>, MethodHandles.Lookup> lookups, Class<?> raw,
-            ValueDeserializer<?> valueDeser, Method setter) {
-        if (valueDeser instanceof GeneratedCodecBase child
-                && Modifier.isPublic(setter.getModifiers())
-                && Modifier.isPublic(setter.getDeclaringClass().getModifiers())) {
+            ValueDeserializer<?> valueDeser, Method setter, Class<?> anchor) {
+        boolean direct = CodecAccess.directlyAccessible(setter.getModifiers(),
+                setter.getDeclaringClass(), anchor);
+        if (valueDeser instanceof GeneratedCodecBase child && direct) {
             return new GenProp(prop.getName(), Kind.CHILD, setter, prop, raw, child, null);
         }
         Kind kind = scalarKind(raw);
@@ -300,8 +347,7 @@ final class BBCodecFactory
                 || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass().getName())) {
             return stock(prop);
         }
-        if (Modifier.isPublic(setter.getModifiers())
-                && Modifier.isPublic(setter.getDeclaringClass().getModifiers())) {
+        if (direct) {
             return new GenProp(prop.getName(), kind, setter, prop);
         }
         // Non-public setter: reach it through the user-supplied lookup; any
@@ -326,12 +372,12 @@ final class BBCodecFactory
     // path so their (stock-defined) behavior is preserved exactly.
     private static GenProp classifyField(SettableBeanProperty prop, Class<?> beanClass,
             Function<Class<?>, MethodHandles.Lookup> lookups, Class<?> raw,
-            ValueDeserializer<?> valueDeser, Field field) {
+            ValueDeserializer<?> valueDeser, Field field, Class<?> anchor) {
         if (Modifier.isFinal(field.getModifiers())) {
             return stock(prop);
         }
-        boolean direct = Modifier.isPublic(field.getModifiers())
-                && Modifier.isPublic(field.getDeclaringClass().getModifiers());
+        boolean direct = CodecAccess.directlyAccessible(field.getModifiers(),
+                field.getDeclaringClass(), anchor);
         if (valueDeser instanceof GeneratedCodecBase child && direct) {
             return new GenProp(prop.getName(), Kind.CHILD, null, prop, raw, child, null, field);
         }

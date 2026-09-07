@@ -92,22 +92,28 @@ public final class BeanCodecGenerator
             ConstantDescs.CD_void, CD_JSON_PARSER, CD_DESER_CONTEXT, ConstantDescs.CD_Object);
     private static final MethodTypeDesc MTD_CHECK_SEEN = MethodTypeDesc.of(
             ConstantDescs.CD_void, CD_DESER_CONTEXT, ConstantDescs.CD_long, ConstantDescs.CD_int);
+    private static final ClassDesc CD_EXCEPTION = ClassDesc.of("java.lang.Exception");
+    private static final MethodTypeDesc MTD_PROP_WRAP = MethodTypeDesc.of(
+            ClassDesc.of("java.lang.RuntimeException"), ClassDesc.of("java.lang.Throwable"),
+            ConstantDescs.CD_Object, CD_SETTABLE_PROP, CD_DESER_CONTEXT);
 
     private BeanCodecGenerator() {}
 
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
-            PropertyNameMatcher matcher, BeanDeserializerBase fallback)
+            PropertyNameMatcher matcher, BeanDeserializerBase fallback,
+            MethodHandles.Lookup defineLookup)
             throws ReflectiveOperationException {
-        return generate(beanClass, props, matcher, fallback, null);
+        return generate(beanClass, props, matcher, fallback, null, null, defineLookup);
     }
 
     // recordCtor non-null selects record mode: props are in canonical
     // constructor order, values collect into typed locals, and the
     // constructor MethodHandle (exact component signature) builds the value.
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
-            PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor)
+            PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor,
+            MethodHandles.Lookup defineLookup)
             throws ReflectiveOperationException {
-        return generate(beanClass, props, matcher, fallback, recordCtor, null);
+        return generate(beanClass, props, matcher, fallback, recordCtor, null, defineLookup);
     }
 
     // builderSupport non-null selects builder mode: values apply to a builder
@@ -120,7 +126,7 @@ public final class BeanCodecGenerator
     @SuppressWarnings("unchecked")
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor,
-            BuilderSupport builder)
+            BuilderSupport builder, MethodHandles.Lookup defineLookup)
             throws ReflectiveOperationException {
         List<Object> classData = new ArrayList<>();
         classData.add(matcher);
@@ -161,13 +167,38 @@ public final class BeanCodecGenerator
             classData.add(builder.buildMethod());
         }
 
-        byte[] bytes = buildClass(beanClass, props, stockIndex, childIndex, setterMhIndex,
+        // Non-public beans define in the bean's package context (the caller
+        // supplies a privateLookupIn of the bean class), which makes the
+        // generated new/invokevirtual/putfield instructions legal in-package.
+        // Public beans keep the module's own context.
+        MethodHandles.Lookup definer =
+                (defineLookup != null) ? defineLookup : MethodHandles.lookup();
+        byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
+                stockIndex, childIndex, setterMhIndex,
                 ctorIndex, builder == null ? null : builder.builderClass(), instIndex, buildIndex);
         // No ClassOption.STRONG: the codec instance held by the mapper's
         // deserializer cache anchors the class, so codecs unload with the
         // mapper instead of pinning metaspace for the loader's lifetime.
-        MethodHandles.Lookup hidden = MethodHandles.lookup().defineHiddenClassWithClassData(
-                bytes, List.copyOf(classData), true);
+        MethodHandles.Lookup hidden;
+        try {
+            hidden = definer.defineHiddenClassWithClassData(
+                    bytes, List.copyOf(classData), true);
+        } catch (IllegalAccessException | SecurityException | LinkageError e) {
+            if (defineLookup == null) {
+                // Module-context defines never legitimately fail: a generator bug.
+                if (e instanceof IllegalAccessException iae) {
+                    throw iae;
+                }
+                if (e instanceof RuntimeException re) {
+                    throw re;
+                }
+                throw (LinkageError) e;
+            }
+            // Bean-context defines can fail where the bean's module cannot
+            // read this module's codegen package (JPMS): an environment gate,
+            // so the bean stays on the stock path.
+            return null;
+        }
         MethodHandle ctor = hidden.findConstructor(hidden.lookupClass(),
                 MethodType.methodType(void.class, BeanDeserializerBase.class));
         try {
@@ -177,11 +208,13 @@ public final class BeanCodecGenerator
         }
     }
 
-    private static byte[] buildClass(Class<?> beanClass, List<GenProp> props,
+    private static byte[] buildClass(String targetPackage, Class<?> beanClass,
+            List<GenProp> props,
             int[] stockIndex, int[] childIndex, int[] setterMhIndex,
             int ctorIndex, Class<?> builderClass, int instIndex, int buildIndex) {
+        // A hidden class must be named in its define context's package.
         ClassDesc thisClass = ClassDesc.of(
-                "tools.jackson.module.blackbird.codegen.BBCodec_" + beanClass.getSimpleName());
+                targetPackage + ".BBCodec_" + beanClass.getSimpleName());
         return ClassFile.of().build(thisClass, clb -> {
             clb.withFlags(ClassFile.ACC_PUBLIC | ClassFile.ACC_FINAL | ClassFile.ACC_SUPER);
             clb.withSuperclass(CD_BASE);
@@ -212,6 +245,9 @@ public final class BeanCodecGenerator
         final int beanSlot = 3;
         final int matcherSlot = 4;
         final int ixSlot = 5;
+        final int propSlot = 6;
+        final int excSlot = 7;
+        Label propHandler = cob.newLabel();
 
         ClassDesc beanDesc = beanClass.describeConstable().orElseThrow();
 
@@ -254,6 +290,7 @@ public final class BeanCodecGenerator
 
         for (int i = 0; i < props.size(); i++) {
             cob.labelBinding(caseLabels[i]);
+            Label armEnd = beginArm(cob, stockIndex[i], propSlot, propHandler);
             GenProp prop = props.get(i);
             switch (prop.kind()) {
                 case STRING -> emitScalar(cob, beanSlot, parser, ctxt, beanDesc, prop,
@@ -289,6 +326,7 @@ public final class BeanCodecGenerator
                     emitStockSet(cob, parser, ctxt, beanSlot, stockIndex[i]);
                 }
             }
+            cob.labelBinding(armEnd);
             nextNameMatch(cob, parser, matcherSlot, ixSlot);
             cob.goto_(loop);
         }
@@ -310,6 +348,8 @@ public final class BeanCodecGenerator
         cob.aload(0).aload(parser).aload(ctxt)
            .invokevirtual(CD_BASE, "_unexpectedToken", MTD_DESERIALIZE)
            .areturn();
+
+        emitPropertyHandler(cob, propHandler, ctxt, propSlot, excSlot, beanSlot);
     }
 
     private static final MethodTypeDesc MTD_PROP_DESERIALIZE =
@@ -330,6 +370,9 @@ public final class BeanCodecGenerator
         final int builderSlot = 3;
         final int matcherSlot = 4;
         final int ixSlot = 5;
+        final int propSlot = 6;
+        final int excSlot = 7;
+        Label propHandler = cob.newLabel();
 
         ClassDesc builderDesc = builderClass.describeConstable().orElseThrow();
 
@@ -373,6 +416,7 @@ public final class BeanCodecGenerator
 
         for (int i = 0; i < props.size(); i++) {
             cob.labelBinding(caseLabels[i]);
+            Label armEnd = beginArm(cob, stockIndex[i], propSlot, propHandler);
             GenProp prop = props.get(i);
             switch (prop.kind()) {
                 case STRING -> emitBuilderScalar(cob, parser, ctxt, builderSlot, builderDesc, prop,
@@ -416,6 +460,7 @@ public final class BeanCodecGenerator
                     emitStockSetReturn(cob, parser, ctxt, builderSlot, builderDesc, stockIndex[i]);
                 }
             }
+            cob.labelBinding(armEnd);
             nextNameMatch(cob, parser, matcherSlot, ixSlot);
             cob.goto_(loop);
         }
@@ -441,6 +486,8 @@ public final class BeanCodecGenerator
         cob.aload(0).aload(parser).aload(ctxt)
            .invokevirtual(CD_BASE, "_unexpectedToken", MTD_DESERIALIZE)
            .areturn();
+
+        emitPropertyHandler(cob, propHandler, ctxt, propSlot, excSlot, builderSlot);
     }
 
     private static void emitBuilderScalar(CodeBuilder cob, int parser, int ctxt, int builderSlot,
@@ -493,6 +540,9 @@ public final class BeanCodecGenerator
         final int matcherSlot = next++;
         final int ixSlot = next++;
         final int seenSlot = next;
+        final int propSlot = next + 2;
+        final int excSlot = next + 3;
+        Label propHandler = cob.newLabel();
 
         ClassDesc recordDesc = beanClass.describeConstable().orElseThrow();
 
@@ -545,6 +595,7 @@ public final class BeanCodecGenerator
 
         for (int i = 0; i < props.size(); i++) {
             cob.labelBinding(caseLabels[i]);
+            Label armEnd = beginArm(cob, stockIndex[i], propSlot, propHandler);
             GenProp prop = props.get(i);
             Class<?> t = prop.type();
             switch (prop.kind()) {
@@ -575,6 +626,7 @@ public final class BeanCodecGenerator
                     emitStockValueToLocal(cob, parser, ctxt, componentSlot[i], t, stockIndex[i]);
                 }
             }
+            cob.labelBinding(armEnd);
             cob.lload(seenSlot);
             cob.loadConstant(1L << i);
             cob.lor();
@@ -632,6 +684,8 @@ public final class BeanCodecGenerator
         cob.aload(0).aload(parser).aload(ctxt)
            .invokevirtual(CD_BASE, "_unexpectedToken", MTD_DESERIALIZE)
            .areturn();
+
+        emitPropertyHandler(cob, propHandler, ctxt, propSlot, excSlot, -1);
     }
 
     private static void emitRecordScalar(CodeBuilder cob, int parser, int ctxt, int slot,
@@ -789,6 +843,38 @@ public final class BeanCodecGenerator
             cob.pop();
             cob.labelBinding(fast);
         }
+    }
+
+    // Loads the arm's stock property into propSlot and opens its exception
+    // region: any Exception from a property arm is rethrown with the property
+    // reference prepended, like the stock loop's wrapAndThrow.
+    private static Label beginArm(CodeBuilder cob, int stockIdx, int propSlot, Label handler) {
+        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
+                ConstantDescs.DEFAULT_NAME, CD_SETTABLE_PROP, stockIdx));
+        cob.astore(propSlot);
+        Label armStart = cob.newLabel();
+        Label armEnd = cob.newLabel();
+        cob.exceptionCatch(armStart, armEnd, handler, CD_EXCEPTION);
+        cob.labelBinding(armStart);
+        return armEnd;
+    }
+
+    // receiverSlot < 0 selects aconst_null (record mode: no instance yet).
+    private static void emitPropertyHandler(CodeBuilder cob, Label handler, int ctxt,
+            int propSlot, int excSlot, int receiverSlot) {
+        cob.labelBinding(handler);
+        cob.astore(excSlot);
+        cob.aload(0);
+        cob.aload(excSlot);
+        if (receiverSlot < 0) {
+            cob.aconst_null();
+        } else {
+            cob.aload(receiverSlot);
+        }
+        cob.aload(propSlot);
+        cob.aload(ctxt);
+        cob.invokevirtual(CD_BASE, "_propertyException", MTD_PROP_WRAP);
+        cob.athrow();
     }
 
     private static void nextNameMatch(CodeBuilder cob, int parser, int matcherSlot, int ixSlot) {

@@ -1,5 +1,6 @@
 package tools.jackson.module.blackbird.ser;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
@@ -16,6 +18,7 @@ import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator;
+import tools.jackson.module.blackbird.codegen.CodecAccess;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator.GenWProp;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator.WKind;
 import tools.jackson.module.blackbird.codegen.GeneratedWriterBase;
@@ -38,9 +41,9 @@ final class BBSerCodecFactory
     private BBSerCodecFactory() {}
 
     static ValueSerializer<Object> tryGenerate(BeanSerializerBase delegate,
-            SerializationContext ctxt) {
+            SerializationContext ctxt, Function<Class<?>, MethodHandles.Lookup> lookups) {
         try {
-            return generate(delegate, ctxt);
+            return generate(delegate, ctxt, lookups);
         } catch (Throwable t) {
             CodegenFallbacks.generationFailure(delegate.handledType(), t);
             return null;
@@ -48,51 +51,59 @@ final class BBSerCodecFactory
     }
 
     private static ValueSerializer<Object> generate(BeanSerializerBase delegate,
-            SerializationContext ctxt) throws ReflectiveOperationException {
+            SerializationContext ctxt, Function<Class<?>, MethodHandles.Lookup> lookups)
+            throws ReflectiveOperationException {
         if (delegate.usesObjectId() || delegate.getFilterId() != null) {
             return null;
         }
         Class<?> beanClass = delegate.handledType();
-        if (!Modifier.isPublic(beanClass.getModifiers())) {
+        if (Modifier.isPrivate(beanClass.getModifiers())) {
             return null;
         }
         if (!visibleToGenerator(beanClass)) {
             return null;
         }
+        MethodHandles.Lookup defineLookup = CodecAccess.defineContext(beanClass, lookups);
+        if (!Modifier.isPublic(beanClass.getModifiers()) && defineLookup == null) {
+            return null;
+        }
+        Class<?> anchor = defineLookup == null ? null : defineLookup.lookupClass();
         List<GenWProp> props = new ArrayList<>();
         for (Iterator<PropertyWriter> it = delegate.properties(); it.hasNext(); ) {
             PropertyWriter writer = it.next();
-            props.add(classify(writer, beanClass));
+            props.add(classify(writer, beanClass, anchor));
         }
         if (props.isEmpty()) {
             return null;
         }
-        return BeanWriterGenerator.generate(beanClass, props, delegate);
+        return BeanWriterGenerator.generate(beanClass, props, delegate, defineLookup);
     }
 
-    private static GenWProp classify(PropertyWriter writer, Class<?> beanClass) {
+    private static GenWProp classify(PropertyWriter writer, Class<?> beanClass,
+            Class<?> anchor) {
         if (writer.getClass() != BeanPropertyWriter.class) {
             return stock(writer);
         }
         BeanPropertyWriter bpw = (BeanPropertyWriter) writer;
-        if (bpw.willSuppressNulls()) {
+        if (bpw.willSuppressNulls() || SuppressionProbe.hasSuppressableValue(bpw)) {
             return stock(writer);
         }
         ValueSerializer<Object> valueSer = bpw.getSerializer();
         if (bpw.getMember() instanceof AnnotatedMethod am) {
-            return classifyGetter(writer, beanClass, bpw, am.getAnnotated(), valueSer);
+            return classifyGetter(writer, beanClass, bpw, am.getAnnotated(), valueSer, anchor);
         }
         if (bpw.getMember() instanceof AnnotatedField af) {
-            return classifyField(writer, bpw, af.getAnnotated(), valueSer);
+            return classifyField(writer, bpw, af.getAnnotated(), valueSer, anchor);
         }
         return stock(writer);
     }
 
     private static GenWProp classifyGetter(PropertyWriter writer, Class<?> beanClass,
-            BeanPropertyWriter bpw, Method getter, ValueSerializer<Object> valueSer) {
+            BeanPropertyWriter bpw, Method getter, ValueSerializer<Object> valueSer,
+            Class<?> anchor) {
         if (getter == null || getter.getParameterCount() != 0
-                || !Modifier.isPublic(getter.getModifiers())
-                || !Modifier.isPublic(getter.getDeclaringClass().getModifiers())
+                || !CodecAccess.directlyAccessible(getter.getModifiers(),
+                        getter.getDeclaringClass(), anchor)
                 || getter.getDeclaringClass() != beanClass) {
             return stock(writer);
         }
@@ -113,10 +124,10 @@ final class BBSerCodecFactory
     // serializer side and stay on the stock writer, the same limitation
     // non-public getters have.
     private static GenWProp classifyField(PropertyWriter writer, BeanPropertyWriter bpw,
-            Field field, ValueSerializer<Object> valueSer) {
+            Field field, ValueSerializer<Object> valueSer, Class<?> anchor) {
         if (field == null || Modifier.isStatic(field.getModifiers())
-                || !Modifier.isPublic(field.getModifiers())
-                || !Modifier.isPublic(field.getDeclaringClass().getModifiers())) {
+                || !CodecAccess.directlyAccessible(field.getModifiers(),
+                        field.getDeclaringClass(), anchor)) {
             return stock(writer);
         }
         Class<?> raw = field.getType();
@@ -129,6 +140,20 @@ final class BBSerCodecFactory
             return stock(writer);
         }
         return new GenWProp(kind, null, writer, bpw.getSerializedName(), null, field);
+    }
+
+    // BeanPropertyWriter keeps its include filter in a protected field with no
+    // accessor; the copy constructor carries it into this probe, whose own
+    // inherited field is readable. Custom includes (JsonInclude.Include.CUSTOM
+    // and friends) must ride the stock writer.
+    private static final class SuppressionProbe extends BeanPropertyWriter {
+        private SuppressionProbe(BeanPropertyWriter base) {
+            super(base);
+        }
+
+        static boolean hasSuppressableValue(BeanPropertyWriter base) {
+            return new SuppressionProbe(base)._suppressableValue != null;
+        }
     }
 
     private static GenWProp stock(PropertyWriter writer) {
