@@ -279,17 +279,15 @@ public final class BeanWriterGenerator
         final boolean itf = beanClass.isInterface();
 
         Label scopeStart = cob.newBoundLabel();
+        Label delegate = null;
         if (views == ViewStrategy.DELEGATE) {
-            // Beans with more than 64 properties hand view-active calls to the
-            // stock serializer, whose filtered writers apply.
-            Label noView = cob.newLabel();
+            // View-active calls (declared views with more than 64 properties,
+            // or the write-nothing inclusion-off case) go to the stock
+            // serializer, whose tail sits after the body so the main path
+            // decompiles un-nested.
+            delegate = cob.newLabel();
             cob.aload(ctxt).invokevirtual(CD_SER_CONTEXT, "getActiveView", MTD_GET_ACTIVE_VIEW);
-            cob.ifnull(noView);
-            cob.aload(0).getfield(CD_WRITER_BASE, "_fallback", CD_BEAN_SER_BASE);
-            cob.aload(1).aload(gen).aload(ctxt);
-            cob.invokevirtual(CD_BEAN_SER_BASE, "serialize", MTD_SERIALIZE);
-            cob.return_();
-            cob.labelBinding(noView);
+            cob.ifnonnull(delegate);
         } else if (views == ViewStrategy.MASK) {
             Label nullView = cob.newLabel();
             Label haveMask = cob.newLabel();
@@ -364,6 +362,13 @@ public final class BeanWriterGenerator
 
         cob.aload(gen).invokevirtual(CD_JSON_GENERATOR, "writeEndObject", MTD_WRITE_END).pop();
         cob.return_();
+        if (delegate != null) {
+            cob.labelBinding(delegate);
+            cob.aload(0).getfield(CD_WRITER_BASE, "_fallback", CD_BEAN_SER_BASE);
+            cob.aload(1).aload(gen).aload(ctxt);
+            cob.invokevirtual(CD_BEAN_SER_BASE, "serialize", MTD_SERIALIZE);
+            cob.return_();
+        }
 
         Label scopeEnd = cob.newBoundLabel();
         cob.localVariable(1, "value", ConstantDescs.CD_Object, scopeStart, scopeEnd);

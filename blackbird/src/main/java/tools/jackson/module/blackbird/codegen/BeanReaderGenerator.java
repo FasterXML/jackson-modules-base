@@ -380,7 +380,7 @@ public final class BeanReaderGenerator
         ClassDesc beanDesc = beanClass.describeConstable().orElseThrow();
 
         Label scopeStart = cob.newBoundLabel();
-        emitEntryGuard(cob, parser, ctxt, views);
+        Label delegate = emitEntryGuard(cob, parser, ctxt, views);
         if (views == ViewStrategy.MASK) {
             emitViewMask(cob, ctxt, maskSlot);
         }
@@ -485,6 +485,7 @@ public final class BeanReaderGenerator
            .areturn();
 
         emitPropertyHandler(cob, propHandler, ctxt, propSlot, excSlot, beanSlot);
+        emitDelegateTail(cob, parser, ctxt, delegate);
 
         Label scopeEnd = cob.newBoundLabel();
         cob.localVariable(parser, "p", CD_JSON_PARSER, scopeStart, scopeEnd);
@@ -526,7 +527,7 @@ public final class BeanReaderGenerator
         ClassDesc builderDesc = builderClass.describeConstable().orElseThrow();
 
         Label scopeStart = cob.newBoundLabel();
-        emitEntryGuard(cob, parser, ctxt, views);
+        Label delegate = emitEntryGuard(cob, parser, ctxt, views);
         if (views == ViewStrategy.MASK) {
             emitViewMask(cob, ctxt, maskSlot);
         }
@@ -642,6 +643,7 @@ public final class BeanReaderGenerator
            .areturn();
 
         emitPropertyHandler(cob, propHandler, ctxt, propSlot, excSlot, builderSlot);
+        emitDelegateTail(cob, parser, ctxt, delegate);
 
         Label scopeEnd = cob.newBoundLabel();
         cob.localVariable(parser, "p", CD_JSON_PARSER, scopeStart, scopeEnd);
@@ -714,7 +716,7 @@ public final class BeanReaderGenerator
         ClassDesc recordDesc = beanClass.describeConstable().orElseThrow();
 
         Label scopeStart = cob.newBoundLabel();
-        emitEntryGuard(cob, parser, ctxt, views);
+        Label delegate = emitEntryGuard(cob, parser, ctxt, views);
         if (views == ViewStrategy.MASK) {
             emitViewMask(cob, ctxt, maskSlot);
         }
@@ -862,6 +864,7 @@ public final class BeanReaderGenerator
            .areturn();
 
         emitPropertyHandler(cob, propHandler, ctxt, propSlot, excSlot, -1);
+        emitDelegateTail(cob, parser, ctxt, delegate);
 
         Label scopeEnd = cob.newBoundLabel();
         cob.localVariable(parser, "p", CD_JSON_PARSER, scopeStart, scopeEnd);
@@ -990,31 +993,33 @@ public final class BeanReaderGenerator
         }
     }
 
-    // Delegates to the stock deserializer for any entry the generated loop
-    // does not model: a stream not positioned on START_OBJECT (stock also
-    // accepts PROPERTY_NAME and other entry shapes) and, under the DELEGATE
-    // strategy only, an active view. The MASK strategy keeps view-active calls
-    // on the generated path through the visibility bitmask.
-    private static void emitEntryGuard(CodeBuilder cob, int parser, int ctxt,
+    // Guards the generated loop's entry: anything the loop does not model - a
+    // stream not positioned on START_OBJECT (stock also accepts PROPERTY_NAME
+    // and other entry shapes) and, under the DELEGATE strategy only, an active
+    // view - branches to the returned label, whose stock-delegation tail the
+    // caller emits at the end of the method so the main body decompiles
+    // un-nested. The MASK strategy keeps view-active calls on the generated
+    // path through the visibility bitmask.
+    private static Label emitEntryGuard(CodeBuilder cob, int parser, int ctxt,
             ViewStrategy views) {
         Label delegate = cob.newLabel();
-        Label proceed = cob.newLabel();
         cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
         cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
         cob.if_acmpne(delegate);
         if (views == ViewStrategy.DELEGATE) {
             cob.aload(ctxt).invokevirtual(CD_DESER_CONTEXT, "getActiveView",
                     MTD_GET_ACTIVE_VIEW);
-            cob.ifnull(proceed);
-        } else {
-            cob.goto_(proceed);
+            cob.ifnonnull(delegate);
         }
+        return delegate;
+    }
+
+    private static void emitDelegateTail(CodeBuilder cob, int parser, int ctxt, Label delegate) {
         cob.labelBinding(delegate);
         cob.aload(0).getfield(CD_BASE, "_fallback", CD_BEAN_DESER_BASE);
         cob.aload(parser).aload(ctxt);
         cob.invokevirtual(CD_BEAN_DESER_BASE, "deserialize", MTD_DESERIALIZE);
         cob.areturn();
-        cob.labelBinding(proceed);
     }
 
     // Advances to the value token and branches to useStock unless it is the
