@@ -83,11 +83,13 @@ final class BBSerCodecFactory
                 viewStrategy(props, includeByDefault), includeByDefault);
     }
 
-    // Matches the stock filtered-writer-array rule: view filtering is a no-op
-    // (NONE) when properties include by default and none declares a view;
-    // MASK keeps view-active writes on the generated path; DELEGATE hands
-    // beans with more than 64 properties to the stock serializer. Visibility
-    // is read per property from BeanPropertyWriter.getViews.
+    // Matches the stock filtered-writer-array rule. No property declares a
+    // view: with default inclusion on, stock ignores views entirely (NONE, no
+    // view code); with it off, an active view hides every property, so the
+    // rare view-active call DELEGATEs to stock's write-nothing path and the
+    // no-view hot path stays free of per-property tests. Properties with
+    // views take MASK (fast path under views) up to 64 properties, DELEGATE
+    // beyond. Visibility is read per property from BeanPropertyWriter.getViews.
     private static ViewStrategy viewStrategy(List<GenWProp> props, boolean includeByDefault) {
         boolean viewsFound = false;
         for (GenWProp p : props) {
@@ -97,8 +99,8 @@ final class BBSerCodecFactory
                 break;
             }
         }
-        if (includeByDefault && !viewsFound) {
-            return ViewStrategy.NONE;
+        if (!viewsFound) {
+            return includeByDefault ? ViewStrategy.NONE : ViewStrategy.DELEGATE;
         }
         return (props.size() > 64) ? ViewStrategy.DELEGATE : ViewStrategy.MASK;
     }

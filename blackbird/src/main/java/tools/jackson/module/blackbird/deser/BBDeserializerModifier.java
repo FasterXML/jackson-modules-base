@@ -143,7 +143,12 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
         if (!beanDesc.getIgnoredPropertyNames().isEmpty()) {
             return deserializer;
         }
+        boolean declaresViews = config.getAnnotationIntrospector()
+                .findViews(config, beanDesc.getClassInfo()) != null;
         for (BeanPropertyDefinition def : beanDesc.findProperties()) {
+            if (def.findViews() != null) {
+                declaresViews = true;
+            }
             if (!def.findAliases().isEmpty()) {
                 return deserializer;
             }
@@ -157,6 +162,6 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
             }
         }
         return new BBCodecPlaceholder((BeanDeserializerBase) deserializer, _lookups,
-                builderBased ? buildMethod : null);
+                builderBased ? buildMethod : null, declaresViews);
     }
 }

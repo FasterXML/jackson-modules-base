@@ -33,14 +33,21 @@ final class BBCodecPlaceholder extends ValueDeserializer<Object>
 
     private final AnnotatedMethod _buildMethod;
 
+    // Whether the bean or any property declares @JsonView explicitly, read
+    // from the property definitions at modify time (the resolved properties
+    // cannot distinguish a declared view from the empty view set that
+    // disabled DEFAULT_VIEW_INCLUSION forces onto unannotated properties).
+    private final boolean _declaresViews;
+
     private volatile ValueDeserializer<Object> _codec;
 
     BBCodecPlaceholder(BeanDeserializerBase delegate,
             Function<Class<?>, MethodHandles.Lookup> lookups,
-            AnnotatedMethod buildMethod) {
+            AnnotatedMethod buildMethod, boolean declaresViews) {
         _delegate = delegate;
         _lookups = lookups;
         _buildMethod = buildMethod;
+        _declaresViews = declaresViews;
     }
 
     @Override
@@ -49,7 +56,7 @@ final class BBCodecPlaceholder extends ValueDeserializer<Object>
             System.err.println("bbdebug resolve " + _delegate.handledType().getName());
         }
         _delegate.resolve(ctxt);
-        _codec = BBCodecFactory.tryGenerate(_delegate, ctxt, _lookups, _buildMethod);
+        _codec = BBCodecFactory.tryGenerate(_delegate, ctxt, _lookups, _buildMethod, _declaresViews);
     }
 
     @Override

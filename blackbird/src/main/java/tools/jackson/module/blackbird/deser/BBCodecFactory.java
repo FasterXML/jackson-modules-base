@@ -24,10 +24,10 @@ import tools.jackson.databind.introspect.AnnotatedField;
 import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.GenProp;
 import tools.jackson.module.blackbird.internal.GeneratedCodecBase;
+import tools.jackson.databind.MapperFeature;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.Kind;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.ViewStrategy;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator;
-import tools.jackson.databind.MapperFeature;
 import tools.jackson.module.blackbird.codegen.CodecAccess;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
@@ -52,9 +52,9 @@ final class BBCodecFactory
     static ValueDeserializer<Object> tryGenerate(BeanDeserializerBase delegate,
             DeserializationContext ctxt,
             Function<Class<?>, MethodHandles.Lookup> lookups,
-            AnnotatedMethod buildMethod) {
+            AnnotatedMethod buildMethod, boolean declaresViews) {
         try {
-            ValueDeserializer<Object> codec = generate(delegate, ctxt, lookups, buildMethod);
+            ValueDeserializer<Object> codec = generate(delegate, ctxt, lookups, buildMethod, declaresViews);
             if (DEBUG) {
                 System.err.println("bbdebug tryGenerate " + delegate.handledType().getName()
                         + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
@@ -73,7 +73,7 @@ final class BBCodecFactory
     private static ValueDeserializer<Object> generate(BeanDeserializerBase delegate,
             DeserializationContext ctxt,
             Function<Class<?>, MethodHandles.Lookup> lookups,
-            AnnotatedMethod buildMethod)
+            AnnotatedMethod buildMethod, boolean declaresViews)
             throws ReflectiveOperationException {
         // Deliberately no delegate.hasViews() gate: 3.x disables
         // DEFAULT_VIEW_INCLUSION by default, which marks every bean as needing
@@ -104,10 +104,10 @@ final class BBCodecFactory
             return null;
         }
         if (buildMethod != null) {
-            return generateBuilder(delegate, ctxt, beanClass, lookups, buildMethod, defineLookup);
+            return generateBuilder(delegate, ctxt, beanClass, lookups, buildMethod, defineLookup, declaresViews);
         }
         if (beanClass.isRecord()) {
-            return generateRecord(delegate, ctxt, beanClass, lookups, defineLookup);
+            return generateRecord(delegate, ctxt, beanClass, lookups, defineLookup, declaresViews);
         }
         if (!delegate.getValueInstantiator().canCreateUsingDefault()) {
             if (DEBUG) System.err.println("bbdebug gate: instantiator");
@@ -144,27 +144,24 @@ final class BBCodecFactory
         }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
         return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, defineLookup,
-                viewStrategy(ctxt, props));
+                viewStrategy(ctxt, props, declaresViews));
     }
 
-    // NONE when views cannot hide any property (default inclusion on and no
-    // property carries @JsonView), so no view code is emitted; MASK when a
-    // per-view visibility bitmask keeps view-active calls on the fast path;
-    // DELEGATE when the property count exceeds a 64-bit mask, matching the
-    // record seen-mask limit. Visibility is read per property from
+    // Beans that declare no @JsonView anywhere (read from the property
+    // definitions at modify time; the resolved matchers cannot distinguish a
+    // declared view from the empty set that disabled DEFAULT_VIEW_INCLUSION
+    // forces onto every unannotated property) emit no per-arm view code:
+    // with inclusion on, views cannot affect them at all (NONE); with it off,
+    // an active view hides every property, so the degenerate view-active call
+    // DELEGATEs to stock and the no-view hot path stays free of mask tests.
+    // Declared views take MASK (the fast path under views) up to 64
+    // properties, DELEGATE beyond. Mask visibility is read per property from
     // SettableBeanProperty.visibleInView, so semantics stay exactly stock.
-    private static ViewStrategy viewStrategy(DeserializationContext ctxt, List<GenProp> props) {
-        boolean anyViews = !ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION);
-        if (!anyViews) {
-            for (GenProp p : props) {
-                if (p.stock().hasViews()) {
-                    anyViews = true;
-                    break;
-                }
-            }
-        }
-        if (!anyViews) {
-            return ViewStrategy.NONE;
+    private static ViewStrategy viewStrategy(DeserializationContext ctxt,
+            List<GenProp> props, boolean declaresViews) {
+        if (!declaresViews) {
+            return ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)
+                    ? ViewStrategy.NONE : ViewStrategy.DELEGATE;
         }
         return (props.size() > 64) ? ViewStrategy.DELEGATE : ViewStrategy.MASK;
     }
@@ -177,7 +174,7 @@ final class BBCodecFactory
     private static ValueDeserializer<Object> generateBuilder(BeanDeserializerBase delegate,
             DeserializationContext ctxt, Class<?> beanClass,
             Function<Class<?>, MethodHandles.Lookup> lookups, AnnotatedMethod buildMethod,
-            MethodHandles.Lookup defineLookup)
+            MethodHandles.Lookup defineLookup, boolean declaresViews)
             throws ReflectiveOperationException {
         Method build = buildMethod.getAnnotated();
         Class<?> builderClass = build.getDeclaringClass();
@@ -235,7 +232,7 @@ final class BBCodecFactory
         return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, null,
                 new BeanCodecGenerator.BuilderSupport(
                         delegate.getValueInstantiator(), buildMH, builderClass), defineLookup,
-                viewStrategy(ctxt, props));
+                viewStrategy(ctxt, props, declaresViews));
     }
 
     private static GenProp classifyBuilder(SettableBeanProperty prop, Class<?> builderClass,
@@ -266,7 +263,8 @@ final class BBCodecFactory
     // creator index and type line up with the record components.
     private static ValueDeserializer<Object> generateRecord(BeanDeserializerBase delegate,
             DeserializationContext ctxt, Class<?> beanClass,
-            Function<Class<?>, MethodHandles.Lookup> lookups, MethodHandles.Lookup defineLookup)
+            Function<Class<?>, MethodHandles.Lookup> lookups, MethodHandles.Lookup defineLookup,
+            boolean declaresViews)
             throws ReflectiveOperationException {
         if (!delegate.getValueInstantiator().canCreateFromObjectWith()) {
             if (DEBUG) System.err.println("bbdebug gate: record instantiator");
@@ -342,7 +340,7 @@ final class BBCodecFactory
         }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
         return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, recordCtor,
-                defineLookup, viewStrategy(ctxt, props));
+                defineLookup, viewStrategy(ctxt, props, declaresViews));
     }
 
     private static GenProp classify(SettableBeanProperty prop, Class<?> beanClass,
