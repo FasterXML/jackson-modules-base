@@ -2,11 +2,14 @@ package tools.jackson.module.blackbird.deser;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.DeserializationConfig;
+import tools.jackson.databind.PropertyName;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.SettableBeanProperty;
@@ -40,18 +43,23 @@ final class BBReaderPlaceholder extends ValueDeserializer<Object>
     // disabled DEFAULT_VIEW_INCLUSION forces onto unannotated properties).
     private final boolean _declaresViews;
     private final BeanReaderGenerator.Ignorals _ignorals;
+    private final Map<String, List<PropertyName>> _aliases;
+    private final boolean _caseInsensitive;
 
     private volatile ValueDeserializer<Object> _codec;
 
     BBReaderPlaceholder(BeanDeserializerBase delegate,
             Function<Class<?>, MethodHandles.Lookup> lookups,
             AnnotatedMethod buildMethod, boolean declaresViews,
-            BeanReaderGenerator.Ignorals ignorals) {
+            BeanReaderGenerator.Ignorals ignorals, Map<String, List<PropertyName>> aliases,
+            boolean caseInsensitive) {
         _delegate = delegate;
         _lookups = lookups;
         _buildMethod = buildMethod;
         _declaresViews = declaresViews;
         _ignorals = ignorals;
+        _aliases = aliases;
+        _caseInsensitive = caseInsensitive;
     }
 
     @Override
@@ -61,7 +69,7 @@ final class BBReaderPlaceholder extends ValueDeserializer<Object>
         }
         _delegate.resolve(ctxt);
         _codec = BBReaderFactory.tryGenerate(_delegate, ctxt, _lookups, _buildMethod,
-                _declaresViews, _ignorals);
+                _declaresViews, _ignorals, _aliases, _caseInsensitive);
     }
 
     @Override

@@ -4,17 +4,21 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 
 import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.DeserializationConfig;
 import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.PropertyName;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.deser.BeanDeserializerBuilder;
@@ -89,9 +93,6 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
         if (!builderBased && deserializer.getClass() != BeanDeserializer.class) {
             return deserializer;
         }
-        if (config.isEnabled(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)) {
-            return deserializer;
-        }
         if (Boolean.TRUE.equals(config.getDefaultMergeable())) {
             return deserializer;
         }
@@ -148,14 +149,26 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
                         : new BeanReaderGenerator.Ignorals(ignoreAllUnknown,
                                 ignorable.isEmpty() ? null : Set.copyOf(ignorable),
                                 includable);
+        // Effective case-insensitivity, the way the stock builder computes it:
+        // the per-class format override wins, the mapper feature is baseline.
+        Boolean formatCI = beanDescRef.findExpectedFormat(null)
+                .getFeature(JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES);
+        boolean caseInsensitive = (formatCI == null)
+                ? config.isEnabled(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+                : formatCI.booleanValue();
         boolean declaresViews = config.getAnnotationIntrospector()
                 .findViews(config, beanDesc.getClassInfo()) != null;
+        Map<String, List<PropertyName>> aliases = null;
         for (BeanPropertyDefinition def : beanDesc.findProperties()) {
             if (def.findViews() != null) {
                 declaresViews = true;
             }
-            if (!def.findAliases().isEmpty()) {
-                return deserializer;
+            List<PropertyName> defAliases = def.findAliases();
+            if (!defAliases.isEmpty()) {
+                if (aliases == null) {
+                    aliases = new HashMap<>();
+                }
+                aliases.put(def.getName(), defAliases);
             }
             if (def.getPrimaryMember() != null
                     && config.getAnnotationIntrospector()
@@ -167,6 +180,7 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
             }
         }
         return new BBReaderPlaceholder((BeanDeserializerBase) deserializer, _lookups,
-                builderBased ? buildMethod : null, declaresViews, codecIgnorals);
+                builderBased ? buildMethod : null, declaresViews, codecIgnorals, aliases,
+                caseInsensitive);
     }
 }

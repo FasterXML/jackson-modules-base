@@ -154,10 +154,11 @@ public final class BeanReaderGenerator
 
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback,
-            MethodHandles.Lookup defineLookup, ViewStrategy views, Ignorals ignorals)
+            MethodHandles.Lookup defineLookup, ViewStrategy views, Ignorals ignorals,
+            int[] aliasArms)
             throws ReflectiveOperationException {
         return generate(beanClass, props, matcher, fallback, null, null, defineLookup, views,
-                ignorals);
+                ignorals, aliasArms);
     }
 
     // recordCtor non-null selects record mode: props are in canonical
@@ -165,10 +166,11 @@ public final class BeanReaderGenerator
     // constructor MethodHandle (exact component signature) builds the value.
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor,
-            MethodHandles.Lookup defineLookup, ViewStrategy views, Ignorals ignorals)
+            MethodHandles.Lookup defineLookup, ViewStrategy views, Ignorals ignorals,
+            int[] aliasArms)
             throws ReflectiveOperationException {
         return generate(beanClass, props, matcher, fallback, recordCtor, null, defineLookup, views,
-                ignorals);
+                ignorals, aliasArms);
     }
 
     // builderSupport non-null selects builder mode: values apply to a builder
@@ -182,7 +184,7 @@ public final class BeanReaderGenerator
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor,
             BuilderSupport builder, MethodHandles.Lookup defineLookup, ViewStrategy views,
-            Ignorals ignorals)
+            Ignorals ignorals, int[] aliasArms)
             throws ReflectiveOperationException {
         Map<String, Object> classData = new LinkedHashMap<>();
         classData.put("matcher", matcher);
@@ -221,7 +223,7 @@ public final class BeanReaderGenerator
                 (defineLookup != null) ? defineLookup : MethodHandles.lookup();
         byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
                 stockName, childName, setterName, recordCtor != null,
-                builder == null ? null : builder.builderClass(), views);
+                builder == null ? null : builder.builderClass(), views, aliasArms);
         CodegenDump.dump(beanClass, "reader", bytes);
         // No ClassOption.STRONG: the codec instance held by the mapper's
         // deserializer cache anchors the class, so codecs unload with the
@@ -268,7 +270,7 @@ public final class BeanReaderGenerator
             List<GenProp> props,
             String[] stockName, String[] childName, String[] setterName,
             boolean recordMode, Class<?> builderClass,
-            ViewStrategy views) {
+            ViewStrategy views, int[] aliasArms) {
         // A hidden class must be named in its define context's package.
         ClassDesc thisClass = ClassDesc.of(
                 targetPackage + ".BBReader_" + beanClass.getSimpleName());
@@ -285,13 +287,13 @@ public final class BeanReaderGenerator
                     mb -> mb.with(params("p", "ctxt")).withCode(cob -> {
                         if (builderClass != null) {
                             buildBuilderDeserialize(cob, builderClass, props, stockName,
-                                    childName, views);
+                                    childName, views, aliasArms);
                         } else if (!recordMode) {
                             buildDeserialize(cob, beanClass, props, stockName, childName,
-                                    setterName, views);
+                                    setterName, views, aliasArms);
                         } else {
                             buildRecordDeserialize(cob, beanClass, props, stockName, childName,
-                                    views);
+                                    views, aliasArms);
                         }
                     }));
             if (views == ViewStrategy.MASK) {
@@ -383,7 +385,7 @@ public final class BeanReaderGenerator
 
     private static void buildDeserialize(CodeBuilder cob, Class<?> beanClass,
             List<GenProp> props, String[] stockName, String[] childName, String[] setterName,
-            ViewStrategy views) {
+            ViewStrategy views, int[] aliasArms) {
         final int parser = 1;
         final int ctxt = 2;
         final int beanSlot = 3;
@@ -433,8 +435,13 @@ public final class BeanReaderGenerator
             caseLabels[i] = cob.newLabel();
             cases.add(SwitchCase.of(i, caseLabels[i]));
         }
+        // Alias matcher indexes follow the primaries and share their arms.
+        int totalNames = props.size() + ((aliasArms == null) ? 0 : aliasArms.length);
+        for (int k = props.size(); k < totalNames; k++) {
+            cases.add(SwitchCase.of(k, caseLabels[aliasArms[k - props.size()]]));
+        }
         cob.iload(ixSlot);
-        cob.tableswitch(0, props.size() - 1, defaultCase, cases);
+        cob.tableswitch(0, totalNames - 1, defaultCase, cases);
 
         for (int i = 0; i < props.size(); i++) {
             cob.labelBinding(caseLabels[i]);
@@ -530,7 +537,7 @@ public final class BeanReaderGenerator
 
     private static void buildBuilderDeserialize(CodeBuilder cob, Class<?> builderClass,
             List<GenProp> props, String[] stockName, String[] childName,
-            ViewStrategy views) {
+            ViewStrategy views, int[] aliasArms) {
         final int parser = 1;
         final int ctxt = 2;
         final int builderSlot = 3;
@@ -580,8 +587,13 @@ public final class BeanReaderGenerator
             caseLabels[i] = cob.newLabel();
             cases.add(SwitchCase.of(i, caseLabels[i]));
         }
+        // Alias matcher indexes follow the primaries and share their arms.
+        int totalNames = props.size() + ((aliasArms == null) ? 0 : aliasArms.length);
+        for (int k = props.size(); k < totalNames; k++) {
+            cases.add(SwitchCase.of(k, caseLabels[aliasArms[k - props.size()]]));
+        }
         cob.iload(ixSlot);
-        cob.tableswitch(0, props.size() - 1, defaultCase, cases);
+        cob.tableswitch(0, totalNames - 1, defaultCase, cases);
 
         for (int i = 0; i < props.size(); i++) {
             cob.labelBinding(caseLabels[i]);
@@ -711,7 +723,7 @@ public final class BeanReaderGenerator
 
     private static void buildRecordDeserialize(CodeBuilder cob, Class<?> beanClass,
             List<GenProp> props, String[] stockName, String[] childName,
-            ViewStrategy views) {
+            ViewStrategy views, int[] aliasArms) {
         final int parser = 1;
         final int ctxt = 2;
 
@@ -780,8 +792,13 @@ public final class BeanReaderGenerator
             caseLabels[i] = cob.newLabel();
             cases.add(SwitchCase.of(i, caseLabels[i]));
         }
+        // Alias matcher indexes follow the primaries and share their arms.
+        int totalNames = props.size() + ((aliasArms == null) ? 0 : aliasArms.length);
+        for (int k = props.size(); k < totalNames; k++) {
+            cases.add(SwitchCase.of(k, caseLabels[aliasArms[k - props.size()]]));
+        }
         cob.iload(ixSlot);
-        cob.tableswitch(0, props.size() - 1, defaultCase, cases);
+        cob.tableswitch(0, totalNames - 1, defaultCase, cases);
 
         for (int i = 0; i < props.size(); i++) {
             cob.labelBinding(caseLabels[i]);

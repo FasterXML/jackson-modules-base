@@ -10,12 +10,15 @@ import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
 import tools.jackson.core.sym.PropertyNameMatcher;
 import tools.jackson.core.util.Named;
 import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.PropertyName;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.CreatorProperty;
 import tools.jackson.databind.deser.SettableBeanProperty;
@@ -24,7 +27,6 @@ import tools.jackson.databind.introspect.AnnotatedField;
 import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.GenProp;
 import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
-import tools.jackson.databind.MapperFeature;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.Kind;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.ViewStrategy;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator;
@@ -53,10 +55,11 @@ final class BBReaderFactory
             DeserializationContext ctxt,
             Function<Class<?>, MethodHandles.Lookup> lookups,
             AnnotatedMethod buildMethod, boolean declaresViews,
-            BeanReaderGenerator.Ignorals ignorals) {
+            BeanReaderGenerator.Ignorals ignorals, Map<String, List<PropertyName>> aliases,
+            boolean caseInsensitive) {
         try {
             ValueDeserializer<Object> codec = generate(delegate, ctxt, lookups, buildMethod,
-                    declaresViews, ignorals);
+                    declaresViews, ignorals, aliases, caseInsensitive);
             if (DEBUG) {
                 System.err.println("bbdebug tryGenerate " + delegate.handledType().getName()
                         + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
@@ -76,7 +79,8 @@ final class BBReaderFactory
             DeserializationContext ctxt,
             Function<Class<?>, MethodHandles.Lookup> lookups,
             AnnotatedMethod buildMethod, boolean declaresViews,
-            BeanReaderGenerator.Ignorals ignorals)
+            BeanReaderGenerator.Ignorals ignorals, Map<String, List<PropertyName>> aliases,
+            boolean caseInsensitive)
             throws ReflectiveOperationException {
         // Deliberately no delegate.hasViews() gate: 3.x disables
         // DEFAULT_VIEW_INCLUSION by default, which marks every bean as needing
@@ -107,10 +111,10 @@ final class BBReaderFactory
             return null;
         }
         if (buildMethod != null) {
-            return generateBuilder(delegate, ctxt, beanClass, lookups, buildMethod, defineLookup, declaresViews, ignorals);
+            return generateBuilder(delegate, ctxt, beanClass, lookups, buildMethod, defineLookup, declaresViews, ignorals, aliases, caseInsensitive);
         }
         if (beanClass.isRecord()) {
-            return generateRecord(delegate, ctxt, beanClass, lookups, defineLookup, declaresViews, ignorals);
+            return generateRecord(delegate, ctxt, beanClass, lookups, defineLookup, declaresViews, ignorals, aliases, caseInsensitive);
         }
         if (!delegate.getValueInstantiator().canCreateUsingDefault()) {
             if (DEBUG) System.err.println("bbdebug gate: instantiator");
@@ -145,9 +149,10 @@ final class BBReaderFactory
             if (DEBUG) System.err.println("bbdebug gate: no props");
             return null;
         }
-        PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
+        int[] aliasArms = appendAliases(names, props, aliases);
+        PropertyNameMatcher matcher = matcher(ctxt, names, caseInsensitive);
         return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, defineLookup,
-                viewStrategy(ctxt, props, declaresViews), ignorals);
+                viewStrategy(ctxt, props, declaresViews), ignorals, aliasArms);
     }
 
     // Beans that declare no @JsonView anywhere (read from the property
@@ -178,7 +183,8 @@ final class BBReaderFactory
             DeserializationContext ctxt, Class<?> beanClass,
             Function<Class<?>, MethodHandles.Lookup> lookups, AnnotatedMethod buildMethod,
             MethodHandles.Lookup defineLookup, boolean declaresViews,
-            BeanReaderGenerator.Ignorals ignorals)
+            BeanReaderGenerator.Ignorals ignorals, Map<String, List<PropertyName>> aliases,
+            boolean caseInsensitive)
             throws ReflectiveOperationException {
         Method build = buildMethod.getAnnotated();
         Class<?> builderClass = build.getDeclaringClass();
@@ -232,11 +238,12 @@ final class BBReaderFactory
             if (DEBUG) System.err.println("bbdebug gate: build method access");
             return null;
         }
-        PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
+        int[] aliasArms = appendAliases(names, props, aliases);
+        PropertyNameMatcher matcher = matcher(ctxt, names, caseInsensitive);
         return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, null,
                 new BeanReaderGenerator.BuilderSupport(
                         delegate.getValueInstantiator(), buildMH, builderClass), defineLookup,
-                viewStrategy(ctxt, props, declaresViews), ignorals);
+                viewStrategy(ctxt, props, declaresViews), ignorals, aliasArms);
     }
 
     private static GenProp classifyBuilder(SettableBeanProperty prop, Class<?> builderClass,
@@ -268,7 +275,8 @@ final class BBReaderFactory
     private static ValueDeserializer<Object> generateRecord(BeanDeserializerBase delegate,
             DeserializationContext ctxt, Class<?> beanClass,
             Function<Class<?>, MethodHandles.Lookup> lookups, MethodHandles.Lookup defineLookup,
-            boolean declaresViews, BeanReaderGenerator.Ignorals ignorals)
+            boolean declaresViews, BeanReaderGenerator.Ignorals ignorals,
+            Map<String, List<PropertyName>> aliases, boolean caseInsensitive)
             throws ReflectiveOperationException {
         if (!delegate.getValueInstantiator().canCreateFromObjectWith()) {
             if (DEBUG) System.err.println("bbdebug gate: record instantiator");
@@ -342,9 +350,51 @@ final class BBReaderFactory
             if (DEBUG) System.err.println("bbdebug gate: record ctor access");
             return null;
         }
-        PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
+        int[] aliasArms = appendAliases(names, props, aliases);
+        PropertyNameMatcher matcher = matcher(ctxt, names, caseInsensitive);
         return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, recordCtor,
-                defineLookup, viewStrategy(ctxt, props, declaresViews), ignorals);
+                defineLookup, viewStrategy(ctxt, props, declaresViews), ignorals, aliasArms);
+    }
+
+    // Appends alias entries after the primary names, each mapping back to its
+    // primary arm - the same layout stock BeanPropertyMap.initMatcher builds -
+    // and returns the arm index per alias entry.
+    private static int[] appendAliases(List<Named> names, List<GenProp> props,
+            Map<String, List<PropertyName>> aliases) {
+        if (aliases == null || aliases.isEmpty()) {
+            return null;
+        }
+        List<Integer> arms = new ArrayList<>();
+        for (int i = 0; i < props.size(); i++) {
+            List<PropertyName> propAliases = aliases.get(props.get(i).name());
+            if (propAliases == null) {
+                continue;
+            }
+            for (PropertyName alias : propAliases) {
+                names.add(Named.fromString(alias.getSimpleName()));
+                arms.add(i);
+            }
+        }
+        if (arms.isEmpty()) {
+            return null;
+        }
+        int[] out = new int[arms.size()];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = arms.get(i);
+        }
+        return out;
+    }
+
+    // The matcher kind mirrors stock BeanPropertyMap.initMatcher: the
+    // case-insensitive variant when the mapper enables
+    // ACCEPT_CASE_INSENSITIVE_PROPERTIES, with the configured locale.
+    private static PropertyNameMatcher matcher(DeserializationContext ctxt, List<Named> names,
+            boolean caseInsensitive) {
+        if (caseInsensitive) {
+            return ctxt.tokenStreamFactory().constructCINameMatcher(names, true,
+                    ctxt.getConfig().getLocale());
+        }
+        return ctxt.tokenStreamFactory().constructNameMatcher(names, true);
     }
 
     private static GenProp classify(SettableBeanProperty prop, Class<?> beanClass,
