@@ -64,7 +64,11 @@ On the module path, grant Blackbird access to your classes by supplying a
 `MethodHandles.Lookup` from your own module. Override `findLookup()` or
 `findLookupSupplier()` on `BlackbirdModule` to customize which lookup is used
 for which class. Record deserialization needs a lookup with access to the
-record's canonical constructor.
+record's canonical constructor, and non-public classes accelerate only with
+a lookup that can reach them (the codec for a non-public class is defined in
+that class's package context; without an eligible lookup the class stays on
+the stock path). The `tools.jackson.module.blackbird.internal` package is
+exported only so such codecs can resolve their supertypes; it is not API.
 
 ## What is optimized?
 
