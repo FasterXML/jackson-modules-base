@@ -401,7 +401,7 @@ public final class BeanReaderGenerator
         Label oddToken = cob.newLabel();
         Label defaultCase = cob.newLabel();
 
-        nextNameMatch(cob, parser, matcherSlot, ixSlot);
+        emitFirstMatch(cob, parser, matcherSlot, ixSlot);
 
         cob.labelBinding(loop);
         cob.iload(ixSlot).ifge(switchPart);
@@ -548,7 +548,7 @@ public final class BeanReaderGenerator
         Label oddToken = cob.newLabel();
         Label defaultCase = cob.newLabel();
 
-        nextNameMatch(cob, parser, matcherSlot, ixSlot);
+        emitFirstMatch(cob, parser, matcherSlot, ixSlot);
 
         cob.labelBinding(loop);
         cob.iload(ixSlot).ifge(switchPart);
@@ -747,7 +747,7 @@ public final class BeanReaderGenerator
         Label oddToken = cob.newLabel();
         Label defaultCase = cob.newLabel();
 
-        nextNameMatch(cob, parser, matcherSlot, ixSlot);
+        emitFirstMatch(cob, parser, matcherSlot, ixSlot);
 
         cob.labelBinding(loop);
         cob.iload(ixSlot).ifge(switchPart);
@@ -994,18 +994,24 @@ public final class BeanReaderGenerator
     }
 
     // Guards the generated loop's entry: anything the loop does not model - a
-    // stream not positioned on START_OBJECT (stock also accepts PROPERTY_NAME
-    // and other entry shapes) and, under the DELEGATE strategy only, an active
-    // view - branches to the returned label, whose stock-delegation tail the
-    // caller emits at the end of the method so the main body decompiles
-    // un-nested. The MASK strategy keeps view-active calls on the generated
-    // path through the visibility bitmask.
+    // stream positioned on neither START_OBJECT nor PROPERTY_NAME (the
+    // AsProperty polymorphic path hands subtype deserializers a stream on the
+    // property after the type id) and, under the DELEGATE strategy only, an
+    // active view - branches to the returned label, whose stock-delegation
+    // tail the caller emits at the end of the method so the main body
+    // decompiles un-nested. The MASK strategy keeps view-active calls on the
+    // generated path through the visibility bitmask.
     private static Label emitEntryGuard(CodeBuilder cob, int parser, int ctxt,
             ViewStrategy views) {
         Label delegate = cob.newLabel();
+        Label entryOk = cob.newLabel();
         cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
         cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
+        cob.if_acmpeq(entryOk);
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
+        cob.getstatic(CD_JSON_TOKEN, "PROPERTY_NAME", CD_JSON_TOKEN);
         cob.if_acmpne(delegate);
+        cob.labelBinding(entryOk);
         if (views == ViewStrategy.DELEGATE) {
             cob.aload(ctxt).invokevirtual(CD_DESER_CONTEXT, "getActiveView",
                     MTD_GET_ACTIVE_VIEW);
@@ -1082,6 +1088,25 @@ public final class BeanReaderGenerator
         cob.aload(parser).aload(matcherSlot)
                 .invokevirtual(CD_JSON_PARSER, "nextNameMatch", MTD_NEXT_NAME_MATCH)
                 .istore(ixSlot);
+    }
+
+    // First match of the loop. The entry guard admits START_OBJECT and
+    // PROPERTY_NAME; a name entry matches the CURRENT name, mirroring stock
+    // BeanDeserializer's currentNameMatch loop head, and dispatches into the
+    // same arms (each arm advances to its value token itself).
+    private static void emitFirstMatch(CodeBuilder cob, int parser, int matcherSlot, int ixSlot) {
+        Label nameEntry = cob.newLabel();
+        Label done = cob.newLabel();
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
+        cob.getstatic(CD_JSON_TOKEN, "PROPERTY_NAME", CD_JSON_TOKEN);
+        cob.if_acmpeq(nameEntry);
+        nextNameMatch(cob, parser, matcherSlot, ixSlot);
+        cob.goto_(done);
+        cob.labelBinding(nameEntry);
+        cob.aload(parser).aload(matcherSlot)
+                .invokevirtual(CD_JSON_PARSER, "currentNameMatch", MTD_NEXT_NAME_MATCH)
+                .istore(ixSlot);
+        cob.labelBinding(done);
     }
 
     private static void throwIse(CodeBuilder cob, String message) {

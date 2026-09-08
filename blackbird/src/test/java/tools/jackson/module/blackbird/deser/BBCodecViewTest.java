@@ -15,6 +15,7 @@ import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.MapperFeature;
 import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
@@ -213,10 +214,10 @@ public class BBCodecViewTest extends BlackbirdTestBase
     @Test
     public void testDefaultViewInclusionOffMatchesVanilla() throws Exception {
         ObjectMapper vanilla = JsonMapper.builder()
-                .disable(tools.jackson.databind.MapperFeature.DEFAULT_VIEW_INCLUSION)
+                .disable(MapperFeature.DEFAULT_VIEW_INCLUSION)
                 .build();
         ObjectMapper module = JsonMapper.builder()
-                .disable(tools.jackson.databind.MapperFeature.DEFAULT_VIEW_INCLUSION)
+                .disable(MapperFeature.DEFAULT_VIEW_INCLUSION)
                 .addModule(new BlackbirdModule())
                 .build();
         PlainBean bean = new PlainBean();
