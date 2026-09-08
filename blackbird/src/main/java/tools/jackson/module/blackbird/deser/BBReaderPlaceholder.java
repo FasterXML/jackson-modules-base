@@ -16,6 +16,7 @@ import tools.jackson.databind.jsontype.TypeDeserializer;
 import tools.jackson.databind.type.LogicalType;
 import tools.jackson.databind.util.AccessPattern;
 import tools.jackson.databind.util.NameTransformer;
+import tools.jackson.module.blackbird.codegen.BeanReaderGenerator;
 
 /**
  * Stands in for a stock bean deserializer until resolution: the codec needs
@@ -38,16 +39,19 @@ final class BBReaderPlaceholder extends ValueDeserializer<Object>
     // cannot distinguish a declared view from the empty view set that
     // disabled DEFAULT_VIEW_INCLUSION forces onto unannotated properties).
     private final boolean _declaresViews;
+    private final BeanReaderGenerator.Ignorals _ignorals;
 
     private volatile ValueDeserializer<Object> _codec;
 
     BBReaderPlaceholder(BeanDeserializerBase delegate,
             Function<Class<?>, MethodHandles.Lookup> lookups,
-            AnnotatedMethod buildMethod, boolean declaresViews) {
+            AnnotatedMethod buildMethod, boolean declaresViews,
+            BeanReaderGenerator.Ignorals ignorals) {
         _delegate = delegate;
         _lookups = lookups;
         _buildMethod = buildMethod;
         _declaresViews = declaresViews;
+        _ignorals = ignorals;
     }
 
     @Override
@@ -56,7 +60,8 @@ final class BBReaderPlaceholder extends ValueDeserializer<Object>
             System.err.println("bbdebug resolve " + _delegate.handledType().getName());
         }
         _delegate.resolve(ctxt);
-        _codec = BBReaderFactory.tryGenerate(_delegate, ctxt, _lookups, _buildMethod, _declaresViews);
+        _codec = BBReaderFactory.tryGenerate(_delegate, ctxt, _lookups, _buildMethod,
+                _declaresViews, _ignorals);
     }
 
     @Override

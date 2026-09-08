@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Optional;
 
 import tools.jackson.core.sym.PropertyNameMatcher;
@@ -103,6 +104,9 @@ public final class BeanReaderGenerator
             MethodTypeDesc.of(ConstantDescs.CD_Object, CD_JSON_PARSER, CD_DESER_CONTEXT);
     private static final MethodTypeDesc MTD_CTOR =
             MethodTypeDesc.of(ConstantDescs.CD_void, CD_BEAN_DESER_BASE);
+    private static final ClassDesc CD_SET = java.util.Set.class.describeConstable().orElseThrow();
+    private static final MethodTypeDesc MTD_CTOR4 = MethodTypeDesc.of(ConstantDescs.CD_void,
+            CD_BEAN_DESER_BASE, ConstantDescs.CD_boolean, CD_SET, CD_SET);
     private static final MethodTypeDesc MTD_HANDLE_UNKNOWN = MethodTypeDesc.of(
             ConstantDescs.CD_void, CD_JSON_PARSER, CD_DESER_CONTEXT, ConstantDescs.CD_Object);
     private static final MethodTypeDesc MTD_CHECK_SEEN = MethodTypeDesc.of(
@@ -150,9 +154,10 @@ public final class BeanReaderGenerator
 
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback,
-            MethodHandles.Lookup defineLookup, ViewStrategy views)
+            MethodHandles.Lookup defineLookup, ViewStrategy views, Ignorals ignorals)
             throws ReflectiveOperationException {
-        return generate(beanClass, props, matcher, fallback, null, null, defineLookup, views);
+        return generate(beanClass, props, matcher, fallback, null, null, defineLookup, views,
+                ignorals);
     }
 
     // recordCtor non-null selects record mode: props are in canonical
@@ -160,9 +165,10 @@ public final class BeanReaderGenerator
     // constructor MethodHandle (exact component signature) builds the value.
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor,
-            MethodHandles.Lookup defineLookup, ViewStrategy views)
+            MethodHandles.Lookup defineLookup, ViewStrategy views, Ignorals ignorals)
             throws ReflectiveOperationException {
-        return generate(beanClass, props, matcher, fallback, recordCtor, null, defineLookup, views);
+        return generate(beanClass, props, matcher, fallback, recordCtor, null, defineLookup, views,
+                ignorals);
     }
 
     // builderSupport non-null selects builder mode: values apply to a builder
@@ -175,7 +181,8 @@ public final class BeanReaderGenerator
     @SuppressWarnings("unchecked")
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor,
-            BuilderSupport builder, MethodHandles.Lookup defineLookup, ViewStrategy views)
+            BuilderSupport builder, MethodHandles.Lookup defineLookup, ViewStrategy views,
+            Ignorals ignorals)
             throws ReflectiveOperationException {
         Map<String, Object> classData = new LinkedHashMap<>();
         classData.put("matcher", matcher);
@@ -240,12 +247,21 @@ public final class BeanReaderGenerator
             return null;
         }
         MethodHandle ctor = hidden.findConstructor(hidden.lookupClass(),
-                MethodType.methodType(void.class, BeanDeserializerBase.class));
+                MethodType.methodType(void.class, BeanDeserializerBase.class,
+                        boolean.class, Set.class, Set.class));
+        Ignorals ig = (ignorals == null) ? Ignorals.NONE : ignorals;
         try {
-            return (ValueDeserializer<Object>) ctor.invoke(fallback);
+            return (ValueDeserializer<Object>) ctor.invoke(fallback,
+                    ig.ignoreAllUnknown(), ig.ignorableProps(), ig.includableProps());
         } catch (Throwable t) {
             throw new IllegalStateException("cannot instantiate generated codec", t);
         }
+    }
+
+    /** Ignoral configuration carried from the modifier into the codec. */
+    public record Ignorals(boolean ignoreAllUnknown, Set<String> ignorableProps,
+            Set<String> includableProps) {
+        public static final Ignorals NONE = new Ignorals(false, null, null);
     }
 
     private static byte[] buildClass(String targetPackage, Class<?> beanClass,
@@ -259,10 +275,11 @@ public final class BeanReaderGenerator
         return ClassFile.of().build(thisClass, clb -> {
             clb.withFlags(ClassFile.ACC_PUBLIC | ClassFile.ACC_FINAL | ClassFile.ACC_SUPER);
             clb.withSuperclass(CD_BASE);
-            clb.withMethod(ConstantDescs.INIT_NAME, MTD_CTOR, ClassFile.ACC_PUBLIC,
-                    mb -> mb.with(params("fallback"))
-                            .withCode(cob -> cob.aload(0).aload(1)
-                                    .invokespecial(CD_BASE, ConstantDescs.INIT_NAME, MTD_CTOR)
+            clb.withMethod(ConstantDescs.INIT_NAME, MTD_CTOR4, ClassFile.ACC_PUBLIC,
+                    mb -> mb.with(params("fallback", "ignoreAllUnknown", "ignorableProps",
+                                    "includableProps"))
+                            .withCode(cob -> cob.aload(0).aload(1).iload(2).aload(3).aload(4)
+                                    .invokespecial(CD_BASE, ConstantDescs.INIT_NAME, MTD_CTOR4)
                                     .return_()));
             clb.withMethod("deserialize", MTD_DESERIALIZE, ClassFile.ACC_PUBLIC,
                     mb -> mb.with(params("p", "ctxt")).withCode(cob -> {

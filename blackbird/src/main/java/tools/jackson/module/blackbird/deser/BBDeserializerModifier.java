@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Modifier;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -21,6 +23,7 @@ import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.deser.bean.BuilderBasedDeserializer;
 import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
+import tools.jackson.module.blackbird.codegen.BeanReaderGenerator;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
 /**
@@ -126,23 +129,25 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
         if (injectables != null && !injectables.isEmpty()) {
             return deserializer;
         }
-        // Ignored or included property sets change how unknown names are
-        // handled (silently skipped vs reported); the codec's unknown arm
-        // implements only the plain contract, so such beans stay stock.
+        // Ignored and included property sets ride into the codec, whose
+        // unknown arm consults them in the stock loop's exact order.
         JsonIgnoreProperties.Value ignorals =
                 config.getDefaultPropertyIgnorals(beanClass, beanDesc.getClassInfo());
-        if (ignorals != null
-                && (ignorals.getIgnoreUnknown() || !ignorals.getIgnored().isEmpty())) {
-            return deserializer;
-        }
         JsonIncludeProperties.Value inclusions =
                 config.getDefaultPropertyInclusions(beanClass, beanDesc.getClassInfo());
-        if (inclusions != null && inclusions.getIncluded() != null) {
-            return deserializer;
+        boolean ignoreAllUnknown = ignorals != null && ignorals.getIgnoreUnknown();
+        Set<String> ignorable = new HashSet<>();
+        if (ignorals != null) {
+            ignorable.addAll(ignorals.getIgnored());
         }
-        if (!beanDesc.getIgnoredPropertyNames().isEmpty()) {
-            return deserializer;
-        }
+        ignorable.addAll(beanDesc.getIgnoredPropertyNames());
+        Set<String> includable = (inclusions == null) ? null : inclusions.getIncluded();
+        BeanReaderGenerator.Ignorals codecIgnorals =
+                (!ignoreAllUnknown && ignorable.isEmpty() && includable == null)
+                        ? BeanReaderGenerator.Ignorals.NONE
+                        : new BeanReaderGenerator.Ignorals(ignoreAllUnknown,
+                                ignorable.isEmpty() ? null : Set.copyOf(ignorable),
+                                includable);
         boolean declaresViews = config.getAnnotationIntrospector()
                 .findViews(config, beanDesc.getClassInfo()) != null;
         for (BeanPropertyDefinition def : beanDesc.findProperties()) {
@@ -162,6 +167,6 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
             }
         }
         return new BBReaderPlaceholder((BeanDeserializerBase) deserializer, _lookups,
-                builderBased ? buildMethod : null, declaresViews);
+                builderBased ? buildMethod : null, declaresViews, codecIgnorals);
     }
 }

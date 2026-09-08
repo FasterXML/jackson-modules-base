@@ -5,6 +5,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationConfig;
@@ -12,6 +13,8 @@ import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.SettableBeanProperty;
+import tools.jackson.databind.exc.IgnoredPropertyException;
+import tools.jackson.databind.util.IgnorePropertiesUtil;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.jsontype.TypeDeserializer;
 import tools.jackson.databind.type.LogicalType;
@@ -29,8 +32,23 @@ public abstract class GeneratedReaderBase extends ValueDeserializer<Object>
 {
     protected final BeanDeserializerBase _fallback;
 
+    // Ignoral configuration mirrored from the stock deserializer's build:
+    // consulted by _handleUnknown exactly the way the stock loop consults
+    // _ignoreAllUnknown / _ignorableProps / _includableProps.
+    private final boolean _ignoreAllUnknown;
+    private final Set<String> _ignorableProps;
+    private final Set<String> _includableProps;
+
     protected GeneratedReaderBase(BeanDeserializerBase fallback) {
+        this(fallback, false, null, null);
+    }
+
+    protected GeneratedReaderBase(BeanDeserializerBase fallback, boolean ignoreAllUnknown,
+            Set<String> ignorableProps, Set<String> includableProps) {
         _fallback = fallback;
+        _ignoreAllUnknown = ignoreAllUnknown;
+        _ignorableProps = ignorableProps;
+        _includableProps = includableProps;
     }
 
     @Override
@@ -124,17 +142,30 @@ public abstract class GeneratedReaderBase extends ValueDeserializer<Object>
         throw _fallback.wrapAndThrow(t, ref, prop.getName(), ctxt);
     }
 
-    // Called by generated code for a name the matcher does not know: runs the
-    // configured problem handlers and honors FAIL_ON_UNKNOWN_PROPERTIES, like
-    // the stock loop. Beans with ignored or included property sets never
-    // generate a codec, so plain unknown handling is the whole contract here.
-    // beanOrBuilder is null in record mode, where no instance exists yet.
+    // Called by generated code for a name the matcher does not know: the
+    // stock loop's exact order - ignore-all skips silently, an explicitly
+    // ignored (or not-included) name goes through ignored-property handling,
+    // and everything else runs the problem handlers and honors
+    // FAIL_ON_UNKNOWN_PROPERTIES through the context. beanOrBuilder is null
+    // in record mode, where no instance exists yet.
     protected final void _handleUnknown(JsonParser p, DeserializationContext ctxt,
             Object beanOrBuilder) {
         String name = p.currentName();
         p.nextToken();
-        ctxt.handleUnknownProperty(p, _fallback,
-                (beanOrBuilder == null) ? _fallback.handledType() : beanOrBuilder, name);
+        if (_ignoreAllUnknown) {
+            p.skipChildren();
+            return;
+        }
+        Object ref = (beanOrBuilder == null) ? _fallback.handledType() : beanOrBuilder;
+        if (IgnorePropertiesUtil.shouldIgnore(name, _ignorableProps, _includableProps)) {
+            if (ctxt.isEnabled(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)) {
+                throw IgnoredPropertyException.from(p, ref, name,
+                        _fallback.getKnownPropertyNames());
+            }
+            p.skipChildren();
+            return;
+        }
+        ctxt.handleUnknownProperty(p, _fallback, ref, name);
     }
 
     // Called by generated record codecs when the document ended with unseen

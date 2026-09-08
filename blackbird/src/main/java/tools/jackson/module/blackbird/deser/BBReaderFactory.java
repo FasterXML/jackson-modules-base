@@ -52,9 +52,11 @@ final class BBReaderFactory
     static ValueDeserializer<Object> tryGenerate(BeanDeserializerBase delegate,
             DeserializationContext ctxt,
             Function<Class<?>, MethodHandles.Lookup> lookups,
-            AnnotatedMethod buildMethod, boolean declaresViews) {
+            AnnotatedMethod buildMethod, boolean declaresViews,
+            BeanReaderGenerator.Ignorals ignorals) {
         try {
-            ValueDeserializer<Object> codec = generate(delegate, ctxt, lookups, buildMethod, declaresViews);
+            ValueDeserializer<Object> codec = generate(delegate, ctxt, lookups, buildMethod,
+                    declaresViews, ignorals);
             if (DEBUG) {
                 System.err.println("bbdebug tryGenerate " + delegate.handledType().getName()
                         + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
@@ -73,7 +75,8 @@ final class BBReaderFactory
     private static ValueDeserializer<Object> generate(BeanDeserializerBase delegate,
             DeserializationContext ctxt,
             Function<Class<?>, MethodHandles.Lookup> lookups,
-            AnnotatedMethod buildMethod, boolean declaresViews)
+            AnnotatedMethod buildMethod, boolean declaresViews,
+            BeanReaderGenerator.Ignorals ignorals)
             throws ReflectiveOperationException {
         // Deliberately no delegate.hasViews() gate: 3.x disables
         // DEFAULT_VIEW_INCLUSION by default, which marks every bean as needing
@@ -104,10 +107,10 @@ final class BBReaderFactory
             return null;
         }
         if (buildMethod != null) {
-            return generateBuilder(delegate, ctxt, beanClass, lookups, buildMethod, defineLookup, declaresViews);
+            return generateBuilder(delegate, ctxt, beanClass, lookups, buildMethod, defineLookup, declaresViews, ignorals);
         }
         if (beanClass.isRecord()) {
-            return generateRecord(delegate, ctxt, beanClass, lookups, defineLookup, declaresViews);
+            return generateRecord(delegate, ctxt, beanClass, lookups, defineLookup, declaresViews, ignorals);
         }
         if (!delegate.getValueInstantiator().canCreateUsingDefault()) {
             if (DEBUG) System.err.println("bbdebug gate: instantiator");
@@ -144,7 +147,7 @@ final class BBReaderFactory
         }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
         return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, defineLookup,
-                viewStrategy(ctxt, props, declaresViews));
+                viewStrategy(ctxt, props, declaresViews), ignorals);
     }
 
     // Beans that declare no @JsonView anywhere (read from the property
@@ -174,7 +177,8 @@ final class BBReaderFactory
     private static ValueDeserializer<Object> generateBuilder(BeanDeserializerBase delegate,
             DeserializationContext ctxt, Class<?> beanClass,
             Function<Class<?>, MethodHandles.Lookup> lookups, AnnotatedMethod buildMethod,
-            MethodHandles.Lookup defineLookup, boolean declaresViews)
+            MethodHandles.Lookup defineLookup, boolean declaresViews,
+            BeanReaderGenerator.Ignorals ignorals)
             throws ReflectiveOperationException {
         Method build = buildMethod.getAnnotated();
         Class<?> builderClass = build.getDeclaringClass();
@@ -232,7 +236,7 @@ final class BBReaderFactory
         return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, null,
                 new BeanReaderGenerator.BuilderSupport(
                         delegate.getValueInstantiator(), buildMH, builderClass), defineLookup,
-                viewStrategy(ctxt, props, declaresViews));
+                viewStrategy(ctxt, props, declaresViews), ignorals);
     }
 
     private static GenProp classifyBuilder(SettableBeanProperty prop, Class<?> builderClass,
@@ -264,7 +268,7 @@ final class BBReaderFactory
     private static ValueDeserializer<Object> generateRecord(BeanDeserializerBase delegate,
             DeserializationContext ctxt, Class<?> beanClass,
             Function<Class<?>, MethodHandles.Lookup> lookups, MethodHandles.Lookup defineLookup,
-            boolean declaresViews)
+            boolean declaresViews, BeanReaderGenerator.Ignorals ignorals)
             throws ReflectiveOperationException {
         if (!delegate.getValueInstantiator().canCreateFromObjectWith()) {
             if (DEBUG) System.err.println("bbdebug gate: record instantiator");
@@ -340,7 +344,7 @@ final class BBReaderFactory
         }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
         return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, recordCtor,
-                defineLookup, viewStrategy(ctxt, props, declaresViews));
+                defineLookup, viewStrategy(ctxt, props, declaresViews), ignorals);
     }
 
     private static GenProp classify(SettableBeanProperty prop, Class<?> beanClass,
