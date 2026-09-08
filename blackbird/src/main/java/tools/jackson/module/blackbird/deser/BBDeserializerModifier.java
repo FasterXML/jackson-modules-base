@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 
 import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.DeserializationConfig;
-import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.ValueDeserializerModifier;
@@ -87,8 +86,7 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
         if (!builderBased && deserializer.getClass() != BeanDeserializer.class) {
             return deserializer;
         }
-        if (config.isEnabled(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                || config.isEnabled(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)) {
+        if (config.isEnabled(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)) {
             return deserializer;
         }
         if (Boolean.TRUE.equals(config.getDefaultMergeable())) {
@@ -101,14 +99,16 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
                         && !Modifier.isStatic(beanClass.getModifiers()))) {
             return deserializer;
         }
-        if (builderBased || beanClass.isRecord()) {
-            if (config.isEnabled(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES)
-                    || config.isEnabled(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES)) {
+        // Records and builder beans skip the constructor checks: they create
+        // through the canonical constructor and the instantiator. Creator
+        // strictness needs no gate - the generated record path enforces
+        // required, FAIL_ON_MISSING, and FAIL_ON_NULL creator semantics per
+        // call, and builder beans here have no creator properties (the
+        // factory requires the default-creating instantiator).
+        if (!builderBased && !beanClass.isRecord()) {
+            if (Modifier.isAbstract(beanClass.getModifiers())) {
                 return deserializer;
             }
-        } else if (Modifier.isAbstract(beanClass.getModifiers())) {
-            return deserializer;
-        } else {
             try {
                 if (Modifier.isPrivate(beanClass.getDeclaredConstructor().getModifiers())) {
                     return deserializer;

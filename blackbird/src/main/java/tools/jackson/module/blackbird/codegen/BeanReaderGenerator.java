@@ -711,6 +711,7 @@ public final class BeanReaderGenerator
         final int propSlot = next + 2;
         final int excSlot = next + 3;
         final int maskSlot = next + 4;
+        final int nullMaskSlot = next + 6;
         Label propHandler = cob.newLabel();
 
         ClassDesc recordDesc = beanClass.describeConstable().orElseThrow();
@@ -830,6 +831,32 @@ public final class BeanReaderGenerator
         cob.loadConstant(props.size());
         cob.invokevirtual(CD_BASE, "_checkRecordSeen", MTD_CHECK_SEEN);
         cob.labelBinding(allPresent);
+        // Reference components that ended null (missing or explicit) feed the
+        // cold FAIL_ON_NULL_CREATOR_PROPERTIES check, mirroring
+        // PropertyValueBuffer; primitives never do, matching stock defaults.
+        cob.lconst_0().lstore(nullMaskSlot);
+        for (int i = 0; i < props.size(); i++) {
+            if (props.get(i).type().isPrimitive()) {
+                continue;
+            }
+            Label nonNull = cob.newLabel();
+            cob.aload(componentSlot[i]);
+            cob.ifnonnull(nonNull);
+            cob.lload(nullMaskSlot);
+            cob.loadConstant(1L << i);
+            cob.lor();
+            cob.lstore(nullMaskSlot);
+            cob.labelBinding(nonNull);
+        }
+        Label noNulls = cob.newLabel();
+        cob.lload(nullMaskSlot);
+        cob.lconst_0();
+        cob.lcmp();
+        cob.ifeq(noNulls);
+        cob.aload(0).aload(ctxt).lload(nullMaskSlot);
+        cob.loadConstant(props.size());
+        cob.invokevirtual(CD_BASE, "_checkRecordNulls", MTD_CHECK_SEEN);
+        cob.labelBinding(noNulls);
         ldcData(cob, "constructor", ConstantDescs.CD_MethodHandle);
         ClassDesc[] paramDescs = new ClassDesc[props.size()];
         for (int i = 0; i < props.size(); i++) {

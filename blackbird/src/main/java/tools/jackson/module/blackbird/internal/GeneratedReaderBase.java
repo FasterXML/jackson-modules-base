@@ -162,6 +162,26 @@ public abstract class GeneratedReaderBase extends ValueDeserializer<Object>
         }
     }
 
+    // Called by generated record codecs when any reference-typed component is
+    // null at construction (missing or explicit null): mirrors
+    // PropertyValueBuffer's FAIL_ON_NULL_CREATOR_PROPERTIES reporting.
+    protected final void _checkRecordNulls(DeserializationContext ctxt, long nullMask, int count) {
+        if (!ctxt.isEnabled(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES)) {
+            return;
+        }
+        for (int i = 0; i < count; i++) {
+            if ((nullMask & (1L << i)) == 0) {
+                continue;
+            }
+            SettableBeanProperty prop = _creatorPropByIndex(i);
+            if (prop != null) {
+                ctxt.reportInputMismatch(prop,
+                        "Null value for creator property '%s' (index %d); `DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES` enabled",
+                        prop.getName(), i);
+            }
+        }
+    }
+
     private SettableBeanProperty _creatorPropByIndex(int index) {
         for (Iterator<SettableBeanProperty> it = _fallback.properties(); it.hasNext(); ) {
             SettableBeanProperty prop = it.next();
