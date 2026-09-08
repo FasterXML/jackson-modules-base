@@ -133,7 +133,7 @@ public class OptionalDeser355Test extends BlackbirdTestBase
         OptionalBean bean = mapper.readValue("{\"value\":\"test\"}", OptionalBean.class);
 
         assertEquals(Optional.of("test"), bean.getValue());
-        assertEquals("BBCodecPlaceholder",
+        assertEquals("BBReaderPlaceholder",
                 capture.deserializerFor(OptionalBean.class).getClass().getSimpleName());
         assertEquals(Optional.empty(),
                 mapper.readValue("{\"value\":null}", OptionalBean.class).getValue());
@@ -150,7 +150,7 @@ public class OptionalDeser355Test extends BlackbirdTestBase
         assertEquals(Optional.of("test"), bean.getValue());
         assertEquals(Optional.of(42), bean.getNumber());
         // The custom-deserializer properties ride the codec's stock arms.
-        assertEquals("BBCodecPlaceholder",
+        assertEquals("BBReaderPlaceholder",
                 capture.deserializerFor(CustomOptionalBean.class).getClass().getSimpleName());
     }
 

@@ -192,8 +192,8 @@ public class BBCodecViewTest extends BlackbirdTestBase
                 .build();
         m.readValue(DOC, ViewBean.class);
         m.readValue("{\"a\":\"x\",\"b\":7}", ViewRecord.class);
-        assertEquals("BBCodecPlaceholder", seen.get(ViewBean.class).getClass().getSimpleName());
-        assertEquals("BBCodecPlaceholder", seen.get(ViewRecord.class).getClass().getSimpleName());
+        assertEquals("BBReaderPlaceholder", seen.get(ViewBean.class).getClass().getSimpleName());
+        assertEquals("BBReaderPlaceholder", seen.get(ViewRecord.class).getClass().getSimpleName());
     }
 
     // A plain bean with no @JsonView annotations: with DEFAULT_VIEW_INCLUSION

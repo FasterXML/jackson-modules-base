@@ -30,7 +30,7 @@ public class FieldAccessTest extends BlackbirdInjectionTestBase
         assertTrue(bean.boolField);
         assertEquals("x", bean.stringField);
 
-        assertTrue(isBlackbirdDeserCodec(h.deserFor(FieldOnlyBean.class)),
+        assertTrue(isBlackbirdReader(h.deserFor(FieldOnlyBean.class)),
                 "FieldOnlyBean did not engage a Blackbird codec: "
                         + h.deserFor(FieldOnlyBean.class).getClass().getName());
     }

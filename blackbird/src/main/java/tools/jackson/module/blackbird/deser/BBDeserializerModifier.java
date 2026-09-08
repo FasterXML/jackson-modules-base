@@ -161,7 +161,7 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
                 return deserializer;
             }
         }
-        return new BBCodecPlaceholder((BeanDeserializerBase) deserializer, _lookups,
+        return new BBReaderPlaceholder((BeanDeserializerBase) deserializer, _lookups,
                 builderBased ? buildMethod : null, declaresViews);
     }
 }

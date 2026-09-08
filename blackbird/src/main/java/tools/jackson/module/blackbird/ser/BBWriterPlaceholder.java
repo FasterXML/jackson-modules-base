@@ -18,7 +18,7 @@ import tools.jackson.databind.util.NameTransformer;
  * generated writer through contextualization; anything that keeps the
  * placeholder still works through delegation.
  */
-final class BBSerCodecPlaceholder extends ValueSerializer<Object>
+final class BBWriterPlaceholder extends ValueSerializer<Object>
 {
     private final BeanSerializerBase _delegate;
 
@@ -26,7 +26,7 @@ final class BBSerCodecPlaceholder extends ValueSerializer<Object>
 
     private volatile ValueSerializer<Object> _codec;
 
-    BBSerCodecPlaceholder(BeanSerializerBase delegate,
+    BBWriterPlaceholder(BeanSerializerBase delegate,
             Function<Class<?>, MethodHandles.Lookup> lookups) {
         _delegate = delegate;
         _lookups = lookups;
@@ -35,7 +35,7 @@ final class BBSerCodecPlaceholder extends ValueSerializer<Object>
     @Override
     public void resolve(SerializationContext ctxt) {
         _delegate.resolve(ctxt);
-        _codec = BBSerCodecFactory.tryGenerate(_delegate, ctxt, _lookups);
+        _codec = BBWriterFactory.tryGenerate(_delegate, ctxt, _lookups);
     }
 
     @Override

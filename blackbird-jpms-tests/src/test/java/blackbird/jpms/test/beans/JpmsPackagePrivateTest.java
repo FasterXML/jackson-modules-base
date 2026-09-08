@@ -52,7 +52,7 @@ public class JpmsPackagePrivateTest
             assertEquals(7, bean.getCount());
             assertEquals("x", bean.getName());
         });
-        assertTrue(err.contains("BBCodec_PkgBean"),
+        assertTrue(err.contains("BBReader_PkgBean"),
                 "expected a generated codec for PkgBean; diagnostics:\n" + err);
         assertFalse(err.contains("null (gated)"),
                 "PkgBean was gated instead of accelerated; diagnostics:\n" + err);
@@ -70,7 +70,7 @@ public class JpmsPackagePrivateTest
         });
         // Blackbird's own lookup cannot reach this module's package, so the
         // bean stays stock - correctly, and without an error.
-        assertFalse(err.contains("BBCodec_PkgBean"), err);
+        assertFalse(err.contains("BBReader_PkgBean"), err);
     }
 
     private interface Body {

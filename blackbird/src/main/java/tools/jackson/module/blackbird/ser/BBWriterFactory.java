@@ -18,7 +18,7 @@ import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
 import tools.jackson.databind.MapperFeature;
-import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.ViewStrategy;
+import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.ViewStrategy;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator;
 import tools.jackson.module.blackbird.codegen.CodecAccess;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator.GenWProp;
@@ -32,7 +32,7 @@ import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
  * deserializer side: anything not cheaply verifiable rides the stock
  * PropertyWriter from generated code.
  */
-final class BBSerCodecFactory
+final class BBWriterFactory
 {
     private static final Set<String> STOCK_SCALAR_SERS = Set.of(
             "tools.jackson.databind.ser.jdk.StringSerializer",
@@ -40,7 +40,7 @@ final class BBSerCodecFactory
             "tools.jackson.databind.ser.jdk.NumberSerializers$LongSerializer",
             "tools.jackson.databind.ser.jdk.BooleanSerializer");
 
-    private BBSerCodecFactory() {}
+    private BBWriterFactory() {}
 
     static ValueSerializer<Object> tryGenerate(BeanSerializerBase delegate,
             SerializationContext ctxt, Function<Class<?>, MethodHandles.Lookup> lookups) {
@@ -186,7 +186,7 @@ final class BBSerCodecFactory
         return new GenWProp(WKind.STOCK, null, writer, null, null);
     }
 
-    // Rationale in BBCodecFactory.visibleToGenerator: generated code refers to
+    // Rationale in BBReaderFactory.visibleToGenerator: generated code refers to
     // the bean class by name, resolved through this module's loader.
     private static boolean visibleToGenerator(Class<?> cls) {
         try {

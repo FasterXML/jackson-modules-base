@@ -105,7 +105,7 @@ public class PackagePrivateBeanTest extends BlackbirdTestBase
     // the generator gated the bean, so the assertion distinguishes "engaged
     // and generated" from "engaged but silently demoted".
     private static void assertCodecGenerated(Object placeholder) throws Exception {
-        assertEquals("BBCodecPlaceholder", placeholder.getClass().getSimpleName(),
+        assertEquals("BBReaderPlaceholder", placeholder.getClass().getSimpleName(),
                 "expected the deserializer placeholder, got "
                         + placeholder.getClass().getName());
         Field codec = placeholder.getClass().getDeclaredField("_codec");
@@ -114,7 +114,7 @@ public class PackagePrivateBeanTest extends BlackbirdTestBase
     }
 
     private static void assertWriterGenerated(Object placeholder) throws Exception {
-        assertEquals("BBSerCodecPlaceholder", placeholder.getClass().getSimpleName(),
+        assertEquals("BBWriterPlaceholder", placeholder.getClass().getSimpleName(),
                 "expected the serializer placeholder, got "
                         + placeholder.getClass().getName());
         Field codec = placeholder.getClass().getDeclaredField("_codec");
@@ -162,7 +162,7 @@ public class PackagePrivateBeanTest extends BlackbirdTestBase
 
         PrivateBean bean = mapper.readValue(a2q("{'x':5}"), PrivateBean.class);
         assertEquals(5, bean.x);
-        assertNotEquals("BBCodecPlaceholder",
+        assertNotEquals("BBReaderPlaceholder",
                 capture.desers.get(PrivateBean.class).getClass().getSimpleName(),
                 "private classes must stay on the stock deserializer");
     }

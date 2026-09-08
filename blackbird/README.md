@@ -110,7 +110,7 @@ generator does not cover keep the stock `BeanDeserializer` outright.
 With `-Dblackbird.debug.codegen=true`, the module prints each generation
 decision (engaged, or which gate demoted the bean) to standard error. With
 `-Dblackbird.debug.dumpDir=<dir>`, the module writes each generated class's
-bytes to that directory as `<bean-class-name>-codec.class` or
+bytes to that directory as `<bean-class-name>-reader.class` or
 `-writer.class`, for inspection with javap or a decompiler.
 
 ## Performance

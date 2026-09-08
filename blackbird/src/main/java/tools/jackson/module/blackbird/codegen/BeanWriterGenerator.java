@@ -21,7 +21,7 @@ import tools.jackson.core.SerializableString;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
-import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.ViewStrategy;
+import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.ViewStrategy;
 import tools.jackson.module.blackbird.internal.GeneratedWriterBase;
 
 /**
@@ -85,7 +85,7 @@ public final class BeanWriterGenerator
             ConstantDescs.CD_boolean);
 
     // Named class-data entries through the writer base's classDataEntry
-    // bootstrap; rationale in BeanCodecGenerator.
+    // bootstrap; rationale in BeanReaderGenerator.
     private static final java.lang.constant.DirectMethodHandleDesc BSM_DATA_ENTRY =
             ConstantDescs.ofConstantBootstrap(CD_WRITER_BASE, "classDataEntry",
                     ConstantDescs.CD_Object);
@@ -108,19 +108,19 @@ public final class BeanWriterGenerator
         for (int i = 0; i < props.size(); i++) {
             GenWProp p = props.get(i);
             String base = p.stock().getName();
-            stockName[i] = BeanCodecGenerator.dataName(classData, base + "Writer");
+            stockName[i] = BeanReaderGenerator.dataName(classData, base + "Writer");
             classData.put(stockName[i], p.stock());
             if (p.name() != null) {
-                nameName[i] = BeanCodecGenerator.dataName(classData, base + "Name");
+                nameName[i] = BeanReaderGenerator.dataName(classData, base + "Name");
                 classData.put(nameName[i], p.name());
             }
             if (p.child() != null) {
-                childName[i] = BeanCodecGenerator.dataName(classData, base + "Codec");
+                childName[i] = BeanReaderGenerator.dataName(classData, base + "Codec");
                 classData.put(childName[i], p.child());
             }
         }
 
-        // Rationale in BeanCodecGenerator: non-public beans define in the
+        // Rationale in BeanReaderGenerator: non-public beans define in the
         // bean's package context; a define failure there is an environment
         // gate (possible only when the bean's module does not read blackbird).
         MethodHandles.Lookup definer =
@@ -183,12 +183,12 @@ public final class BeanWriterGenerator
             clb.withFlags(ClassFile.ACC_PUBLIC | ClassFile.ACC_FINAL | ClassFile.ACC_SUPER);
             clb.withSuperclass(CD_WRITER_BASE);
             clb.withMethod(ConstantDescs.INIT_NAME, MTD_CTOR, ClassFile.ACC_PUBLIC,
-                    mb -> mb.with(BeanCodecGenerator.params("fallback"))
+                    mb -> mb.with(BeanReaderGenerator.params("fallback"))
                             .withCode(cob -> cob.aload(0).aload(1)
                                     .invokespecial(CD_WRITER_BASE, ConstantDescs.INIT_NAME, MTD_CTOR)
                                     .return_()));
             clb.withMethod("serialize", MTD_SERIALIZE, ClassFile.ACC_PUBLIC,
-                    mb -> mb.with(BeanCodecGenerator.params("value", "g", "ctxt"))
+                    mb -> mb.with(BeanReaderGenerator.params("value", "g", "ctxt"))
                             .withCode(cob -> buildSerialize(cob, thisClass, beanClass, props,
                                     stockName, nameName, childName, views)));
             emitHelpers(clb, thisClass, props);
@@ -255,8 +255,8 @@ public final class BeanWriterGenerator
     private static void emitPadded(java.lang.classfile.ClassBuilder clb, String name,
             MethodTypeDesc type, java.util.function.Consumer<CodeBuilder> body) {
         MethodParametersAttribute helperParams = (type.parameterCount() == 2)
-                ? BeanCodecGenerator.params("g", "name")
-                : BeanCodecGenerator.params("g", "name", "value");
+                ? BeanReaderGenerator.params("g", "name")
+                : BeanReaderGenerator.params("g", "name", "value");
         clb.withMethod(name, type, ClassFile.ACC_PRIVATE | ClassFile.ACC_STATIC,
                 mb -> mb.with(helperParams).withCode(cob -> {
             for (int i = 0; i < INLINE_PAD; i++) {
@@ -386,7 +386,7 @@ public final class BeanWriterGenerator
     private static void emitComputeViewMask(java.lang.classfile.ClassBuilder clb,
             List<GenWProp> props, String[] stockName, boolean includeByDefault) {
         clb.withMethod("_computeViewMask", MTD_VIEW_MASK, ClassFile.ACC_PROTECTED,
-                mb -> mb.with(BeanCodecGenerator.params("activeView")).withCode(cob -> {
+                mb -> mb.with(BeanReaderGenerator.params("activeView")).withCode(cob -> {
             final int maskSlot = 2;
             Label scopeStart = cob.newBoundLabel();
             cob.lconst_0().lstore(maskSlot);

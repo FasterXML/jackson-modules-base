@@ -25,7 +25,7 @@ import tools.jackson.databind.util.NameTransformer;
  * with no extra hop; anything that keeps the placeholder still works through
  * delegation.
  */
-final class BBCodecPlaceholder extends ValueDeserializer<Object>
+final class BBReaderPlaceholder extends ValueDeserializer<Object>
 {
     private final BeanDeserializerBase _delegate;
 
@@ -41,7 +41,7 @@ final class BBCodecPlaceholder extends ValueDeserializer<Object>
 
     private volatile ValueDeserializer<Object> _codec;
 
-    BBCodecPlaceholder(BeanDeserializerBase delegate,
+    BBReaderPlaceholder(BeanDeserializerBase delegate,
             Function<Class<?>, MethodHandles.Lookup> lookups,
             AnnotatedMethod buildMethod, boolean declaresViews) {
         _delegate = delegate;
@@ -56,7 +56,7 @@ final class BBCodecPlaceholder extends ValueDeserializer<Object>
             System.err.println("bbdebug resolve " + _delegate.handledType().getName());
         }
         _delegate.resolve(ctxt);
-        _codec = BBCodecFactory.tryGenerate(_delegate, ctxt, _lookups, _buildMethod, _declaresViews);
+        _codec = BBReaderFactory.tryGenerate(_delegate, ctxt, _lookups, _buildMethod, _declaresViews);
     }
 
     @Override
@@ -142,7 +142,7 @@ final class BBCodecPlaceholder extends ValueDeserializer<Object>
     }
 
     // Unwrapping must produce the stock unwrapping variant, never the codec
-    // (rationale in GeneratedCodecBase.unwrappingDeserializer).
+    // (rationale in GeneratedReaderBase.unwrappingDeserializer).
     @Override
     public ValueDeserializer<Object> unwrappingDeserializer(DeserializationContext ctxt,
             NameTransformer unwrapper) {

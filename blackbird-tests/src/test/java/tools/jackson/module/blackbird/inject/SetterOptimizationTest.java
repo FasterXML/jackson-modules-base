@@ -75,7 +75,7 @@ public class SetterOptimizationTest extends BlackbirdInjectionTestBase
     }
 
     private void assertCodecEngaged(Class<?> cls) {
-        assertTrue(isBlackbirdDeserCodec(h.deserFor(cls)),
+        assertTrue(isBlackbirdReader(h.deserFor(cls)),
                 cls.getSimpleName() + " did not engage a Blackbird codec: "
                         + h.deserFor(cls).getClass().getName());
     }

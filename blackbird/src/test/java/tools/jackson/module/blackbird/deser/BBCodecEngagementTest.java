@@ -181,12 +181,12 @@ public class BBCodecEngagementTest extends BlackbirdTestBase
         m.readValue("{\"name\":\"a\"}", PublicBean.class);
         m.readValue("{\"name\":\"a\"}", PublicRec.class);
         m.readValue("{\"name\":\"a\"}", BuilderBean.class);
-        assertEquals("BBCodecPlaceholder",
+        assertEquals("BBReaderPlaceholder",
                 seen.get(PublicBean.class).getClass().getSimpleName());
-        assertEquals("BBCodecPlaceholder",
+        assertEquals("BBReaderPlaceholder",
                 seen.get(PublicRec.class).getClass().getSimpleName());
         // Builder flow keys the modifier by the builder class.
-        assertEquals("BBCodecPlaceholder",
+        assertEquals("BBReaderPlaceholder",
                 seen.get(BuilderBean.Builder.class).getClass().getSimpleName());
     }
 

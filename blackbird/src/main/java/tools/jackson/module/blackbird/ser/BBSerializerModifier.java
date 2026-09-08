@@ -60,6 +60,6 @@ public class BBSerializerModifier extends ValueSerializerModifier
                         && !Modifier.isStatic(beanClass.getModifiers()))) {
             return serializer;
         }
-        return new BBSerCodecPlaceholder((BeanSerializerBase) serializer, _lookups);
+        return new BBWriterPlaceholder((BeanSerializerBase) serializer, _lookups);
     }
 }

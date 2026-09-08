@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 // Test utilities for verifying that Blackbird's codec generation engaged for a
 // given POJO loaded from the unnamed module (classpath). Blackbird installs a
-// per-bean placeholder (BBCodecPlaceholder / BBSerCodecPlaceholder) that
+// per-bean placeholder (BBReaderPlaceholder / BBWriterPlaceholder) that
 // resolves to a generated hidden-class codec; the placeholder types are
 // package-private inside the blackbird module, so these checks match by simple
 // name and package rather than compile-time type references. Mirrors the
@@ -91,13 +91,13 @@ abstract class BlackbirdInjectionTestBase
     }
 
     /** True if Blackbird installed its deserializer codec for the captured value. */
-    protected static boolean isBlackbirdDeserCodec(ValueDeserializer<?> deser) {
-        return blackbirdClassChainIncludes(deser.getClass(), "BBCodecPlaceholder");
+    protected static boolean isBlackbirdReader(ValueDeserializer<?> deser) {
+        return blackbirdClassChainIncludes(deser.getClass(), "BBReaderPlaceholder");
     }
 
     /** True if Blackbird installed its serializer codec for the captured value. */
-    protected static boolean isBlackbirdSerCodec(ValueSerializer<?> ser) {
-        return blackbirdClassChainIncludes(ser.getClass(), "BBSerCodecPlaceholder");
+    protected static boolean isBlackbirdWriter(ValueSerializer<?> ser) {
+        return blackbirdClassChainIncludes(ser.getClass(), "BBWriterPlaceholder");
     }
 
     /** Walks the superclass chain of {@code cls} looking for a class whose

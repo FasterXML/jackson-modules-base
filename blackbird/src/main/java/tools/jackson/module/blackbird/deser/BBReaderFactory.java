@@ -22,12 +22,12 @@ import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.introspect.AnnotatedField;
 import tools.jackson.databind.introspect.AnnotatedMethod;
-import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.GenProp;
-import tools.jackson.module.blackbird.internal.GeneratedCodecBase;
+import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.GenProp;
+import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
 import tools.jackson.databind.MapperFeature;
-import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.Kind;
-import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.ViewStrategy;
-import tools.jackson.module.blackbird.codegen.BeanCodecGenerator;
+import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.Kind;
+import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.ViewStrategy;
+import tools.jackson.module.blackbird.codegen.BeanReaderGenerator;
 import tools.jackson.module.blackbird.codegen.CodecAccess;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
@@ -37,7 +37,7 @@ import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
  * gate that cannot be verified cheaply demotes a property to the stock path or
  * rejects the bean entirely, so semantics never drift from databind.
  */
-final class BBCodecFactory
+final class BBReaderFactory
 {
     private static final Set<String> STOCK_SCALAR_DESERS = Set.of(
             "tools.jackson.databind.deser.jdk.StringDeserializer",
@@ -45,7 +45,7 @@ final class BBCodecFactory
             "tools.jackson.databind.deser.jdk.NumberDeserializers$LongDeserializer",
             "tools.jackson.databind.deser.jdk.NumberDeserializers$BooleanDeserializer");
 
-    private BBCodecFactory() {}
+    private BBReaderFactory() {}
 
     private static final boolean DEBUG = Boolean.getBoolean("blackbird.debug.codegen");
 
@@ -143,7 +143,7 @@ final class BBCodecFactory
             return null;
         }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
-        return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, defineLookup,
+        return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, defineLookup,
                 viewStrategy(ctxt, props, declaresViews));
     }
 
@@ -229,8 +229,8 @@ final class BBCodecFactory
             return null;
         }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
-        return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, null,
-                new BeanCodecGenerator.BuilderSupport(
+        return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, null,
+                new BeanReaderGenerator.BuilderSupport(
                         delegate.getValueInstantiator(), buildMH, builderClass), defineLookup,
                 viewStrategy(ctxt, props, declaresViews));
     }
@@ -247,7 +247,7 @@ final class BBCodecFactory
             return stock(prop);
         }
         ValueDeserializer<?> valueDeser = prop.getValueDeserializer();
-        if (valueDeser instanceof GeneratedCodecBase child) {
+        if (valueDeser instanceof GeneratedReaderBase child) {
             return new GenProp(prop.getName(), Kind.CHILD, setter, prop, raw, child, null);
         }
         Kind kind = scalarKind(raw);
@@ -314,7 +314,7 @@ final class BBCodecFactory
             paramTypes[i] = comps[i].getType();
             SettableBeanProperty prop = byIndex[i];
             ValueDeserializer<?> valueDeser = prop.getValueDeserializer();
-            if (valueDeser instanceof GeneratedCodecBase child) {
+            if (valueDeser instanceof GeneratedReaderBase child) {
                 props.add(new GenProp(prop.getName(), Kind.CHILD, null, prop,
                         paramTypes[i], child, null));
                 names.add(Named.fromString(prop.getName()));
@@ -339,7 +339,7 @@ final class BBCodecFactory
             return null;
         }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
-        return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, recordCtor,
+        return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, recordCtor,
                 defineLookup, viewStrategy(ctxt, props, declaresViews));
     }
 
@@ -363,7 +363,7 @@ final class BBCodecFactory
             ValueDeserializer<?> valueDeser, Method setter, Class<?> anchor) {
         boolean direct = CodecAccess.directlyAccessible(setter.getModifiers(),
                 setter.getDeclaringClass(), anchor);
-        if (valueDeser instanceof GeneratedCodecBase child && direct) {
+        if (valueDeser instanceof GeneratedReaderBase child && direct) {
             return new GenProp(prop.getName(), Kind.CHILD, setter, prop, raw, child, null);
         }
         Kind kind = scalarKind(raw);
@@ -402,7 +402,7 @@ final class BBCodecFactory
         }
         boolean direct = CodecAccess.directlyAccessible(field.getModifiers(),
                 field.getDeclaringClass(), anchor);
-        if (valueDeser instanceof GeneratedCodecBase child && direct) {
+        if (valueDeser instanceof GeneratedReaderBase child && direct) {
             return new GenProp(prop.getName(), Kind.CHILD, null, prop, raw, child, null, field);
         }
         Kind kind = scalarKind(raw);
@@ -457,7 +457,7 @@ final class BBCodecFactory
     static boolean visibleToGenerator(Class<?> cls) {
         try {
             return Class.forName(cls.getName(), false,
-                    GeneratedCodecBase.class.getClassLoader()) == cls;
+                    GeneratedReaderBase.class.getClassLoader()) == cls;
         } catch (ClassNotFoundException | LinkageError e) {
             return false;
         }

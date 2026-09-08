@@ -26,7 +26,7 @@ import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.util.ClassUtil;
-import tools.jackson.module.blackbird.internal.GeneratedCodecBase;
+import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
 
 /**
  * Emits a hidden-class deserializer for one bean: a loop on nextNameMatch, a
@@ -35,9 +35,9 @@ import tools.jackson.module.blackbird.internal.GeneratedCodecBase;
  * classData constant) for everything else. The matcher and the per-property
  * payloads travel as a name-addressed classData map; the fallback
  * deserializer is a constructor argument consumed by
- * {@link GeneratedCodecBase}.
+ * {@link GeneratedReaderBase}.
  */
-public final class BeanCodecGenerator
+public final class BeanReaderGenerator
 {
     public enum Kind { STRING, INT, LONG, BOOLEAN, CHILD, STOCK }
 
@@ -55,7 +55,7 @@ public final class BeanCodecGenerator
     // type for CHILD; child is the linked generated codec for CHILD; field is
     // set for a public field stored through putfield.
     public record GenProp(String name, Kind kind, Method setter, SettableBeanProperty stock,
-            Class<?> type, GeneratedCodecBase child, MethodHandle setterHandle, Field field) {
+            Class<?> type, GeneratedReaderBase child, MethodHandle setterHandle, Field field) {
         public GenProp(String name, Kind kind, Method setter, SettableBeanProperty stock) {
             this(name, kind, setter, stock, null, null, null, null);
         }
@@ -66,7 +66,7 @@ public final class BeanCodecGenerator
         }
 
         public GenProp(String name, Kind kind, Method setter, SettableBeanProperty stock,
-                Class<?> type, GeneratedCodecBase child, MethodHandle setterHandle) {
+                Class<?> type, GeneratedReaderBase child, MethodHandle setterHandle) {
             this(name, kind, setter, stock, type, child, setterHandle, null);
         }
     }
@@ -79,12 +79,12 @@ public final class BeanCodecGenerator
     // Derived from the class literal rather than a name: the test build
     // compiles main sources into target/test-classes through --patch-module,
     // and javac emits only compile-time-referenced classes there. The class
-    // literal makes sure that GeneratedCodecBase.class is present in the test
+    // literal makes sure that GeneratedReaderBase.class is present in the test
     // module, which shadows target/classes at run time. Every same-module
     // class that generated code names only as a string needs such a
     // compile-time reference.
     private static final ClassDesc CD_BASE =
-            GeneratedCodecBase.class.describeConstable().orElseThrow();
+            GeneratedReaderBase.class.describeConstable().orElseThrow();
     private static final ClassDesc CD_BEAN_DESER_BASE = ClassDesc.of("tools.jackson.databind.deser.bean.BeanDeserializerBase");
     private static final ClassDesc CD_ISE = ClassDesc.of("java.lang.IllegalStateException");
 
@@ -126,7 +126,7 @@ public final class BeanCodecGenerator
     private static final java.lang.constant.DirectMethodHandleDesc BSM_DATA_ENTRY =
             ConstantDescs.ofConstantBootstrap(CD_BASE, "classDataEntry", ConstantDescs.CD_Object);
 
-    private BeanCodecGenerator() {}
+    private BeanReaderGenerator() {}
 
     static void ldcData(CodeBuilder cob, String name, ClassDesc type) {
         cob.ldc(DynamicConstantDesc.ofNamed(BSM_DATA_ENTRY, name, type));
@@ -215,7 +215,7 @@ public final class BeanCodecGenerator
         byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
                 stockName, childName, setterName, recordCtor != null,
                 builder == null ? null : builder.builderClass(), views);
-        CodegenDump.dump(beanClass, "codec", bytes);
+        CodegenDump.dump(beanClass, "reader", bytes);
         // No ClassOption.STRONG: the codec instance held by the mapper's
         // deserializer cache anchors the class, so codecs unload with the
         // mapper instead of pinning metaspace for the loader's lifetime.
@@ -255,7 +255,7 @@ public final class BeanCodecGenerator
             ViewStrategy views) {
         // A hidden class must be named in its define context's package.
         ClassDesc thisClass = ClassDesc.of(
-                targetPackage + ".BBCodec_" + beanClass.getSimpleName());
+                targetPackage + ".BBReader_" + beanClass.getSimpleName());
         return ClassFile.of().build(thisClass, clb -> {
             clb.withFlags(ClassFile.ACC_PUBLIC | ClassFile.ACC_FINAL | ClassFile.ACC_SUPER);
             clb.withSuperclass(CD_BASE);
@@ -294,7 +294,7 @@ public final class BeanCodecGenerator
         return MethodParametersAttribute.of(infos);
     }
 
-    // Overrides GeneratedCodecBase._computeViewMask: bit i set when arm i's
+    // Overrides GeneratedReaderBase._computeViewMask: bit i set when arm i's
     // stock property is visible in the view, which keeps visibility semantics
     // (matchers, default-view inclusion) exactly the stock ones.
     private static void emitComputeViewMask(java.lang.classfile.ClassBuilder clb,

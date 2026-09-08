@@ -95,7 +95,7 @@ public abstract class GeneratedWriterBase extends ValueSerializer<Object>
     private static final long[] NO_MASKS = new long[0];
 
     // Copy-on-write cache of view -> property-visibility bitmask; same shape
-    // and rationale as GeneratedCodecBase. Instance state only, so cached view
+    // and rationale as GeneratedReaderBase. Instance state only, so cached view
     // classes unload with the writer and its mapper.
     private volatile Class<?>[] _maskViews = NO_VIEWS;
     private volatile long[] _masks = NO_MASKS;

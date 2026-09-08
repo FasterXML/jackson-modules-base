@@ -49,7 +49,7 @@ public class SerializerInjectionTest extends BlackbirdInjectionTestBase
         assertEquals(new JsonMapper().writeValueAsString(pojo), json,
                 "generated writer output differs from stock databind");
 
-        assertTrue(isBlackbirdSerCodec(h.serFor(GetterSerPojo.class)),
+        assertTrue(isBlackbirdWriter(h.serFor(GetterSerPojo.class)),
                 "GetterSerPojo did not engage a Blackbird writer codec: "
                         + h.serFor(GetterSerPojo.class).getClass().getName());
     }
@@ -64,7 +64,7 @@ public class SerializerInjectionTest extends BlackbirdInjectionTestBase
         assertEquals(new JsonMapper().writeValueAsString(pojo), json,
                 "field-backed output differs from stock databind");
 
-        assertTrue(isBlackbirdSerCodec(h.serFor(FieldSerPojo.class)),
+        assertTrue(isBlackbirdWriter(h.serFor(FieldSerPojo.class)),
                 "FieldSerPojo did not engage a Blackbird writer codec: "
                         + h.serFor(FieldSerPojo.class).getClass().getName());
     }

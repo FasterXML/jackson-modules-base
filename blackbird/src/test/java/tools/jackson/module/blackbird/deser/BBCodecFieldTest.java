@@ -190,6 +190,6 @@ public class BBCodecFieldTest extends BlackbirdTestBase
                 .addModule(new BlackbirdModule())
                 .build();
         m.readValue(a2q("{'name':'a'}"), FieldBean.class);
-        assertEquals("BBCodecPlaceholder", seen.get(FieldBean.class).getClass().getSimpleName());
+        assertEquals("BBReaderPlaceholder", seen.get(FieldBean.class).getClass().getSimpleName());
     }
 }

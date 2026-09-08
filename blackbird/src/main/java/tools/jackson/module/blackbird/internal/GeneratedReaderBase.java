@@ -25,11 +25,11 @@ import tools.jackson.databind.util.NameTransformer;
  * typed (polymorphic) entry, null handling, and update-value reads keep stock
  * semantics.
  */
-public abstract class GeneratedCodecBase extends ValueDeserializer<Object>
+public abstract class GeneratedReaderBase extends ValueDeserializer<Object>
 {
     protected final BeanDeserializerBase _fallback;
 
-    protected GeneratedCodecBase(BeanDeserializerBase fallback) {
+    protected GeneratedReaderBase(BeanDeserializerBase fallback) {
         _fallback = fallback;
     }
 
