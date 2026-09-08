@@ -105,6 +105,14 @@ generator does not cover keep the stock `BeanDeserializer` outright.
 - Streaming parser and generator access.
 - The tree model.
 
+## Debugging
+
+With `-Dblackbird.debug.codegen=true`, the module prints each generation
+decision (engaged, or which gate demoted the bean) to standard error. With
+`-Dblackbird.debug.dumpDir=<dir>`, the module writes each generated class's
+bytes to that directory as `<bean-class-name>-codec.class` or
+`-writer.class`, for inspection with javap or a decompiler.
+
 ## Performance
 
 Measured with paired JMH runs on JDK 25/26, aarch64 and x86_64, against the

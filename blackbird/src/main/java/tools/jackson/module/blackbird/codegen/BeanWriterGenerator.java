@@ -107,6 +107,7 @@ public final class BeanWriterGenerator
                 (defineLookup != null) ? defineLookup : MethodHandles.lookup();
         byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
                 stockIndex, nameIndex, childIndex);
+        CodegenDump.dump(beanClass, "writer", bytes);
         MethodHandles.Lookup hidden;
         try {
             hidden = definer.defineHiddenClassWithClassData(

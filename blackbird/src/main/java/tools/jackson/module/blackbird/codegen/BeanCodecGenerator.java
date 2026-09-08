@@ -177,6 +177,7 @@ public final class BeanCodecGenerator
         byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
                 stockIndex, childIndex, setterMhIndex,
                 ctorIndex, builder == null ? null : builder.builderClass(), instIndex, buildIndex);
+        CodegenDump.dump(beanClass, "codec", bytes);
         // No ClassOption.STRONG: the codec instance held by the mapper's
         // deserializer cache anchors the class, so codecs unload with the
         // mapper instead of pinning metaspace for the loader's lifetime.
