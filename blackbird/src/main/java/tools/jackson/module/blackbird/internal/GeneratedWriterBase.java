@@ -6,6 +6,8 @@ import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import tools.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
 import tools.jackson.databind.util.NameTransformer;
 
@@ -53,5 +55,73 @@ public abstract class GeneratedWriterBase extends ValueSerializer<Object>
     @Override
     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType type) {
         _fallback.acceptJsonFormatVisitor(visitor, type);
+    }
+
+    /*
+    /**********************************************************************
+    /* View support: per-view visibility masks
+    /**********************************************************************
+     */
+
+    private static final Class<?>[] NO_VIEWS = new Class<?>[0];
+    private static final long[] NO_MASKS = new long[0];
+
+    // Copy-on-write cache of view -> property-visibility bitmask; same shape
+    // and rationale as GeneratedCodecBase. Instance state only, so cached view
+    // classes unload with the writer and its mapper.
+    private volatile Class<?>[] _maskViews = NO_VIEWS;
+    private volatile long[] _masks = NO_MASKS;
+
+    protected final long _viewMask(Class<?> view) {
+        Class<?>[] views = _maskViews;
+        for (int i = 0; i < views.length; i++) {
+            if (views[i] == view) {
+                return _masks[i];
+            }
+        }
+        return _addViewMask(view);
+    }
+
+    private synchronized long _addViewMask(Class<?> view) {
+        Class<?>[] views = _maskViews;
+        for (int i = 0; i < views.length; i++) {
+            if (views[i] == view) {
+                return _masks[i];
+            }
+        }
+        long mask = _computeViewMask(view);
+        Class<?>[] newViews = new Class<?>[views.length + 1];
+        long[] newMasks = new long[views.length + 1];
+        System.arraycopy(views, 0, newViews, 0, views.length);
+        System.arraycopy(_masks, 0, newMasks, 0, views.length);
+        newViews[views.length] = view;
+        newMasks[views.length] = mask;
+        _masks = newMasks;
+        _maskViews = newViews;
+        return mask;
+    }
+
+    // Overridden by generated writers that filter per view: bit i reports
+    // whether property i is visible in the given view.
+    protected long _computeViewMask(Class<?> view) {
+        throw new UnsupportedOperationException("writer has no view mask");
+    }
+
+    // Visibility of one property in a view, matching the rule the stock
+    // factory uses to build the filtered writer array: no view annotations
+    // means DEFAULT_VIEW_INCLUSION decides (captured at generation time),
+    // otherwise any declared view assignable from the active view.
+    protected static boolean _propVisible(PropertyWriter w, Class<?> view,
+            boolean includeByDefault) {
+        Class<?>[] views = (w instanceof BeanPropertyWriter bpw) ? bpw.getViews() : null;
+        if (views == null || views.length == 0) {
+            return includeByDefault;
+        }
+        for (Class<?> v : views) {
+            if (v.isAssignableFrom(view)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

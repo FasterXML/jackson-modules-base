@@ -25,7 +25,9 @@ import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.GenProp;
 import tools.jackson.module.blackbird.internal.GeneratedCodecBase;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.Kind;
+import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.ViewStrategy;
 import tools.jackson.module.blackbird.codegen.BeanCodecGenerator;
+import tools.jackson.databind.MapperFeature;
 import tools.jackson.module.blackbird.codegen.CodecAccess;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
@@ -141,7 +143,30 @@ final class BBCodecFactory
             return null;
         }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
-        return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, defineLookup);
+        return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, defineLookup,
+                viewStrategy(ctxt, props));
+    }
+
+    // NONE when views cannot hide any property (default inclusion on and no
+    // property carries @JsonView), so no view code is emitted; MASK when a
+    // per-view visibility bitmask keeps view-active calls on the fast path;
+    // DELEGATE when the property count exceeds a 64-bit mask, matching the
+    // record seen-mask limit. Visibility is read per property from
+    // SettableBeanProperty.visibleInView, so semantics stay exactly stock.
+    private static ViewStrategy viewStrategy(DeserializationContext ctxt, List<GenProp> props) {
+        boolean anyViews = !ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION);
+        if (!anyViews) {
+            for (GenProp p : props) {
+                if (p.stock().hasViews()) {
+                    anyViews = true;
+                    break;
+                }
+            }
+        }
+        if (!anyViews) {
+            return ViewStrategy.NONE;
+        }
+        return (props.size() > 64) ? ViewStrategy.DELEGATE : ViewStrategy.MASK;
     }
 
     // Builder-based beans: the stock ValueInstantiator creates the builder,
@@ -209,7 +234,8 @@ final class BBCodecFactory
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
         return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, null,
                 new BeanCodecGenerator.BuilderSupport(
-                        delegate.getValueInstantiator(), buildMH, builderClass), defineLookup);
+                        delegate.getValueInstantiator(), buildMH, builderClass), defineLookup,
+                viewStrategy(ctxt, props));
     }
 
     private static GenProp classifyBuilder(SettableBeanProperty prop, Class<?> builderClass,
@@ -316,7 +342,7 @@ final class BBCodecFactory
         }
         PropertyNameMatcher matcher = ctxt.tokenStreamFactory().constructNameMatcher(names, true);
         return BeanCodecGenerator.generate(beanClass, props, matcher, delegate, recordCtor,
-                defineLookup);
+                defineLookup, viewStrategy(ctxt, props));
     }
 
     private static GenProp classify(SettableBeanProperty prop, Class<?> beanClass,

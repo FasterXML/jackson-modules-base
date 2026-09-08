@@ -35,6 +35,14 @@ public final class BeanCodecGenerator
 {
     public enum Kind { STRING, INT, LONG, BOOLEAN, CHILD, STOCK }
 
+    // How a generated codec treats an active view. NONE: views cannot affect
+    // this bean (the stock (de)serializer would ignore them too), no view code.
+    // DELEGATE: an active view hands the whole call to the stock fallback
+    // (beans with more than 64 properties). MASK: the codec resolves a cached
+    // per-view visibility bitmask and each property arm tests its bit, so
+    // view-active calls keep the generated fast path.
+    public enum ViewStrategy { NONE, DELEGATE, MASK }
+
     // setter applies to POJO and builder modes (null when setterHandle carries
     // a non-public setter, or when field carries a public field, instead);
     // type is the record component type in record mode and the child value
@@ -93,6 +101,14 @@ public final class BeanCodecGenerator
             ConstantDescs.CD_void, CD_JSON_PARSER, CD_DESER_CONTEXT, ConstantDescs.CD_Object);
     private static final MethodTypeDesc MTD_CHECK_SEEN = MethodTypeDesc.of(
             ConstantDescs.CD_void, CD_DESER_CONTEXT, ConstantDescs.CD_long, ConstantDescs.CD_int);
+    private static final MethodTypeDesc MTD_GET_ACTIVE_VIEW =
+            MethodTypeDesc.of(ConstantDescs.CD_Class);
+    private static final MethodTypeDesc MTD_VIEW_MASK =
+            MethodTypeDesc.of(ConstantDescs.CD_long, ConstantDescs.CD_Class);
+    private static final MethodTypeDesc MTD_HIDDEN_VIEW = MethodTypeDesc.of(
+            ConstantDescs.CD_void, CD_JSON_PARSER, CD_DESER_CONTEXT, CD_SETTABLE_PROP);
+    private static final MethodTypeDesc MTD_VISIBLE_IN_VIEW =
+            MethodTypeDesc.of(ConstantDescs.CD_boolean, ConstantDescs.CD_Class);
     private static final ClassDesc CD_EXCEPTION = ClassDesc.of("java.lang.Exception");
     private static final MethodTypeDesc MTD_PROP_WRAP = MethodTypeDesc.of(
             ClassDesc.of("java.lang.RuntimeException"), ClassDesc.of("java.lang.Throwable"),
@@ -102,9 +118,9 @@ public final class BeanCodecGenerator
 
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback,
-            MethodHandles.Lookup defineLookup)
+            MethodHandles.Lookup defineLookup, ViewStrategy views)
             throws ReflectiveOperationException {
-        return generate(beanClass, props, matcher, fallback, null, null, defineLookup);
+        return generate(beanClass, props, matcher, fallback, null, null, defineLookup, views);
     }
 
     // recordCtor non-null selects record mode: props are in canonical
@@ -112,9 +128,9 @@ public final class BeanCodecGenerator
     // constructor MethodHandle (exact component signature) builds the value.
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor,
-            MethodHandles.Lookup defineLookup)
+            MethodHandles.Lookup defineLookup, ViewStrategy views)
             throws ReflectiveOperationException {
-        return generate(beanClass, props, matcher, fallback, recordCtor, null, defineLookup);
+        return generate(beanClass, props, matcher, fallback, recordCtor, null, defineLookup, views);
     }
 
     // builderSupport non-null selects builder mode: values apply to a builder
@@ -127,7 +143,7 @@ public final class BeanCodecGenerator
     @SuppressWarnings("unchecked")
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor,
-            BuilderSupport builder, MethodHandles.Lookup defineLookup)
+            BuilderSupport builder, MethodHandles.Lookup defineLookup, ViewStrategy views)
             throws ReflectiveOperationException {
         List<Object> classData = new ArrayList<>();
         classData.add(matcher);
@@ -176,7 +192,8 @@ public final class BeanCodecGenerator
                 (defineLookup != null) ? defineLookup : MethodHandles.lookup();
         byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
                 stockIndex, childIndex, setterMhIndex,
-                ctorIndex, builder == null ? null : builder.builderClass(), instIndex, buildIndex);
+                ctorIndex, builder == null ? null : builder.builderClass(), instIndex, buildIndex,
+                views);
         CodegenDump.dump(beanClass, "codec", bytes);
         // No ClassOption.STRONG: the codec instance held by the mapper's
         // deserializer cache anchors the class, so codecs unload with the
@@ -213,7 +230,8 @@ public final class BeanCodecGenerator
     private static byte[] buildClass(String targetPackage, Class<?> beanClass,
             List<GenProp> props,
             int[] stockIndex, int[] childIndex, int[] setterMhIndex,
-            int ctorIndex, Class<?> builderClass, int instIndex, int buildIndex) {
+            int ctorIndex, Class<?> builderClass, int instIndex, int buildIndex,
+            ViewStrategy views) {
         // A hidden class must be named in its define context's package.
         ClassDesc thisClass = ClassDesc.of(
                 targetPackage + ".BBCodec_" + beanClass.getSimpleName());
@@ -228,20 +246,91 @@ public final class BeanCodecGenerator
                     cob -> {
                         if (builderClass != null) {
                             buildBuilderDeserialize(cob, builderClass, props, stockIndex,
-                                    childIndex, instIndex, buildIndex);
+                                    childIndex, instIndex, buildIndex, views);
                         } else if (ctorIndex < 0) {
                             buildDeserialize(cob, beanClass, props, stockIndex, childIndex,
-                                    setterMhIndex);
+                                    setterMhIndex, views);
                         } else {
                             buildRecordDeserialize(cob, beanClass, props, stockIndex, childIndex,
-                                    ctorIndex);
+                                    ctorIndex, views);
                         }
                     });
+            if (views == ViewStrategy.MASK) {
+                emitComputeViewMask(clb, props, stockIndex);
+            }
         });
     }
 
+    // Overrides GeneratedCodecBase._computeViewMask: bit i set when arm i's
+    // stock property is visible in the view, which keeps visibility semantics
+    // (matchers, default-view inclusion) exactly the stock ones.
+    private static void emitComputeViewMask(java.lang.classfile.ClassBuilder clb,
+            List<GenProp> props, int[] stockIndex) {
+        clb.withMethodBody("_computeViewMask", MTD_VIEW_MASK, ClassFile.ACC_PROTECTED, cob -> {
+            final int maskSlot = 2;
+            cob.lconst_0().lstore(maskSlot);
+            for (int i = 0; i < props.size(); i++) {
+                Label skip = cob.newLabel();
+                cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
+                        ConstantDescs.DEFAULT_NAME, CD_SETTABLE_PROP, stockIndex[i]));
+                cob.aload(1);
+                cob.invokevirtual(CD_SETTABLE_PROP, "visibleInView", MTD_VISIBLE_IN_VIEW);
+                cob.ifeq(skip);
+                cob.lload(maskSlot);
+                cob.loadConstant(1L << i);
+                cob.lor();
+                cob.lstore(maskSlot);
+                cob.labelBinding(skip);
+            }
+            cob.lload(maskSlot).lreturn();
+        });
+    }
+
+    // MASK strategy: resolves the visibility bitmask for the call (all-ones
+    // when no view is active) into maskSlot.
+    private static void emitViewMask(CodeBuilder cob, int ctxt, int maskSlot) {
+        Label nullView = cob.newLabel();
+        Label haveMask = cob.newLabel();
+        cob.aload(ctxt).invokevirtual(CD_DESER_CONTEXT, "getActiveView", MTD_GET_ACTIVE_VIEW);
+        cob.dup();
+        cob.ifnull(nullView);
+        cob.aload(0);
+        cob.swap();
+        cob.invokevirtual(CD_BASE, "_viewMask", MTD_VIEW_MASK);
+        cob.lstore(maskSlot);
+        cob.goto_(haveMask);
+        cob.labelBinding(nullView);
+        cob.pop();
+        cob.loadConstant(-1L);
+        cob.lstore(maskSlot);
+        cob.labelBinding(haveMask);
+    }
+
+    // MASK strategy, start of each arm: a hidden property consumes its value
+    // with stock semantics (advance to the value token, then the base helper
+    // reports or skips) and continues the loop without touching the bean.
+    private static void emitArmViewCheck(CodeBuilder cob, int parser, int ctxt, int maskSlot,
+            int matcherSlot, int ixSlot, int armIndex, int stockIdx, Label loop) {
+        Label visible = cob.newLabel();
+        cob.lload(maskSlot);
+        cob.loadConstant(1L << armIndex);
+        cob.land();
+        cob.lconst_0();
+        cob.lcmp();
+        cob.ifne(visible);
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
+        cob.aload(0).aload(parser).aload(ctxt);
+        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
+                ConstantDescs.DEFAULT_NAME, CD_SETTABLE_PROP, stockIdx));
+        cob.invokevirtual(CD_BASE, "_hiddenView", MTD_HIDDEN_VIEW);
+        nextNameMatch(cob, parser, matcherSlot, ixSlot);
+        cob.goto_(loop);
+        cob.labelBinding(visible);
+    }
+
     private static void buildDeserialize(CodeBuilder cob, Class<?> beanClass,
-            List<GenProp> props, int[] stockIndex, int[] childIndex, int[] setterMhIndex) {
+            List<GenProp> props, int[] stockIndex, int[] childIndex, int[] setterMhIndex,
+            ViewStrategy views) {
         final int parser = 1;
         final int ctxt = 2;
         final int beanSlot = 3;
@@ -249,11 +338,15 @@ public final class BeanCodecGenerator
         final int ixSlot = 5;
         final int propSlot = 6;
         final int excSlot = 7;
+        final int maskSlot = 8;
         Label propHandler = cob.newLabel();
 
         ClassDesc beanDesc = beanClass.describeConstable().orElseThrow();
 
-        emitEntryGuard(cob, parser, ctxt);
+        emitEntryGuard(cob, parser, ctxt, views);
+        if (views == ViewStrategy.MASK) {
+            emitViewMask(cob, ctxt, maskSlot);
+        }
 
         cob.new_(beanDesc).dup()
            .invokespecial(beanDesc, ConstantDescs.INIT_NAME, ConstantDescs.MTD_void)
@@ -292,6 +385,10 @@ public final class BeanCodecGenerator
 
         for (int i = 0; i < props.size(); i++) {
             cob.labelBinding(caseLabels[i]);
+            if (views == ViewStrategy.MASK) {
+                emitArmViewCheck(cob, parser, ctxt, maskSlot, matcherSlot, ixSlot, i,
+                        stockIndex[i], loop);
+            }
             Label armEnd = beginArm(cob, stockIndex[i], propSlot, propHandler);
             GenProp prop = props.get(i);
             switch (prop.kind()) {
@@ -366,7 +463,8 @@ public final class BeanCodecGenerator
             MethodTypeDesc.of(ConstantDescs.CD_Object, ConstantDescs.CD_Object);
 
     private static void buildBuilderDeserialize(CodeBuilder cob, Class<?> builderClass,
-            List<GenProp> props, int[] stockIndex, int[] childIndex, int instIndex, int buildIndex) {
+            List<GenProp> props, int[] stockIndex, int[] childIndex, int instIndex, int buildIndex,
+            ViewStrategy views) {
         final int parser = 1;
         final int ctxt = 2;
         final int builderSlot = 3;
@@ -374,11 +472,15 @@ public final class BeanCodecGenerator
         final int ixSlot = 5;
         final int propSlot = 6;
         final int excSlot = 7;
+        final int maskSlot = 8;
         Label propHandler = cob.newLabel();
 
         ClassDesc builderDesc = builderClass.describeConstable().orElseThrow();
 
-        emitEntryGuard(cob, parser, ctxt);
+        emitEntryGuard(cob, parser, ctxt, views);
+        if (views == ViewStrategy.MASK) {
+            emitViewMask(cob, ctxt, maskSlot);
+        }
 
         cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
                 ConstantDescs.DEFAULT_NAME, CD_VALUE_INSTANTIATOR, instIndex));
@@ -418,6 +520,10 @@ public final class BeanCodecGenerator
 
         for (int i = 0; i < props.size(); i++) {
             cob.labelBinding(caseLabels[i]);
+            if (views == ViewStrategy.MASK) {
+                emitArmViewCheck(cob, parser, ctxt, maskSlot, matcherSlot, ixSlot, i,
+                        stockIndex[i], loop);
+            }
             Label armEnd = beginArm(cob, stockIndex[i], propSlot, propHandler);
             GenProp prop = props.get(i);
             switch (prop.kind()) {
@@ -528,7 +634,8 @@ public final class BeanCodecGenerator
     }
 
     private static void buildRecordDeserialize(CodeBuilder cob, Class<?> beanClass,
-            List<GenProp> props, int[] stockIndex, int[] childIndex, int ctorIndex) {
+            List<GenProp> props, int[] stockIndex, int[] childIndex, int ctorIndex,
+            ViewStrategy views) {
         final int parser = 1;
         final int ctxt = 2;
 
@@ -544,11 +651,15 @@ public final class BeanCodecGenerator
         final int seenSlot = next;
         final int propSlot = next + 2;
         final int excSlot = next + 3;
+        final int maskSlot = next + 4;
         Label propHandler = cob.newLabel();
 
         ClassDesc recordDesc = beanClass.describeConstable().orElseThrow();
 
-        emitEntryGuard(cob, parser, ctxt);
+        emitEntryGuard(cob, parser, ctxt, views);
+        if (views == ViewStrategy.MASK) {
+            emitViewMask(cob, ctxt, maskSlot);
+        }
 
         for (int i = 0; i < props.size(); i++) {
             Class<?> t = props.get(i).type();
@@ -597,6 +708,13 @@ public final class BeanCodecGenerator
 
         for (int i = 0; i < props.size(); i++) {
             cob.labelBinding(caseLabels[i]);
+            if (views == ViewStrategy.MASK) {
+                // A hidden component stays unseen, so required and
+                // missing-property reporting treat it exactly like an absent
+                // property, matching the stock creator path.
+                emitArmViewCheck(cob, parser, ctxt, maskSlot, matcherSlot, ixSlot, i,
+                        stockIndex[i], loop);
+            }
             Label armEnd = beginArm(cob, stockIndex[i], propSlot, propHandler);
             GenProp prop = props.get(i);
             Class<?> t = prop.type();
@@ -804,16 +922,23 @@ public final class BeanCodecGenerator
 
     // Delegates to the stock deserializer for any entry the generated loop
     // does not model: a stream not positioned on START_OBJECT (stock also
-    // accepts PROPERTY_NAME and other entry shapes) or an active view.
-    private static void emitEntryGuard(CodeBuilder cob, int parser, int ctxt) {
+    // accepts PROPERTY_NAME and other entry shapes) and, under the DELEGATE
+    // strategy only, an active view. The MASK strategy keeps view-active calls
+    // on the generated path through the visibility bitmask.
+    private static void emitEntryGuard(CodeBuilder cob, int parser, int ctxt,
+            ViewStrategy views) {
         Label delegate = cob.newLabel();
         Label proceed = cob.newLabel();
         cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
         cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
         cob.if_acmpne(delegate);
-        cob.aload(ctxt).invokevirtual(CD_DESER_CONTEXT, "getActiveView",
-                MethodTypeDesc.of(ConstantDescs.CD_Class));
-        cob.ifnull(proceed);
+        if (views == ViewStrategy.DELEGATE) {
+            cob.aload(ctxt).invokevirtual(CD_DESER_CONTEXT, "getActiveView",
+                    MTD_GET_ACTIVE_VIEW);
+            cob.ifnull(proceed);
+        } else {
+            cob.goto_(proceed);
+        }
         cob.labelBinding(delegate);
         cob.aload(0).getfield(CD_BASE, "_fallback", CD_BEAN_DESER_BASE);
         cob.aload(parser).aload(ctxt);

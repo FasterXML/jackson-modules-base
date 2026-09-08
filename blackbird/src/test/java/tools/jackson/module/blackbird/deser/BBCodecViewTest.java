@@ -21,12 +21,15 @@ import tools.jackson.module.blackbird.BlackbirdTestBase;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * View-parity regression tests: an active view makes the generated codecs
- * delegate the whole call to the stock fallback, whose own view machinery
- * (filtered writers, visibleInView checks) then applies. Every case compares
- * against a vanilla mapper, in both directions, with and without an active
- * view, so DEFAULT_VIEW_INCLUSION semantics come from stock rather than
- * hardcoded expectations.
+ * View-parity regression tests: with an active view the generated codecs stay
+ * on the fast path and test a per-view visibility bitmask per property
+ * (visibility read from the stock property, so DEFAULT_VIEW_INCLUSION and
+ * matcher semantics are exactly stock); a hidden property consumes its value
+ * or is omitted like stock. Beans with more than 64 properties instead
+ * delegate the whole view-active call to the stock fallback. Every case
+ * compares against a vanilla mapper, in both directions, with and without an
+ * active view, so view semantics come from stock rather than hardcoded
+ * expectations.
  */
 public class BBCodecViewTest extends BlackbirdTestBase
 {
@@ -191,5 +194,83 @@ public class BBCodecViewTest extends BlackbirdTestBase
         m.readValue("{\"a\":\"x\",\"b\":7}", ViewRecord.class);
         assertEquals("BBCodecPlaceholder", seen.get(ViewBean.class).getClass().getSimpleName());
         assertEquals("BBCodecPlaceholder", seen.get(ViewRecord.class).getClass().getSimpleName());
+    }
+
+    // A plain bean with no @JsonView annotations: with DEFAULT_VIEW_INCLUSION
+    // off, stock hides every property under any active view on the write side
+    // and keeps them all on the read side (the deser matcher is null). The
+    // codec must reproduce both, which forces the MASK strategy for a bean
+    // that carries no view annotations at all.
+    public static class PlainBean {
+        private String a;
+        private int b;
+        public String getA() { return a; }
+        public void setA(String v) { a = v; }
+        public int getB() { return b; }
+        public void setB(int v) { b = v; }
+    }
+
+    @Test
+    public void testDefaultViewInclusionOffMatchesVanilla() throws Exception {
+        ObjectMapper vanilla = JsonMapper.builder()
+                .disable(tools.jackson.databind.MapperFeature.DEFAULT_VIEW_INCLUSION)
+                .build();
+        ObjectMapper module = JsonMapper.builder()
+                .disable(tools.jackson.databind.MapperFeature.DEFAULT_VIEW_INCLUSION)
+                .addModule(new BlackbirdModule())
+                .build();
+        PlainBean bean = new PlainBean();
+        bean.setA("x");
+        bean.setB(7);
+        String doc = "{\"a\":\"x\",\"b\":7}";
+        assertEquals(vanilla.writerWithView(ViewA.class).writeValueAsString(bean),
+                module.writerWithView(ViewA.class).writeValueAsString(bean),
+                "write, inclusion off, active view: both should omit all");
+        PlainBean ev = vanilla.readerWithView(ViewA.class).forType(PlainBean.class).readValue(doc);
+        PlainBean am = module.readerWithView(ViewA.class).forType(PlainBean.class).readValue(doc);
+        assertEquals(ev.getA(), am.getA());
+        assertEquals(ev.getB(), am.getB());
+    }
+
+    // More than 64 properties: the mask cannot fit, so an active view delegates
+    // the whole call. Output must still match vanilla in both directions.
+    public static class WideViewBean {
+        public int p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15;
+        public int p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31;
+        public int p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47;
+        public int p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63;
+        @JsonView(ViewA.class)
+        public int p64;
+        public int p65;
+    }
+
+    @Test
+    public void testWideBeanDelegatesUnderView() throws Exception {
+        WideViewBean bean = new WideViewBean();
+        bean.p64 = 64;
+        bean.p65 = 65;
+        for (Class<?> view : new Class<?>[] { ViewA.class, ViewB.class }) {
+            assertEquals(VANILLA.writerWithView(view).writeValueAsString(bean),
+                    MODULE.writerWithView(view).writeValueAsString(bean),
+                    "wide bean under " + view.getSimpleName());
+        }
+        assertEquals(VANILLA.writeValueAsString(bean), MODULE.writeValueAsString(bean),
+                "wide bean, no view");
+    }
+
+    // A codec whose bean has 64 or fewer properties keeps view-active calls on
+    // the generated mask path (only the wide bean above delegates). This
+    // check pins that the mask read is byte-faithful to stock: the ViewB
+    // property is hidden under ViewA, the visible ones match, and the skipped
+    // value leaves the stream correctly positioned for the trailing property.
+    @Test
+    public void testViewActiveMaskMatchesVanilla() throws Exception {
+        ViewBean expected = VANILLA.readerWithView(ViewA.class)
+                .forType(ViewBean.class).readValue(DOC);
+        ViewBean actual = MODULE.readerWithView(ViewA.class)
+                .forType(ViewBean.class).readValue(DOC);
+        assertEquals(expected.getA(), actual.getA());
+        assertEquals(expected.getB(), actual.getB());
+        assertEquals(expected.getPlain(), actual.getPlain());
     }
 }

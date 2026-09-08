@@ -19,6 +19,7 @@ import tools.jackson.core.SerializableString;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
+import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.ViewStrategy;
 import tools.jackson.module.blackbird.internal.GeneratedWriterBase;
 
 /**
@@ -71,12 +72,20 @@ public final class BeanWriterGenerator
             ConstantDescs.CD_void, ConstantDescs.CD_Object, CD_JSON_GENERATOR, CD_SER_CONTEXT);
     private static final MethodTypeDesc MTD_CTOR =
             MethodTypeDesc.of(ConstantDescs.CD_void, CD_BEAN_SER_BASE);
+    private static final MethodTypeDesc MTD_GET_ACTIVE_VIEW =
+            MethodTypeDesc.of(ConstantDescs.CD_Class);
+    private static final MethodTypeDesc MTD_VIEW_MASK =
+            MethodTypeDesc.of(ConstantDescs.CD_long, ConstantDescs.CD_Class);
+    private static final MethodTypeDesc MTD_PROP_VISIBLE = MethodTypeDesc.of(
+            ConstantDescs.CD_boolean, CD_PROPERTY_WRITER, ConstantDescs.CD_Class,
+            ConstantDescs.CD_boolean);
 
     private BeanWriterGenerator() {}
 
     @SuppressWarnings("unchecked")
     public static ValueSerializer<Object> generate(Class<?> beanClass, List<GenWProp> props,
-            BeanSerializerBase fallback, MethodHandles.Lookup defineLookup)
+            BeanSerializerBase fallback, MethodHandles.Lookup defineLookup,
+            ViewStrategy views, boolean includeByDefault)
             throws ReflectiveOperationException {
         List<Object> classData = new ArrayList<>();
         int[] stockIndex = new int[props.size()];
@@ -106,7 +115,7 @@ public final class BeanWriterGenerator
         MethodHandles.Lookup definer =
                 (defineLookup != null) ? defineLookup : MethodHandles.lookup();
         byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
-                stockIndex, nameIndex, childIndex);
+                stockIndex, nameIndex, childIndex, views, includeByDefault);
         CodegenDump.dump(beanClass, "writer", bytes);
         MethodHandles.Lookup hidden;
         try {
@@ -154,7 +163,8 @@ public final class BeanWriterGenerator
 
     private static byte[] buildClass(String targetPackage, Class<?> beanClass,
             List<GenWProp> props,
-            int[] stockIndex, int[] nameIndex, int[] childIndex) {
+            int[] stockIndex, int[] nameIndex, int[] childIndex,
+            ViewStrategy views, boolean includeByDefault) {
         // A hidden class must be named in its define context's package.
         ClassDesc thisClass = ClassDesc.of(
                 targetPackage + ".BBWriter_" + beanClass.getSimpleName());
@@ -167,8 +177,11 @@ public final class BeanWriterGenerator
                             .return_());
             clb.withMethodBody("serialize", MTD_SERIALIZE, ClassFile.ACC_PUBLIC,
                     cob -> buildSerialize(cob, thisClass, beanClass, props,
-                            stockIndex, nameIndex, childIndex));
+                            stockIndex, nameIndex, childIndex, views));
             emitHelpers(clb, thisClass, props);
+            if (views == ViewStrategy.MASK) {
+                emitComputeViewMask(clb, props, stockIndex, includeByDefault);
+            }
         });
     }
 
@@ -237,24 +250,45 @@ public final class BeanWriterGenerator
     }
 
     private static void buildSerialize(CodeBuilder cob, ClassDesc thisClass, Class<?> beanClass,
-            List<GenWProp> props, int[] stockIndex, int[] nameIndex, int[] childIndex) {
+            List<GenWProp> props, int[] stockIndex, int[] nameIndex, int[] childIndex,
+            ViewStrategy views) {
         final int gen = 2;
         final int ctxt = 3;
         final int beanSlot = 4;
         final int refSlot = 5;
+        final int maskSlot = 6;
 
         ClassDesc beanDesc = beanClass.describeConstable().orElseThrow();
         final boolean itf = beanClass.isInterface();
 
-        Label noView = cob.newLabel();
-        cob.aload(ctxt).invokevirtual(CD_SER_CONTEXT, "getActiveView",
-                MethodTypeDesc.of(ConstantDescs.CD_Class));
-        cob.ifnull(noView);
-        cob.aload(0).getfield(CD_WRITER_BASE, "_fallback", CD_BEAN_SER_BASE);
-        cob.aload(1).aload(gen).aload(ctxt);
-        cob.invokevirtual(CD_BEAN_SER_BASE, "serialize", MTD_SERIALIZE);
-        cob.return_();
-        cob.labelBinding(noView);
+        if (views == ViewStrategy.DELEGATE) {
+            // Beans with more than 64 properties hand view-active calls to the
+            // stock serializer, whose filtered writers apply.
+            Label noView = cob.newLabel();
+            cob.aload(ctxt).invokevirtual(CD_SER_CONTEXT, "getActiveView", MTD_GET_ACTIVE_VIEW);
+            cob.ifnull(noView);
+            cob.aload(0).getfield(CD_WRITER_BASE, "_fallback", CD_BEAN_SER_BASE);
+            cob.aload(1).aload(gen).aload(ctxt);
+            cob.invokevirtual(CD_BEAN_SER_BASE, "serialize", MTD_SERIALIZE);
+            cob.return_();
+            cob.labelBinding(noView);
+        } else if (views == ViewStrategy.MASK) {
+            Label nullView = cob.newLabel();
+            Label haveMask = cob.newLabel();
+            cob.aload(ctxt).invokevirtual(CD_SER_CONTEXT, "getActiveView", MTD_GET_ACTIVE_VIEW);
+            cob.dup();
+            cob.ifnull(nullView);
+            cob.aload(0);
+            cob.swap();
+            cob.invokevirtual(CD_WRITER_BASE, "_viewMask", MTD_VIEW_MASK);
+            cob.lstore(maskSlot);
+            cob.goto_(haveMask);
+            cob.labelBinding(nullView);
+            cob.pop();
+            cob.loadConstant(-1L);
+            cob.lstore(maskSlot);
+            cob.labelBinding(haveMask);
+        }
 
         cob.aload(1).checkcast(beanDesc).astore(beanSlot);
         cob.aload(gen).aload(beanSlot)
@@ -262,6 +296,16 @@ public final class BeanWriterGenerator
 
         for (int i = 0; i < props.size(); i++) {
             GenWProp prop = props.get(i);
+            Label hidden = null;
+            if (views == ViewStrategy.MASK) {
+                hidden = cob.newLabel();
+                cob.lload(maskSlot);
+                cob.loadConstant(1L << i);
+                cob.land();
+                cob.lconst_0();
+                cob.lcmp();
+                cob.ifeq(hidden);
+            }
             switch (prop.kind()) {
                 case INT -> emitScalar(cob, thisClass, gen, beanSlot, beanDesc, itf, prop,
                         nameIndex[i], "$int", MTD_HELP_INT, ConstantDescs.CD_int);
@@ -298,10 +342,39 @@ public final class BeanWriterGenerator
                             MTD_SERIALIZE_AS_PROPERTY);
                 }
             }
+            if (hidden != null) {
+                cob.labelBinding(hidden);
+            }
         }
 
         cob.aload(gen).invokevirtual(CD_JSON_GENERATOR, "writeEndObject", MTD_WRITE_END).pop();
         cob.return_();
+    }
+
+    // Overrides GeneratedWriterBase._computeViewMask: bit i set when property
+    // i is visible in the view, per the same rule the stock factory uses to
+    // build the filtered writer array.
+    private static void emitComputeViewMask(java.lang.classfile.ClassBuilder clb,
+            List<GenWProp> props, int[] stockIndex, boolean includeByDefault) {
+        clb.withMethodBody("_computeViewMask", MTD_VIEW_MASK, ClassFile.ACC_PROTECTED, cob -> {
+            final int maskSlot = 2;
+            cob.lconst_0().lstore(maskSlot);
+            for (int i = 0; i < props.size(); i++) {
+                Label skip = cob.newLabel();
+                cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
+                        ConstantDescs.DEFAULT_NAME, CD_PROPERTY_WRITER, stockIndex[i]));
+                cob.aload(1);
+                cob.loadConstant(includeByDefault ? 1 : 0);
+                cob.invokestatic(CD_WRITER_BASE, "_propVisible", MTD_PROP_VISIBLE);
+                cob.ifeq(skip);
+                cob.lload(maskSlot);
+                cob.loadConstant(1L << i);
+                cob.lor();
+                cob.lstore(maskSlot);
+                cob.labelBinding(skip);
+            }
+            cob.lload(maskSlot).lreturn();
+        });
     }
 
     private static void emitScalar(CodeBuilder cob, ClassDesc thisClass, int gen, int beanSlot,

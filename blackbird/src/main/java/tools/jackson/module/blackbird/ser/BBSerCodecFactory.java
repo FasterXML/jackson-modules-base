@@ -17,6 +17,8 @@ import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.module.blackbird.codegen.BeanCodecGenerator.ViewStrategy;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator;
 import tools.jackson.module.blackbird.codegen.CodecAccess;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator.GenWProp;
@@ -76,7 +78,29 @@ final class BBSerCodecFactory
         if (props.isEmpty()) {
             return null;
         }
-        return BeanWriterGenerator.generate(beanClass, props, delegate, defineLookup);
+        boolean includeByDefault = ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION);
+        return BeanWriterGenerator.generate(beanClass, props, delegate, defineLookup,
+                viewStrategy(props, includeByDefault), includeByDefault);
+    }
+
+    // Matches the stock filtered-writer-array rule: view filtering is a no-op
+    // (NONE) when properties include by default and none declares a view;
+    // MASK keeps view-active writes on the generated path; DELEGATE hands
+    // beans with more than 64 properties to the stock serializer. Visibility
+    // is read per property from BeanPropertyWriter.getViews.
+    private static ViewStrategy viewStrategy(List<GenWProp> props, boolean includeByDefault) {
+        boolean viewsFound = false;
+        for (GenWProp p : props) {
+            if (p.stock() instanceof BeanPropertyWriter bpw
+                    && bpw.getViews() != null && bpw.getViews().length > 0) {
+                viewsFound = true;
+                break;
+            }
+        }
+        if (includeByDefault && !viewsFound) {
+            return ViewStrategy.NONE;
+        }
+        return (props.size() > 64) ? ViewStrategy.DELEGATE : ViewStrategy.MASK;
     }
 
     private static GenWProp classify(PropertyWriter writer, Class<?> beanClass,

@@ -13,6 +13,7 @@ import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.jsontype.TypeDeserializer;
 import tools.jackson.databind.type.LogicalType;
 import tools.jackson.databind.util.AccessPattern;
+import tools.jackson.databind.util.ClassUtil;
 import tools.jackson.databind.util.NameTransformer;
 
 /**
@@ -166,5 +167,74 @@ public abstract class GeneratedCodecBase extends ValueDeserializer<Object>
             }
         }
         return null;
+    }
+
+    /*
+    /**********************************************************************
+    /* View support: per-view visibility masks
+    /**********************************************************************
+     */
+
+    private static final Class<?>[] NO_VIEWS = new Class<?>[0];
+    private static final long[] NO_MASKS = new long[0];
+
+    // Copy-on-write cache of view -> arm-visibility bitmask. View sets are
+    // small and stable per application, so lookups are a reference scan.
+    // Instance state only: the cached view classes unload with the codec and
+    // its mapper.
+    private volatile Class<?>[] _maskViews = NO_VIEWS;
+    private volatile long[] _masks = NO_MASKS;
+
+    // Called by generated code once per view-active call.
+    protected final long _viewMask(Class<?> view) {
+        Class<?>[] views = _maskViews;
+        for (int i = 0; i < views.length; i++) {
+            if (views[i] == view) {
+                return _masks[i];
+            }
+        }
+        return _addViewMask(view);
+    }
+
+    private synchronized long _addViewMask(Class<?> view) {
+        Class<?>[] views = _maskViews;
+        for (int i = 0; i < views.length; i++) {
+            if (views[i] == view) {
+                return _masks[i];
+            }
+        }
+        long mask = _computeViewMask(view);
+        Class<?>[] newViews = new Class<?>[views.length + 1];
+        long[] newMasks = new long[views.length + 1];
+        System.arraycopy(views, 0, newViews, 0, views.length);
+        System.arraycopy(_masks, 0, newMasks, 0, views.length);
+        newViews[views.length] = view;
+        newMasks[views.length] = mask;
+        _masks = newMasks;
+        _maskViews = newViews;
+        return mask;
+    }
+
+    // Overridden by generated codecs that filter per view: bit i reports
+    // whether property arm i is visible in the given view. Codecs that
+    // delegate view-active calls whole (more than 64 properties) never call
+    // the mask machinery.
+    protected long _computeViewMask(Class<?> view) {
+        throw new UnsupportedOperationException("codec has no view mask");
+    }
+
+    // Called by generated code for an arm hidden in the active view, with the
+    // parser advanced to the value token; mirrors the stock loop's
+    // handleUnexpectedView (message included), then consumes the value.
+    protected final void _hiddenView(JsonParser p, DeserializationContext ctxt,
+            SettableBeanProperty prop) {
+        if (ctxt.isEnabled(DeserializationFeature.FAIL_ON_UNEXPECTED_VIEW_PROPERTIES)) {
+            ctxt.reportInputMismatch(_fallback.handledType(),
+                    "Input mismatch while deserializing %s. Property '%s' is not part of current active view '%s'"
+                            + " (disable 'DeserializationFeature.FAIL_ON_UNEXPECTED_VIEW_PROPERTIES' to allow)",
+                    ClassUtil.nameOf(_fallback.handledType()), prop.getName(),
+                    ctxt.getActiveView().getName());
+        }
+        p.skipChildren();
     }
 }
