@@ -13,8 +13,9 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import tools.jackson.core.SerializableString;
 import tools.jackson.databind.ValueSerializer;
@@ -26,9 +27,11 @@ import tools.jackson.module.blackbird.internal.GeneratedWriterBase;
 /**
  * Emits a hidden-class serializer for one bean: a straight-line sequence of
  * writeName/write-value pairs with pre-encoded name constants for eligible
- * properties and the stock PropertyWriter (a classData constant) for
- * everything else. An active view delegates the whole call to the stock
- * serializer, which owns the filtered-property logic.
+ * properties and the stock PropertyWriter (a named classData constant) for
+ * everything else. Beans that declare views resolve a per-view visibility
+ * bitmask and each property tests its bit, so view-active writes stay on the
+ * generated path; beans with more than 64 properties delegate view-active
+ * calls to the stock serializer instead.
  */
 public final class BeanWriterGenerator
 {
@@ -81,32 +84,39 @@ public final class BeanWriterGenerator
             ConstantDescs.CD_boolean, CD_PROPERTY_WRITER, ConstantDescs.CD_Class,
             ConstantDescs.CD_boolean);
 
+    // Named class-data entries through the writer base's classDataEntry
+    // bootstrap; rationale in BeanCodecGenerator.
+    private static final java.lang.constant.DirectMethodHandleDesc BSM_DATA_ENTRY =
+            ConstantDescs.ofConstantBootstrap(CD_WRITER_BASE, "classDataEntry",
+                    ConstantDescs.CD_Object);
+
     private BeanWriterGenerator() {}
+
+    private static void ldcData(CodeBuilder cob, String name, ClassDesc type) {
+        cob.ldc(DynamicConstantDesc.ofNamed(BSM_DATA_ENTRY, name, type));
+    }
 
     @SuppressWarnings("unchecked")
     public static ValueSerializer<Object> generate(Class<?> beanClass, List<GenWProp> props,
             BeanSerializerBase fallback, MethodHandles.Lookup defineLookup,
             ViewStrategy views, boolean includeByDefault)
             throws ReflectiveOperationException {
-        List<Object> classData = new ArrayList<>();
-        int[] stockIndex = new int[props.size()];
-        int[] nameIndex = new int[props.size()];
-        int[] childIndex = new int[props.size()];
+        Map<String, Object> classData = new LinkedHashMap<>();
+        String[] stockName = new String[props.size()];
+        String[] nameName = new String[props.size()];
+        String[] childName = new String[props.size()];
         for (int i = 0; i < props.size(); i++) {
             GenWProp p = props.get(i);
-            stockIndex[i] = classData.size();
-            classData.add(p.stock());
+            String base = p.stock().getName();
+            stockName[i] = BeanCodecGenerator.dataName(classData, base + "Writer");
+            classData.put(stockName[i], p.stock());
             if (p.name() != null) {
-                nameIndex[i] = classData.size();
-                classData.add(p.name());
-            } else {
-                nameIndex[i] = -1;
+                nameName[i] = BeanCodecGenerator.dataName(classData, base + "Name");
+                classData.put(nameName[i], p.name());
             }
             if (p.child() != null) {
-                childIndex[i] = classData.size();
-                classData.add(p.child());
-            } else {
-                childIndex[i] = -1;
+                childName[i] = BeanCodecGenerator.dataName(classData, base + "Codec");
+                classData.put(childName[i], p.child());
             }
         }
 
@@ -116,12 +126,12 @@ public final class BeanWriterGenerator
         MethodHandles.Lookup definer =
                 (defineLookup != null) ? defineLookup : MethodHandles.lookup();
         byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
-                stockIndex, nameIndex, childIndex, views, includeByDefault);
+                stockName, nameName, childName, views, includeByDefault);
         CodegenDump.dump(beanClass, "writer", bytes);
         MethodHandles.Lookup hidden;
         try {
             hidden = definer.defineHiddenClassWithClassData(
-                    bytes, List.copyOf(classData), true);
+                    bytes, Map.copyOf(classData), true);
         } catch (IllegalAccessException | SecurityException | LinkageError e) {
             if (defineLookup == null) {
                 if (e instanceof IllegalAccessException iae) {
@@ -164,7 +174,7 @@ public final class BeanWriterGenerator
 
     private static byte[] buildClass(String targetPackage, Class<?> beanClass,
             List<GenWProp> props,
-            int[] stockIndex, int[] nameIndex, int[] childIndex,
+            String[] stockName, String[] nameName, String[] childName,
             ViewStrategy views, boolean includeByDefault) {
         // A hidden class must be named in its define context's package.
         ClassDesc thisClass = ClassDesc.of(
@@ -180,10 +190,10 @@ public final class BeanWriterGenerator
             clb.withMethod("serialize", MTD_SERIALIZE, ClassFile.ACC_PUBLIC,
                     mb -> mb.with(BeanCodecGenerator.params("value", "g", "ctxt"))
                             .withCode(cob -> buildSerialize(cob, thisClass, beanClass, props,
-                                    stockIndex, nameIndex, childIndex, views)));
+                                    stockName, nameName, childName, views)));
             emitHelpers(clb, thisClass, props);
             if (views == ViewStrategy.MASK) {
-                emitComputeViewMask(clb, props, stockIndex, includeByDefault);
+                emitComputeViewMask(clb, props, stockName, includeByDefault);
             }
         });
     }
@@ -257,7 +267,7 @@ public final class BeanWriterGenerator
     }
 
     private static void buildSerialize(CodeBuilder cob, ClassDesc thisClass, Class<?> beanClass,
-            List<GenWProp> props, int[] stockIndex, int[] nameIndex, int[] childIndex,
+            List<GenWProp> props, String[] stockName, String[] nameName, String[] childName,
             ViewStrategy views) {
         final int gen = 2;
         final int ctxt = 3;
@@ -316,35 +326,32 @@ public final class BeanWriterGenerator
             }
             switch (prop.kind()) {
                 case INT -> emitScalar(cob, thisClass, gen, beanSlot, beanDesc, itf, prop,
-                        nameIndex[i], "$int", MTD_HELP_INT, ConstantDescs.CD_int);
+                        nameName[i], "$int", MTD_HELP_INT, ConstantDescs.CD_int);
                 case LONG -> emitScalar(cob, thisClass, gen, beanSlot, beanDesc, itf, prop,
-                        nameIndex[i], "$long", MTD_HELP_LONG, ConstantDescs.CD_long);
+                        nameName[i], "$long", MTD_HELP_LONG, ConstantDescs.CD_long);
                 case BOOLEAN -> emitScalar(cob, thisClass, gen, beanSlot, beanDesc, itf, prop,
-                        nameIndex[i], "$bool", MTD_HELP_BOOLEAN, ConstantDescs.CD_boolean);
+                        nameName[i], "$bool", MTD_HELP_BOOLEAN, ConstantDescs.CD_boolean);
                 case STRING -> emitScalar(cob, thisClass, gen, beanSlot, beanDesc, itf, prop,
-                        nameIndex[i], "$str", MTD_HELP_STRING, ConstantDescs.CD_String);
+                        nameName[i], "$str", MTD_HELP_STRING, ConstantDescs.CD_String);
                 case CHILD -> {
                     Class<?> childRaw = prop.field() != null
                             ? prop.field().getType() : prop.getter().getReturnType();
                     ClassDesc childType = childRaw.describeConstable().orElseThrow();
                     cob.aload(gen);
-                    cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                            ConstantDescs.DEFAULT_NAME, CD_SERIALIZABLE_STRING, nameIndex[i]));
+                    ldcData(cob, nameName[i], CD_SERIALIZABLE_STRING);
                     cob.invokestatic(thisClass, "$name", MTD_HELP_NAME);
                     cob.aload(beanSlot);
                     emitLoad(cob, itf, beanDesc, prop, childType);
                     cob.astore(refSlot);
-                    final int childIdx = childIndex[i];
+                    final String childEntry = childName[i];
                     emitNullableRef(cob, gen, refSlot, () -> {
-                        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                                ConstantDescs.DEFAULT_NAME, CD_WRITER_BASE, childIdx));
+                        ldcData(cob, childEntry, CD_WRITER_BASE);
                         cob.aload(refSlot).aload(gen).aload(ctxt);
                         cob.invokevirtual(CD_WRITER_BASE, "serialize", MTD_SERIALIZE);
                     });
                 }
                 case STOCK -> {
-                    cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                            ConstantDescs.DEFAULT_NAME, CD_PROPERTY_WRITER, stockIndex[i]));
+                    ldcData(cob, stockName[i], CD_PROPERTY_WRITER);
                     cob.aload(beanSlot).aload(gen).aload(ctxt);
                     cob.invokevirtual(CD_PROPERTY_WRITER, "serializeAsProperty",
                             MTD_SERIALIZE_AS_PROPERTY);
@@ -377,7 +384,7 @@ public final class BeanWriterGenerator
     // i is visible in the view, per the same rule the stock factory uses to
     // build the filtered writer array.
     private static void emitComputeViewMask(java.lang.classfile.ClassBuilder clb,
-            List<GenWProp> props, int[] stockIndex, boolean includeByDefault) {
+            List<GenWProp> props, String[] stockName, boolean includeByDefault) {
         clb.withMethod("_computeViewMask", MTD_VIEW_MASK, ClassFile.ACC_PROTECTED,
                 mb -> mb.with(BeanCodecGenerator.params("activeView")).withCode(cob -> {
             final int maskSlot = 2;
@@ -385,8 +392,7 @@ public final class BeanWriterGenerator
             cob.lconst_0().lstore(maskSlot);
             for (int i = 0; i < props.size(); i++) {
                 Label skip = cob.newLabel();
-                cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                        ConstantDescs.DEFAULT_NAME, CD_PROPERTY_WRITER, stockIndex[i]));
+                ldcData(cob, stockName[i], CD_PROPERTY_WRITER);
                 cob.aload(1);
                 cob.loadConstant(includeByDefault ? 1 : 0);
                 cob.invokestatic(CD_WRITER_BASE, "_propVisible", MTD_PROP_VISIBLE);
@@ -405,11 +411,10 @@ public final class BeanWriterGenerator
     }
 
     private static void emitScalar(CodeBuilder cob, ClassDesc thisClass, int gen, int beanSlot,
-            ClassDesc beanDesc, boolean itf, GenWProp prop, int nameIdx, String helper,
+            ClassDesc beanDesc, boolean itf, GenWProp prop, String nameEntry, String helper,
             MethodTypeDesc helperType, ClassDesc valDesc) {
         cob.aload(gen);
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, CD_SERIALIZABLE_STRING, nameIdx));
+        ldcData(cob, nameEntry, CD_SERIALIZABLE_STRING);
         cob.aload(beanSlot);
         emitLoad(cob, itf, beanDesc, prop, valDesc);
         cob.invokestatic(thisClass, helper, helperType);

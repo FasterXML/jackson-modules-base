@@ -16,7 +16,9 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import tools.jackson.core.sym.PropertyNameMatcher;
@@ -29,10 +31,11 @@ import tools.jackson.module.blackbird.internal.GeneratedCodecBase;
 /**
  * Emits a hidden-class deserializer for one bean: a loop on nextNameMatch, a
  * tableswitch on the property index, inlined scalar reads with direct setter
- * calls for eligible properties, and the stock SettableBeanProperty (a
+ * calls for eligible properties, and the stock SettableBeanProperty (a named
  * classData constant) for everything else. The matcher and the per-property
- * payloads travel as classData; the fallback deserializer is a constructor
- * argument consumed by {@link GeneratedCodecBase}.
+ * payloads travel as a name-addressed classData map; the fallback
+ * deserializer is a constructor argument consumed by
+ * {@link GeneratedCodecBase}.
  */
 public final class BeanCodecGenerator
 {
@@ -117,7 +120,33 @@ public final class BeanCodecGenerator
             ClassDesc.of("java.lang.RuntimeException"), ClassDesc.of("java.lang.Throwable"),
             ConstantDescs.CD_Object, CD_SETTABLE_PROP, CD_DESER_CONTEXT);
 
+    // Generated code resolves class-data entries by NAME through the
+    // classDataEntry bootstrap on the base class (the JDK classDataAt
+    // bootstrap rejects any condy name but "_"); see dataName for the naming.
+    private static final java.lang.constant.DirectMethodHandleDesc BSM_DATA_ENTRY =
+            ConstantDescs.ofConstantBootstrap(CD_BASE, "classDataEntry", ConstantDescs.CD_Object);
+
     private BeanCodecGenerator() {}
+
+    static void ldcData(CodeBuilder cob, String name, ClassDesc type) {
+        cob.ldc(DynamicConstantDesc.ofNamed(BSM_DATA_ENTRY, name, type));
+    }
+
+    // Condy names are JVM unqualified names ('.', ';', '[', '/' forbidden) and
+    // JSON property names are arbitrary, so sanitize and dedupe.
+    static String dataName(Map<String, Object> data, String base) {
+        StringBuilder sb = new StringBuilder(base.length());
+        for (int i = 0; i < base.length(); i++) {
+            char c = base.charAt(i);
+            sb.append(c == '.' || c == ';' || c == '[' || c == '/' ? '$' : c);
+        }
+        String name = sb.toString();
+        String candidate = name;
+        for (int n = 2; data.containsKey(candidate); n++) {
+            candidate = name + "$" + n;
+        }
+        return candidate;
+    }
 
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback,
@@ -148,43 +177,33 @@ public final class BeanCodecGenerator
             PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor,
             BuilderSupport builder, MethodHandles.Lookup defineLookup, ViewStrategy views)
             throws ReflectiveOperationException {
-        List<Object> classData = new ArrayList<>();
-        classData.add(matcher);
+        Map<String, Object> classData = new LinkedHashMap<>();
+        classData.put("matcher", matcher);
         // Tier-A properties also carry their SettableBeanProperty: their
         // VALUE_NULL branch runs through it, since null handling is
         // configuration-dependent per property.
-        int[] stockIndex = new int[props.size()];
-        int[] childIndex = new int[props.size()];
-        int[] setterMhIndex = new int[props.size()];
+        String[] stockName = new String[props.size()];
+        String[] childName = new String[props.size()];
+        String[] setterName = new String[props.size()];
         for (int i = 0; i < props.size(); i++) {
             GenProp gp = props.get(i);
-            stockIndex[i] = classData.size();
-            classData.add(gp.stock());
+            stockName[i] = dataName(classData, gp.name() + "Prop");
+            classData.put(stockName[i], gp.stock());
             if (gp.child() != null) {
-                childIndex[i] = classData.size();
-                classData.add(gp.child());
-            } else {
-                childIndex[i] = -1;
+                childName[i] = dataName(classData, gp.name() + "Codec");
+                classData.put(childName[i], gp.child());
             }
             if (gp.setterHandle() != null) {
-                setterMhIndex[i] = classData.size();
-                classData.add(gp.setterHandle());
-            } else {
-                setterMhIndex[i] = -1;
+                setterName[i] = dataName(classData, gp.name() + "Setter");
+                classData.put(setterName[i], gp.setterHandle());
             }
         }
-        int ctorIndex = -1;
         if (recordCtor != null) {
-            ctorIndex = classData.size();
-            classData.add(recordCtor);
+            classData.put("constructor", recordCtor);
         }
-        int instIndex = -1;
-        int buildIndex = -1;
         if (builder != null) {
-            instIndex = classData.size();
-            classData.add(builder.instantiator());
-            buildIndex = classData.size();
-            classData.add(builder.buildMethod());
+            classData.put("instantiator", builder.instantiator());
+            classData.put("buildMethod", builder.buildMethod());
         }
 
         // Non-public beans define in the bean's package context (the caller
@@ -194,9 +213,8 @@ public final class BeanCodecGenerator
         MethodHandles.Lookup definer =
                 (defineLookup != null) ? defineLookup : MethodHandles.lookup();
         byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
-                stockIndex, childIndex, setterMhIndex,
-                ctorIndex, builder == null ? null : builder.builderClass(), instIndex, buildIndex,
-                views);
+                stockName, childName, setterName, recordCtor != null,
+                builder == null ? null : builder.builderClass(), views);
         CodegenDump.dump(beanClass, "codec", bytes);
         // No ClassOption.STRONG: the codec instance held by the mapper's
         // deserializer cache anchors the class, so codecs unload with the
@@ -204,7 +222,7 @@ public final class BeanCodecGenerator
         MethodHandles.Lookup hidden;
         try {
             hidden = definer.defineHiddenClassWithClassData(
-                    bytes, List.copyOf(classData), true);
+                    bytes, Map.copyOf(classData), true);
         } catch (IllegalAccessException | SecurityException | LinkageError e) {
             if (defineLookup == null) {
                 // Module-context defines never legitimately fail: a generator bug.
@@ -232,8 +250,8 @@ public final class BeanCodecGenerator
 
     private static byte[] buildClass(String targetPackage, Class<?> beanClass,
             List<GenProp> props,
-            int[] stockIndex, int[] childIndex, int[] setterMhIndex,
-            int ctorIndex, Class<?> builderClass, int instIndex, int buildIndex,
+            String[] stockName, String[] childName, String[] setterName,
+            boolean recordMode, Class<?> builderClass,
             ViewStrategy views) {
         // A hidden class must be named in its define context's package.
         ClassDesc thisClass = ClassDesc.of(
@@ -249,18 +267,18 @@ public final class BeanCodecGenerator
             clb.withMethod("deserialize", MTD_DESERIALIZE, ClassFile.ACC_PUBLIC,
                     mb -> mb.with(params("p", "ctxt")).withCode(cob -> {
                         if (builderClass != null) {
-                            buildBuilderDeserialize(cob, builderClass, props, stockIndex,
-                                    childIndex, instIndex, buildIndex, views);
-                        } else if (ctorIndex < 0) {
-                            buildDeserialize(cob, beanClass, props, stockIndex, childIndex,
-                                    setterMhIndex, views);
+                            buildBuilderDeserialize(cob, builderClass, props, stockName,
+                                    childName, views);
+                        } else if (!recordMode) {
+                            buildDeserialize(cob, beanClass, props, stockName, childName,
+                                    setterName, views);
                         } else {
-                            buildRecordDeserialize(cob, beanClass, props, stockIndex, childIndex,
-                                    ctorIndex, views);
+                            buildRecordDeserialize(cob, beanClass, props, stockName, childName,
+                                    views);
                         }
                     }));
             if (views == ViewStrategy.MASK) {
-                emitComputeViewMask(clb, props, stockIndex);
+                emitComputeViewMask(clb, props, stockName);
             }
         });
     }
@@ -280,7 +298,7 @@ public final class BeanCodecGenerator
     // stock property is visible in the view, which keeps visibility semantics
     // (matchers, default-view inclusion) exactly the stock ones.
     private static void emitComputeViewMask(java.lang.classfile.ClassBuilder clb,
-            List<GenProp> props, int[] stockIndex) {
+            List<GenProp> props, String[] stockName) {
         clb.withMethod("_computeViewMask", MTD_VIEW_MASK, ClassFile.ACC_PROTECTED,
                 mb -> mb.with(params("activeView")).withCode(cob -> {
             final int maskSlot = 2;
@@ -288,8 +306,7 @@ public final class BeanCodecGenerator
             cob.lconst_0().lstore(maskSlot);
             for (int i = 0; i < props.size(); i++) {
                 Label skip = cob.newLabel();
-                cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                        ConstantDescs.DEFAULT_NAME, CD_SETTABLE_PROP, stockIndex[i]));
+                ldcData(cob, stockName[i], CD_SETTABLE_PROP);
                 cob.aload(1);
                 cob.invokevirtual(CD_SETTABLE_PROP, "visibleInView", MTD_VISIBLE_IN_VIEW);
                 cob.ifeq(skip);
@@ -330,7 +347,7 @@ public final class BeanCodecGenerator
     // with stock semantics (advance to the value token, then the base helper
     // reports or skips) and continues the loop without touching the bean.
     private static void emitArmViewCheck(CodeBuilder cob, int parser, int ctxt, int maskSlot,
-            int matcherSlot, int ixSlot, int armIndex, int stockIdx, Label loop) {
+            int matcherSlot, int ixSlot, int armIndex, String stockName, Label loop) {
         Label visible = cob.newLabel();
         cob.lload(maskSlot);
         cob.loadConstant(1L << armIndex);
@@ -340,8 +357,7 @@ public final class BeanCodecGenerator
         cob.ifne(visible);
         cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
         cob.aload(0).aload(parser).aload(ctxt);
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, CD_SETTABLE_PROP, stockIdx));
+        ldcData(cob, stockName, CD_SETTABLE_PROP);
         cob.invokevirtual(CD_BASE, "_hiddenView", MTD_HIDDEN_VIEW);
         nextNameMatch(cob, parser, matcherSlot, ixSlot);
         cob.goto_(loop);
@@ -349,7 +365,7 @@ public final class BeanCodecGenerator
     }
 
     private static void buildDeserialize(CodeBuilder cob, Class<?> beanClass,
-            List<GenProp> props, int[] stockIndex, int[] childIndex, int[] setterMhIndex,
+            List<GenProp> props, String[] stockName, String[] childName, String[] setterName,
             ViewStrategy views) {
         final int parser = 1;
         final int ctxt = 2;
@@ -375,8 +391,7 @@ public final class BeanCodecGenerator
         cob.aload(parser).aload(beanSlot)
            .invokevirtual(CD_JSON_PARSER, "assignCurrentValue", MTD_ASSIGN_CURRENT);
 
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, CD_NAME_MATCHER, 0));
+        ldcData(cob, "matcher", CD_NAME_MATCHER);
         cob.astore(matcherSlot);
 
         Label loop = cob.newLabel();
@@ -408,23 +423,23 @@ public final class BeanCodecGenerator
             cob.labelBinding(caseLabels[i]);
             if (views == ViewStrategy.MASK) {
                 emitArmViewCheck(cob, parser, ctxt, maskSlot, matcherSlot, ixSlot, i,
-                        stockIndex[i], loop);
+                        stockName[i], loop);
             }
-            Label armEnd = beginArm(cob, stockIndex[i], propSlot, propHandler);
+            Label armEnd = beginArm(cob, stockName[i], propSlot, propHandler);
             GenProp prop = props.get(i);
             switch (prop.kind()) {
                 case STRING -> emitScalar(cob, beanSlot, parser, ctxt, beanDesc, prop,
                         "getString", MTD_GET_STRING, ConstantDescs.CD_String,
-                        stockIndex[i], setterMhIndex[i], "VALUE_STRING");
+                        stockName[i], setterName[i], "VALUE_STRING");
                 case INT -> emitScalar(cob, beanSlot, parser, ctxt, beanDesc, prop,
                         "getIntValue", MTD_GET_INT, ConstantDescs.CD_int,
-                        stockIndex[i], setterMhIndex[i], "VALUE_NUMBER_INT");
+                        stockName[i], setterName[i], "VALUE_NUMBER_INT");
                 case LONG -> emitScalar(cob, beanSlot, parser, ctxt, beanDesc, prop,
                         "getLongValue", MTD_GET_LONG, ConstantDescs.CD_long,
-                        stockIndex[i], setterMhIndex[i], "VALUE_NUMBER_INT");
+                        stockName[i], setterName[i], "VALUE_NUMBER_INT");
                 case BOOLEAN -> emitScalar(cob, beanSlot, parser, ctxt, beanDesc, prop,
                         "getBooleanValue", MTD_GET_BOOLEAN, ConstantDescs.CD_boolean,
-                        stockIndex[i], setterMhIndex[i], null);
+                        stockName[i], setterName[i], null);
                 case CHILD -> {
                     Label childStock = cob.newLabel();
                     Label childDone = cob.newLabel();
@@ -433,17 +448,17 @@ public final class BeanCodecGenerator
                     cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
                     cob.if_acmpne(childStock);
                     cob.aload(beanSlot);
-                    emitChildCall(cob, parser, ctxt, childIndex[i]);
+                    emitChildCall(cob, parser, ctxt, childName[i]);
                     cob.checkcast(childType);
                     emitStore(cob, beanDesc, prop, childType);
                     cob.goto_(childDone);
                     cob.labelBinding(childStock);
-                    emitStockSet(cob, parser, ctxt, beanSlot, stockIndex[i]);
+                    emitStockSet(cob, parser, ctxt, beanSlot, stockName[i]);
                     cob.labelBinding(childDone);
                 }
                 case STOCK -> {
                     cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
-                    emitStockSet(cob, parser, ctxt, beanSlot, stockIndex[i]);
+                    emitStockSet(cob, parser, ctxt, beanSlot, stockName[i]);
                 }
             }
             cob.labelBinding(armEnd);
@@ -496,7 +511,7 @@ public final class BeanCodecGenerator
             MethodTypeDesc.of(ConstantDescs.CD_Object, ConstantDescs.CD_Object);
 
     private static void buildBuilderDeserialize(CodeBuilder cob, Class<?> builderClass,
-            List<GenProp> props, int[] stockIndex, int[] childIndex, int instIndex, int buildIndex,
+            List<GenProp> props, String[] stockName, String[] childName,
             ViewStrategy views) {
         final int parser = 1;
         final int ctxt = 2;
@@ -516,15 +531,13 @@ public final class BeanCodecGenerator
             emitViewMask(cob, ctxt, maskSlot);
         }
 
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, CD_VALUE_INSTANTIATOR, instIndex));
+        ldcData(cob, "instantiator", CD_VALUE_INSTANTIATOR);
         cob.aload(ctxt);
         cob.invokevirtual(CD_VALUE_INSTANTIATOR, "createUsingDefault", MTD_CREATE_DEFAULT);
         cob.checkcast(builderDesc);
         cob.astore(builderSlot);
 
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, CD_NAME_MATCHER, 0));
+        ldcData(cob, "matcher", CD_NAME_MATCHER);
         cob.astore(matcherSlot);
 
         Label loop = cob.newLabel();
@@ -556,22 +569,22 @@ public final class BeanCodecGenerator
             cob.labelBinding(caseLabels[i]);
             if (views == ViewStrategy.MASK) {
                 emitArmViewCheck(cob, parser, ctxt, maskSlot, matcherSlot, ixSlot, i,
-                        stockIndex[i], loop);
+                        stockName[i], loop);
             }
-            Label armEnd = beginArm(cob, stockIndex[i], propSlot, propHandler);
+            Label armEnd = beginArm(cob, stockName[i], propSlot, propHandler);
             GenProp prop = props.get(i);
             switch (prop.kind()) {
                 case STRING -> emitBuilderScalar(cob, parser, ctxt, builderSlot, builderDesc, prop,
-                        "getString", MTD_GET_STRING, ConstantDescs.CD_String, stockIndex[i],
+                        "getString", MTD_GET_STRING, ConstantDescs.CD_String, stockName[i],
                         "VALUE_STRING");
                 case INT -> emitBuilderScalar(cob, parser, ctxt, builderSlot, builderDesc, prop,
-                        "getIntValue", MTD_GET_INT, ConstantDescs.CD_int, stockIndex[i],
+                        "getIntValue", MTD_GET_INT, ConstantDescs.CD_int, stockName[i],
                         "VALUE_NUMBER_INT");
                 case LONG -> emitBuilderScalar(cob, parser, ctxt, builderSlot, builderDesc, prop,
-                        "getLongValue", MTD_GET_LONG, ConstantDescs.CD_long, stockIndex[i],
+                        "getLongValue", MTD_GET_LONG, ConstantDescs.CD_long, stockName[i],
                         "VALUE_NUMBER_INT");
                 case BOOLEAN -> emitBuilderScalar(cob, parser, ctxt, builderSlot, builderDesc, prop,
-                        "getBooleanValue", MTD_GET_BOOLEAN, ConstantDescs.CD_boolean, stockIndex[i],
+                        "getBooleanValue", MTD_GET_BOOLEAN, ConstantDescs.CD_boolean, stockName[i],
                         null);
                 case CHILD -> {
                     Label childStock = cob.newLabel();
@@ -581,7 +594,7 @@ public final class BeanCodecGenerator
                     cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
                     cob.if_acmpne(childStock);
                     cob.aload(builderSlot);
-                    emitChildCall(cob, parser, ctxt, childIndex[i]);
+                    emitChildCall(cob, parser, ctxt, childName[i]);
                     cob.checkcast(childType);
                     Class<?> childRet = prop.setter().getReturnType();
                     MethodTypeDesc childSetter = MethodTypeDesc.of(
@@ -594,12 +607,12 @@ public final class BeanCodecGenerator
                     }
                     cob.goto_(childDone);
                     cob.labelBinding(childStock);
-                    emitStockSetReturn(cob, parser, ctxt, builderSlot, builderDesc, stockIndex[i]);
+                    emitStockSetReturn(cob, parser, ctxt, builderSlot, builderDesc, stockName[i]);
                     cob.labelBinding(childDone);
                 }
                 case STOCK -> {
                     cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
-                    emitStockSetReturn(cob, parser, ctxt, builderSlot, builderDesc, stockIndex[i]);
+                    emitStockSetReturn(cob, parser, ctxt, builderSlot, builderDesc, stockName[i]);
                 }
             }
             cob.labelBinding(armEnd);
@@ -611,8 +624,7 @@ public final class BeanCodecGenerator
         throwIse(cob, "bad property index");
 
         cob.labelBinding(endObject);
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, ConstantDescs.CD_MethodHandle, buildIndex));
+        ldcData(cob, "buildMethod", ConstantDescs.CD_MethodHandle);
         cob.aload(builderSlot);
         cob.invokevirtual(ConstantDescs.CD_MethodHandle, "invokeExact", MTD_BUILD_INVOKE);
         cob.areturn();
@@ -646,7 +658,7 @@ public final class BeanCodecGenerator
 
     private static void emitBuilderScalar(CodeBuilder cob, int parser, int ctxt, int builderSlot,
             ClassDesc builderDesc, GenProp prop, String getter, MethodTypeDesc getterType,
-            ClassDesc valueDesc, int stockIdx, String expectedToken) {
+            ClassDesc valueDesc, String stockName, String expectedToken) {
         Label useStock = cob.newLabel();
         Label done = cob.newLabel();
         emitExpectedTokenCheck(cob, parser, expectedToken, useStock);
@@ -662,7 +674,7 @@ public final class BeanCodecGenerator
         }
         cob.goto_(done);
         cob.labelBinding(useStock);
-        emitStockSetReturn(cob, parser, ctxt, builderSlot, builderDesc, stockIdx);
+        emitStockSetReturn(cob, parser, ctxt, builderSlot, builderDesc, stockName);
         cob.labelBinding(done);
     }
 
@@ -670,9 +682,8 @@ public final class BeanCodecGenerator
     // builders may return a replacement instance, which becomes the new
     // builder local.
     private static void emitStockSetReturn(CodeBuilder cob, int parser, int ctxt, int builderSlot,
-            ClassDesc builderDesc, int stockIdx) {
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, CD_SETTABLE_PROP, stockIdx));
+            ClassDesc builderDesc, String stockName) {
+        ldcData(cob, stockName, CD_SETTABLE_PROP);
         cob.aload(parser).aload(ctxt).aload(builderSlot);
         cob.invokevirtual(CD_SETTABLE_PROP, "deserializeSetAndReturn", MTD_DESER_SET_RETURN);
         cob.checkcast(builderDesc);
@@ -680,7 +691,7 @@ public final class BeanCodecGenerator
     }
 
     private static void buildRecordDeserialize(CodeBuilder cob, Class<?> beanClass,
-            List<GenProp> props, int[] stockIndex, int[] childIndex, int ctorIndex,
+            List<GenProp> props, String[] stockName, String[] childName,
             ViewStrategy views) {
         final int parser = 1;
         final int ctxt = 2;
@@ -724,8 +735,7 @@ public final class BeanCodecGenerator
         }
         cob.lconst_0().lstore(seenSlot);
 
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, CD_NAME_MATCHER, 0));
+        ldcData(cob, "matcher", CD_NAME_MATCHER);
         cob.astore(matcherSlot);
 
         Label loop = cob.newLabel();
@@ -760,37 +770,37 @@ public final class BeanCodecGenerator
                 // missing-property reporting treat it exactly like an absent
                 // property, matching the stock creator path.
                 emitArmViewCheck(cob, parser, ctxt, maskSlot, matcherSlot, ixSlot, i,
-                        stockIndex[i], loop);
+                        stockName[i], loop);
             }
-            Label armEnd = beginArm(cob, stockIndex[i], propSlot, propHandler);
+            Label armEnd = beginArm(cob, stockName[i], propSlot, propHandler);
             GenProp prop = props.get(i);
             Class<?> t = prop.type();
             switch (prop.kind()) {
                 case STRING -> emitRecordScalar(cob, parser, ctxt, componentSlot[i], t,
-                        "getString", MTD_GET_STRING, stockIndex[i], "VALUE_STRING");
+                        "getString", MTD_GET_STRING, stockName[i], "VALUE_STRING");
                 case INT -> emitRecordScalar(cob, parser, ctxt, componentSlot[i], t,
-                        "getIntValue", MTD_GET_INT, stockIndex[i], "VALUE_NUMBER_INT");
+                        "getIntValue", MTD_GET_INT, stockName[i], "VALUE_NUMBER_INT");
                 case LONG -> emitRecordScalar(cob, parser, ctxt, componentSlot[i], t,
-                        "getLongValue", MTD_GET_LONG, stockIndex[i], "VALUE_NUMBER_INT");
+                        "getLongValue", MTD_GET_LONG, stockName[i], "VALUE_NUMBER_INT");
                 case BOOLEAN -> emitRecordScalar(cob, parser, ctxt, componentSlot[i], t,
-                        "getBooleanValue", MTD_GET_BOOLEAN, stockIndex[i], null);
+                        "getBooleanValue", MTD_GET_BOOLEAN, stockName[i], null);
                 case CHILD -> {
                     Label childStock = cob.newLabel();
                     Label childDone = cob.newLabel();
                     cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
                     cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
                     cob.if_acmpne(childStock);
-                    emitChildCall(cob, parser, ctxt, childIndex[i]);
+                    emitChildCall(cob, parser, ctxt, childName[i]);
                     cob.checkcast(t.describeConstable().orElseThrow());
                     storeLocal(cob, t, componentSlot[i]);
                     cob.goto_(childDone);
                     cob.labelBinding(childStock);
-                    emitStockValueToLocal(cob, parser, ctxt, componentSlot[i], t, stockIndex[i]);
+                    emitStockValueToLocal(cob, parser, ctxt, componentSlot[i], t, stockName[i]);
                     cob.labelBinding(childDone);
                 }
                 case STOCK -> {
                     cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
-                    emitStockValueToLocal(cob, parser, ctxt, componentSlot[i], t, stockIndex[i]);
+                    emitStockValueToLocal(cob, parser, ctxt, componentSlot[i], t, stockName[i]);
                 }
             }
             cob.labelBinding(armEnd);
@@ -818,8 +828,7 @@ public final class BeanCodecGenerator
         cob.loadConstant(props.size());
         cob.invokevirtual(CD_BASE, "_checkRecordSeen", MTD_CHECK_SEEN);
         cob.labelBinding(allPresent);
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, ConstantDescs.CD_MethodHandle, ctorIndex));
+        ldcData(cob, "constructor", ConstantDescs.CD_MethodHandle);
         ClassDesc[] paramDescs = new ClassDesc[props.size()];
         for (int i = 0; i < props.size(); i++) {
             Class<?> t = props.get(i).type();
@@ -873,7 +882,7 @@ public final class BeanCodecGenerator
     }
 
     private static void emitRecordScalar(CodeBuilder cob, int parser, int ctxt, int slot,
-            Class<?> type, String getter, MethodTypeDesc getterType, int stockIdx,
+            Class<?> type, String getter, MethodTypeDesc getterType, String stockName,
             String expectedToken) {
         Label useStock = cob.newLabel();
         Label done = cob.newLabel();
@@ -882,16 +891,15 @@ public final class BeanCodecGenerator
         storeLocal(cob, type, slot);
         cob.goto_(done);
         cob.labelBinding(useStock);
-        emitStockValueToLocal(cob, parser, ctxt, slot, type, stockIdx);
+        emitStockValueToLocal(cob, parser, ctxt, slot, type, stockName);
         cob.labelBinding(done);
     }
 
     // Reads the whole value through the stock property (parser positioned on
     // the value token), then converts the boxed result to the component type.
     private static void emitStockValueToLocal(CodeBuilder cob, int parser, int ctxt, int slot,
-            Class<?> type, int stockIdx) {
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, CD_SETTABLE_PROP, stockIdx));
+            Class<?> type, String stockName) {
+        ldcData(cob, stockName, CD_SETTABLE_PROP);
         cob.aload(parser).aload(ctxt);
         cob.invokevirtual(CD_SETTABLE_PROP, "deserialize", MTD_PROP_DESERIALIZE);
         if (type.isPrimitive()) {
@@ -926,13 +934,12 @@ public final class BeanCodecGenerator
     // direct call.
     private static void emitScalar(CodeBuilder cob, int beanSlot, int parser, int ctxt,
             ClassDesc beanDesc, GenProp prop, String getter, MethodTypeDesc getterType,
-            ClassDesc valueDesc, int stockIdx, int setterMhIdx, String expectedToken) {
+            ClassDesc valueDesc, String stockName, String setterName, String expectedToken) {
         Label useStock = cob.newLabel();
         Label done = cob.newLabel();
         emitExpectedTokenCheck(cob, parser, expectedToken, useStock);
-        if (setterMhIdx >= 0) {
-            cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                    ConstantDescs.DEFAULT_NAME, ConstantDescs.CD_MethodHandle, setterMhIdx));
+        if (setterName != null) {
+            ldcData(cob, setterName, ConstantDescs.CD_MethodHandle);
             cob.aload(beanSlot);
             cob.aload(parser).invokevirtual(CD_JSON_PARSER, getter, getterType);
             cob.invokevirtual(ConstantDescs.CD_MethodHandle, "invokeExact",
@@ -944,7 +951,7 @@ public final class BeanCodecGenerator
         }
         cob.goto_(done);
         cob.labelBinding(useStock);
-        emitStockSet(cob, parser, ctxt, beanSlot, stockIdx);
+        emitStockSet(cob, parser, ctxt, beanSlot, stockName);
         cob.labelBinding(done);
     }
 
@@ -960,16 +967,15 @@ public final class BeanCodecGenerator
         }
     }
 
-    private static void emitChildCall(CodeBuilder cob, int parser, int ctxt, int childIdx) {
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, CD_BASE, childIdx));
+    private static void emitChildCall(CodeBuilder cob, int parser, int ctxt, String childName) {
+        ldcData(cob, childName, CD_BASE);
         cob.aload(parser).aload(ctxt);
         cob.invokevirtual(CD_BASE, "deserialize", MTD_DESERIALIZE);
     }
 
-    private static void emitStockSet(CodeBuilder cob, int parser, int ctxt, int beanSlot, int stockIdx) {
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, CD_SETTABLE_PROP, stockIdx));
+    private static void emitStockSet(CodeBuilder cob, int parser, int ctxt, int beanSlot,
+            String stockName) {
+        ldcData(cob, stockName, CD_SETTABLE_PROP);
         cob.aload(parser).aload(ctxt).aload(beanSlot);
         cob.invokevirtual(CD_SETTABLE_PROP, "deserializeAndSet", MTD_DESERIALIZE_AND_SET);
     }
@@ -1039,9 +1045,8 @@ public final class BeanCodecGenerator
     // Loads the arm's stock property into propSlot and opens its exception
     // region: any Exception from a property arm is rethrown with the property
     // reference prepended, like the stock loop's wrapAndThrow.
-    private static Label beginArm(CodeBuilder cob, int stockIdx, int propSlot, Label handler) {
-        cob.ldc(DynamicConstantDesc.ofNamed(ConstantDescs.BSM_CLASS_DATA_AT,
-                ConstantDescs.DEFAULT_NAME, CD_SETTABLE_PROP, stockIdx));
+    private static Label beginArm(CodeBuilder cob, String stockName, int propSlot, Label handler) {
+        ldcData(cob, stockName, CD_SETTABLE_PROP);
         cob.astore(propSlot);
         Label armStart = cob.newLabel();
         Label armEnd = cob.newLabel();

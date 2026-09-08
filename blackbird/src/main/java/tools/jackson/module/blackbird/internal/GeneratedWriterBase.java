@@ -1,5 +1,9 @@
 package tools.jackson.module.blackbird.internal;
 
+import java.lang.constant.ConstantDescs;
+import java.lang.invoke.MethodHandles;
+import java.util.Map;
+
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.SerializationContext;
@@ -55,6 +59,30 @@ public abstract class GeneratedWriterBase extends ValueSerializer<Object>
     @Override
     public void acceptJsonFormatVisitor(JsonFormatVisitorWrapper visitor, JavaType type) {
         _fallback.acceptJsonFormatVisitor(visitor, type);
+    }
+
+    /*
+    /**********************************************************************
+    /* Support for generated code
+    /**********************************************************************
+     */
+
+    // Constant bootstrap for generated code: resolves one named entry of the
+    // hidden class's class data, a Map built at generation time. The JDK's
+    // classDataAt bootstrap requires the condy name to be "_", so named
+    // entries need this owner, which generated classes can always resolve
+    // (the package is exported exactly for their supertype needs). A condy
+    // links once and then constant-folds the same as classDataAt; the names
+    // exist for dump readability and to remove positional-index bookkeeping
+    // from the generators.
+    public static Object classDataEntry(MethodHandles.Lookup lookup, String name, Class<?> type)
+            throws IllegalAccessException {
+        Map<?, ?> data = MethodHandles.classData(lookup, ConstantDescs.DEFAULT_NAME, Map.class);
+        Object value = data.get(name);
+        if (value == null) {
+            throw new IllegalStateException("no class data entry named " + name);
+        }
+        return type.cast(value);
     }
 
     /*
