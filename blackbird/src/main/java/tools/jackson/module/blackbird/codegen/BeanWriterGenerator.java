@@ -3,6 +3,7 @@ package tools.jackson.module.blackbird.codegen;
 import java.lang.classfile.ClassFile;
 import java.lang.classfile.CodeBuilder;
 import java.lang.classfile.Label;
+import java.lang.classfile.attribute.MethodParametersAttribute;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.DynamicConstantDesc;
@@ -171,13 +172,15 @@ public final class BeanWriterGenerator
         return ClassFile.of().build(thisClass, clb -> {
             clb.withFlags(ClassFile.ACC_PUBLIC | ClassFile.ACC_FINAL | ClassFile.ACC_SUPER);
             clb.withSuperclass(CD_WRITER_BASE);
-            clb.withMethodBody(ConstantDescs.INIT_NAME, MTD_CTOR, ClassFile.ACC_PUBLIC,
-                    cob -> cob.aload(0).aload(1)
-                            .invokespecial(CD_WRITER_BASE, ConstantDescs.INIT_NAME, MTD_CTOR)
-                            .return_());
-            clb.withMethodBody("serialize", MTD_SERIALIZE, ClassFile.ACC_PUBLIC,
-                    cob -> buildSerialize(cob, thisClass, beanClass, props,
-                            stockIndex, nameIndex, childIndex, views));
+            clb.withMethod(ConstantDescs.INIT_NAME, MTD_CTOR, ClassFile.ACC_PUBLIC,
+                    mb -> mb.with(BeanCodecGenerator.params("fallback"))
+                            .withCode(cob -> cob.aload(0).aload(1)
+                                    .invokespecial(CD_WRITER_BASE, ConstantDescs.INIT_NAME, MTD_CTOR)
+                                    .return_()));
+            clb.withMethod("serialize", MTD_SERIALIZE, ClassFile.ACC_PUBLIC,
+                    mb -> mb.with(BeanCodecGenerator.params("value", "g", "ctxt"))
+                            .withCode(cob -> buildSerialize(cob, thisClass, beanClass, props,
+                                    stockIndex, nameIndex, childIndex, views)));
             emitHelpers(clb, thisClass, props);
             if (views == ViewStrategy.MASK) {
                 emitComputeViewMask(clb, props, stockIndex, includeByDefault);
@@ -241,12 +244,16 @@ public final class BeanWriterGenerator
 
     private static void emitPadded(java.lang.classfile.ClassBuilder clb, String name,
             MethodTypeDesc type, java.util.function.Consumer<CodeBuilder> body) {
-        clb.withMethodBody(name, type, ClassFile.ACC_PRIVATE | ClassFile.ACC_STATIC, cob -> {
+        MethodParametersAttribute helperParams = (type.parameterCount() == 2)
+                ? BeanCodecGenerator.params("g", "name")
+                : BeanCodecGenerator.params("g", "name", "value");
+        clb.withMethod(name, type, ClassFile.ACC_PRIVATE | ClassFile.ACC_STATIC,
+                mb -> mb.with(helperParams).withCode(cob -> {
             for (int i = 0; i < INLINE_PAD; i++) {
                 cob.nop();
             }
             body.accept(cob);
-        });
+        }));
     }
 
     private static void buildSerialize(CodeBuilder cob, ClassDesc thisClass, Class<?> beanClass,
@@ -261,6 +268,7 @@ public final class BeanWriterGenerator
         ClassDesc beanDesc = beanClass.describeConstable().orElseThrow();
         final boolean itf = beanClass.isInterface();
 
+        Label scopeStart = cob.newBoundLabel();
         if (views == ViewStrategy.DELEGATE) {
             // Beans with more than 64 properties hand view-active calls to the
             // stock serializer, whose filtered writers apply.
@@ -349,6 +357,20 @@ public final class BeanWriterGenerator
 
         cob.aload(gen).invokevirtual(CD_JSON_GENERATOR, "writeEndObject", MTD_WRITE_END).pop();
         cob.return_();
+
+        Label scopeEnd = cob.newBoundLabel();
+        cob.localVariable(1, "value", ConstantDescs.CD_Object, scopeStart, scopeEnd);
+        cob.localVariable(gen, "g", CD_JSON_GENERATOR, scopeStart, scopeEnd);
+        cob.localVariable(ctxt, "ctxt", CD_SER_CONTEXT, scopeStart, scopeEnd);
+        cob.localVariable(beanSlot, "bean", beanDesc, scopeStart, scopeEnd);
+        // Slot entries must stay within max_locals, so name the child slot
+        // only when some CHILD arm actually stores it.
+        if (props.stream().anyMatch(pr -> pr.kind() == WKind.CHILD)) {
+            cob.localVariable(refSlot, "child", ConstantDescs.CD_Object, scopeStart, scopeEnd);
+        }
+        if (views == ViewStrategy.MASK) {
+            cob.localVariable(maskSlot, "viewMask", ConstantDescs.CD_long, scopeStart, scopeEnd);
+        }
     }
 
     // Overrides GeneratedWriterBase._computeViewMask: bit i set when property
@@ -356,8 +378,10 @@ public final class BeanWriterGenerator
     // build the filtered writer array.
     private static void emitComputeViewMask(java.lang.classfile.ClassBuilder clb,
             List<GenWProp> props, int[] stockIndex, boolean includeByDefault) {
-        clb.withMethodBody("_computeViewMask", MTD_VIEW_MASK, ClassFile.ACC_PROTECTED, cob -> {
+        clb.withMethod("_computeViewMask", MTD_VIEW_MASK, ClassFile.ACC_PROTECTED,
+                mb -> mb.with(BeanCodecGenerator.params("activeView")).withCode(cob -> {
             final int maskSlot = 2;
+            Label scopeStart = cob.newBoundLabel();
             cob.lconst_0().lstore(maskSlot);
             for (int i = 0; i < props.size(); i++) {
                 Label skip = cob.newLabel();
@@ -374,7 +398,10 @@ public final class BeanWriterGenerator
                 cob.labelBinding(skip);
             }
             cob.lload(maskSlot).lreturn();
-        });
+            Label scopeEnd = cob.newBoundLabel();
+            cob.localVariable(1, "activeView", ConstantDescs.CD_Class, scopeStart, scopeEnd);
+            cob.localVariable(maskSlot, "mask", ConstantDescs.CD_long, scopeStart, scopeEnd);
+        }));
     }
 
     private static void emitScalar(CodeBuilder cob, ClassDesc thisClass, int gen, int beanSlot,

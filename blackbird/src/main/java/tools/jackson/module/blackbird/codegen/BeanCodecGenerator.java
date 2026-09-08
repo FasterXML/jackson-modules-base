@@ -3,6 +3,8 @@ package tools.jackson.module.blackbird.codegen;
 import java.lang.classfile.ClassFile;
 import java.lang.classfile.CodeBuilder;
 import java.lang.classfile.Label;
+import java.lang.classfile.attribute.MethodParameterInfo;
+import java.lang.classfile.attribute.MethodParametersAttribute;
 import java.lang.classfile.instruction.SwitchCase;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
@@ -15,6 +17,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import tools.jackson.core.sym.PropertyNameMatcher;
 import tools.jackson.databind.ValueDeserializer;
@@ -238,12 +241,13 @@ public final class BeanCodecGenerator
         return ClassFile.of().build(thisClass, clb -> {
             clb.withFlags(ClassFile.ACC_PUBLIC | ClassFile.ACC_FINAL | ClassFile.ACC_SUPER);
             clb.withSuperclass(CD_BASE);
-            clb.withMethodBody(ConstantDescs.INIT_NAME, MTD_CTOR, ClassFile.ACC_PUBLIC,
-                    cob -> cob.aload(0).aload(1)
-                            .invokespecial(CD_BASE, ConstantDescs.INIT_NAME, MTD_CTOR)
-                            .return_());
-            clb.withMethodBody("deserialize", MTD_DESERIALIZE, ClassFile.ACC_PUBLIC,
-                    cob -> {
+            clb.withMethod(ConstantDescs.INIT_NAME, MTD_CTOR, ClassFile.ACC_PUBLIC,
+                    mb -> mb.with(params("fallback"))
+                            .withCode(cob -> cob.aload(0).aload(1)
+                                    .invokespecial(CD_BASE, ConstantDescs.INIT_NAME, MTD_CTOR)
+                                    .return_()));
+            clb.withMethod("deserialize", MTD_DESERIALIZE, ClassFile.ACC_PUBLIC,
+                    mb -> mb.with(params("p", "ctxt")).withCode(cob -> {
                         if (builderClass != null) {
                             buildBuilderDeserialize(cob, builderClass, props, stockIndex,
                                     childIndex, instIndex, buildIndex, views);
@@ -254,11 +258,22 @@ public final class BeanCodecGenerator
                             buildRecordDeserialize(cob, beanClass, props, stockIndex, childIndex,
                                     ctorIndex, views);
                         }
-                    });
+                    }));
             if (views == ViewStrategy.MASK) {
                 emitComputeViewMask(clb, props, stockIndex);
             }
         });
+    }
+
+    // Debug metadata: parameter names and named locals make dumped codecs
+    // (the blackbird.debug.dumpDir output) read like source in a decompiler;
+    // the verifier ignores both attributes.
+    static MethodParametersAttribute params(String... names) {
+        MethodParameterInfo[] infos = new MethodParameterInfo[names.length];
+        for (int i = 0; i < names.length; i++) {
+            infos[i] = MethodParameterInfo.ofParameter(Optional.of(names[i]), 0);
+        }
+        return MethodParametersAttribute.of(infos);
     }
 
     // Overrides GeneratedCodecBase._computeViewMask: bit i set when arm i's
@@ -266,8 +281,10 @@ public final class BeanCodecGenerator
     // (matchers, default-view inclusion) exactly the stock ones.
     private static void emitComputeViewMask(java.lang.classfile.ClassBuilder clb,
             List<GenProp> props, int[] stockIndex) {
-        clb.withMethodBody("_computeViewMask", MTD_VIEW_MASK, ClassFile.ACC_PROTECTED, cob -> {
+        clb.withMethod("_computeViewMask", MTD_VIEW_MASK, ClassFile.ACC_PROTECTED,
+                mb -> mb.with(params("activeView")).withCode(cob -> {
             final int maskSlot = 2;
+            Label scopeStart = cob.newBoundLabel();
             cob.lconst_0().lstore(maskSlot);
             for (int i = 0; i < props.size(); i++) {
                 Label skip = cob.newLabel();
@@ -283,7 +300,10 @@ public final class BeanCodecGenerator
                 cob.labelBinding(skip);
             }
             cob.lload(maskSlot).lreturn();
-        });
+            Label scopeEnd = cob.newBoundLabel();
+            cob.localVariable(1, "activeView", ConstantDescs.CD_Class, scopeStart, scopeEnd);
+            cob.localVariable(maskSlot, "mask", ConstantDescs.CD_long, scopeStart, scopeEnd);
+        }));
     }
 
     // MASK strategy: resolves the visibility bitmask for the call (all-ones
@@ -343,6 +363,7 @@ public final class BeanCodecGenerator
 
         ClassDesc beanDesc = beanClass.describeConstable().orElseThrow();
 
+        Label scopeStart = cob.newBoundLabel();
         emitEntryGuard(cob, parser, ctxt, views);
         if (views == ViewStrategy.MASK) {
             emitViewMask(cob, ctxt, maskSlot);
@@ -449,6 +470,18 @@ public final class BeanCodecGenerator
            .areturn();
 
         emitPropertyHandler(cob, propHandler, ctxt, propSlot, excSlot, beanSlot);
+
+        Label scopeEnd = cob.newBoundLabel();
+        cob.localVariable(parser, "p", CD_JSON_PARSER, scopeStart, scopeEnd);
+        cob.localVariable(ctxt, "ctxt", CD_DESER_CONTEXT, scopeStart, scopeEnd);
+        cob.localVariable(beanSlot, "bean", beanDesc, scopeStart, scopeEnd);
+        cob.localVariable(matcherSlot, "matcher", CD_NAME_MATCHER, scopeStart, scopeEnd);
+        cob.localVariable(ixSlot, "ix", ConstantDescs.CD_int, scopeStart, scopeEnd);
+        cob.localVariable(propSlot, "prop", CD_SETTABLE_PROP, scopeStart, scopeEnd);
+        cob.localVariable(excSlot, "e", CD_EXCEPTION, scopeStart, scopeEnd);
+        if (views == ViewStrategy.MASK) {
+            cob.localVariable(maskSlot, "viewMask", ConstantDescs.CD_long, scopeStart, scopeEnd);
+        }
     }
 
     private static final MethodTypeDesc MTD_PROP_DESERIALIZE =
@@ -477,6 +510,7 @@ public final class BeanCodecGenerator
 
         ClassDesc builderDesc = builderClass.describeConstable().orElseThrow();
 
+        Label scopeStart = cob.newBoundLabel();
         emitEntryGuard(cob, parser, ctxt, views);
         if (views == ViewStrategy.MASK) {
             emitViewMask(cob, ctxt, maskSlot);
@@ -596,6 +630,18 @@ public final class BeanCodecGenerator
            .areturn();
 
         emitPropertyHandler(cob, propHandler, ctxt, propSlot, excSlot, builderSlot);
+
+        Label scopeEnd = cob.newBoundLabel();
+        cob.localVariable(parser, "p", CD_JSON_PARSER, scopeStart, scopeEnd);
+        cob.localVariable(ctxt, "ctxt", CD_DESER_CONTEXT, scopeStart, scopeEnd);
+        cob.localVariable(builderSlot, "builder", builderDesc, scopeStart, scopeEnd);
+        cob.localVariable(matcherSlot, "matcher", CD_NAME_MATCHER, scopeStart, scopeEnd);
+        cob.localVariable(ixSlot, "ix", ConstantDescs.CD_int, scopeStart, scopeEnd);
+        cob.localVariable(propSlot, "prop", CD_SETTABLE_PROP, scopeStart, scopeEnd);
+        cob.localVariable(excSlot, "e", CD_EXCEPTION, scopeStart, scopeEnd);
+        if (views == ViewStrategy.MASK) {
+            cob.localVariable(maskSlot, "viewMask", ConstantDescs.CD_long, scopeStart, scopeEnd);
+        }
     }
 
     private static void emitBuilderScalar(CodeBuilder cob, int parser, int ctxt, int builderSlot,
@@ -656,6 +702,7 @@ public final class BeanCodecGenerator
 
         ClassDesc recordDesc = beanClass.describeConstable().orElseThrow();
 
+        Label scopeStart = cob.newBoundLabel();
         emitEntryGuard(cob, parser, ctxt, views);
         if (views == ViewStrategy.MASK) {
             emitViewMask(cob, ctxt, maskSlot);
@@ -806,6 +853,23 @@ public final class BeanCodecGenerator
            .areturn();
 
         emitPropertyHandler(cob, propHandler, ctxt, propSlot, excSlot, -1);
+
+        Label scopeEnd = cob.newBoundLabel();
+        cob.localVariable(parser, "p", CD_JSON_PARSER, scopeStart, scopeEnd);
+        cob.localVariable(ctxt, "ctxt", CD_DESER_CONTEXT, scopeStart, scopeEnd);
+        for (int i = 0; i < props.size(); i++) {
+            cob.localVariable(componentSlot[i], props.get(i).name(),
+                    props.get(i).type().describeConstable().orElseThrow(),
+                    scopeStart, scopeEnd);
+        }
+        cob.localVariable(matcherSlot, "matcher", CD_NAME_MATCHER, scopeStart, scopeEnd);
+        cob.localVariable(ixSlot, "ix", ConstantDescs.CD_int, scopeStart, scopeEnd);
+        cob.localVariable(seenSlot, "seen", ConstantDescs.CD_long, scopeStart, scopeEnd);
+        cob.localVariable(propSlot, "prop", CD_SETTABLE_PROP, scopeStart, scopeEnd);
+        cob.localVariable(excSlot, "e", CD_EXCEPTION, scopeStart, scopeEnd);
+        if (views == ViewStrategy.MASK) {
+            cob.localVariable(maskSlot, "viewMask", ConstantDescs.CD_long, scopeStart, scopeEnd);
+        }
     }
 
     private static void emitRecordScalar(CodeBuilder cob, int parser, int ctxt, int slot,
