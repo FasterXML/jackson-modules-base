@@ -19,6 +19,7 @@ import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -69,8 +70,8 @@ public class BBCodecMatcherTest extends BlackbirdTestBase
                 });
             }
         };
-        tools.jackson.databind.json.JsonMapper.Builder b =
-                tools.jackson.databind.json.JsonMapper.builder()
+        JsonMapper.Builder b =
+                JsonMapper.builder()
                         .addModule(capture)
                         .addModule(new BlackbirdModule());
         if (caseInsensitive) {
@@ -90,7 +91,7 @@ public class BBCodecMatcherTest extends BlackbirdTestBase
     public void testCaseInsensitiveMapper() throws Exception {
         Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
         ObjectMapper mapper = capturingMapper(seen, true);
-        ObjectMapper vci = tools.jackson.databind.json.JsonMapper.builder()
+        ObjectMapper vci = JsonMapper.builder()
                 .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
                 .build();
         String doc = a2q("{'COUNT':7,'Label':'x'}");
@@ -144,7 +145,7 @@ public class BBCodecMatcherTest extends BlackbirdTestBase
     public void testAliasUnderCaseInsensitiveMapper() throws Exception {
         Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
         ObjectMapper mapper = capturingMapper(seen, true);
-        ObjectMapper vci = tools.jackson.databind.json.JsonMapper.builder()
+        ObjectMapper vci = JsonMapper.builder()
                 .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
                 .build();
         String doc = a2q("{'IDENTIFIER':42,'NAME':'x'}");

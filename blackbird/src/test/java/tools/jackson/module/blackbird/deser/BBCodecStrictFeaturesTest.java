@@ -18,6 +18,7 @@ import tools.jackson.databind.exc.UnrecognizedPropertyException;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -66,8 +67,8 @@ public class BBCodecStrictFeaturesTest extends BlackbirdTestBase
                 });
             }
         };
-        tools.jackson.databind.json.JsonMapper.Builder b =
-                tools.jackson.databind.json.JsonMapper.builder()
+        JsonMapper.Builder b =
+                JsonMapper.builder()
                         .addModule(capture)
                         .addModule(new BlackbirdModule());
         for (DeserializationFeature f : enable) {
@@ -91,7 +92,7 @@ public class BBCodecStrictFeaturesTest extends BlackbirdTestBase
         Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
         ObjectMapper strict = capturingMapper(seen,
                 DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        ObjectMapper vstrict = tools.jackson.databind.json.JsonMapper.builder()
+        ObjectMapper vstrict = JsonMapper.builder()
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .build();
 

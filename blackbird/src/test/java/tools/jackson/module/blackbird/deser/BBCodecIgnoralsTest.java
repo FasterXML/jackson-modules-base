@@ -19,6 +19,7 @@ import tools.jackson.databind.exc.IgnoredPropertyException;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -82,7 +83,7 @@ public class BBCodecIgnoralsTest extends BlackbirdTestBase
                 });
             }
         };
-        return tools.jackson.databind.json.JsonMapper.builder()
+        return JsonMapper.builder()
                 .addModule(capture)
                 .addModule(new BlackbirdModule())
                 .build();
