@@ -23,6 +23,7 @@ import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.CreatorProperty;
 import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
+import tools.jackson.databind.introspect.AnnotatedConstructor;
 import tools.jackson.databind.introspect.AnnotatedField;
 import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.GenProp;
@@ -118,6 +119,16 @@ final class BBReaderFactory
         }
         if (!delegate.getValueInstantiator().canCreateUsingDefault()) {
             if (DEBUG) System.err.println("bbdebug gate: instantiator");
+            return null;
+        }
+        // The generated POJO codec constructs with a direct `new`, which is
+        // only equivalent when the instantiator's default creator IS the
+        // no-arg constructor. A no-arg @JsonCreator factory (or a custom
+        // instantiator) also reports canCreateUsingDefault and must construct
+        // through the instantiator, so such beans stay on the stock path.
+        if (!(delegate.getValueInstantiator().getDefaultCreator()
+                instanceof AnnotatedConstructor)) {
+            if (DEBUG) System.err.println("bbdebug gate: default creator is not the constructor");
             return null;
         }
         try {
@@ -280,6 +291,17 @@ final class BBReaderFactory
             throws ReflectiveOperationException {
         if (!delegate.getValueInstantiator().canCreateFromObjectWith()) {
             if (DEBUG) System.err.println("bbdebug gate: record instantiator");
+            return null;
+        }
+        // The generated code constructs through the canonical constructor. A
+        // @JsonCreator factory (or a custom instantiator) must construct
+        // through the instantiator instead, so such records stay on the stock
+        // path. An AnnotatedConstructor that also passes the per-component
+        // index and type match below is the canonical constructor: a second
+        // constructor with the same signature cannot exist.
+        if (!(delegate.getValueInstantiator().getWithArgsCreator()
+                instanceof AnnotatedConstructor)) {
+            if (DEBUG) System.err.println("bbdebug gate: record creator is not the constructor");
             return null;
         }
         RecordComponent[] comps = beanClass.getRecordComponents();
