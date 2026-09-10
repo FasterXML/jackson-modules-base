@@ -121,7 +121,11 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
                 return deserializer;
             }
         }
-        if (beanDesc.findAnySetterAccessor() != null) {
+        // Any-setter values apply to a live instance, which record codecs do
+        // not have during the loop (stock buffers them for creator types);
+        // POJO and builder codecs feed the stock any-setter from the unknown
+        // arm, so only records demote.
+        if (beanClass.isRecord() && beanDesc.findAnySetterAccessor() != null) {
             return deserializer;
         }
         // Injected values arrive outside the property loop, which the

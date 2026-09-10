@@ -133,13 +133,18 @@ public class BBCodecDemotionTest extends BlackbirdTestBase
     }
 
     @Test
-    public void testAnySetterBeanStaysStock() throws Exception {
+    public void testAnySetterBeanEngages() throws Exception {
+        // Widened from a demotion pin: the unknown arm feeds the stock
+        // any-setter, so these beans accelerate (BBCodecAnySetterTest has the
+        // full parity matrix; records with an any-setter still demote).
         Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
         ObjectMapper mapper = capturingMapper(seen);
         String doc = a2q("{'known':1,'x':'a','y':2}");
         AnySetterBean v = vanilla.readValue(doc, AnySetterBean.class);
         AnySetterBean m = mapper.readValue(doc, AnySetterBean.class);
-        assertStock(seen, AnySetterBean.class);
+        assertEquals("BBReaderPlaceholder",
+                seen.get(AnySetterBean.class).getClass().getSimpleName(),
+                "any-setter bean did not engage a codec");
         assertEquals(v.known, m.known);
         assertEquals(v.rest, m.rest);
         assertEquals(2, m.rest.size());

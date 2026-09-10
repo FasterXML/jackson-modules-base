@@ -121,27 +121,15 @@ final class BBReaderFactory
             if (DEBUG) System.err.println("bbdebug gate: instantiator");
             return null;
         }
-        // The generated POJO codec constructs with a direct `new`, which is
-        // only equivalent when the instantiator's default creator IS the
-        // no-arg constructor. A no-arg @JsonCreator factory (or a custom
-        // instantiator) also reports canCreateUsingDefault and must construct
-        // through the instantiator, so such beans stay on the stock path.
-        if (!(delegate.getValueInstantiator().getDefaultCreator()
-                instanceof AnnotatedConstructor)) {
-            if (DEBUG) System.err.println("bbdebug gate: default creator is not the constructor");
-            return null;
-        }
-        try {
-            if (!CodecAccess.directlyAccessible(
-                    beanClass.getDeclaredConstructor().getModifiers(), beanClass,
-                    defineLookup == null ? null : defineLookup.lookupClass())) {
-                if (DEBUG) System.err.println("bbdebug gate: ctor modifiers");
-                return null;
-            }
-        } catch (NoSuchMethodException e) {
-            if (DEBUG) System.err.println("bbdebug gate: no ctor");
-            return null;
-        }
+        // A direct `new` is only equivalent when the instantiator's default
+        // creator IS an accessible no-arg constructor. Everything else that
+        // still reports canCreateUsingDefault - a no-arg @JsonCreator factory,
+        // a custom instantiator, an inaccessible constructor - constructs
+        // through the stock instantiator held in class data instead.
+        boolean directNew = delegate.getValueInstantiator().getDefaultCreator()
+                instanceof AnnotatedConstructor
+                && declaredNoArgCtorAccessible(beanClass,
+                        defineLookup == null ? null : defineLookup.lookupClass());
 
         List<GenProp> props = new ArrayList<>();
         List<Named> names = new ArrayList<>();
@@ -162,8 +150,18 @@ final class BBReaderFactory
         }
         int[] aliasArms = appendAliases(names, props, aliases);
         PropertyNameMatcher matcher = matcher(ctxt, names, caseInsensitive);
-        return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, defineLookup,
+        return BeanReaderGenerator.generate(beanClass, props, matcher, delegate,
+                directNew ? null : delegate.getValueInstantiator(), defineLookup,
                 viewStrategy(ctxt, props, declaresViews), ignorals, aliasArms);
+    }
+
+    private static boolean declaredNoArgCtorAccessible(Class<?> beanClass, Class<?> anchor) {
+        try {
+            return CodecAccess.directlyAccessible(
+                    beanClass.getDeclaredConstructor().getModifiers(), beanClass, anchor);
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
     }
 
     // Beans that declare no @JsonView anywhere (read from the property
@@ -253,8 +251,8 @@ final class BBReaderFactory
         PropertyNameMatcher matcher = matcher(ctxt, names, caseInsensitive);
         return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, null,
                 new BeanReaderGenerator.BuilderSupport(
-                        delegate.getValueInstantiator(), buildMH, builderClass), defineLookup,
-                viewStrategy(ctxt, props, declaresViews), ignorals, aliasArms);
+                        delegate.getValueInstantiator(), buildMH, builderClass), null,
+                defineLookup, viewStrategy(ctxt, props, declaresViews), ignorals, aliasArms);
     }
 
     private static GenProp classifyBuilder(SettableBeanProperty prop, Class<?> builderClass,

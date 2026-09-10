@@ -25,6 +25,7 @@ import java.util.Optional;
 import tools.jackson.core.sym.PropertyNameMatcher;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.SettableBeanProperty;
+import tools.jackson.databind.deser.ValueInstantiator;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.util.ClassUtil;
 import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
@@ -152,13 +153,18 @@ public final class BeanReaderGenerator
         return candidate;
     }
 
+    // instantiator non-null selects instantiator construction for a POJO whose
+    // default creator is not an accessible no-arg constructor (a @JsonCreator
+    // factory, a custom instantiator, a non-public constructor): the value
+    // comes from ValueInstantiator.createUsingDefault, exactly like stock.
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback,
+            ValueInstantiator instantiator,
             MethodHandles.Lookup defineLookup, ViewStrategy views, Ignorals ignorals,
             int[] aliasArms)
             throws ReflectiveOperationException {
-        return generate(beanClass, props, matcher, fallback, null, null, defineLookup, views,
-                ignorals, aliasArms);
+        return generate(beanClass, props, matcher, fallback, null, null, instantiator,
+                defineLookup, views, ignorals, aliasArms);
     }
 
     // recordCtor non-null selects record mode: props are in canonical
@@ -169,21 +175,22 @@ public final class BeanReaderGenerator
             MethodHandles.Lookup defineLookup, ViewStrategy views, Ignorals ignorals,
             int[] aliasArms)
             throws ReflectiveOperationException {
-        return generate(beanClass, props, matcher, fallback, recordCtor, null, defineLookup, views,
-                ignorals, aliasArms);
+        return generate(beanClass, props, matcher, fallback, recordCtor, null, null, defineLookup,
+                views, ignorals, aliasArms);
     }
 
     // builderSupport non-null selects builder mode: values apply to a builder
     // instance created by the stock ValueInstantiator, fluent setter returns
     // replace the builder local, and the build MethodHandle (asType'd to
     // (Object)Object) produces the value.
-    public record BuilderSupport(tools.jackson.databind.deser.ValueInstantiator instantiator,
+    public record BuilderSupport(ValueInstantiator instantiator,
             MethodHandle buildMethod, Class<?> builderClass) {}
 
     @SuppressWarnings("unchecked")
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, BeanDeserializerBase fallback, MethodHandle recordCtor,
-            BuilderSupport builder, MethodHandles.Lookup defineLookup, ViewStrategy views,
+            BuilderSupport builder, ValueInstantiator instantiator,
+            MethodHandles.Lookup defineLookup, ViewStrategy views,
             Ignorals ignorals, int[] aliasArms)
             throws ReflectiveOperationException {
         Map<String, Object> classData = new LinkedHashMap<>();
@@ -214,6 +221,9 @@ public final class BeanReaderGenerator
             classData.put("instantiator", builder.instantiator());
             classData.put("buildMethod", builder.buildMethod());
         }
+        if (instantiator != null) {
+            classData.put("instantiator", instantiator);
+        }
 
         // Non-public beans define in the bean's package context (the caller
         // supplies a privateLookupIn of the bean class), which makes the
@@ -223,7 +233,8 @@ public final class BeanReaderGenerator
                 (defineLookup != null) ? defineLookup : MethodHandles.lookup();
         byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
                 stockName, childName, setterName, recordCtor != null,
-                builder == null ? null : builder.builderClass(), views, aliasArms);
+                builder == null ? null : builder.builderClass(), instantiator != null,
+                views, aliasArms);
         CodegenDump.dump(beanClass, "reader", bytes);
         // No ClassOption.STRONG: the codec instance held by the mapper's
         // deserializer cache anchors the class, so codecs unload with the
@@ -269,7 +280,7 @@ public final class BeanReaderGenerator
     private static byte[] buildClass(String targetPackage, Class<?> beanClass,
             List<GenProp> props,
             String[] stockName, String[] childName, String[] setterName,
-            boolean recordMode, Class<?> builderClass,
+            boolean recordMode, Class<?> builderClass, boolean instantiatorMode,
             ViewStrategy views, int[] aliasArms) {
         // A hidden class must be named in its define context's package.
         ClassDesc thisClass = ClassDesc.of(
@@ -290,7 +301,7 @@ public final class BeanReaderGenerator
                                     childName, views, aliasArms);
                         } else if (!recordMode) {
                             buildDeserialize(cob, beanClass, props, stockName, childName,
-                                    setterName, views, aliasArms);
+                                    setterName, instantiatorMode, views, aliasArms);
                         } else {
                             buildRecordDeserialize(cob, beanClass, props, stockName, childName,
                                     views, aliasArms);
@@ -385,7 +396,7 @@ public final class BeanReaderGenerator
 
     private static void buildDeserialize(CodeBuilder cob, Class<?> beanClass,
             List<GenProp> props, String[] stockName, String[] childName, String[] setterName,
-            ViewStrategy views, int[] aliasArms) {
+            boolean instantiatorMode, ViewStrategy views, int[] aliasArms) {
         final int parser = 1;
         final int ctxt = 2;
         final int beanSlot = 3;
@@ -404,9 +415,17 @@ public final class BeanReaderGenerator
             emitViewMask(cob, ctxt, maskSlot);
         }
 
-        cob.new_(beanDesc).dup()
-           .invokespecial(beanDesc, ConstantDescs.INIT_NAME, ConstantDescs.MTD_void)
-           .astore(beanSlot);
+        if (instantiatorMode) {
+            ldcData(cob, "instantiator", CD_VALUE_INSTANTIATOR);
+            cob.aload(ctxt);
+            cob.invokevirtual(CD_VALUE_INSTANTIATOR, "createUsingDefault", MTD_CREATE_DEFAULT);
+            cob.checkcast(beanDesc);
+            cob.astore(beanSlot);
+        } else {
+            cob.new_(beanDesc).dup()
+               .invokespecial(beanDesc, ConstantDescs.INIT_NAME, ConstantDescs.MTD_void)
+               .astore(beanSlot);
+        }
         cob.aload(parser).aload(beanSlot)
            .invokevirtual(CD_JSON_PARSER, "assignCurrentValue", MTD_ASSIGN_CURRENT);
 

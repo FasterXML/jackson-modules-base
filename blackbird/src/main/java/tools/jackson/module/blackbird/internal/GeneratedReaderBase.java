@@ -12,6 +12,7 @@ import tools.jackson.databind.DeserializationConfig;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.deser.SettableAnyProperty;
 import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.exc.IgnoredPropertyException;
 import tools.jackson.databind.util.IgnorePropertiesUtil;
@@ -39,6 +40,10 @@ public abstract class GeneratedReaderBase extends ValueDeserializer<Object>
     private final Set<String> _ignorableProps;
     private final Set<String> _includableProps;
 
+    // The stock deserializer's resolved any-setter, read through the probe;
+    // _handleUnknown feeds it unknown names the way handleUnknownVanilla does.
+    private final SettableAnyProperty _anySetter;
+
     protected GeneratedReaderBase(BeanDeserializerBase fallback) {
         this(fallback, false, null, null);
     }
@@ -49,6 +54,8 @@ public abstract class GeneratedReaderBase extends ValueDeserializer<Object>
         _ignoreAllUnknown = ignoreAllUnknown;
         _ignorableProps = ignorableProps;
         _includableProps = includableProps;
+        _anySetter = fallback.hasAnySetter()
+                ? StockDeserializerProbe.anySetterOf(fallback) : null;
     }
 
     @Override
@@ -143,25 +150,35 @@ public abstract class GeneratedReaderBase extends ValueDeserializer<Object>
     }
 
     // Called by generated code for a name the matcher does not know: the
-    // stock loop's exact order - ignore-all skips silently, an explicitly
+    // exact order of the stock loop's handleUnknownVanilla - an explicitly
     // ignored (or not-included) name goes through ignored-property handling,
-    // and everything else runs the problem handlers and honors
+    // an any-setter consumes everything else, ignore-all skips silently, and
+    // the remainder runs the problem handlers and honors
     // FAIL_ON_UNKNOWN_PROPERTIES through the context. beanOrBuilder is null
-    // in record mode, where no instance exists yet.
+    // in record mode, where no instance exists yet (the modifier keeps
+    // records with an any-setter on the stock path).
     protected final void _handleUnknown(JsonParser p, DeserializationContext ctxt,
             Object beanOrBuilder) {
         String name = p.currentName();
         p.nextToken();
-        if (_ignoreAllUnknown) {
-            p.skipChildren();
-            return;
-        }
         Object ref = (beanOrBuilder == null) ? _fallback.handledType() : beanOrBuilder;
         if (IgnorePropertiesUtil.shouldIgnore(name, _ignorableProps, _includableProps)) {
             if (ctxt.isEnabled(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)) {
                 throw IgnoredPropertyException.from(p, ref, name,
                         _fallback.getKnownPropertyNames());
             }
+            p.skipChildren();
+            return;
+        }
+        if (_anySetter != null) {
+            try {
+                _anySetter.deserializeAndSet(p, ctxt, beanOrBuilder, name);
+            } catch (Exception e) {
+                throw _fallback.wrapAndThrow(e, ref, name, ctxt);
+            }
+            return;
+        }
+        if (_ignoreAllUnknown) {
             p.skipChildren();
             return;
         }
