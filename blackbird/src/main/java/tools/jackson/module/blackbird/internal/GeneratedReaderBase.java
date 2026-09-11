@@ -14,6 +14,7 @@ import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.SettableAnyProperty;
 import tools.jackson.databind.deser.SettableBeanProperty;
+import tools.jackson.databind.deser.impl.ValueInjector;
 import tools.jackson.databind.exc.IgnoredPropertyException;
 import tools.jackson.databind.util.IgnorePropertiesUtil;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
@@ -44,6 +45,11 @@ public abstract class GeneratedReaderBase extends ValueDeserializer<Object>
     // _handleUnknown feeds it unknown names the way handleUnknownVanilla does.
     private final SettableAnyProperty _anySetter;
 
+    // The stock deserializer's resolved injectables, read through the probe;
+    // generated code calls _injectValues right after construction, the stock
+    // deserializeFromObject placement.
+    private final ValueInjector[] _injectables;
+
     protected GeneratedReaderBase(BeanDeserializerBase fallback) {
         this(fallback, false, null, null);
     }
@@ -56,6 +62,16 @@ public abstract class GeneratedReaderBase extends ValueDeserializer<Object>
         _includableProps = includableProps;
         _anySetter = fallback.hasAnySetter()
                 ? StockDeserializerProbe.anySetterOf(fallback) : null;
+        _injectables = StockDeserializerProbe.injectablesOf(fallback);
+    }
+
+    /**
+     * Whether the stock deserializer carries injected values; the factory
+     * emits the injection call only for beans that need it. Not API: public
+     * only because the factories live in sibling packages.
+     */
+    public static boolean hasInjectables(BeanDeserializerBase deser) {
+        return StockDeserializerProbe.injectablesOf(deser) != null;
     }
 
     @Override
@@ -130,6 +146,17 @@ public abstract class GeneratedReaderBase extends ValueDeserializer<Object>
     public ValueDeserializer<Object> unwrappingDeserializer(DeserializationContext ctxt,
             NameTransformer unwrapper) {
         return _fallback.unwrappingDeserializer(ctxt, unwrapper);
+    }
+
+    // Called by generated code (emitted only for beans with injectables)
+    // right after construction, before the property loop: the placement
+    // stock deserializeFromObject and the builder-based equivalent use, so
+    // properties read from the document override injected values exactly
+    // like stock.
+    protected final void _injectValues(DeserializationContext ctxt, Object beanOrBuilder) {
+        for (ValueInjector injector : _injectables) {
+            injector.inject(ctxt, beanOrBuilder);
+        }
     }
 
     // Called by generated code when a property name was expected but the

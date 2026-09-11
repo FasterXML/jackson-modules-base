@@ -78,6 +78,20 @@ public final class BeanWriterGenerator
     private static final MethodTypeDesc MTD_PROP_VISIBLE = MethodTypeDesc.of(
             ConstantDescs.CD_boolean, CD_PROPERTY_WRITER, ConstantDescs.CD_Class,
             ConstantDescs.CD_boolean);
+    private static final ClassDesc CD_JSON_TOKEN = ClassDesc.of("tools.jackson.core.JsonToken");
+    private static final ClassDesc CD_TYPE_SERIALIZER =
+            ClassDesc.of("tools.jackson.databind.jsontype.TypeSerializer");
+    private static final ClassDesc CD_WRITABLE_TYPE_ID =
+            ClassDesc.of("tools.jackson.core.type.WritableTypeId");
+    private static final MethodTypeDesc MTD_TYPE_ID = MethodTypeDesc.of(
+            CD_WRITABLE_TYPE_ID, ConstantDescs.CD_Object, CD_JSON_TOKEN);
+    private static final MethodTypeDesc MTD_WRITE_TYPE_PART = MethodTypeDesc.of(
+            CD_WRITABLE_TYPE_ID, CD_JSON_GENERATOR, CD_SER_CONTEXT, CD_WRITABLE_TYPE_ID);
+    private static final MethodTypeDesc MTD_ASSIGN_CURRENT =
+            MethodTypeDesc.of(ConstantDescs.CD_void, ConstantDescs.CD_Object);
+    private static final MethodTypeDesc MTD_SERIALIZE_WITH_TYPE = MethodTypeDesc.of(
+            ConstantDescs.CD_void, ConstantDescs.CD_Object, CD_JSON_GENERATOR, CD_SER_CONTEXT,
+            CD_TYPE_SERIALIZER);
 
     // Named class-data entries through the writer base's classDataEntry
     // bootstrap; rationale in BeanReaderGenerator.
@@ -91,9 +105,13 @@ public final class BeanWriterGenerator
         cob.ldc(DynamicConstantDesc.ofNamed(BSM_DATA_ENTRY, name, type));
     }
 
+    // nativePolyWrites: emit a serializeWithType override matching stock
+    // BeanSerializerBase's WritableTypeId flow; false (a @JsonTypeId property
+    // exists, whose value feeds the type id) keeps the base forwarding.
     @SuppressWarnings("unchecked")
     public static ValueSerializer<Object> generate(Class<?> beanClass, List<GenWProp> props,
-            BeanSerializerBase fallback, ViewStrategy views, boolean includeByDefault)
+            BeanSerializerBase fallback, ViewStrategy views, boolean includeByDefault,
+            boolean nativePolyWrites)
             throws ReflectiveOperationException {
         Map<String, Object> classData = new LinkedHashMap<>();
         String[] stockName = new String[props.size()];
@@ -121,7 +139,8 @@ public final class BeanWriterGenerator
 
         MethodHandles.Lookup definer = MethodHandles.lookup();
         byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
-                stockName, nameName, childName, handleName, views, includeByDefault);
+                stockName, nameName, childName, handleName, views, includeByDefault,
+                nativePolyWrites);
         CodegenDump.dump(beanClass, "writer", bytes);
         // Module-context defines never legitimately fail: any throw here is a
         // generator bug, surfaced through the modifier's failure handling.
@@ -158,7 +177,7 @@ public final class BeanWriterGenerator
     private static byte[] buildClass(String targetPackage, Class<?> beanClass,
             List<GenWProp> props,
             String[] stockName, String[] nameName, String[] childName, String[] handleName,
-            ViewStrategy views, boolean includeByDefault) {
+            ViewStrategy views, boolean includeByDefault, boolean nativePolyWrites) {
         // A hidden class must be named in its define context's package.
         ClassDesc thisClass = ClassDesc.of(
                 targetPackage + ".BBWriter_" + BeanReaderGenerator.codecName(beanClass));
@@ -174,6 +193,12 @@ public final class BeanWriterGenerator
                     mb -> mb.with(BeanReaderGenerator.params("value", "g", "ctxt"))
                             .withCode(cob -> buildSerialize(cob, thisClass, props,
                                     stockName, nameName, childName, handleName, views)));
+            if (nativePolyWrites) {
+                clb.withMethod("serializeWithType", MTD_SERIALIZE_WITH_TYPE, ClassFile.ACC_PUBLIC,
+                        mb -> mb.with(BeanReaderGenerator.params("value", "g", "ctxt", "typeSer"))
+                                .withCode(cob -> buildSerializeWithType(cob, thisClass, props,
+                                        stockName, nameName, childName, handleName, views)));
+            }
             emitHelpers(clb, thisClass, props);
             if (views == ViewStrategy.MASK) {
                 emitComputeViewMask(clb, props, stockName, includeByDefault);
@@ -268,26 +293,126 @@ public final class BeanWriterGenerator
             cob.aload(ctxt).invokevirtual(CD_SER_CONTEXT, "getActiveView", MTD_GET_ACTIVE_VIEW);
             cob.ifnonnull(delegate);
         } else if (views == ViewStrategy.MASK) {
-            Label nullView = cob.newLabel();
-            Label haveMask = cob.newLabel();
-            cob.aload(ctxt).invokevirtual(CD_SER_CONTEXT, "getActiveView", MTD_GET_ACTIVE_VIEW);
-            cob.dup();
-            cob.ifnull(nullView);
-            cob.aload(0);
-            cob.swap();
-            cob.invokevirtual(CD_WRITER_BASE, "_viewMask", MTD_VIEW_MASK);
-            cob.lstore(maskSlot);
-            cob.goto_(haveMask);
-            cob.labelBinding(nullView);
-            cob.pop();
-            cob.loadConstant(-1L);
-            cob.lstore(maskSlot);
-            cob.labelBinding(haveMask);
+            emitViewMask(cob, ctxt, maskSlot);
         }
 
         cob.aload(gen).aload(1)
            .invokevirtual(CD_JSON_GENERATOR, "writeStartObject", MTD_WRITE_START_OBJECT).pop();
 
+        emitProps(cob, thisClass, props, stockName, nameName, childName, handleName, views,
+                gen, ctxt, refSlot, maskSlot);
+
+        cob.aload(gen).invokevirtual(CD_JSON_GENERATOR, "writeEndObject", MTD_WRITE_END).pop();
+        cob.return_();
+        if (delegate != null) {
+            cob.labelBinding(delegate);
+            cob.aload(0).getfield(CD_WRITER_BASE, "_fallback", CD_BEAN_SER_BASE);
+            cob.aload(1).aload(gen).aload(ctxt);
+            cob.invokevirtual(CD_BEAN_SER_BASE, "serialize", MTD_SERIALIZE);
+            cob.return_();
+        }
+
+        Label scopeEnd = cob.newBoundLabel();
+        cob.localVariable(1, "value", ConstantDescs.CD_Object, scopeStart, scopeEnd);
+        cob.localVariable(gen, "g", CD_JSON_GENERATOR, scopeStart, scopeEnd);
+        cob.localVariable(ctxt, "ctxt", CD_SER_CONTEXT, scopeStart, scopeEnd);
+        // Slot entries must stay within max_locals, so name the child slot
+        // only when some CHILD arm actually stores it.
+        if (props.stream().anyMatch(pr -> pr.kind() == WKind.CHILD)) {
+            cob.localVariable(refSlot, "child", ConstantDescs.CD_Object, scopeStart, scopeEnd);
+        }
+        if (views == ViewStrategy.MASK) {
+            cob.localVariable(maskSlot, "viewMask", ConstantDescs.CD_long, scopeStart, scopeEnd);
+        }
+    }
+
+    // The serializeWithType override: stock BeanSerializerBase's flow with
+    // the object-id and filter-id branches omitted (both gate at the factory)
+    // and the type id always typeSer.typeId(value, START_OBJECT) - beans with
+    // a @JsonTypeId property keep the base forwarding instead. The props body
+    // is emitted again rather than shared through a method so the plain
+    // serialize path keeps its measured shape.
+    private static void buildSerializeWithType(CodeBuilder cob, ClassDesc thisClass,
+            List<GenWProp> props, String[] stockName, String[] nameName, String[] childName,
+            String[] handleName, ViewStrategy views) {
+        final int gen = 2;
+        final int ctxt = 3;
+        final int typeSer = 4;
+        final int typeIdSlot = 5;
+        final int refSlot = 6;
+        final int maskSlot = 7;
+
+        Label scopeStart = cob.newBoundLabel();
+        Label delegate = null;
+        if (views == ViewStrategy.DELEGATE) {
+            delegate = cob.newLabel();
+            cob.aload(ctxt).invokevirtual(CD_SER_CONTEXT, "getActiveView", MTD_GET_ACTIVE_VIEW);
+            cob.ifnonnull(delegate);
+        } else if (views == ViewStrategy.MASK) {
+            emitViewMask(cob, ctxt, maskSlot);
+        }
+
+        cob.aload(typeSer).aload(1);
+        cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
+        cob.invokevirtual(CD_TYPE_SERIALIZER, "typeId", MTD_TYPE_ID);
+        cob.astore(typeIdSlot);
+        cob.aload(typeSer).aload(gen).aload(ctxt).aload(typeIdSlot);
+        cob.invokevirtual(CD_TYPE_SERIALIZER, "writeTypePrefix", MTD_WRITE_TYPE_PART).pop();
+        cob.aload(gen).aload(1)
+           .invokevirtual(CD_JSON_GENERATOR, "assignCurrentValue", MTD_ASSIGN_CURRENT);
+
+        emitProps(cob, thisClass, props, stockName, nameName, childName, handleName, views,
+                gen, ctxt, refSlot, maskSlot);
+
+        cob.aload(typeSer).aload(gen).aload(ctxt).aload(typeIdSlot);
+        cob.invokevirtual(CD_TYPE_SERIALIZER, "writeTypeSuffix", MTD_WRITE_TYPE_PART).pop();
+        cob.return_();
+        if (delegate != null) {
+            cob.labelBinding(delegate);
+            cob.aload(0).getfield(CD_WRITER_BASE, "_fallback", CD_BEAN_SER_BASE);
+            cob.aload(1).aload(gen).aload(ctxt).aload(typeSer);
+            cob.invokevirtual(CD_BEAN_SER_BASE, "serializeWithType", MTD_SERIALIZE_WITH_TYPE);
+            cob.return_();
+        }
+
+        Label scopeEnd = cob.newBoundLabel();
+        cob.localVariable(1, "value", ConstantDescs.CD_Object, scopeStart, scopeEnd);
+        cob.localVariable(gen, "g", CD_JSON_GENERATOR, scopeStart, scopeEnd);
+        cob.localVariable(ctxt, "ctxt", CD_SER_CONTEXT, scopeStart, scopeEnd);
+        cob.localVariable(typeSer, "typeSer", CD_TYPE_SERIALIZER, scopeStart, scopeEnd);
+        cob.localVariable(typeIdSlot, "typeIdDef", CD_WRITABLE_TYPE_ID, scopeStart, scopeEnd);
+        if (props.stream().anyMatch(pr -> pr.kind() == WKind.CHILD)) {
+            cob.localVariable(refSlot, "child", ConstantDescs.CD_Object, scopeStart, scopeEnd);
+        }
+        if (views == ViewStrategy.MASK) {
+            cob.localVariable(maskSlot, "viewMask", ConstantDescs.CD_long, scopeStart, scopeEnd);
+        }
+    }
+
+    // MASK strategy: resolves the visibility bitmask for the call (all-ones
+    // when no view is active) into maskSlot.
+    private static void emitViewMask(CodeBuilder cob, int ctxt, int maskSlot) {
+        Label nullView = cob.newLabel();
+        Label haveMask = cob.newLabel();
+        cob.aload(ctxt).invokevirtual(CD_SER_CONTEXT, "getActiveView", MTD_GET_ACTIVE_VIEW);
+        cob.dup();
+        cob.ifnull(nullView);
+        cob.aload(0);
+        cob.swap();
+        cob.invokevirtual(CD_WRITER_BASE, "_viewMask", MTD_VIEW_MASK);
+        cob.lstore(maskSlot);
+        cob.goto_(haveMask);
+        cob.labelBinding(nullView);
+        cob.pop();
+        cob.loadConstant(-1L);
+        cob.lstore(maskSlot);
+        cob.labelBinding(haveMask);
+    }
+
+    // One writeName/write-value pair per property, the bean in slot 1.
+    private static void emitProps(CodeBuilder cob, ClassDesc thisClass, List<GenWProp> props,
+            String[] stockName, String[] nameName, String[] childName, String[] handleName,
+            ViewStrategy views, int gen, int ctxt, int refSlot, int maskSlot) {
         for (int i = 0; i < props.size(); i++) {
             GenWProp prop = props.get(i);
             Label hidden = null;
@@ -340,29 +465,6 @@ public final class BeanWriterGenerator
             if (hidden != null) {
                 cob.labelBinding(hidden);
             }
-        }
-
-        cob.aload(gen).invokevirtual(CD_JSON_GENERATOR, "writeEndObject", MTD_WRITE_END).pop();
-        cob.return_();
-        if (delegate != null) {
-            cob.labelBinding(delegate);
-            cob.aload(0).getfield(CD_WRITER_BASE, "_fallback", CD_BEAN_SER_BASE);
-            cob.aload(1).aload(gen).aload(ctxt);
-            cob.invokevirtual(CD_BEAN_SER_BASE, "serialize", MTD_SERIALIZE);
-            cob.return_();
-        }
-
-        Label scopeEnd = cob.newBoundLabel();
-        cob.localVariable(1, "value", ConstantDescs.CD_Object, scopeStart, scopeEnd);
-        cob.localVariable(gen, "g", CD_JSON_GENERATOR, scopeStart, scopeEnd);
-        cob.localVariable(ctxt, "ctxt", CD_SER_CONTEXT, scopeStart, scopeEnd);
-        // Slot entries must stay within max_locals, so name the child slot
-        // only when some CHILD arm actually stores it.
-        if (props.stream().anyMatch(pr -> pr.kind() == WKind.CHILD)) {
-            cob.localVariable(refSlot, "child", ConstantDescs.CD_Object, scopeStart, scopeEnd);
-        }
-        if (views == ViewStrategy.MASK) {
-            cob.localVariable(maskSlot, "viewMask", ConstantDescs.CD_long, scopeStart, scopeEnd);
         }
     }
 

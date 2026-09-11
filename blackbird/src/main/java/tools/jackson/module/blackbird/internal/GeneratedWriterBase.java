@@ -27,6 +27,9 @@ public abstract class GeneratedWriterBase extends ValueSerializer<Object>
         _fallback = fallback;
     }
 
+    // Generated writers override this with a native WritableTypeId flow;
+    // this forwarding remains for beans with a @JsonTypeId property, whose
+    // value feeds the type id through the stock path.
     @Override
     public void serializeWithType(Object value, JsonGenerator g, SerializationContext ctxt,
             TypeSerializer typeSer) {

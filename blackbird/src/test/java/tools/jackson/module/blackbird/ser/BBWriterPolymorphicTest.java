@@ -1,21 +1,35 @@
 package tools.jackson.module.blackbird.ser;
 
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeId;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import org.junit.jupiter.api.Test;
 
+import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationConfig;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.ValueSerializerModifier;
+import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Polymorphic serialization parity: databind calls serializeWithType on the
- * subtype's (generated) serializer, which forwards whole-call to the stock
- * serializer, so output must equal vanilla for every inclusion mechanism.
+ * subtype's generated serializer, whose native override replicates stock
+ * BeanSerializerBase's WritableTypeId flow (typeId, writeTypePrefix,
+ * assignCurrentValue, properties, writeTypeSuffix), so output must equal
+ * vanilla for every inclusion mechanism. Beans with a @JsonTypeId property
+ * keep the whole-call forwarding to stock.
  */
 public class BBWriterPolymorphicTest extends BlackbirdTestBase
 {
@@ -113,5 +127,87 @@ public class BBWriterPolymorphicTest extends BlackbirdTestBase
         assertInstanceOf(Cat.class, back);
         assertEquals("mia", back.name);
         assertEquals(9, ((Cat) back).lives);
+    }
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_ARRAY)
+    @JsonSubTypes({
+        @JsonSubTypes.Type(value = ArrayLeaf.class, name = "leaf")
+    })
+    public static abstract class ArrayWrapped {
+    }
+
+    public static class ArrayLeaf extends ArrayWrapped {
+        public String label;
+        public long count;
+    }
+
+    @Test
+    public void testWrapperArrayInclusionWrite() throws Exception {
+        ArrayLeaf leaf = new ArrayLeaf();
+        leaf.label = "x";
+        leaf.count = 12;
+        assertEquals(vanilla.writerFor(ArrayWrapped.class).writeValueAsString(leaf),
+                mapper.writerFor(ArrayWrapped.class).writeValueAsString(leaf));
+    }
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "@type")
+    @JsonSubTypes({
+        @JsonSubTypes.Type(value = TypeIdLeaf.class, name = "unused")
+    })
+    public static abstract class TypeIdBase {
+    }
+
+    public static class TypeIdLeaf extends TypeIdBase {
+        @JsonTypeId
+        public String kind = "custom-id";
+        public int n;
+    }
+
+    @Test
+    public void testJsonTypeIdPropertyWrite() throws Exception {
+        // @JsonTypeId beans keep the base forwarding (the property value
+        // replaces the resolver's id); output still equals vanilla.
+        TypeIdLeaf leaf = new TypeIdLeaf();
+        leaf.n = 5;
+        String v = vanilla.writerFor(TypeIdBase.class).writeValueAsString(leaf);
+        assertEquals(v, mapper.writerFor(TypeIdBase.class).writeValueAsString(leaf));
+        assertTrue(v.contains("custom-id"), v);
+    }
+
+    // The engaged writer must actually generate a codec: byte-equal output
+    // alone cannot distinguish native poly writes from forwarding.
+    @Test
+    public void testSubtypeWriterGeneratesCodec() throws Exception {
+        Map<Class<?>, ValueSerializer<?>> seen = new ConcurrentHashMap<>();
+        SimpleModule capture = new SimpleModule("capture") {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public void setupModule(SetupContext ctxt) {
+                super.setupModule(ctxt);
+                ctxt.addSerializerModifier(new ValueSerializerModifier() {
+                    private static final long serialVersionUID = 1L;
+                    @Override
+                    public ValueSerializer<?> modifySerializer(SerializationConfig cfg,
+                            BeanDescription.Supplier ref, ValueSerializer<?> s) {
+                        seen.put(ref.getBeanClass(), s);
+                        return s;
+                    }
+                });
+            }
+        };
+        ObjectMapper capturing = JsonMapper.builder()
+                .addModule(capture)
+                .addModule(new BlackbirdModule())
+                .build();
+        Animal cat = Cat.of("mia", 9, true);
+        assertEquals(vanilla.writerFor(Animal.class).writeValueAsString(cat),
+                capturing.writerFor(Animal.class).writeValueAsString(cat));
+        ValueSerializer<?> captured = seen.get(Cat.class);
+        assertNotNull(captured, "no serializer captured for Cat");
+        assertEquals("BBWriterPlaceholder", captured.getClass().getSimpleName(),
+                "poly subtype did not engage a codec");
+        Field codec = captured.getClass().getDeclaredField("_codec");
+        codec.setAccessible(true);
+        assertNotNull(codec.get(captured), "poly subtype engaged but no writer generated");
     }
 }

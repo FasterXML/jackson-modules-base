@@ -124,11 +124,15 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
         if (beanClass.isRecord() && beanDesc.findAnySetterAccessor() != null) {
             return deserializer;
         }
-        // Injected values arrive outside the property loop, which the
-        // generated codec does not model.
-        Map<Object, ?> injectables = beanDesc.findInjectables();
-        if (injectables != null && !injectables.isEmpty()) {
-            return deserializer;
+        // Injected values apply right after construction (the codec calls the
+        // base injection helper before its loop, like stock), but record
+        // codecs have no instance until the end of the document, so records
+        // with injectables demote.
+        if (beanClass.isRecord()) {
+            Map<Object, ?> injectables = beanDesc.findInjectables();
+            if (injectables != null && !injectables.isEmpty()) {
+                return deserializer;
+            }
         }
         // Ignored and included property sets ride into the codec, whose
         // unknown arm consults them in the stock loop's exact order.

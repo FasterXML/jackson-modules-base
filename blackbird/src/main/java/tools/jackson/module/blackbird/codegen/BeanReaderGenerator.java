@@ -126,6 +126,8 @@ public final class BeanReaderGenerator
             ConstantDescs.CD_Object, CD_JSON_PARSER, CD_DESER_CONTEXT, ConstantDescs.CD_Object);
     private static final MethodTypeDesc MTD_NEW_INSTANCE =
             MethodTypeDesc.of(ConstantDescs.CD_Object);
+    private static final MethodTypeDesc MTD_INJECT = MethodTypeDesc.of(
+            ConstantDescs.CD_void, CD_DESER_CONTEXT, ConstantDescs.CD_Object);
     private static final MethodTypeDesc MTD_BUILD_INVOKE =
             MethodTypeDesc.of(ConstantDescs.CD_Object, ConstantDescs.CD_Object);
 
@@ -239,9 +241,12 @@ public final class BeanReaderGenerator
         }
 
         MethodHandles.Lookup definer = MethodHandles.lookup();
+        // Records with injectables stay on the stock path (modifier gate), so
+        // only the POJO and builder bodies consult this.
+        boolean injectables = GeneratedReaderBase.hasInjectables(fallback);
         byte[] bytes = buildClass(definer.lookupClass().getPackageName(), beanClass, props,
                 stockName, childName, handleName, recordCtor != null, builder != null,
-                instantiator != null, views, aliasArms);
+                instantiator != null, injectables, views, aliasArms);
         CodegenDump.dump(beanClass, "reader", bytes);
         // No ClassOption.STRONG: the codec instance held by the mapper's
         // deserializer cache anchors the class, so codecs unload with the
@@ -272,7 +277,7 @@ public final class BeanReaderGenerator
             List<GenProp> props,
             String[] stockName, String[] childName, String[] handleName,
             boolean recordMode, boolean builderMode, boolean instantiatorMode,
-            ViewStrategy views, int[] aliasArms) {
+            boolean injectables, ViewStrategy views, int[] aliasArms) {
         // A hidden class must be named in its define context's package.
         ClassDesc thisClass = ClassDesc.of(
                 targetPackage + ".BBReader_" + codecName(beanClass));
@@ -289,10 +294,10 @@ public final class BeanReaderGenerator
                     mb -> mb.with(params("p", "ctxt")).withCode(cob -> {
                         if (builderMode) {
                             buildBuilderDeserialize(cob, props, stockName, childName,
-                                    handleName, views, aliasArms);
+                                    handleName, injectables, views, aliasArms);
                         } else if (!recordMode) {
                             buildDeserialize(cob, props, stockName, childName, handleName,
-                                    instantiatorMode, views, aliasArms);
+                                    instantiatorMode, injectables, views, aliasArms);
                         } else {
                             buildRecordDeserialize(cob, props, stockName, childName,
                                     views, aliasArms);
@@ -387,7 +392,7 @@ public final class BeanReaderGenerator
 
     private static void buildDeserialize(CodeBuilder cob,
             List<GenProp> props, String[] stockName, String[] childName, String[] handleName,
-            boolean instantiatorMode, ViewStrategy views, int[] aliasArms) {
+            boolean instantiatorMode, boolean injectables, ViewStrategy views, int[] aliasArms) {
         final int parser = 1;
         final int ctxt = 2;
         final int beanSlot = 3;
@@ -415,6 +420,10 @@ public final class BeanReaderGenerator
         cob.astore(beanSlot);
         cob.aload(parser).aload(beanSlot)
            .invokevirtual(CD_JSON_PARSER, "assignCurrentValue", MTD_ASSIGN_CURRENT);
+        if (injectables) {
+            cob.aload(0).aload(ctxt).aload(beanSlot)
+               .invokevirtual(CD_BASE, "_injectValues", MTD_INJECT);
+        }
 
         ldcData(cob, "matcher", CD_NAME_MATCHER);
         cob.astore(matcherSlot);
@@ -518,7 +527,7 @@ public final class BeanReaderGenerator
 
     private static void buildBuilderDeserialize(CodeBuilder cob,
             List<GenProp> props, String[] stockName, String[] childName, String[] handleName,
-            ViewStrategy views, int[] aliasArms) {
+            boolean injectables, ViewStrategy views, int[] aliasArms) {
         final int parser = 1;
         final int ctxt = 2;
         final int builderSlot = 3;
@@ -539,6 +548,12 @@ public final class BeanReaderGenerator
         cob.aload(ctxt);
         cob.invokevirtual(CD_VALUE_INSTANTIATOR, "createUsingDefault", MTD_CREATE_DEFAULT);
         cob.astore(builderSlot);
+        // Injected values apply to the builder, like the stock builder-based
+        // deserializer does before its property loop.
+        if (injectables) {
+            cob.aload(0).aload(ctxt).aload(builderSlot)
+               .invokevirtual(CD_BASE, "_injectValues", MTD_INJECT);
+        }
 
         ldcData(cob, "matcher", CD_NAME_MATCHER);
         cob.astore(matcherSlot);

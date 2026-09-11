@@ -70,8 +70,12 @@ final class BBWriterFactory
             return null;
         }
         boolean includeByDefault = ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION);
+        // A @JsonTypeId property replaces the resolver-computed type id, which
+        // the generated serializeWithType does not model; such beans keep the
+        // base class's whole-call forwarding for typed writes.
+        boolean nativePolyWrites = StockSerializerProbe.typeIdOf(delegate) == null;
         return BeanWriterGenerator.generate(beanClass, props, delegate,
-                viewStrategy(props, includeByDefault), includeByDefault);
+                viewStrategy(props, includeByDefault), includeByDefault, nativePolyWrites);
     }
 
     // Matches the stock filtered-writer-array rule. No property declares a

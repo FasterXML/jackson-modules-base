@@ -27,10 +27,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Documented demotions: beans whose features the generator does not model
- * (object ids, per-property merge, any-setter, injected values) stay on the
- * stock deserializer and behave exactly like vanilla. These pins keep the
- * demotions deliberate; if the generator grows support, the engagement
- * assertion flips.
+ * (object ids, per-property merge, injectables on records) stay on the stock
+ * deserializer and behave exactly like vanilla. These pins keep the demotions
+ * deliberate; if the generator grows support, the engagement assertion flips
+ * - as it did for any-setter beans and injectable POJOs, whose engagement
+ * pins live here too.
  */
 public class BBCodecDemotionTest extends BlackbirdTestBase
 {
@@ -65,6 +66,16 @@ public class BBCodecDemotionTest extends BlackbirdTestBase
         @JacksonInject("who")
         public String who;
     }
+
+    public static class InjectOverrideBean {
+        public int i;
+        @JacksonInject("who")
+        public String who;
+        @JacksonInject("count")
+        public int count;
+    }
+
+    public record InjectRecord(String name, @JacksonInject("who") String who) { }
 
     private final ObjectMapper vanilla = newVanillaJSONMapper();
 
@@ -151,7 +162,9 @@ public class BBCodecDemotionTest extends BlackbirdTestBase
     }
 
     @Test
-    public void testInjectableBeanStaysStock() throws Exception {
+    public void testInjectableBeanEngages() throws Exception {
+        // Widened from a demotion pin: injected values apply through the base
+        // helper right after construction, the stock placement.
         Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
         ObjectMapper base = capturingMapper(seen);
         InjectableValues inject =
@@ -159,9 +172,50 @@ public class BBCodecDemotionTest extends BlackbirdTestBase
         String doc = a2q("{'i':7}");
         InjectBean v = vanilla.reader(inject).forType(InjectBean.class).readValue(doc);
         InjectBean m = base.reader(inject).forType(InjectBean.class).readValue(doc);
-        assertStock(seen, InjectBean.class);
+        assertEquals("BBReaderPlaceholder",
+                seen.get(InjectBean.class).getClass().getSimpleName(),
+                "injectable bean did not engage a codec");
         assertEquals(v.i, m.i);
         assertEquals(v.who, m.who);
         assertEquals("injected", m.who);
+    }
+
+    @Test
+    public void testDocumentOverridesInjectedValue() throws Exception {
+        // Injection runs before the property loop, so a document value wins -
+        // exactly like stock.
+        Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
+        ObjectMapper base = capturingMapper(seen);
+        InjectableValues inject = new InjectableValues.Std()
+                .addValue("who", "injected").addValue("count", 41);
+        String doc = a2q("{'i':7,'who':'from-doc'}");
+        InjectOverrideBean v = vanilla.reader(inject)
+                .forType(InjectOverrideBean.class).readValue(doc);
+        InjectOverrideBean m = base.reader(inject)
+                .forType(InjectOverrideBean.class).readValue(doc);
+        assertEquals("BBReaderPlaceholder",
+                seen.get(InjectOverrideBean.class).getClass().getSimpleName(),
+                "injectable bean did not engage a codec");
+        assertEquals(v.who, m.who);
+        assertEquals("from-doc", m.who);
+        assertEquals(v.count, m.count);
+        assertEquals(41, m.count);
+    }
+
+    @Test
+    public void testInjectableRecordStaysStock() throws Exception {
+        // Record codecs have no instance until the end of the document, so
+        // injection cannot take its stock place; records with injectables
+        // demote.
+        Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
+        ObjectMapper base = capturingMapper(seen);
+        InjectableValues inject =
+                new InjectableValues.Std().addValue("who", "injected");
+        String doc = a2q("{'name':'a'}");
+        InjectRecord v = vanilla.reader(inject).forType(InjectRecord.class).readValue(doc);
+        InjectRecord m = base.reader(inject).forType(InjectRecord.class).readValue(doc);
+        assertStock(seen, InjectRecord.class);
+        assertEquals(v, m);
+        assertEquals("injected", m.who());
     }
 }
