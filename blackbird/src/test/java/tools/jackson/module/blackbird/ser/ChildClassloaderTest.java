@@ -2,22 +2,30 @@ package tools.jackson.module.blackbird.ser;
 
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.Test;
 
+import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationConfig;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.ValueSerializerModifier;
+import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 // Cross-loader regression test (formerly tofix/TestBBClassloaders): a bean
-// class redefined in a child classloader serializes correctly with the module
-// registered. The engine takes the stock path for such a bean: the modifier
-// gates demote it (its InnerClasses metadata raises
-// IncompatibleClassChangeError from getEnclosingClass, and generated code
-// refers to the bean class by name, which this module's loader would resolve
-// to the parent-loaded class), and stock databind handles foreign-loader
-// classes reflectively. The observable contract is correct output.
+// class redefined in a child classloader serializes correctly - and now
+// ACCELERATES - with the module registered. Generated code never names the
+// bean class (values load through unreflected constant handles bound to the
+// child-loaded Class), so the foreign loader no longer gates codec
+// generation; this widened pin holds that capability.
 //
 // Old Blackbird failed this on the module path only because the test read the
 // class bytes through classloader getResource, which JPMS encapsulation nulls;
@@ -31,10 +39,42 @@ public class ChildClassloaderTest extends BlackbirdTestBase
         TestLoader loader = new TestLoader(getClass().getClassLoader());
         Class<?> clazz = Class.forName(Data.class.getName(), true, loader);
         assertNotSame(Data.class, clazz);
-        ObjectMapper mapper = newObjectMapper();
+        Map<Class<?>, ValueSerializer<?>> seen = new ConcurrentHashMap<>();
+        ObjectMapper mapper = capturingMapper(seen);
         Constructor<?> constructor = clazz.getConstructor(int.class);
         Object data = constructor.newInstance(42);
         assertEquals("{\"field\":42}", mapper.writeValueAsString(data));
+        ValueSerializer<?> captured = seen.get(clazz);
+        assertNotNull(captured, "no serializer captured for the child-loaded class");
+        assertEquals("BBWriterPlaceholder", captured.getClass().getSimpleName(),
+                "child-loaded bean did not engage a codec");
+        Field codec = captured.getClass().getDeclaredField("_codec");
+        codec.setAccessible(true);
+        assertNotNull(codec.get(captured),
+                "child-loaded bean engaged but no writer generated");
+    }
+
+    private static ObjectMapper capturingMapper(Map<Class<?>, ValueSerializer<?>> seen) {
+        SimpleModule capture = new SimpleModule("capture") {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public void setupModule(SetupContext ctxt) {
+                super.setupModule(ctxt);
+                ctxt.addSerializerModifier(new ValueSerializerModifier() {
+                    private static final long serialVersionUID = 1L;
+                    @Override
+                    public ValueSerializer<?> modifySerializer(SerializationConfig cfg,
+                            BeanDescription.Supplier ref, ValueSerializer<?> s) {
+                        seen.put(ref.getBeanClass(), s);
+                        return s;
+                    }
+                });
+            }
+        };
+        return JsonMapper.builder()
+                .addModule(capture)
+                .addModule(new BlackbirdModule())
+                .build();
     }
 
     public static class Data {

@@ -1,8 +1,6 @@
 package tools.jackson.module.blackbird.deser;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -12,7 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import tools.jackson.core.sym.PropertyNameMatcher;
 import tools.jackson.core.util.Named;
@@ -31,14 +28,17 @@ import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.Kind;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.ViewStrategy;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator;
-import tools.jackson.module.blackbird.codegen.CodecAccess;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
+import tools.jackson.module.blackbird.codegen.MemberHandles;
 
 /**
  * Builds a generated codec from a resolved stock bean deserializer, or returns
  * null when the bean does not qualify. Qualification is conservative: every
  * gate that cannot be verified cheaply demotes a property to the stock path or
- * rejects the bean entirely, so semantics never drift from databind.
+ * rejects the bean entirely, so semantics never drift from databind. Member
+ * access goes through {@link MemberHandles}, which reaches exactly what stock
+ * databind can invoke, so accessibility never gates a bean the stock path
+ * handles - an access failure demotes to stock, which fails the same way.
  */
 final class BBReaderFactory
 {
@@ -54,12 +54,11 @@ final class BBReaderFactory
 
     static ValueDeserializer<Object> tryGenerate(BeanDeserializerBase delegate,
             DeserializationContext ctxt,
-            Function<Class<?>, MethodHandles.Lookup> lookups,
             AnnotatedMethod buildMethod, boolean declaresViews,
             BeanReaderGenerator.Ignorals ignorals, Map<String, List<PropertyName>> aliases,
             boolean caseInsensitive) {
         try {
-            ValueDeserializer<Object> codec = generate(delegate, ctxt, lookups, buildMethod,
+            ValueDeserializer<Object> codec = generate(delegate, ctxt, buildMethod,
                     declaresViews, ignorals, aliases, caseInsensitive);
             if (DEBUG) {
                 System.err.println("bbdebug tryGenerate " + delegate.handledType().getName()
@@ -78,7 +77,6 @@ final class BBReaderFactory
 
     private static ValueDeserializer<Object> generate(BeanDeserializerBase delegate,
             DeserializationContext ctxt,
-            Function<Class<?>, MethodHandles.Lookup> lookups,
             AnnotatedMethod buildMethod, boolean declaresViews,
             BeanReaderGenerator.Ignorals ignorals, Map<String, List<PropertyName>> aliases,
             boolean caseInsensitive)
@@ -92,44 +90,37 @@ final class BBReaderFactory
             return null;
         }
         Class<?> beanClass = delegate.handledType();
-        if (Modifier.isPrivate(beanClass.getModifiers())
-                || Modifier.isAbstract(beanClass.getModifiers())) {
-            if (DEBUG) System.err.println("bbdebug gate: class modifiers");
-            return null;
-        }
-        // Generated code refers to the bean class by name, which the hidden
-        // class resolves through this module's loader. A bean from a foreign
-        // classloader would resolve to a different (or no) class, so it stays
-        // on the stock path.
-        if (!visibleToGenerator(beanClass)) {
-            if (DEBUG) System.err.println("bbdebug gate: foreign classloader");
-            return null;
-        }
-        MethodHandles.Lookup defineLookup = CodecAccess.defineContext(beanClass, lookups);
-        boolean gatedContext = !Modifier.isPublic(beanClass.getModifiers());
-        if (gatedContext && defineLookup == null) {
-            if (DEBUG) System.err.println("bbdebug gate: define context");
+        if (Modifier.isAbstract(beanClass.getModifiers())) {
+            if (DEBUG) System.err.println("bbdebug gate: abstract");
             return null;
         }
         if (buildMethod != null) {
-            return generateBuilder(delegate, ctxt, beanClass, lookups, buildMethod, defineLookup, declaresViews, ignorals, aliases, caseInsensitive);
+            return generateBuilder(delegate, ctxt, beanClass, buildMethod, declaresViews,
+                    ignorals, aliases, caseInsensitive);
         }
         if (beanClass.isRecord()) {
-            return generateRecord(delegate, ctxt, beanClass, lookups, defineLookup, declaresViews, ignorals, aliases, caseInsensitive);
+            return generateRecord(delegate, ctxt, beanClass, declaresViews, ignorals,
+                    aliases, caseInsensitive);
         }
         if (!delegate.getValueInstantiator().canCreateUsingDefault()) {
             if (DEBUG) System.err.println("bbdebug gate: instantiator");
             return null;
         }
-        // A direct `new` is only equivalent when the instantiator's default
-        // creator IS an accessible no-arg constructor. Everything else that
-        // still reports canCreateUsingDefault - a no-arg @JsonCreator factory,
-        // a custom instantiator, an inaccessible constructor - constructs
-        // through the stock instantiator held in class data instead.
-        boolean directNew = delegate.getValueInstantiator().getDefaultCreator()
-                instanceof AnnotatedConstructor
-                && declaredNoArgCtorAccessible(beanClass,
-                        defineLookup == null ? null : defineLookup.lookupClass());
+        // A constant constructor handle is only equivalent when the
+        // instantiator's default creator IS the no-arg constructor. Everything
+        // else that still reports canCreateUsingDefault - a no-arg
+        // @JsonCreator factory, a custom instantiator, a constructor the
+        // module lookup cannot unreflect - constructs through the stock
+        // instantiator held in class data instead.
+        MethodHandle defaultCtor = null;
+        if (delegate.getValueInstantiator().getDefaultCreator()
+                instanceof AnnotatedConstructor ac) {
+            try {
+                defaultCtor = MemberHandles.defaultConstructor(ac.getAnnotated());
+            } catch (IllegalAccessException e) {
+                if (DEBUG) System.err.println("bbdebug demote: ctor access, instantiator mode");
+            }
+        }
 
         List<GenProp> props = new ArrayList<>();
         List<Named> names = new ArrayList<>();
@@ -140,8 +131,7 @@ final class BBReaderFactory
                 if (DEBUG) System.err.println("bbdebug gate: prop " + prop.getName());
                 return null;
             }
-            props.add(classify(prop, beanClass, lookups,
-                    defineLookup == null ? null : defineLookup.lookupClass()));
+            props.add(classify(prop));
             names.add(Named.fromString(prop.getName()));
         }
         if (props.isEmpty()) {
@@ -150,18 +140,9 @@ final class BBReaderFactory
         }
         int[] aliasArms = appendAliases(names, props, aliases);
         PropertyNameMatcher matcher = matcher(ctxt, names, caseInsensitive);
-        return BeanReaderGenerator.generate(beanClass, props, matcher, delegate,
-                directNew ? null : delegate.getValueInstantiator(), defineLookup,
+        return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, defaultCtor,
+                defaultCtor == null ? delegate.getValueInstantiator() : null,
                 viewStrategy(ctxt, props, declaresViews), ignorals, aliasArms);
-    }
-
-    private static boolean declaredNoArgCtorAccessible(Class<?> beanClass, Class<?> anchor) {
-        try {
-            return CodecAccess.directlyAccessible(
-                    beanClass.getDeclaredConstructor().getModifiers(), beanClass, anchor);
-        } catch (NoSuchMethodException e) {
-            return false;
-        }
     }
 
     // Beans that declare no @JsonView anywhere (read from the property
@@ -184,14 +165,12 @@ final class BBReaderFactory
     }
 
     // Builder-based beans: the stock ValueInstantiator creates the builder,
-    // properties apply to it (tier-A fluent setters must return void or the
-    // builder class exactly, or they demote to the stock path), and the build
-    // method - unreflected through the user lookup and asType'd to
-    // (Object)Object - produces the value.
+    // properties apply through normalized (Object, eV)Object setter handles,
+    // and the build method - a constant (Object)Object handle - produces the
+    // value.
     private static ValueDeserializer<Object> generateBuilder(BeanDeserializerBase delegate,
             DeserializationContext ctxt, Class<?> beanClass,
-            Function<Class<?>, MethodHandles.Lookup> lookups, AnnotatedMethod buildMethod,
-            MethodHandles.Lookup defineLookup, boolean declaresViews,
+            AnnotatedMethod buildMethod, boolean declaresViews,
             BeanReaderGenerator.Ignorals ignorals, Map<String, List<PropertyName>> aliases,
             boolean caseInsensitive)
             throws ReflectiveOperationException {
@@ -199,28 +178,15 @@ final class BBReaderFactory
         Class<?> builderClass = build.getDeclaringClass();
         if (!delegate.getValueInstantiator().canCreateUsingDefault()
                 || Modifier.isPrivate(builderClass.getModifiers())
-                || !visibleToGenerator(builderClass)
-                || Modifier.isPrivate(build.getModifiers())
                 || build.getParameterCount() != 0) {
             if (DEBUG) System.err.println("bbdebug gate: builder shape");
             return null;
         }
-        // The generated code casts to and calls setters on the builder class,
-        // so a non-public builder needs a define context in its own package.
-        if (!Modifier.isPublic(builderClass.getModifiers())
-                && (defineLookup == null || !builderClass.getPackageName().equals(
-                        defineLookup.lookupClass().getPackageName()))) {
-            defineLookup = CodecAccess.defineContext(builderClass, lookups);
-            if (defineLookup == null) {
-                if (DEBUG) System.err.println("bbdebug gate: builder context");
-                return null;
-            }
-        }
-        Class<?> anchor = defineLookup == null ? null : defineLookup.lookupClass();
-        MethodHandles.Lookup lookup =
-                (defineLookup != null) ? defineLookup : lookups.apply(builderClass);
-        if (lookup == null) {
-            if (DEBUG) System.err.println("bbdebug gate: builder lookup");
+        MethodHandle buildMH;
+        try {
+            buildMH = MemberHandles.unary(build);
+        } catch (IllegalAccessException e) {
+            if (DEBUG) System.err.println("bbdebug gate: build method access");
             return null;
         }
         List<GenProp> props = new ArrayList<>();
@@ -232,50 +198,47 @@ final class BBReaderFactory
                 if (DEBUG) System.err.println("bbdebug gate: builder prop " + prop.getName());
                 return null;
             }
-            props.add(classifyBuilder(prop, builderClass, anchor));
+            props.add(classifyBuilder(prop, builderClass));
             names.add(Named.fromString(prop.getName()));
         }
         if (props.isEmpty()) {
             if (DEBUG) System.err.println("bbdebug gate: builder no props");
             return null;
         }
-        MethodHandle buildMH;
-        try {
-            buildMH = lookup.unreflect(build)
-                    .asType(MethodType.methodType(Object.class, Object.class));
-        } catch (IllegalAccessException e) {
-            if (DEBUG) System.err.println("bbdebug gate: build method access");
-            return null;
-        }
         int[] aliasArms = appendAliases(names, props, aliases);
         PropertyNameMatcher matcher = matcher(ctxt, names, caseInsensitive);
-        return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, null,
-                new BeanReaderGenerator.BuilderSupport(
-                        delegate.getValueInstantiator(), buildMH, builderClass), null,
-                defineLookup, viewStrategy(ctxt, props, declaresViews), ignorals, aliasArms);
+        return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, null, null,
+                new BeanReaderGenerator.BuilderSupport(delegate.getValueInstantiator(), buildMH),
+                null, viewStrategy(ctxt, props, declaresViews), ignorals, aliasArms);
     }
 
-    private static GenProp classifyBuilder(SettableBeanProperty prop, Class<?> builderClass,
-            Class<?> anchor) {
+    // Tier-A builder setters must return void or the builder class exactly
+    // (the normalized handle keeps the fluent return as the new builder, which
+    // is what stock deserializeSetAndReturn does with a non-null result).
+    private static GenProp classifyBuilder(SettableBeanProperty prop, Class<?> builderClass) {
         Class<?> raw = prop.getType().getRawClass();
         Method setter = setterOf(prop, raw);
         if (setter == null
-                || !CodecAccess.directlyAccessible(setter.getModifiers(), builderClass, anchor)
-                || setter.getDeclaringClass() != builderClass
                 || (setter.getReturnType() != void.class
                         && setter.getReturnType() != builderClass)) {
             return stock(prop);
         }
+        MethodHandle handle;
+        try {
+            handle = MemberHandles.builderSetter(setter, raw);
+        } catch (IllegalAccessException | RuntimeException e) {
+            return stock(prop);
+        }
         ValueDeserializer<?> valueDeser = prop.getValueDeserializer();
         if (valueDeser instanceof GeneratedReaderBase child) {
-            return new GenProp(prop.getName(), Kind.CHILD, setter, prop, raw, child, null);
+            return new GenProp(prop.getName(), Kind.CHILD, prop, raw, child, handle);
         }
         Kind kind = scalarKind(raw);
         if (kind == null || valueDeser == null
                 || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass().getName())) {
             return stock(prop);
         }
-        return new GenProp(prop.getName(), kind, setter, prop);
+        return new GenProp(prop.getName(), kind, prop, raw, null, handle);
     }
 
     // Records collect components into typed locals and construct through the
@@ -283,7 +246,6 @@ final class BBReaderFactory
     // creator index and type line up with the record components.
     private static ValueDeserializer<Object> generateRecord(BeanDeserializerBase delegate,
             DeserializationContext ctxt, Class<?> beanClass,
-            Function<Class<?>, MethodHandles.Lookup> lookups, MethodHandles.Lookup defineLookup,
             boolean declaresViews, BeanReaderGenerator.Ignorals ignorals,
             Map<String, List<PropertyName>> aliases, boolean caseInsensitive)
             throws ReflectiveOperationException {
@@ -298,7 +260,7 @@ final class BBReaderFactory
         // index and type match below is the canonical constructor: a second
         // constructor with the same signature cannot exist.
         if (!(delegate.getValueInstantiator().getWithArgsCreator()
-                instanceof AnnotatedConstructor)) {
+                instanceof AnnotatedConstructor ctor)) {
             if (DEBUG) System.err.println("bbdebug gate: record creator is not the constructor");
             return null;
         }
@@ -333,47 +295,39 @@ final class BBReaderFactory
             if (DEBUG) System.err.println("bbdebug gate: record count");
             return null;
         }
-        MethodHandles.Lookup lookup =
-                (defineLookup != null) ? defineLookup : lookups.apply(beanClass);
-        if (lookup == null) {
-            if (DEBUG) System.err.println("bbdebug gate: record lookup");
+        MethodHandle recordCtor;
+        try {
+            recordCtor = MemberHandles.constructor(ctor.getAnnotated());
+        } catch (IllegalAccessException e) {
+            // The module lookup cannot reach the canonical constructor, so
+            // databind could not open it either: demote, stock fails the same
+            // way at first use.
+            if (DEBUG) System.err.println("bbdebug gate: record ctor access");
             return null;
         }
-        Class<?>[] paramTypes = new Class<?>[comps.length];
         List<GenProp> props = new ArrayList<>(comps.length);
         List<Named> names = new ArrayList<>(comps.length);
         for (int i = 0; i < comps.length; i++) {
-            paramTypes[i] = comps[i].getType();
+            Class<?> compType = comps[i].getType();
             SettableBeanProperty prop = byIndex[i];
             ValueDeserializer<?> valueDeser = prop.getValueDeserializer();
             if (valueDeser instanceof GeneratedReaderBase child) {
-                props.add(new GenProp(prop.getName(), Kind.CHILD, null, prop,
-                        paramTypes[i], child, null));
+                props.add(new GenProp(prop.getName(), Kind.CHILD, prop, compType, child, null));
                 names.add(Named.fromString(prop.getName()));
                 continue;
             }
-            Kind kind = scalarKind(paramTypes[i]);
+            Kind kind = scalarKind(compType);
             if (kind == null || valueDeser == null
                     || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass().getName())) {
                 kind = Kind.STOCK;
             }
-            props.add(new GenProp(prop.getName(), kind, null, prop, paramTypes[i]));
+            props.add(new GenProp(prop.getName(), kind, prop, compType));
             names.add(Named.fromString(prop.getName()));
-        }
-        MethodHandle recordCtor;
-        try {
-            recordCtor = lookup.findConstructor(beanClass,
-                    MethodType.methodType(void.class, paramTypes));
-        } catch (IllegalAccessException e) {
-            // The supplied lookup cannot reach the canonical constructor: an
-            // environment gate, same as no lookup at all.
-            if (DEBUG) System.err.println("bbdebug gate: record ctor access");
-            return null;
         }
         int[] aliasArms = appendAliases(names, props, aliases);
         PropertyNameMatcher matcher = matcher(ctxt, names, caseInsensitive);
         return BeanReaderGenerator.generate(beanClass, props, matcher, delegate, recordCtor,
-                defineLookup, viewStrategy(ctxt, props, declaresViews), ignorals, aliasArms);
+                viewStrategy(ctxt, props, declaresViews), ignorals, aliasArms);
     }
 
     // Appends alias entries after the primary names, each mapping back to its
@@ -417,86 +371,41 @@ final class BBReaderFactory
         return ctxt.tokenStreamFactory().constructNameMatcher(names, true);
     }
 
-    private static GenProp classify(SettableBeanProperty prop, Class<?> beanClass,
-            Function<Class<?>, MethodHandles.Lookup> lookups, Class<?> anchor) {
+    private static GenProp classify(SettableBeanProperty prop) {
         Class<?> raw = prop.getType().getRawClass();
+        MethodHandle handle = storeHandle(prop, raw);
+        if (handle == null) {
+            return stock(prop);
+        }
         ValueDeserializer<?> valueDeser = prop.getValueDeserializer();
-        Method setter = setterOf(prop, raw);
-        if (setter != null) {
-            return classifySetter(prop, beanClass, lookups, raw, valueDeser, setter, anchor);
-        }
-        Field field = fieldOf(prop, raw);
-        if (field != null) {
-            return classifyField(prop, beanClass, lookups, raw, valueDeser, field, anchor);
-        }
-        return stock(prop);
-    }
-
-    private static GenProp classifySetter(SettableBeanProperty prop, Class<?> beanClass,
-            Function<Class<?>, MethodHandles.Lookup> lookups, Class<?> raw,
-            ValueDeserializer<?> valueDeser, Method setter, Class<?> anchor) {
-        boolean direct = CodecAccess.directlyAccessible(setter.getModifiers(),
-                setter.getDeclaringClass(), anchor);
-        if (valueDeser instanceof GeneratedReaderBase child && direct) {
-            return new GenProp(prop.getName(), Kind.CHILD, setter, prop, raw, child, null);
+        if (valueDeser instanceof GeneratedReaderBase child) {
+            return new GenProp(prop.getName(), Kind.CHILD, prop, raw, child, handle);
         }
         Kind kind = scalarKind(raw);
         if (kind == null || valueDeser == null
                 || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass().getName())) {
             return stock(prop);
         }
-        if (direct) {
-            return new GenProp(prop.getName(), kind, setter, prop);
-        }
-        // Non-public setter: reach it through the user-supplied lookup; any
-        // access failure keeps the property on the stock path.
-        try {
-            MethodHandles.Lookup lookup = lookups.apply(beanClass);
-            if (lookup == null) {
-                return stock(prop);
-            }
-            MethodHandle mh = lookup.unreflect(setter)
-                    .asType(MethodType.methodType(void.class, beanClass, raw));
-            return new GenProp(prop.getName(), kind, null, prop, raw, null, mh);
-        } catch (ReflectiveOperationException | RuntimeException e) {
-            return stock(prop);
-        }
+        return new GenProp(prop.getName(), kind, prop, raw, null, handle);
     }
 
-    // Field-backed properties store through a generated putfield (public,
-    // non-final field on a public declaring class) or, for a non-public field,
-    // an unreflected setter handle reached through the user lookup - the same
-    // fallback the non-public-setter path uses. Final fields stay on the stock
-    // path so their (stock-defined) behavior is preserved exactly.
-    private static GenProp classifyField(SettableBeanProperty prop, Class<?> beanClass,
-            Function<Class<?>, MethodHandles.Lookup> lookups, Class<?> raw,
-            ValueDeserializer<?> valueDeser, Field field, Class<?> anchor) {
-        if (Modifier.isFinal(field.getModifiers())) {
-            return stock(prop);
-        }
-        boolean direct = CodecAccess.directlyAccessible(field.getModifiers(),
-                field.getDeclaringClass(), anchor);
-        if (valueDeser instanceof GeneratedReaderBase child && direct) {
-            return new GenProp(prop.getName(), Kind.CHILD, null, prop, raw, child, null, field);
-        }
-        Kind kind = scalarKind(raw);
-        if (kind == null || valueDeser == null
-                || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass().getName())) {
-            return stock(prop);
-        }
-        if (direct) {
-            return new GenProp(prop.getName(), kind, null, prop, raw, null, null, field);
-        }
+    // The property's store as an erased (Object, eV)void handle: a setter
+    // call or a field put, whichever backs the property. Final fields stay on
+    // the stock path so their (stock-defined) behavior is preserved exactly;
+    // an access failure demotes the property to the stock path.
+    private static MethodHandle storeHandle(SettableBeanProperty prop, Class<?> raw) {
         try {
-            MethodHandles.Lookup lookup = lookups.apply(beanClass);
-            if (lookup == null) {
-                return stock(prop);
+            Method setter = setterOf(prop, raw);
+            if (setter != null) {
+                return MemberHandles.setter(setter, raw);
             }
-            MethodHandle mh = lookup.unreflectSetter(field)
-                    .asType(MethodType.methodType(void.class, beanClass, raw));
-            return new GenProp(prop.getName(), kind, null, prop, raw, null, mh);
-        } catch (ReflectiveOperationException | RuntimeException e) {
-            return stock(prop);
+            Field field = fieldOf(prop, raw);
+            if (field != null && !Modifier.isFinal(field.getModifiers())) {
+                return MemberHandles.fieldSetter(field);
+            }
+            return null;
+        } catch (IllegalAccessException | RuntimeException e) {
+            return null;
         }
     }
 
@@ -525,16 +434,7 @@ final class BBReaderFactory
     }
 
     private static GenProp stock(SettableBeanProperty prop) {
-        return new GenProp(prop.getName(), Kind.STOCK, null, prop);
-    }
-
-    static boolean visibleToGenerator(Class<?> cls) {
-        try {
-            return Class.forName(cls.getName(), false,
-                    GeneratedReaderBase.class.getClassLoader()) == cls;
-        } catch (ClassNotFoundException | LinkageError e) {
-            return false;
-        }
+        return new GenProp(prop.getName(), Kind.STOCK, prop);
     }
 
     private static Kind scalarKind(Class<?> raw) {

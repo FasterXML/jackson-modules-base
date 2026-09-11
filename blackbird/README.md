@@ -60,25 +60,32 @@ Value val = mapper.readValue(jsonSource, Value.class);
 mapper.writeValue(new File("result.json"), val);
 ```
 
-On the module path, grant Blackbird access to your classes by supplying a
-`MethodHandles.Lookup` from your own module. Override `findLookup()` or
-`findLookupSupplier()` on `BlackbirdModule` to customize which lookup is used
-for which class. Record deserialization needs a lookup with access to the
-record's canonical constructor, and non-public classes accelerate only with
-a lookup that can reach them (the codec for a non-public class is defined in
-that class's package context; without an eligible lookup the class stays on
-the stock path). The `tools.jackson.module.blackbird.internal` package is
-exported only so such codecs can resolve their supertypes; it is not API.
+No access setup is required beyond what stock databind already needs. On the
+module path, that is `opens your.package to tools.jackson.databind` for
+non-public classes and members; Blackbird adds no requirement of its own.
+Generated codecs reach members through `MethodHandle` constants unreflected
+after databind's own access checks, so everything stock databind can read or
+write - private members, non-public classes, records, foreign classloaders -
+accelerates. A member databind cannot open falls back to the stock path,
+which fails (or succeeds) exactly as it would without Blackbird.
+
+The `BlackbirdModule` constructors and overrides that supply a
+`MethodHandles.Lookup` (`findLookup()`, `findLookupSupplier()`) remain
+supported as released API, but a lookup is no longer required for any
+acceleration. The `tools.jackson.module.blackbird.internal` package is
+exported only so generated codecs can resolve their supertypes; it is not
+API.
 
 ## What is optimized?
 
 Deserialization (JSON to POJOs):
 
-- Setter-based POJOs: direct construction and direct setter calls.
-- Field-backed properties: a public non-final field is stored through a direct
-  putfield; a non-public field is reached through a lookup-derived handle, the
-  same as a non-public setter, so it needs a `Lookup` for that class. Old
-  Blackbird could not write fields at all. Final fields keep stock behavior.
+- Setter-based POJOs: construction and stores through constant
+  `MethodHandle`s, which the JIT inlines like direct calls. Non-public
+  setters and constructors accelerate the same way public ones do.
+- Field-backed properties: non-final fields (any visibility) store through
+  constant field handles. Old Blackbird could not write fields at all. Final
+  fields keep stock behavior.
 - Records: typed locals in canonical-constructor order and a single
   constructor call, replacing the generic creator buffering. This is the
   largest measured win.

@@ -40,8 +40,9 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
 {
     private static final long serialVersionUID = 1L;
 
-    // Reserved for member access beyond public API (private setters, creators
-    // in non-exported packages); the v1 generator only touches public members.
+    // Kept for the released BlackbirdModule(Function) contract; the codec
+    // no longer needs it. Member access rides databind's own fixAccess (see
+    // MemberHandles), so a user lookup is not required for acceleration.
     private final Function<Class<?>, MethodHandles.Lookup> _lookups;
 
     // The build method is only reachable from updateBuilder; the factory calls
@@ -98,28 +99,23 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
         }
         BeanDescription beanDesc = beanDescRef.get();
         Class<?> beanClass = beanDesc.getBeanClass();
-        if (Modifier.isPrivate(beanClass.getModifiers())
-                || (beanClass.getEnclosingClass() != null
-                        && !Modifier.isStatic(beanClass.getModifiers()))) {
+        // Non-static inner classes construct against an enclosing instance,
+        // which the generated loop does not model. No other class- or
+        // constructor-shape gate remains: construction goes through a handle
+        // or the stock instantiator, and the factory checks creator shape at
+        // resolve time (creator strictness needs no gate - the generated
+        // record path enforces required, FAIL_ON_MISSING, and FAIL_ON_NULL
+        // creator semantics per call). The static check runs first: for a
+        // static member class redefined in a foreign classloader,
+        // getEnclosingClass raises IncompatibleClassChangeError, and such
+        // beans accelerate now.
+        if (!Modifier.isStatic(beanClass.getModifiers())
+                && beanClass.getEnclosingClass() != null) {
             return deserializer;
         }
-        // Records and builder beans skip the constructor checks: they create
-        // through the canonical constructor and the instantiator. Creator
-        // strictness needs no gate - the generated record path enforces
-        // required, FAIL_ON_MISSING, and FAIL_ON_NULL creator semantics per
-        // call, and builder beans here have no creator properties (the
-        // factory requires the default-creating instantiator).
-        if (!builderBased && !beanClass.isRecord()) {
-            if (Modifier.isAbstract(beanClass.getModifiers())) {
-                return deserializer;
-            }
-            try {
-                if (Modifier.isPrivate(beanClass.getDeclaredConstructor().getModifiers())) {
-                    return deserializer;
-                }
-            } catch (NoSuchMethodException e) {
-                return deserializer;
-            }
+        if (!builderBased && !beanClass.isRecord()
+                && Modifier.isAbstract(beanClass.getModifiers())) {
+            return deserializer;
         }
         // Any-setter values apply to a live instance, which record codecs do
         // not have during the loop (stock buffers them for creator types);
@@ -183,7 +179,7 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
                 return deserializer;
             }
         }
-        return new BBReaderPlaceholder((BeanDeserializerBase) deserializer, _lookups,
+        return new BBReaderPlaceholder((BeanDeserializerBase) deserializer,
                 builderBased ? buildMethod : null, declaresViews, codecIgnorals, aliases,
                 caseInsensitive);
     }

@@ -17,11 +17,12 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Runs on the module path as the named module blackbird.jpms.test, which
  * requires blackbird: the arrangement a modular application has. A
- * package-private bean of this module must accelerate when the application
- * supplies its own lookup, because the generated codec - defined in this
- * module's package context - can resolve its supertype from blackbird's
- * exported internal package. Without a usable lookup the bean demotes to the
- * stock path and behavior is unchanged.
+ * package-private bean of this module accelerates with no user lookup at all:
+ * the only JPMS requirement is the {@code opens ... to tools.jackson.databind}
+ * that stock databind already needs. Databind's fixAccess marks the members
+ * accessible, the codec reaches them through unreflected constant handles,
+ * and the generated class defines in blackbird's own module context. The
+ * lookup-supplying constructor remains a supported (now redundant) API.
  *
  * Engagement is asserted through the blackbird.debug.codegen diagnostic
  * stream: byte-identical output makes generated and stock otherwise
@@ -36,6 +37,8 @@ public class JpmsPackagePrivateTest
 
     private static final String DOC = "{\"count\":7,\"name\":\"x\"}";
 
+    // The lookup API is a released contract and must keep working even though
+    // acceleration no longer needs it.
     @Test
     public void packagePrivateBeanAcceleratesWithModuleLookup() throws Exception {
         ObjectMapper mapper = JsonMapper.builder()
@@ -59,7 +62,9 @@ public class JpmsPackagePrivateTest
     }
 
     @Test
-    public void defaultLookupDemotesToStock() throws Exception {
+    public void acceleratesWithoutUserLookup() throws Exception {
+        // Widened from a demotion pin: no lookup is required any more. The
+        // opens-to-databind that stock needs is the whole contract.
         ObjectMapper mapper = JsonMapper.builder()
                 .addModule(new BlackbirdModule())
                 .build();
@@ -68,9 +73,11 @@ public class JpmsPackagePrivateTest
             assertEquals(7, bean.getCount());
             assertEquals("x", bean.getName());
         });
-        // Blackbird's own lookup cannot reach this module's package, so the
-        // bean stays stock - correctly, and without an error.
-        assertFalse(err.contains("BBReader_PkgBean"), err);
+        assertTrue(err.contains("BBReader_PkgBean"),
+                "expected a generated codec for PkgBean with no user lookup; diagnostics:\n"
+                        + err);
+        assertFalse(err.contains("null (gated)"),
+                "PkgBean was gated instead of accelerated; diagnostics:\n" + err);
     }
 
     private interface Body {

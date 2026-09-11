@@ -1,8 +1,5 @@
 package tools.jackson.module.blackbird.ser;
 
-import java.lang.invoke.MethodHandles;
-import java.util.function.Function;
-
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.JavaType;
@@ -22,20 +19,16 @@ final class BBWriterPlaceholder extends ValueSerializer<Object>
 {
     private final BeanSerializerBase _delegate;
 
-    private final Function<Class<?>, MethodHandles.Lookup> _lookups;
-
     private volatile ValueSerializer<Object> _codec;
 
-    BBWriterPlaceholder(BeanSerializerBase delegate,
-            Function<Class<?>, MethodHandles.Lookup> lookups) {
+    BBWriterPlaceholder(BeanSerializerBase delegate) {
         _delegate = delegate;
-        _lookups = lookups;
     }
 
     @Override
     public void resolve(SerializationContext ctxt) {
         _delegate.resolve(ctxt);
-        _codec = BBWriterFactory.tryGenerate(_delegate, ctxt, _lookups);
+        _codec = BBWriterFactory.tryGenerate(_delegate, ctxt);
     }
 
     @Override
@@ -44,8 +37,11 @@ final class BBWriterPlaceholder extends ValueSerializer<Object>
         if (contextual != _delegate) {
             return contextual;
         }
+        // A gated bean hands back the raw stock serializer so databind's
+        // `instanceof`-based decisions see exactly what stock would (rationale
+        // in BBReaderPlaceholder.createContextual).
         ValueSerializer<Object> codec = _codec;
-        return (codec != null) ? codec : this;
+        return (codec != null) ? codec : _delegate;
     }
 
     @Override

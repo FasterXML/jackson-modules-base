@@ -1,6 +1,6 @@
 package tools.jackson.module.blackbird.ser;
 
-import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
@@ -20,9 +19,9 @@ import tools.jackson.databind.ser.bean.BeanSerializerBase;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.ViewStrategy;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator;
-import tools.jackson.module.blackbird.codegen.CodecAccess;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator.GenWProp;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator.WKind;
+import tools.jackson.module.blackbird.codegen.MemberHandles;
 import tools.jackson.module.blackbird.internal.GeneratedWriterBase;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
@@ -30,7 +29,10 @@ import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
  * Builds a generated serializer from a resolved stock bean serializer, or
  * returns null when the bean does not qualify. Same philosophy as the
  * deserializer side: anything not cheaply verifiable rides the stock
- * PropertyWriter from generated code.
+ * PropertyWriter from generated code, and member access goes through
+ * {@link MemberHandles} - databind ran fixAccess on every accessor before
+ * this factory sees it, so an unreflect failure means the stock path could
+ * not read the property either, and the property demotes.
  */
 final class BBWriterFactory
 {
@@ -43,9 +45,9 @@ final class BBWriterFactory
     private BBWriterFactory() {}
 
     static ValueSerializer<Object> tryGenerate(BeanSerializerBase delegate,
-            SerializationContext ctxt, Function<Class<?>, MethodHandles.Lookup> lookups) {
+            SerializationContext ctxt) {
         try {
-            return generate(delegate, ctxt, lookups);
+            return generate(delegate, ctxt);
         } catch (Throwable t) {
             CodegenFallbacks.generationFailure(delegate.handledType(), t);
             return null;
@@ -53,33 +55,22 @@ final class BBWriterFactory
     }
 
     private static ValueSerializer<Object> generate(BeanSerializerBase delegate,
-            SerializationContext ctxt, Function<Class<?>, MethodHandles.Lookup> lookups)
+            SerializationContext ctxt)
             throws ReflectiveOperationException {
         if (delegate.usesObjectId() || delegate.getFilterId() != null) {
             return null;
         }
         Class<?> beanClass = delegate.handledType();
-        if (Modifier.isPrivate(beanClass.getModifiers())) {
-            return null;
-        }
-        if (!visibleToGenerator(beanClass)) {
-            return null;
-        }
-        MethodHandles.Lookup defineLookup = CodecAccess.defineContext(beanClass, lookups);
-        if (!Modifier.isPublic(beanClass.getModifiers()) && defineLookup == null) {
-            return null;
-        }
-        Class<?> anchor = defineLookup == null ? null : defineLookup.lookupClass();
         List<GenWProp> props = new ArrayList<>();
         for (Iterator<PropertyWriter> it = delegate.properties(); it.hasNext(); ) {
             PropertyWriter writer = it.next();
-            props.add(classify(writer, beanClass, anchor));
+            props.add(classify(writer));
         }
         if (props.isEmpty()) {
             return null;
         }
         boolean includeByDefault = ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION);
-        return BeanWriterGenerator.generate(beanClass, props, delegate, defineLookup,
+        return BeanWriterGenerator.generate(beanClass, props, delegate,
                 viewStrategy(props, includeByDefault), includeByDefault);
     }
 
@@ -105,8 +96,7 @@ final class BBWriterFactory
         return (props.size() > 64) ? ViewStrategy.DELEGATE : ViewStrategy.MASK;
     }
 
-    private static GenWProp classify(PropertyWriter writer, Class<?> beanClass,
-            Class<?> anchor) {
+    private static GenWProp classify(PropertyWriter writer) {
         if (writer.getClass() != BeanPropertyWriter.class) {
             return stock(writer);
         }
@@ -114,58 +104,37 @@ final class BBWriterFactory
         if (bpw.willSuppressNulls() || SuppressionProbe.hasSuppressableValue(bpw)) {
             return stock(writer);
         }
+        Class<?> raw;
+        MethodHandle handle;
+        try {
+            if (bpw.getMember() instanceof AnnotatedMethod am
+                    && am.getAnnotated() != null
+                    && am.getAnnotated().getParameterCount() == 0) {
+                Method getter = am.getAnnotated();
+                raw = getter.getReturnType();
+                handle = MemberHandles.getter(getter);
+            } else if (bpw.getMember() instanceof AnnotatedField af
+                    && af.getAnnotated() != null
+                    && !Modifier.isStatic(af.getAnnotated().getModifiers())) {
+                Field field = af.getAnnotated();
+                raw = field.getType();
+                handle = MemberHandles.fieldGetter(field);
+            } else {
+                return stock(writer);
+            }
+        } catch (IllegalAccessException | RuntimeException e) {
+            return stock(writer);
+        }
         ValueSerializer<Object> valueSer = bpw.getSerializer();
-        if (bpw.getMember() instanceof AnnotatedMethod am) {
-            return classifyGetter(writer, beanClass, bpw, am.getAnnotated(), valueSer, anchor);
-        }
-        if (bpw.getMember() instanceof AnnotatedField af) {
-            return classifyField(writer, bpw, af.getAnnotated(), valueSer, anchor);
-        }
-        return stock(writer);
-    }
-
-    private static GenWProp classifyGetter(PropertyWriter writer, Class<?> beanClass,
-            BeanPropertyWriter bpw, Method getter, ValueSerializer<Object> valueSer,
-            Class<?> anchor) {
-        if (getter == null || getter.getParameterCount() != 0
-                || !CodecAccess.directlyAccessible(getter.getModifiers(),
-                        getter.getDeclaringClass(), anchor)
-                || getter.getDeclaringClass() != beanClass) {
-            return stock(writer);
-        }
-        if (valueSer instanceof GeneratedWriterBase child
-                && !getter.getReturnType().isPrimitive()) {
-            return new GenWProp(WKind.CHILD, getter, writer, bpw.getSerializedName(), child);
-        }
-        WKind kind = scalarKind(getter.getReturnType());
-        if (kind == null || valueSer == null
-                || !STOCK_SCALAR_SERS.contains(valueSer.getClass().getName())) {
-            return stock(writer);
-        }
-        return new GenWProp(kind, getter, writer, bpw.getSerializedName(), null);
-    }
-
-    // Public fields (any finality - reads are unrestricted) load through a
-    // generated getfield. Non-public fields have no generated read path on the
-    // serializer side and stay on the stock writer, the same limitation
-    // non-public getters have.
-    private static GenWProp classifyField(PropertyWriter writer, BeanPropertyWriter bpw,
-            Field field, ValueSerializer<Object> valueSer, Class<?> anchor) {
-        if (field == null || Modifier.isStatic(field.getModifiers())
-                || !CodecAccess.directlyAccessible(field.getModifiers(),
-                        field.getDeclaringClass(), anchor)) {
-            return stock(writer);
-        }
-        Class<?> raw = field.getType();
         if (valueSer instanceof GeneratedWriterBase child && !raw.isPrimitive()) {
-            return new GenWProp(WKind.CHILD, null, writer, bpw.getSerializedName(), child, field);
+            return new GenWProp(WKind.CHILD, writer, bpw.getSerializedName(), child, handle);
         }
         WKind kind = scalarKind(raw);
         if (kind == null || valueSer == null
                 || !STOCK_SCALAR_SERS.contains(valueSer.getClass().getName())) {
             return stock(writer);
         }
-        return new GenWProp(kind, null, writer, bpw.getSerializedName(), null, field);
+        return new GenWProp(kind, writer, bpw.getSerializedName(), null, handle);
     }
 
     // BeanPropertyWriter keeps its include filter in a protected field with no
@@ -183,18 +152,7 @@ final class BBWriterFactory
     }
 
     private static GenWProp stock(PropertyWriter writer) {
-        return new GenWProp(WKind.STOCK, null, writer, null, null);
-    }
-
-    // Rationale in BBReaderFactory.visibleToGenerator: generated code refers to
-    // the bean class by name, resolved through this module's loader.
-    private static boolean visibleToGenerator(Class<?> cls) {
-        try {
-            return Class.forName(cls.getName(), false,
-                    GeneratedWriterBase.class.getClassLoader()) == cls;
-        } catch (ClassNotFoundException | LinkageError e) {
-            return false;
-        }
+        return new GenWProp(WKind.STOCK, writer, null, null, null);
     }
 
     private static WKind scalarKind(Class<?> raw) {

@@ -1,10 +1,8 @@
 package tools.jackson.module.blackbird.deser;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.BeanProperty;
@@ -33,8 +31,6 @@ final class BBReaderPlaceholder extends ValueDeserializer<Object>
 {
     private final BeanDeserializerBase _delegate;
 
-    private final Function<Class<?>, MethodHandles.Lookup> _lookups;
-
     private final AnnotatedMethod _buildMethod;
 
     // Whether the bean or any property declares @JsonView explicitly, read
@@ -49,12 +45,10 @@ final class BBReaderPlaceholder extends ValueDeserializer<Object>
     private volatile ValueDeserializer<Object> _codec;
 
     BBReaderPlaceholder(BeanDeserializerBase delegate,
-            Function<Class<?>, MethodHandles.Lookup> lookups,
             AnnotatedMethod buildMethod, boolean declaresViews,
             BeanReaderGenerator.Ignorals ignorals, Map<String, List<PropertyName>> aliases,
             boolean caseInsensitive) {
         _delegate = delegate;
-        _lookups = lookups;
         _buildMethod = buildMethod;
         _declaresViews = declaresViews;
         _ignorals = ignorals;
@@ -68,7 +62,7 @@ final class BBReaderPlaceholder extends ValueDeserializer<Object>
             System.err.println("bbdebug resolve " + _delegate.handledType().getName());
         }
         _delegate.resolve(ctxt);
-        _codec = BBReaderFactory.tryGenerate(_delegate, ctxt, _lookups, _buildMethod,
+        _codec = BBReaderFactory.tryGenerate(_delegate, ctxt, _buildMethod,
                 _declaresViews, _ignorals, _aliases, _caseInsensitive);
     }
 
@@ -78,8 +72,12 @@ final class BBReaderPlaceholder extends ValueDeserializer<Object>
         if (contextual != _delegate) {
             return contextual;
         }
+        // A gated bean hands back the raw stock deserializer: databind
+        // special-cases `instanceof BeanDeserializerBase` (the Nulls.AS_EMPTY
+        // no-creator sanity check, for one), and a lingering wrapper would
+        // change those decisions for beans that are fully stock anyway.
         ValueDeserializer<Object> codec = _codec;
-        return (codec != null) ? codec : this;
+        return (codec != null) ? codec : _delegate;
     }
 
     @Override

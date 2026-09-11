@@ -25,11 +25,12 @@ import tools.jackson.module.blackbird.BlackbirdTestBase;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Non-public classes accelerate: package-private and protected static nested
- * beans (and their non-private members) get generated codecs defined in the
- * bean's package context, restoring the coverage the old engine had. Private
- * classes stay on the stock path. Every behavioral check compares against a
- * vanilla mapper.
+ * Non-public classes accelerate: package-private, protected, and private
+ * static nested beans (and their non-private members) get generated codecs.
+ * Member access rides databind's fixAccess through unreflected constant
+ * handles, so the generated class never names the bean and accessibility
+ * never gates a bean stock databind handles. Every behavioral check compares
+ * against a vanilla mapper.
  */
 public class PackagePrivateBeanTest extends BlackbirdTestBase
 {
@@ -55,6 +56,14 @@ public class PackagePrivateBeanTest extends BlackbirdTestBase
 
     private static class PrivateBean {
         public int x;
+        private String s;
+
+        // Explicit annotations: private accessors are not auto-detected, and
+        // this pin is exactly about reaching them once databind selects them.
+        @JsonProperty("s")
+        private String getS() { return s; }
+        @JsonProperty("s")
+        private void setS(String v) { s = v; }
     }
 
     protected static class ProtectedBean {
@@ -156,15 +165,24 @@ public class PackagePrivateBeanTest extends BlackbirdTestBase
     }
 
     @Test
-    public void testPrivateClassStaysStock() throws Exception {
+    public void testPrivateClassAccelerates() throws Exception {
+        // Widened from a demotion pin: private classes, private setters, and
+        // the private constructor all reach the codec through fixAccess'd
+        // handles now.
         Capture capture = new Capture();
         ObjectMapper mapper = mapperWith(capture);
+        ObjectMapper vanilla = newVanillaJSONMapper();
 
-        PrivateBean bean = mapper.readValue(a2q("{'x':5}"), PrivateBean.class);
-        assertEquals(5, bean.x);
-        assertNotEquals("BBReaderPlaceholder",
-                capture.desers.get(PrivateBean.class).getClass().getSimpleName(),
-                "private classes must stay on the stock deserializer");
+        String doc = a2q("{'x':5,'s':'in'}");
+        PrivateBean act = mapper.readValue(doc, PrivateBean.class);
+        PrivateBean exp = vanilla.readValue(doc, PrivateBean.class);
+        assertEquals(exp.x, act.x);
+        assertEquals(exp.getS(), act.getS());
+        assertEquals("in", act.getS());
+        assertEquals(vanilla.writeValueAsString(exp), mapper.writeValueAsString(act));
+
+        assertCodecGenerated(capture.desers.get(PrivateBean.class));
+        assertWriterGenerated(capture.sers.get(PrivateBean.class));
     }
 
     @Test

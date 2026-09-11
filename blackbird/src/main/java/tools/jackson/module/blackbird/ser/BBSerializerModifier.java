@@ -22,8 +22,9 @@ public class BBSerializerModifier extends ValueSerializerModifier
 {
     private static final long serialVersionUID = 1L;
 
-    // Reserved for member access beyond public API; the v1 writer generator
-    // only touches public getters.
+    // Kept for the released BlackbirdModule(Function) contract; the codec
+    // no longer needs it. Member access rides databind's own fixAccess (see
+    // MemberHandles), so a user lookup is not required for acceleration.
     private final Function<Class<?>, MethodHandles.Lookup> _lookups;
 
     public BBSerializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups) {
@@ -54,12 +55,18 @@ public class BBSerializerModifier extends ValueSerializerModifier
                 && serializer.getClass() != UnrolledBeanSerializer.class) {
             return serializer;
         }
+        // Non-static inner classes stay stock for symmetry with the reader
+        // side; no other class-shape gate remains, since generated writers
+        // never name the bean class. The static check runs first: for a
+        // static member class redefined in a foreign classloader,
+        // getEnclosingClass raises IncompatibleClassChangeError (its
+        // InnerClasses metadata resolves to the parent-loaded owner), and
+        // such beans accelerate now.
         Class<?> beanClass = beanDescRef.getBeanClass();
-        if (Modifier.isPrivate(beanClass.getModifiers())
-                || (beanClass.getEnclosingClass() != null
-                        && !Modifier.isStatic(beanClass.getModifiers()))) {
+        if (!Modifier.isStatic(beanClass.getModifiers())
+                && beanClass.getEnclosingClass() != null) {
             return serializer;
         }
-        return new BBWriterPlaceholder((BeanSerializerBase) serializer, _lookups);
+        return new BBWriterPlaceholder((BeanSerializerBase) serializer);
     }
 }
