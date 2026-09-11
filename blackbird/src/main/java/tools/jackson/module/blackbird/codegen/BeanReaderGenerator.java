@@ -381,7 +381,8 @@ public final class BeanReaderGenerator
         cob.lconst_0();
         cob.lcmp();
         cob.ifne(visible);
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
+        // The fused match already advanced to the value token, so _hiddenView
+        // consumes the current value without advancing.
         cob.aload(0).aload(parser).aload(ctxt);
         ldcData(cob, stockName, CD_SETTABLE_PROP);
         cob.invokevirtual(CD_BASE, "_hiddenView", MTD_HIDDEN_VIEW);
@@ -481,10 +482,10 @@ public final class BeanReaderGenerator
                         stockName[i], handleName[i], null, false);
                 case CHILD -> emitChildArm(cob, beanSlot, parser, ctxt,
                         childName[i], stockName[i], handleName[i], false);
-                case STOCK -> {
-                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
+                case STOCK ->
+                    // The fused match left the value token current; the stock
+                    // property consumes it.
                     emitStockSet(cob, parser, ctxt, beanSlot, stockName[i]);
-                }
             }
             cob.labelBinding(armEnd);
             nextNameMatch(cob, parser, matcherSlot, ixSlot);
@@ -611,10 +612,8 @@ public final class BeanReaderGenerator
                         stockName[i], handleName[i], null, true);
                 case CHILD -> emitChildArm(cob, builderSlot, parser, ctxt,
                         childName[i], stockName[i], handleName[i], true);
-                case STOCK -> {
-                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
+                case STOCK ->
                     emitStockSetReturn(cob, parser, ctxt, builderSlot, stockName[i]);
-                }
             }
             cob.labelBinding(armEnd);
             nextNameMatch(cob, parser, matcherSlot, ixSlot);
@@ -770,7 +769,7 @@ public final class BeanReaderGenerator
                 case CHILD -> {
                     Label childStock = cob.newLabel();
                     Label childDone = cob.newLabel();
-                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
+                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
                     cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
                     cob.if_acmpne(childStock);
                     emitChildCall(cob, parser, ctxt, childName[i]);
@@ -780,10 +779,8 @@ public final class BeanReaderGenerator
                     emitStockValueToLocal(cob, parser, ctxt, componentSlot[i], t, stockName[i]);
                     cob.labelBinding(childDone);
                 }
-                case STOCK -> {
-                    cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
+                case STOCK ->
                     emitStockValueToLocal(cob, parser, ctxt, componentSlot[i], t, stockName[i]);
-                }
             }
             cob.labelBinding(armEnd);
             cob.lload(seenSlot);
@@ -981,7 +978,8 @@ public final class BeanReaderGenerator
             String childName, String stockName, String handleName, boolean builderMode) {
         Label childStock = cob.newLabel();
         Label childDone = cob.newLabel();
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
+        // The fused match left the value token current.
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
         cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
         cob.if_acmpne(childStock);
         ldcData(cob, handleName, ConstantDescs.CD_MethodHandle);
@@ -1052,7 +1050,9 @@ public final class BeanReaderGenerator
     // handling. expectedToken null selects the boolean pair.
     private static void emitExpectedTokenCheck(CodeBuilder cob, int parser,
             String expectedToken, Label useStock) {
-        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN);
+        // The fused match already advanced to the value token, so read it
+        // with currentToken rather than advancing again.
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
         if (expectedToken != null) {
             cob.getstatic(CD_JSON_TOKEN, expectedToken, CD_JSON_TOKEN);
             cob.if_acmpne(useStock);
@@ -1102,16 +1102,22 @@ public final class BeanReaderGenerator
         cob.athrow();
     }
 
+    // The fused name match: on a non-negative result the current token is the
+    // property's value token, so the arms consume it directly; negative
+    // results leave the stream on the name exactly as nextNameMatch does.
     private static void nextNameMatch(CodeBuilder cob, int parser, int matcherSlot, int ixSlot) {
         cob.aload(parser).aload(matcherSlot)
-                .invokevirtual(CD_JSON_PARSER, "nextNameMatch", MTD_NEXT_NAME_MATCH)
+                .invokevirtual(CD_JSON_PARSER, "nextNameMatchAndToken", MTD_NEXT_NAME_MATCH)
                 .istore(ixSlot);
     }
 
     // First match of the loop. The entry guard admits START_OBJECT and
     // PROPERTY_NAME; a name entry matches the CURRENT name, mirroring stock
-    // BeanDeserializer's currentNameMatch loop head, and dispatches into the
-    // same arms (each arm advances to its value token itself).
+    // BeanDeserializer's currentNameMatch loop head. The fused arms consume
+    // the current token, so a matched name entry advances to its value here;
+    // fusing the entry itself would double-advance (the current name is
+    // already consumed). Negative results stay on the name, as the unknown
+    // arm expects.
     private static void emitFirstMatch(CodeBuilder cob, int parser, int matcherSlot, int ixSlot) {
         Label nameEntry = cob.newLabel();
         Label done = cob.newLabel();
@@ -1124,6 +1130,8 @@ public final class BeanReaderGenerator
         cob.aload(parser).aload(matcherSlot)
                 .invokevirtual(CD_JSON_PARSER, "currentNameMatch", MTD_NEXT_NAME_MATCH)
                 .istore(ixSlot);
+        cob.iload(ixSlot).iflt(done);
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "nextToken", MTD_NEXT_TOKEN).pop();
         cob.labelBinding(done);
     }
 
