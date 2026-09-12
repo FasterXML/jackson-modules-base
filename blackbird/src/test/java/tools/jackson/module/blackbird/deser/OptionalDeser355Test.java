@@ -112,35 +112,35 @@ public class OptionalDeser355Test extends BlackbirdTestBase
             return deserializer;
         }
 
-        public SettableBeanProperty propertyFor(Class<?> beanType, String propertyName) {
+        public ValueDeserializer<?> deserializerFor(Class<?> beanType) {
             ValueDeserializer<?> deserializer = deserializers.get(beanType);
-            BeanDeserializerBase beanDeserializer = assertInstanceOf(
-                    BeanDeserializerBase.class, deserializer);
-            Iterator<SettableBeanProperty> properties = beanDeserializer.properties();
-            while (properties.hasNext()) {
-                SettableBeanProperty property = properties.next();
-                if (property.getName().equals(propertyName)) {
-                    return property;
-                }
-            }
-            return fail("No property '"+propertyName+"' found for "+beanType.getName());
+            assertNotNull(deserializer, "No deserializer captured for " + beanType.getName());
+            return deserializer;
         }
     }
 
+    // The new engine never swaps individual properties: eligible beans -
+    // these package-private ones included - get a whole generated codec, and
+    // every Optional-typed property rides its stock SettableBeanProperty
+    // inside it (the issue-355 revert cannot recur by construction). The
+    // original per-property assertions named the old engine's classes; their
+    // equivalent here is codec engagement plus behavior.
     @Test
-    public void testKeepsOptimizedPropertyForBuiltInOptionalDeserializer() throws Exception {
+    public void testOptionalPropertyWithBuiltInDeserializer() throws Exception {
         DeserializerCapture capture = new DeserializerCapture();
         ObjectMapper mapper = mapperWithCapture(capture);
 
         OptionalBean bean = mapper.readValue("{\"value\":\"test\"}", OptionalBean.class);
 
         assertEquals(Optional.of("test"), bean.getValue());
-        assertInstanceOf(SettableObjectProperty.class,
-                capture.propertyFor(OptionalBean.class, "value"));
+        assertEquals("BBReaderPlaceholder",
+                capture.deserializerFor(OptionalBean.class).getClass().getSimpleName());
+        assertEquals(Optional.empty(),
+                mapper.readValue("{\"value\":null}", OptionalBean.class).getValue());
     }
 
     @Test
-    public void testFallsBackForCustomOptionalDeserializer() throws Exception {
+    public void testOptionalPropertyWithCustomDeserializer() throws Exception {
         DeserializerCapture capture = new DeserializerCapture();
         ObjectMapper mapper = mapperWithCapture(capture);
 
@@ -149,18 +149,19 @@ public class OptionalDeser355Test extends BlackbirdTestBase
 
         assertEquals(Optional.of("test"), bean.getValue());
         assertEquals(Optional.of(42), bean.getNumber());
-        assertInstanceOf(MethodProperty.class,
-                capture.propertyFor(CustomOptionalBean.class, "value"));
-        assertInstanceOf(MethodProperty.class,
-                capture.propertyFor(CustomOptionalBean.class, "number"));
+        // The custom-deserializer properties ride the codec's stock arms.
+        assertEquals("BBReaderPlaceholder",
+                capture.deserializerFor(CustomOptionalBean.class).getClass().getSimpleName());
     }
 
     private ObjectMapper mapperWithCapture(DeserializerCapture capture) {
         SimpleModule captureModule = new SimpleModule()
                 .setDeserializerModifier(capture);
+        // Modifiers run in reverse registration order: the capture module
+        // registers first so it observes what Blackbird installed.
         return JsonMapper.builder()
-                .addModule(new BlackbirdModule())
                 .addModule(captureModule)
+                .addModule(new BlackbirdModule())
                 .build();
     }
 }

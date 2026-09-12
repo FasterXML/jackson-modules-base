@@ -2,17 +2,12 @@ package tools.jackson.module.blackbird.inject;
 
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.databind.deser.SettableBeanProperty;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-// End-to-end verification that Blackbird's setter optimization runs on POJOs
-// loaded from the unnamed module (classpath). The specializations tested here
-// correspond to BBDeserializerModifier's four primitive branches (int, long,
-// boolean, object/String) plus the object/non-String branch.
-//
-// Note: Blackbird does NOT optimize direct public-field access — only setter
-// methods. See FieldAccessNotOptimizedTest for the documented negative case.
+// End-to-end verification that Blackbird's codec generation engages for setter
+// POJOs loaded from the unnamed module (classpath). The beans cover the
+// generator's scalar kinds (int, long, boolean, String) plus a non-scalar
+// setter that rides the codec's stock-property arm.
 public class SetterOptimizationTest extends BlackbirdInjectionTestBase
 {
     public static class IntSetterBean {
@@ -47,28 +42,28 @@ public class SetterOptimizationTest extends BlackbirdInjectionTestBase
     public void testIntSetter() throws Exception {
         IntSetterBean b = h.mapper.readValue("{\"value\":42}", IntSetterBean.class);
         assertEquals(42, b.getValue());
-        assertAllPropsOptimized(IntSetterBean.class);
+        assertCodecEngaged(IntSetterBean.class);
     }
 
     @Test
     public void testLongSetter() throws Exception {
         LongSetterBean b = h.mapper.readValue("{\"value\":9999999999}", LongSetterBean.class);
         assertEquals(9999999999L, b.getValue());
-        assertAllPropsOptimized(LongSetterBean.class);
+        assertCodecEngaged(LongSetterBean.class);
     }
 
     @Test
     public void testBooleanSetter() throws Exception {
         BooleanSetterBean b = h.mapper.readValue("{\"value\":true}", BooleanSetterBean.class);
         assertTrue(b.isValue());
-        assertAllPropsOptimized(BooleanSetterBean.class);
+        assertCodecEngaged(BooleanSetterBean.class);
     }
 
     @Test
     public void testStringSetter() throws Exception {
         StringSetterBean b = h.mapper.readValue("{\"value\":\"hi\"}", StringSetterBean.class);
         assertEquals("hi", b.getValue());
-        assertAllPropsOptimized(StringSetterBean.class);
+        assertCodecEngaged(StringSetterBean.class);
     }
 
     @Test
@@ -76,17 +71,12 @@ public class SetterOptimizationTest extends BlackbirdInjectionTestBase
         ObjectSetterBean b = h.mapper.readValue("{\"value\":[\"a\",\"b\"]}", ObjectSetterBean.class);
         assertEquals(2, b.getValue().size());
         assertEquals("a", b.getValue().get(0));
-        assertAllPropsOptimized(ObjectSetterBean.class);
+        assertCodecEngaged(ObjectSetterBean.class);
     }
 
-    private void assertAllPropsOptimized(Class<?> cls) {
-        SettableBeanProperty[] props = propsOf(h.deserFor(cls));
-        assertTrue(props.length > 0, "no properties for " + cls.getSimpleName());
-        for (SettableBeanProperty p : props) {
-            assertTrue(isOptimizedProperty(p),
-                    cls.getSimpleName() + "." + p.getName() + " not optimized: "
-                            + p.getClass().getName()
-                            + " — BBDeserializerModifier did not install a SettableXProperty");
-        }
+    private void assertCodecEngaged(Class<?> cls) {
+        assertTrue(isBlackbirdReader(h.deserFor(cls)),
+                cls.getSimpleName() + " did not engage a Blackbird codec: "
+                        + h.deserFor(cls).getClass().getName());
     }
 }
