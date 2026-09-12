@@ -20,4 +20,25 @@ public final class CodegenDebug
             System.err.println("bbdebug " + message);
         }
     }
+
+    /**
+     * Traces a whole-bean demotion. The modifiers see every type the mapper
+     * resolves, and the great majority are scalars, collections and other JDK
+     * types that could never be beans; tracing those buries the one bean the
+     * trace is being read for, so they are left out.
+     */
+    public static void logSkip(String side, Class<?> beanClass, String reason) {
+        if (ENABLED && !isBulkType(beanClass)) {
+            log(side + " skip " + beanClass.getName() + ": " + reason);
+        }
+    }
+
+    private static boolean isBulkType(Class<?> type) {
+        if (type.isPrimitive() || type.isArray() || type.isEnum()) {
+            return true;
+        }
+        String name = type.getName();
+        return name.startsWith("java.") || name.startsWith("javax.")
+                || name.startsWith("jdk.") || name.startsWith("sun.");
+    }
 }

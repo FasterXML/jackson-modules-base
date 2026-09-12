@@ -11,6 +11,7 @@ import tools.jackson.databind.ser.BeanSerializer;
 import tools.jackson.databind.ser.UnrolledBeanSerializer;
 import tools.jackson.databind.ser.ValueSerializerModifier;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
+import tools.jackson.module.blackbird.codegen.CodegenDebug;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
 /**
@@ -53,7 +54,7 @@ public class BBSerializerModifier extends ValueSerializerModifier
     {
         if (serializer.getClass() != BeanSerializer.class
                 && serializer.getClass() != UnrolledBeanSerializer.class) {
-            return serializer;
+            return skip(beanDescRef, serializer, "not a stock bean serializer");
         }
         // Non-static inner classes stay stock for symmetry with the reader
         // side; no other class-shape gate remains, since generated writers
@@ -65,8 +66,15 @@ public class BBSerializerModifier extends ValueSerializerModifier
         Class<?> beanClass = beanDescRef.getBeanClass();
         if (!Modifier.isStatic(beanClass.getModifiers())
                 && beanClass.getEnclosingClass() != null) {
-            return serializer;
+            return skip(beanDescRef, serializer, "non-static inner class");
         }
         return new BBWriterPlaceholder((BeanSerializerBase) serializer);
     }
+
+    private static ValueSerializer<?> skip(BeanDescription.Supplier beanDescRef,
+            ValueSerializer<?> serializer, String reason) {
+        CodegenDebug.logSkip("writer", beanDescRef.getBeanClass(), reason);
+        return serializer;
+    }
+
 }

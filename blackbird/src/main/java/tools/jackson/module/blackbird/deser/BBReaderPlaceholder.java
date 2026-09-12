@@ -59,7 +59,7 @@ final class BBReaderPlaceholder extends ValueDeserializer<Object>
 
     @Override
     public void resolve(DeserializationContext ctxt) {
-        CodegenDebug.log("resolve " + _delegate.handledType().getName());
+        CodegenDebug.log("reader resolve " + _delegate.handledType().getName());
         _delegate.resolve(ctxt);
         _codec = BBReaderFactory.tryGenerate(_delegate, ctxt, _buildMethod,
                 _declaresViews, _ignorals, _aliases, _caseInsensitive);

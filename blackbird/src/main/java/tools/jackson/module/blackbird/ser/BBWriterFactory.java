@@ -23,6 +23,7 @@ import tools.jackson.module.blackbird.codegen.BeanWriterGenerator.GenWProp;
 import tools.jackson.module.blackbird.codegen.BeanWriterGenerator.WKind;
 import tools.jackson.module.blackbird.codegen.MemberHandles;
 import tools.jackson.module.blackbird.internal.GeneratedWriterBase;
+import tools.jackson.module.blackbird.codegen.CodegenDebug;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
 /**
@@ -47,8 +48,15 @@ final class BBWriterFactory
     static ValueSerializer<Object> tryGenerate(BeanSerializerBase delegate,
             SerializationContext ctxt) {
         try {
-            return generate(delegate, ctxt);
+            ValueSerializer<Object> codec = generate(delegate, ctxt);
+            CodegenDebug.log("writer tryGenerate " + delegate.handledType().getName()
+                    + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
+            return codec;
         } catch (Throwable t) {
+            if (CodegenDebug.ENABLED) {
+                CodegenDebug.log("writer tryGenerate " + delegate.handledType().getName() + " threw:");
+                t.printStackTrace();
+            }
             CodegenFallbacks.generationFailure(delegate.handledType(), t);
             return null;
         }
@@ -58,6 +66,7 @@ final class BBWriterFactory
             SerializationContext ctxt)
             throws ReflectiveOperationException {
         if (delegate.usesObjectId() || delegate.getFilterId() != null) {
+            CodegenDebug.log("writer gate: object id or filter id");
             return null;
         }
         Class<?> beanClass = delegate.handledType();
@@ -67,6 +76,7 @@ final class BBWriterFactory
             props.add(classify(writer));
         }
         if (props.isEmpty()) {
+            CodegenDebug.log("writer gate: no props");
             return null;
         }
         boolean includeByDefault = ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION);
@@ -156,6 +166,7 @@ final class BBWriterFactory
     }
 
     private static GenWProp stock(PropertyWriter writer) {
+        CodegenDebug.log("writer prop stock: " + writer.getName());
         return new GenWProp(WKind.STOCK, writer, null, null, null);
     }
 

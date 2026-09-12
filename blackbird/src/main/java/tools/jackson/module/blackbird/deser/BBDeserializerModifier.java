@@ -28,6 +28,7 @@ import tools.jackson.databind.deser.bean.BuilderBasedDeserializer;
 import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator;
+import tools.jackson.module.blackbird.codegen.CodegenDebug;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
 /**
@@ -92,10 +93,10 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
         boolean builderBased = deserializer.getClass() == BuilderBasedDeserializer.class
                 && buildMethod != null;
         if (!builderBased && deserializer.getClass() != BeanDeserializer.class) {
-            return deserializer;
+            return skip(beanDescRef, deserializer, "not a stock bean deserializer");
         }
         if (Boolean.TRUE.equals(config.getDefaultMergeable())) {
-            return deserializer;
+            return skip(beanDescRef, deserializer, "mapper default mergeable");
         }
         BeanDescription beanDesc = beanDescRef.get();
         Class<?> beanClass = beanDesc.getBeanClass();
@@ -111,18 +112,18 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
         // beans accelerate now.
         if (!Modifier.isStatic(beanClass.getModifiers())
                 && beanClass.getEnclosingClass() != null) {
-            return deserializer;
+            return skip(beanDescRef, deserializer, "non-static inner class");
         }
         if (!builderBased && !beanClass.isRecord()
                 && Modifier.isAbstract(beanClass.getModifiers())) {
-            return deserializer;
+            return skip(beanDescRef, deserializer, "abstract");
         }
         // Any-setter values apply to a live instance, which record codecs do
         // not have during the loop (stock buffers them for creator types);
         // POJO and builder codecs feed the stock any-setter from the unknown
         // arm, so only records demote.
         if (beanClass.isRecord() && beanDesc.findAnySetterAccessor() != null) {
-            return deserializer;
+            return skip(beanDescRef, deserializer, "record with any-setter");
         }
         // Injected values apply right after construction (the codec calls the
         // base injection helper before its loop, like stock), but record
@@ -131,7 +132,7 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
         if (beanClass.isRecord()) {
             Map<Object, ?> injectables = beanDesc.findInjectables();
             if (injectables != null && !injectables.isEmpty()) {
-                return deserializer;
+                return skip(beanDescRef, deserializer, "record with injectables");
             }
         }
         // Ignored and included property sets ride into the codec, whose
@@ -177,14 +178,21 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
             if (def.getPrimaryMember() != null
                     && config.getAnnotationIntrospector()
                             .findUnwrappingNameTransformer(config, def.getPrimaryMember()) != null) {
-                return deserializer;
+                return skip(beanDescRef, deserializer, "unwrapped property");
             }
             if (def.getMetadata() != null && def.getMetadata().getMergeInfo() != null) {
-                return deserializer;
+                return skip(beanDescRef, deserializer, "property merge");
             }
         }
         return new BBReaderPlaceholder((BeanDeserializerBase) deserializer,
                 builderBased ? buildMethod : null, declaresViews, codecIgnorals, aliases,
                 caseInsensitive);
     }
+
+    private static ValueDeserializer<?> skip(BeanDescription.Supplier beanDescRef,
+            ValueDeserializer<?> deserializer, String reason) {
+        CodegenDebug.logSkip("reader", beanDescRef.getBeanClass(), reason);
+        return deserializer;
+    }
+
 }

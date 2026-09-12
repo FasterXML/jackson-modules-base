@@ -9,6 +9,7 @@ import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.jsonFormatVisitors.JsonFormatVisitorWrapper;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
 import tools.jackson.databind.util.NameTransformer;
+import tools.jackson.module.blackbird.codegen.CodegenDebug;
 
 /**
  * Stands in for a stock bean serializer until resolution, then hands out the
@@ -27,6 +28,7 @@ final class BBWriterPlaceholder extends ValueSerializer<Object>
 
     @Override
     public void resolve(SerializationContext ctxt) {
+        CodegenDebug.log("writer resolve " + _delegate.handledType().getName());
         _delegate.resolve(ctxt);
         _codec = BBWriterFactory.tryGenerate(_delegate, ctxt);
     }
