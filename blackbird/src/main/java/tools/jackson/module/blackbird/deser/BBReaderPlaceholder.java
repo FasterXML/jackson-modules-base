@@ -18,6 +18,7 @@ import tools.jackson.databind.type.LogicalType;
 import tools.jackson.databind.util.AccessPattern;
 import tools.jackson.databind.util.NameTransformer;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator;
+import tools.jackson.module.blackbird.codegen.CodegenDebug;
 
 /**
  * Stands in for a stock bean deserializer until resolution: the codec needs
@@ -58,9 +59,7 @@ final class BBReaderPlaceholder extends ValueDeserializer<Object>
 
     @Override
     public void resolve(DeserializationContext ctxt) {
-        if (Boolean.getBoolean("blackbird.debug.codegen")) {
-            System.err.println("bbdebug resolve " + _delegate.handledType().getName());
-        }
+        CodegenDebug.log("resolve " + _delegate.handledType().getName());
         _delegate.resolve(ctxt);
         _codec = BBReaderFactory.tryGenerate(_delegate, ctxt, _buildMethod,
                 _declaresViews, _ignorals, _aliases, _caseInsensitive);

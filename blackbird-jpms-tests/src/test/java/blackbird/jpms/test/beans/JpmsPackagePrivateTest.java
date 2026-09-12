@@ -30,11 +30,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class JpmsPackagePrivateTest
 {
-    static {
-        // Before any Blackbird class initializes: the factories cache this.
-        System.setProperty("blackbird.debug.codegen", "true");
-    }
-
     private static final String DOC = "{\"count\":7,\"name\":\"x\"}";
 
     // The lookup API is a released contract and must keep working even though

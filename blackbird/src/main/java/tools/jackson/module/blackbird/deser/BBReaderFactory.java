@@ -28,6 +28,7 @@ import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.Kind;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.ViewStrategy;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator;
+import tools.jackson.module.blackbird.codegen.CodegenDebug;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 import tools.jackson.module.blackbird.codegen.MemberHandles;
 
@@ -50,8 +51,6 @@ final class BBReaderFactory
 
     private BBReaderFactory() {}
 
-    private static final boolean DEBUG = Boolean.getBoolean("blackbird.debug.codegen");
-
     static ValueDeserializer<Object> tryGenerate(BeanDeserializerBase delegate,
             DeserializationContext ctxt,
             AnnotatedMethod buildMethod, boolean declaresViews,
@@ -60,14 +59,12 @@ final class BBReaderFactory
         try {
             ValueDeserializer<Object> codec = generate(delegate, ctxt, buildMethod,
                     declaresViews, ignorals, aliases, caseInsensitive);
-            if (DEBUG) {
-                System.err.println("bbdebug tryGenerate " + delegate.handledType().getName()
-                        + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
-            }
+            CodegenDebug.log("tryGenerate " + delegate.handledType().getName()
+                    + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
             return codec;
         } catch (Throwable t) {
-            if (DEBUG) {
-                System.err.println("bbdebug tryGenerate " + delegate.handledType().getName() + " threw:");
+            if (CodegenDebug.ENABLED) {
+                CodegenDebug.log("tryGenerate " + delegate.handledType().getName() + " threw:");
                 t.printStackTrace();
             }
             CodegenFallbacks.generationFailure(delegate.handledType(), t);
@@ -86,12 +83,12 @@ final class BBReaderFactory
         // view processing; the generated codec instead checks
         // ctxt.getActiveView() per call and delegates when a view is active.
         if (delegate.getObjectIdReader(ctxt) != null) {
-            if (DEBUG) System.err.println("bbdebug gate: objectId");
+            CodegenDebug.log("gate: objectId");
             return null;
         }
         Class<?> beanClass = delegate.handledType();
         if (Modifier.isAbstract(beanClass.getModifiers())) {
-            if (DEBUG) System.err.println("bbdebug gate: abstract");
+            CodegenDebug.log("gate: abstract");
             return null;
         }
         if (buildMethod != null) {
@@ -103,7 +100,7 @@ final class BBReaderFactory
                     aliases, caseInsensitive);
         }
         if (!delegate.getValueInstantiator().canCreateUsingDefault()) {
-            if (DEBUG) System.err.println("bbdebug gate: instantiator");
+            CodegenDebug.log("gate: instantiator");
             return null;
         }
         // A constant constructor handle is only equivalent when the
@@ -118,7 +115,7 @@ final class BBReaderFactory
             try {
                 defaultCtor = MemberHandles.defaultConstructor(ac.getAnnotated());
             } catch (IllegalAccessException e) {
-                if (DEBUG) System.err.println("bbdebug demote: ctor access, instantiator mode");
+                CodegenDebug.log("demote: ctor access, instantiator mode");
             }
         }
 
@@ -128,14 +125,14 @@ final class BBReaderFactory
             SettableBeanProperty prop = it.next();
             if (prop instanceof CreatorProperty
                     || prop.getMetadata().getMergeInfo() != null) {
-                if (DEBUG) System.err.println("bbdebug gate: prop " + prop.getName());
+                CodegenDebug.log("gate: prop " + prop.getName());
                 return null;
             }
             props.add(classify(prop));
             names.add(Named.fromString(prop.getName()));
         }
         if (props.isEmpty()) {
-            if (DEBUG) System.err.println("bbdebug gate: no props");
+            CodegenDebug.log("gate: no props");
             return null;
         }
         int[] aliasArms = appendAliases(names, props, aliases);
@@ -179,14 +176,14 @@ final class BBReaderFactory
         if (!delegate.getValueInstantiator().canCreateUsingDefault()
                 || Modifier.isPrivate(builderClass.getModifiers())
                 || build.getParameterCount() != 0) {
-            if (DEBUG) System.err.println("bbdebug gate: builder shape");
+            CodegenDebug.log("gate: builder shape");
             return null;
         }
         MethodHandle buildMH;
         try {
             buildMH = MemberHandles.unary(build);
         } catch (IllegalAccessException e) {
-            if (DEBUG) System.err.println("bbdebug gate: build method access");
+            CodegenDebug.log("gate: build method access");
             return null;
         }
         List<GenProp> props = new ArrayList<>();
@@ -195,14 +192,14 @@ final class BBReaderFactory
             SettableBeanProperty prop = it.next();
             if (prop instanceof CreatorProperty
                     || prop.getMetadata().getMergeInfo() != null) {
-                if (DEBUG) System.err.println("bbdebug gate: builder prop " + prop.getName());
+                CodegenDebug.log("gate: builder prop " + prop.getName());
                 return null;
             }
             props.add(classifyBuilder(prop, builderClass));
             names.add(Named.fromString(prop.getName()));
         }
         if (props.isEmpty()) {
-            if (DEBUG) System.err.println("bbdebug gate: builder no props");
+            CodegenDebug.log("gate: builder no props");
             return null;
         }
         int[] aliasArms = appendAliases(names, props, aliases);
@@ -250,7 +247,7 @@ final class BBReaderFactory
             Map<String, List<PropertyName>> aliases, boolean caseInsensitive)
             throws ReflectiveOperationException {
         if (!delegate.getValueInstantiator().canCreateFromObjectWith()) {
-            if (DEBUG) System.err.println("bbdebug gate: record instantiator");
+            CodegenDebug.log("gate: record instantiator");
             return null;
         }
         // The generated code constructs through the canonical constructor. A
@@ -261,13 +258,13 @@ final class BBReaderFactory
         // constructor with the same signature cannot exist.
         if (!(delegate.getValueInstantiator().getWithArgsCreator()
                 instanceof AnnotatedConstructor ctor)) {
-            if (DEBUG) System.err.println("bbdebug gate: record creator is not the constructor");
+            CodegenDebug.log("gate: record creator is not the constructor");
             return null;
         }
         RecordComponent[] comps = beanClass.getRecordComponents();
         // The seen-component mask in the generated code is one long.
         if (comps.length > 64) {
-            if (DEBUG) System.err.println("bbdebug gate: record size");
+            CodegenDebug.log("gate: record size");
             return null;
         }
         SettableBeanProperty[] byIndex = new SettableBeanProperty[comps.length];
@@ -279,20 +276,20 @@ final class BBReaderFactory
                     // A missing injectable component takes its value from the
                     // context, which the typed-locals loop does not model.
                     || prop.getInjectionDefinition() != null) {
-                if (DEBUG) System.err.println("bbdebug gate: record prop " + prop.getName());
+                CodegenDebug.log("gate: record prop " + prop.getName());
                 return null;
             }
             int idx = prop.getCreatorIndex();
             if (idx < 0 || idx >= comps.length || byIndex[idx] != null
                     || prop.getType().getRawClass() != comps[idx].getType()) {
-                if (DEBUG) System.err.println("bbdebug gate: record index " + prop.getName());
+                CodegenDebug.log("gate: record index " + prop.getName());
                 return null;
             }
             byIndex[idx] = prop;
             count++;
         }
         if (count != comps.length || count == 0) {
-            if (DEBUG) System.err.println("bbdebug gate: record count");
+            CodegenDebug.log("gate: record count");
             return null;
         }
         MethodHandle recordCtor;
@@ -302,7 +299,7 @@ final class BBReaderFactory
             // The module lookup cannot reach the canonical constructor, so
             // databind could not open it either: demote, stock fails the same
             // way at first use.
-            if (DEBUG) System.err.println("bbdebug gate: record ctor access");
+            CodegenDebug.log("gate: record ctor access");
             return null;
         }
         List<GenProp> props = new ArrayList<>(comps.length);

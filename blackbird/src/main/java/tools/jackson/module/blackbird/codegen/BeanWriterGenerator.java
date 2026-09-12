@@ -15,8 +15,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonToken;
 import tools.jackson.core.SerializableString;
+import tools.jackson.core.type.WritableTypeId;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
 import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.ViewStrategy;
@@ -43,13 +48,13 @@ public final class BeanWriterGenerator
     public record GenWProp(WKind kind, PropertyWriter stock,
             SerializableString name, GeneratedWriterBase child, MethodHandle handle) {}
 
-    private static final ClassDesc CD_JSON_GENERATOR = ClassDesc.of("tools.jackson.core.JsonGenerator");
-    private static final ClassDesc CD_SER_CONTEXT = ClassDesc.of("tools.jackson.databind.SerializationContext");
-    private static final ClassDesc CD_SERIALIZABLE_STRING = ClassDesc.of("tools.jackson.core.SerializableString");
-    private static final ClassDesc CD_PROPERTY_WRITER = ClassDesc.of("tools.jackson.databind.ser.PropertyWriter");
+    private static final ClassDesc CD_JSON_GENERATOR = Descs.of(JsonGenerator.class);
+    private static final ClassDesc CD_SER_CONTEXT = Descs.of(SerializationContext.class);
+    private static final ClassDesc CD_SERIALIZABLE_STRING = Descs.of(SerializableString.class);
+    private static final ClassDesc CD_PROPERTY_WRITER = Descs.of(PropertyWriter.class);
     private static final ClassDesc CD_WRITER_BASE =
-            GeneratedWriterBase.class.describeConstable().orElseThrow();
-    private static final ClassDesc CD_BEAN_SER_BASE = ClassDesc.of("tools.jackson.databind.ser.bean.BeanSerializerBase");
+            Descs.of(GeneratedWriterBase.class);
+    private static final ClassDesc CD_BEAN_SER_BASE = Descs.of(BeanSerializerBase.class);
 
     private static final MethodTypeDesc MTD_SERIALIZE = MethodTypeDesc.of(ConstantDescs.CD_void,
             ConstantDescs.CD_Object, CD_JSON_GENERATOR, CD_SER_CONTEXT);
@@ -78,11 +83,11 @@ public final class BeanWriterGenerator
     private static final MethodTypeDesc MTD_PROP_VISIBLE = MethodTypeDesc.of(
             ConstantDescs.CD_boolean, CD_PROPERTY_WRITER, ConstantDescs.CD_Class,
             ConstantDescs.CD_boolean);
-    private static final ClassDesc CD_JSON_TOKEN = ClassDesc.of("tools.jackson.core.JsonToken");
+    private static final ClassDesc CD_JSON_TOKEN = Descs.of(JsonToken.class);
     private static final ClassDesc CD_TYPE_SERIALIZER =
-            ClassDesc.of("tools.jackson.databind.jsontype.TypeSerializer");
+            Descs.of(TypeSerializer.class);
     private static final ClassDesc CD_WRITABLE_TYPE_ID =
-            ClassDesc.of("tools.jackson.core.type.WritableTypeId");
+            Descs.of(WritableTypeId.class);
     private static final MethodTypeDesc MTD_TYPE_ID = MethodTypeDesc.of(
             CD_WRITABLE_TYPE_ID, ConstantDescs.CD_Object, CD_JSON_TOKEN);
     private static final MethodTypeDesc MTD_WRITE_TYPE_PART = MethodTypeDesc.of(

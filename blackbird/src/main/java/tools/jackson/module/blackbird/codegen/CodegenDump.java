@@ -20,7 +20,7 @@ final class CodegenDump
     private CodegenDump() {}
 
     private static Path resolveDir() {
-        String dir = System.getProperty("blackbird.debug.dumpDir");
+        String dir = System.getProperty(CodegenDebug.DUMP_DIR_PROPERTY);
         return (dir == null) ? null : Path.of(dir);
     }
 

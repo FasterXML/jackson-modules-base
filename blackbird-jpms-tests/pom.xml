@@ -34,6 +34,10 @@ classes. Not published.</description>
                can and cannot reach); the reactor-wide classpath toggle
                (-Dsurefire.useModulePath=false) must not apply here. -->
           <useModulePath>true</useModulePath>
+          <!-- The tests assert codec engagement through the generation trace. -->
+          <systemPropertyVariables>
+            <blackbird.debug.codegen>true</blackbird.debug.codegen>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
     </plugins>

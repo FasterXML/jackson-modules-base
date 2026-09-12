@@ -20,7 +20,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Optional;
 
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
 import tools.jackson.core.sym.PropertyNameMatcher;
+import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.ValueInstantiator;
@@ -66,22 +69,14 @@ public final class BeanReaderGenerator
         }
     }
 
-    private static final ClassDesc CD_JSON_PARSER = ClassDesc.of("tools.jackson.core.JsonParser");
-    private static final ClassDesc CD_JSON_TOKEN = ClassDesc.of("tools.jackson.core.JsonToken");
-    private static final ClassDesc CD_DESER_CONTEXT = ClassDesc.of("tools.jackson.databind.DeserializationContext");
-    private static final ClassDesc CD_NAME_MATCHER = ClassDesc.of("tools.jackson.core.sym.PropertyNameMatcher");
-    private static final ClassDesc CD_SETTABLE_PROP = ClassDesc.of("tools.jackson.databind.deser.SettableBeanProperty");
-    // Derived from the class literal rather than a name: the test build
-    // compiles main sources into target/test-classes through --patch-module,
-    // and javac emits only compile-time-referenced classes there. The class
-    // literal makes sure that GeneratedReaderBase.class is present in the test
-    // module, which shadows target/classes at run time. Every same-module
-    // class that generated code names only as a string needs such a
-    // compile-time reference.
-    private static final ClassDesc CD_BASE =
-            GeneratedReaderBase.class.describeConstable().orElseThrow();
-    private static final ClassDesc CD_BEAN_DESER_BASE = ClassDesc.of("tools.jackson.databind.deser.bean.BeanDeserializerBase");
-    private static final ClassDesc CD_ISE = ClassDesc.of("java.lang.IllegalStateException");
+    private static final ClassDesc CD_JSON_PARSER = Descs.of(JsonParser.class);
+    private static final ClassDesc CD_JSON_TOKEN = Descs.of(JsonToken.class);
+    private static final ClassDesc CD_DESER_CONTEXT = Descs.of(DeserializationContext.class);
+    private static final ClassDesc CD_NAME_MATCHER = Descs.of(PropertyNameMatcher.class);
+    private static final ClassDesc CD_SETTABLE_PROP = Descs.of(SettableBeanProperty.class);
+    private static final ClassDesc CD_BASE = Descs.of(GeneratedReaderBase.class);
+    private static final ClassDesc CD_BEAN_DESER_BASE = Descs.of(BeanDeserializerBase.class);
+    private static final ClassDesc CD_ISE = Descs.of(IllegalStateException.class);
 
     private static final MethodTypeDesc MTD_NEXT_NAME_MATCH =
             MethodTypeDesc.of(ConstantDescs.CD_int, CD_NAME_MATCHER);
@@ -96,7 +91,7 @@ public final class BeanReaderGenerator
             ConstantDescs.CD_void, CD_JSON_PARSER, CD_DESER_CONTEXT, ConstantDescs.CD_Object);
     private static final MethodTypeDesc MTD_DESERIALIZE =
             MethodTypeDesc.of(ConstantDescs.CD_Object, CD_JSON_PARSER, CD_DESER_CONTEXT);
-    private static final ClassDesc CD_SET = java.util.Set.class.describeConstable().orElseThrow();
+    private static final ClassDesc CD_SET = ConstantDescs.CD_Set;
     private static final MethodTypeDesc MTD_CTOR4 = MethodTypeDesc.of(ConstantDescs.CD_void,
             CD_BEAN_DESER_BASE, ConstantDescs.CD_boolean, CD_SET, CD_SET);
     private static final MethodTypeDesc MTD_HANDLE_UNKNOWN = MethodTypeDesc.of(
@@ -111,15 +106,15 @@ public final class BeanReaderGenerator
             ConstantDescs.CD_void, CD_JSON_PARSER, CD_DESER_CONTEXT, CD_SETTABLE_PROP);
     private static final MethodTypeDesc MTD_VISIBLE_IN_VIEW =
             MethodTypeDesc.of(ConstantDescs.CD_boolean, ConstantDescs.CD_Class);
-    private static final ClassDesc CD_EXCEPTION = ClassDesc.of("java.lang.Exception");
+    private static final ClassDesc CD_EXCEPTION = ConstantDescs.CD_Exception;
     private static final MethodTypeDesc MTD_PROP_WRAP = MethodTypeDesc.of(
-            ClassDesc.of("java.lang.RuntimeException"), ClassDesc.of("java.lang.Throwable"),
+            Descs.of(RuntimeException.class), ConstantDescs.CD_Throwable,
             ConstantDescs.CD_Object, CD_SETTABLE_PROP, CD_DESER_CONTEXT);
 
     private static final MethodTypeDesc MTD_PROP_DESERIALIZE =
             MethodTypeDesc.of(ConstantDescs.CD_Object, CD_JSON_PARSER, CD_DESER_CONTEXT);
     private static final ClassDesc CD_VALUE_INSTANTIATOR =
-            ClassDesc.of("tools.jackson.databind.deser.ValueInstantiator");
+            Descs.of(ValueInstantiator.class);
     private static final MethodTypeDesc MTD_CREATE_DEFAULT =
             MethodTypeDesc.of(ConstantDescs.CD_Object, CD_DESER_CONTEXT);
     private static final MethodTypeDesc MTD_DESER_SET_RETURN = MethodTypeDesc.of(
@@ -840,7 +835,7 @@ public final class BeanReaderGenerator
         for (int i = 0; i < props.size(); i++) {
             Class<?> t = props.get(i).type();
             paramDescs[i] = t.isPrimitive()
-                    ? t.describeConstable().orElseThrow() : ConstantDescs.CD_Object;
+                    ? Descs.of(t) : ConstantDescs.CD_Object;
             if (t == long.class) {
                 cob.lload(componentSlot[i]);
             } else if (t == double.class) {
@@ -878,7 +873,7 @@ public final class BeanReaderGenerator
         for (int i = 0; i < props.size(); i++) {
             Class<?> t = props.get(i).type();
             cob.localVariable(componentSlot[i], props.get(i).name(),
-                    t.isPrimitive() ? t.describeConstable().orElseThrow()
+                    t.isPrimitive() ? Descs.of(t)
                             : ConstantDescs.CD_Object,
                     scopeStart, scopeEnd);
         }
@@ -916,10 +911,10 @@ public final class BeanReaderGenerator
         cob.invokevirtual(CD_SETTABLE_PROP, "deserialize", MTD_PROP_DESERIALIZE);
         if (type.isPrimitive()) {
             Class<?> box = ClassUtil.wrapperType(type);
-            ClassDesc boxDesc = box.describeConstable().orElseThrow();
+            ClassDesc boxDesc = Descs.of(box);
             cob.checkcast(boxDesc);
             cob.invokevirtual(boxDesc, type.getName() + "Value",
-                    MethodTypeDesc.of(type.describeConstable().orElseThrow()));
+                    MethodTypeDesc.of(Descs.of(type)));
         }
         storeLocal(cob, type, slot);
     }
