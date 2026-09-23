@@ -1,1 +1,1 @@
-com.fasterxml.jackson.module.spisubtypes.SubtypesModule
+tools.jackson.module.spisubtypes.SubtypesModule

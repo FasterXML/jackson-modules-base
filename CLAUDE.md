@@ -65,7 +65,7 @@ Unlike 2.x, nothing is shaded: afterburner and mrbean depend on `net.bytebuddy:b
 - Tests use static imports from `org.junit.jupiter.api.Assertions`
 - **Mapper construction in tests:** Use `mapperBuilder()` (returns `JsonMapper.Builder` with module pre-registered) or `newObjectMapper()` factory methods from the test base class; `newVanillaJSONMapper()` gives a baseline mapper without the module
 - **Test helpers:** `q("str")` wraps in double-quotes, `a2q("{'a':1}")` converts single to double quotes; assertion helpers `verifyException()`, `assertToken()`
-- **SPI test:** `ModuleSPIMetadataTest` verifies discovery via `ServiceLoader.load(JacksonModule.class)`; present in afterburner, android-record, blackbird, jakarta-xmlbind, mrbean, no-ctor-deser (not yet in jaxb or spi-subtypes, which are registered)
+- **SPI test:** `ModuleSPIMetadataTest` verifies discovery via `ServiceLoader.load(JacksonModule.class)`; present in afterburner, android-record, blackbird, jakarta-xmlbind, mrbean, no-ctor-deser, spi-subtypes (not yet in jaxb, which is registered)
 
 ## Release & Branching
 
