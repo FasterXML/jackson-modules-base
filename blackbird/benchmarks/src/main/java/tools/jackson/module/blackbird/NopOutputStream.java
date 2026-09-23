@@ -1,4 +1,4 @@
-package com.fasterxml.jackson.module.blackbird;
+package tools.jackson.module.blackbird;
 
 import java.io.IOException;
 import java.io.OutputStream;

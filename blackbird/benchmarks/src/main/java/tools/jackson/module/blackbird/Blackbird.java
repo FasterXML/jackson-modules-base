@@ -1,6 +1,7 @@
-package com.fasterxml.jackson.module.blackbird;
+package tools.jackson.module.blackbird;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -17,6 +18,6 @@ public class Blackbird extends BaseBenchmark {
 
     @Override
     protected ObjectMapper createObjectMapper() {
-        return new ObjectMapper().registerModule(new BlackbirdModule());
+        return JsonMapper.builder().addModule(new BlackbirdModule()).build();
     }
 }

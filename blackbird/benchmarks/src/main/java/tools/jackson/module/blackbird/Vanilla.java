@@ -1,6 +1,6 @@
-package com.fasterxml.jackson.module.blackbird;
+package tools.jackson.module.blackbird;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;

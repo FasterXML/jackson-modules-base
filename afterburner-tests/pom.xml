@@ -3,7 +3,7 @@
   <parent>
     <groupId>tools.jackson.module</groupId>
     <artifactId>jackson-modules-base</artifactId>
-    <version>3.2.0-SNAPSHOT</version>
+    <version>3.3.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>jackson-module-afterburner-tests</artifactId>
@@ -132,6 +132,35 @@ never published.</description>
             <phase>none</phase>
           </execution>
         </executions>
+      </plugin>
+      <!-- The `release` profile (inherited from oss-parent, activated by the
+           `-Prelease` argument that maven-release-plugin passes to its
+           `clean verify` preparation build) binds maven-source-plugin,
+           maven-javadoc-plugin and maven-gpg-plugin. All three assume a main
+           artifact exists, but `default-jar` is unbound above, so GPG signing
+           fails with "project artifact has not been assigned a file" and the
+           whole `release:prepare` aborts. These plugins only run under
+           `-Prelease`, so skipping them here has no effect on normal builds. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <configuration>
+          <skipSource>true</skipSource>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
       </plugin>
       <!-- Force surefire to classpath mode: this module has no module-info.java,
            so tests must run on the classpath (unnamed module) to keep test POJO

@@ -1,12 +1,13 @@
-package com.fasterxml.jackson.module.blackbird;
+package tools.jackson.module.blackbird;
 
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.module.afterburner.AfterburnerModule;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -39,15 +40,15 @@ public class StartupTimeBenchmark {
 
     @Benchmark
     public byte[] blackbird() throws Exception {
-        return singleShot(new ObjectMapper().registerModule(new BlackbirdModule()));
+        return singleShot(JsonMapper.builder().addModule(new BlackbirdModule()).build());
     }
 
     @Benchmark
     public byte[] afterburner() throws Exception {
-        return singleShot(new ObjectMapper().registerModule(new AfterburnerModule()));
+        return singleShot(JsonMapper.builder().addModule(new AfterburnerModule()).build());
     }
 
-    private static byte[] singleShot(ObjectMapper mapper) throws JsonProcessingException {
+    private static byte[] singleShot(ObjectMapper mapper) throws JacksonException {
         final Random random = new Random();
         return mapper.writeValueAsBytes(List.of(
                 SomeBean.random(random),
