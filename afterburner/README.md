@@ -9,7 +9,7 @@ There is, however, a potential future replacement available (as of Jackson 2.12)
 See the parent README for details.
 
 [![Maven Central](https://img.shields.io/maven-central/v/tools.jackson.module/jackson-module-afterburner.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/tools.jackson.module/jackson-module-afterburner)
-[![Javadoc](https://javadoc.io/badge/tools.jackson.module/jackson-module-afterburner.svg)](http://www.javadoc.io/doc/tools.jackson.module/jackson-module-afterburner)
+[![Javadoc](https://javadoc.io/badge2/tools.jackson.module/jackson-module-afterburner/javadoc.svg)](https://javadoc.io/doc/tools.jackson.module/jackson-module-afterburner)
 
 ## Usage
 
@@ -29,7 +29,7 @@ To use module on Maven-based projects, use following dependency:
 
 ### Non-Maven
 
-For non-Maven use cases, you download jars from [Central Maven repository](http://repo1.maven.org/maven2/tools/jackson/module/jackson-module-afterburner/).
+For non-Maven use cases, you download jars from [Central Maven repository](https://repo1.maven.org/maven2/tools/jackson/module/jackson-module-afterburner/).
 
 Module jar is also a functional OSGi bundle, with proper import/export declarations, so it can be use on OSGi container as is.
 
