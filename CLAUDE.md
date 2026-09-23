@@ -10,6 +10,8 @@ Jackson modules-base is a multi-module Maven project containing 11 foundational 
 
 (paranamer exists in the tree but is not built for 3.x — it is commented out of the root `pom.xml`.)
 
+There are also two test-only, never-published modules: `afterburner-tests` and `blackbird-tests`. They have no `module-info.java`, so their test POJOs live in the unnamed module and exercise the bytecode-generation paths that are disabled for beans in named JPMS modules (see each module's `README.md`).
+
 Maven coordinates: groupId `tools.jackson.module`, parent `tools.jackson:jackson-base`; depends on `tools.jackson.core:jackson-databind`.
 
 ## Build Commands
@@ -34,7 +36,7 @@ Maven coordinates: groupId `tools.jackson.module`, parent `tools.jackson:jackson
 ./mvnw -B -ff -ntp test -pl afterburner -Dtest=BasicDeserializeTest#testIntMethod
 ```
 
-Java 17 is the minimum (`javac.src.version` 17); CI tests against 17, 21, 24. osgi adds `--add-opens java.base/java.lang=ALL-UNNAMED` to its test `argLine`.
+Java 17 is the minimum (`javac.src.version` 17); CI tests against 17, 21, 24. osgi and afterburner-tests add `--add-opens java.base/java.lang=ALL-UNNAMED` to their test `argLine`.
 
 ## Architecture
 
@@ -71,5 +73,5 @@ Unlike 2.x, nothing is shaded: afterburner and mrbean depend on `net.bytebuddy:b
 
 - **Main branches:** `3.x` (Jackson 3 development, default branch) and `2.x` (head of the 2.x line); there is no `master`
 - **Development branches:** per-minor-version branches (e.g., `3.0`, `3.1`, `3.2`; `2.21`, `2.22`); fixes merge forward (e.g., `2.21` → `2.22` → `2.x` → `3.1` → `3.2` → `3.x`)
-- **Current version (this branch, `3.1`):** 3.1.8-SNAPSHOT
+- **Current version (this branch, `3.2`):** 3.2.4-SNAPSHOT
 - Releases use maven-release-plugin; snapshots deploy to Sonatype Central Portal
