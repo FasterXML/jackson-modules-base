@@ -1,282 +1,198 @@
 package tools.jackson.module.blackbird.deser;
 
-import java.lang.invoke.LambdaConversionException;
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
-import java.util.function.ObjIntConsumer;
-import java.util.function.ObjLongConsumer;
-import java.util.function.UnaryOperator;
 
-import tools.jackson.databind.*;
-import tools.jackson.databind.deser.*;
-import tools.jackson.databind.deser.impl.MethodProperty;
-import tools.jackson.databind.deser.std.StdValueInstantiator;
-import tools.jackson.databind.introspect.*;
-import tools.jackson.databind.util.ClassUtil;
-import tools.jackson.module.blackbird.util.ReflectionHack;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.DeserializationConfig;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.PropertyName;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.deser.ValueDeserializerModifier;
+import tools.jackson.databind.deser.BeanDeserializerBuilder;
+import tools.jackson.databind.deser.bean.BeanDeserializer;
+import tools.jackson.databind.deser.bean.BeanDeserializerBase;
+import tools.jackson.databind.deser.bean.BuilderBasedDeserializer;
+import tools.jackson.databind.introspect.AnnotatedMethod;
+import tools.jackson.databind.introspect.BeanPropertyDefinition;
+import tools.jackson.module.blackbird.codegen.BeanReaderGenerator;
+import tools.jackson.module.blackbird.codegen.CodegenDebug;
+import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
+
+/**
+ * Wraps eligible stock bean deserializers in a placeholder that generates a
+ * per-bean codec at resolve time (ClassFile API hidden class). Every gate that
+ * fails leaves the stock deserializer in place, so behavior never changes for
+ * beans the generator does not fully understand.
+ */
 public class BBDeserializerModifier extends ValueDeserializerModifier
 {
     private static final long serialVersionUID = 1L;
 
-    private static final MethodHandle TRAMPOLINE, BOOLEAN_TRAMPOLINE, LONG_TRAMPOLINE, INT_TRAMPOLINE;
+    // Kept for the released BlackbirdModule(Function) contract; the codec
+    // no longer needs it. Member access rides databind's own fixAccess (see
+    // MemberHandles), so a user lookup is not required for acceleration.
+    private final Function<Class<?>, MethodHandles.Lookup> _lookups;
 
-    static {
-        try {
-            TRAMPOLINE = MethodHandles.lookup().findStatic(BBDeserializerModifier.class, "trampoline",
-                    MethodType.methodType(void.class, BiFunction.class, Object.class, Object.class));
-            BOOLEAN_TRAMPOLINE = MethodHandles.lookup().findStatic(BBDeserializerModifier.class, "booleanTrampoline",
-                MethodType.methodType(void.class, ObjBooleanBiFunction.class, Object.class, boolean.class));
-            LONG_TRAMPOLINE = MethodHandles.lookup().findStatic(BBDeserializerModifier.class, "longTrampoline",
-                    MethodType.methodType(void.class, ObjLongBiFunction.class, Object.class, long.class));
-            INT_TRAMPOLINE = MethodHandles.lookup().findStatic(BBDeserializerModifier.class, "intTrampoline",
-                    MethodType.methodType(void.class, ObjIntBiFunction.class, Object.class, int.class));
-        } catch (Exception e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-    private final Function<Class<?>, Lookup> _lookups;
-    private final UnaryOperator<Lookup> _accessGrant;
+    // The build method is only reachable from updateBuilder; the factory calls
+    // updateBuilder and modifyDeserializer for the same bean back to back on
+    // one thread, so a ThreadLocal hands it across. Not final: readObject
+    // recreates it, since transient fields deserialize as null.
+    private transient ThreadLocal<AnnotatedMethod> _pendingBuildMethod = new ThreadLocal<>();
 
-    public BBDeserializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups, UnaryOperator<MethodHandles.Lookup> accessGrant)
-    {
+    public BBDeserializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups) {
         _lookups = lookups;
-        _accessGrant = accessGrant;
     }
 
-    /*
-    /**********************************************************************
-    /* BeanDeserializerModifier methods
-    /**********************************************************************
-     */
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        _pendingBuildMethod = new ThreadLocal<>();
+    }
 
     @Override
     public BeanDeserializerBuilder updateBuilder(DeserializationConfig config,
-            BeanDescription.Supplier beanDescRef, BeanDeserializerBuilder builder)
-    {
-        final Class<?> beanClass = beanDescRef.getBeanClass();
-        MethodHandles.Lookup lookup = _lookups.apply(beanClass);
-        if (lookup == null) {
-            return builder;
-        }
-        try {
-            lookup = ReflectionHack.privateLookupIn(beanClass, lookup);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-        /* Hmmh. Can we access stuff from private classes?
-         * Possibly, if we can use parent class loader.
-         * (should probably skip all non-public?)
-         */
-        if (Modifier.isPrivate(beanClass.getModifiers())) { // TODO??
-            return builder;
-        }
-        lookup = _accessGrant.apply(lookup);
-        List<OptimizedSettableBeanProperty<?>> newProps = findOptimizableProperties(
-                lookup, config, builder.getProperties());
-        // and if we found any, create mutator proxy, replace property objects
-        if (!newProps.isEmpty()) {
-            for (OptimizedSettableBeanProperty<?> prop : newProps) {
-                builder.addOrReplaceProperty(prop, true);
-            }
-        }
-        // Second thing: see if we could (re)generate Creator(s):
-        ValueInstantiator inst = builder.getValueInstantiator();
-        /* Hmmh. Probably better to require exact default implementation
-         * and not sub-class; chances are sub-class uses its own
-         * construction anyway.
-         */
-        if (inst.getClass() == StdValueInstantiator.class) {
-            // also, only override if using default creator (no-arg ctor, no-arg static factory)
-            if (inst.canCreateUsingDefault() || inst.canCreateFromObjectWith()) {
-                inst = new CreatorOptimizer(beanClass, lookup, (StdValueInstantiator) inst).createOptimized();
-                if (inst != null) {
-                    builder.setValueInstantiator(inst);
-                }
-            }
-        }
-
-        // also: may want to replace actual BeanDeserializer as well? For this, need to replace builder
-        // (but only if builder is the original standard one; don't want to break other impls)
-        if (builder.getClass() == BeanDeserializerBuilder.class) {
-            return new SuperSonicDeserializerBuilder(builder);
-        }
+            BeanDescription.Supplier beanDescRef, BeanDeserializerBuilder builder) {
+        _pendingBuildMethod.set(builder.getBuildMethod());
         return builder;
     }
 
-    /*
-    /**********************************************************************
-    /* Internal methods
-    /**********************************************************************
-     */
-
-    protected List<OptimizedSettableBeanProperty<?>> findOptimizableProperties(
-            Lookup lookup, DeserializationConfig config,
-            Iterator<SettableBeanProperty> propIterator)
+    @Override
+    public ValueDeserializer<?> modifyDeserializer(DeserializationConfig config,
+            BeanDescription.Supplier beanDescRef, ValueDeserializer<?> deserializer)
     {
-        ArrayList<OptimizedSettableBeanProperty<?>> newProps = new ArrayList<OptimizedSettableBeanProperty<?>>();
-
-        // Ok, then, find any properties for which we could generate accessors
-        while (propIterator.hasNext()) {
-            try {
-                nextProperty(propIterator.next(), lookup, newProps);
-            } catch (Throwable e) {
-                if (e instanceof Error) {
-                    throw (Error) e;
-                }
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException) e;
-                }
-                throw new RuntimeException(e);
-            }
+        // Gate failures of any kind leave the stock deserializer in place. The
+        // reflective gates can throw for exotic classes (a bean from a foreign
+        // classloader with inconsistent InnerClasses metadata raises
+        // IncompatibleClassChangeError from getEnclosingClass), and an
+        // acceleration modifier must never break a bean stock databind handles.
+        try {
+            return doModify(config, beanDescRef, deserializer);
+        } catch (RuntimeException | LinkageError e) {
+            CodegenFallbacks.gateFailure(beanDescRef.getBeanClass(), e);
+            return deserializer;
         }
-        return newProps;
     }
 
-    @SuppressWarnings("unchecked")
-    private void nextProperty(SettableBeanProperty prop,
-            Lookup lookup,
-            ArrayList<OptimizedSettableBeanProperty<?>> newProps) throws Throwable
+    private ValueDeserializer<?> doModify(DeserializationConfig config,
+            BeanDescription.Supplier beanDescRef, ValueDeserializer<?> deserializer)
     {
-        AnnotatedMember member = prop.getMember();
-        Member jdkMember = member.getMember();
-
-        // if we ever support virtual properties, this would be null, so check, skip
-        if (jdkMember == null) {
-            return;
+        AnnotatedMethod buildMethod = _pendingBuildMethod.get();
+        _pendingBuildMethod.remove();
+        boolean builderBased = deserializer.getClass() == BuilderBasedDeserializer.class
+                && buildMethod != null;
+        if (!builderBased && deserializer.getClass() != BeanDeserializer.class) {
+            return skip(beanDescRef, deserializer, "not a stock bean deserializer");
         }
-        // First: we can't access private fields or methods....
-        if (Modifier.isPrivate(jdkMember.getModifiers())) {
-            return;
+        if (Boolean.TRUE.equals(config.getDefaultMergeable())) {
+            return skip(beanDescRef, deserializer, "mapper default mergeable");
         }
-        // (although, interestingly enough, can seem to access private classes...)
-
-        // 30-Jul-2012, tatu: [module-afterburner#6]: Needs to skip custom deserializers, if any.
-        if (prop.hasValueDeserializer()) {
-            if (!isDefaultDeserializer(prop.getValueDeserializer())) {
-                return;
+        BeanDescription beanDesc = beanDescRef.get();
+        Class<?> beanClass = beanDesc.getBeanClass();
+        // Non-static inner classes construct against an enclosing instance,
+        // which the generated loop does not model. No other class- or
+        // constructor-shape gate remains: construction goes through a handle
+        // or the stock instantiator, and the factory checks creator shape at
+        // resolve time (creator strictness needs no gate - the generated
+        // record path enforces required, FAIL_ON_MISSING, and FAIL_ON_NULL
+        // creator semantics per call). The static check runs first: for a
+        // static member class redefined in a foreign classloader,
+        // getEnclosingClass raises IncompatibleClassChangeError, and such
+        // beans accelerate now.
+        if (!Modifier.isStatic(beanClass.getModifiers())
+                && beanClass.getEnclosingClass() != null) {
+            return skip(beanDescRef, deserializer, "non-static inner class");
+        }
+        if (!builderBased && !beanClass.isRecord()
+                && Modifier.isAbstract(beanClass.getModifiers())) {
+            return skip(beanDescRef, deserializer, "abstract");
+        }
+        // Any-setter values apply to a live instance, which record codecs do
+        // not have during the loop (stock buffers them for creator types);
+        // POJO and builder codecs feed the stock any-setter from the unknown
+        // arm, so only records demote.
+        if (beanClass.isRecord() && beanDesc.findAnySetterAccessor() != null) {
+            return skip(beanDescRef, deserializer, "record with any-setter");
+        }
+        // Injected values apply right after construction (the codec calls the
+        // base injection helper before its loop, like stock), but record
+        // codecs have no instance until the end of the document, so records
+        // with injectables demote.
+        if (beanClass.isRecord()) {
+            Map<Object, ?> injectables = beanDesc.findInjectables();
+            if (injectables != null && !injectables.isEmpty()) {
+                return skip(beanDescRef, deserializer, "record with injectables");
             }
         }
-
-        MethodHandle setter;
-        Class<?> type;
-        if (jdkMember instanceof Method && prop instanceof MethodProperty) {
-            final Method method = (Method) jdkMember;
-            setter = lookup.unreflect(method);
-            type = ((AnnotatedMethod) member).getRawParameterType(0);
-        } else {
-            return;
-            //setter = lookup.unreflectGetter((Field) jdkMember);
+        // Ignored and included property sets ride into the codec, whose
+        // unknown arm consults them in the stock loop's exact order.
+        JsonIgnoreProperties.Value ignorals =
+                config.getDefaultPropertyIgnorals(beanClass, beanDesc.getClassInfo());
+        JsonIncludeProperties.Value inclusions =
+                config.getDefaultPropertyInclusions(beanClass, beanDesc.getClassInfo());
+        boolean ignoreAllUnknown = ignorals != null && ignorals.getIgnoreUnknown();
+        Set<String> ignorable = new HashSet<>();
+        if (ignorals != null) {
+            ignorable.addAll(ignorals.getIgnored());
         }
-
-        if (type.isPrimitive()) {
-            if (type == Integer.TYPE) {
-                newProps.add(new SettableIntProperty(prop,
-                    createSetter(lookup, ObjIntConsumer.class, ObjIntBiFunction.class,
-                        INT_TRAMPOLINE, int.class, setter)));
-            } else if (type == Long.TYPE) {
-                newProps.add(new SettableLongProperty(prop,
-                    createSetter(lookup, ObjLongConsumer.class, ObjLongBiFunction.class,
-                        LONG_TRAMPOLINE, long.class, setter)));
-            } else if (type == Boolean.TYPE) {
-                newProps.add(new SettableBooleanProperty(prop,
-                    createSetter(lookup, ObjBooleanConsumer.class, ObjBooleanBiFunction.class,
-                        BOOLEAN_TRAMPOLINE, boolean.class, setter)));
+        ignorable.addAll(beanDesc.getIgnoredPropertyNames());
+        Set<String> includable = (inclusions == null) ? null : inclusions.getIncluded();
+        BeanReaderGenerator.Ignorals codecIgnorals =
+                (!ignoreAllUnknown && ignorable.isEmpty() && includable == null)
+                        ? BeanReaderGenerator.Ignorals.NONE
+                        : new BeanReaderGenerator.Ignorals(ignoreAllUnknown,
+                                ignorable.isEmpty() ? null : Set.copyOf(ignorable),
+                                includable);
+        // Effective case-insensitivity, the way the stock builder computes it:
+        // the per-class format override wins, the mapper feature is baseline.
+        Boolean formatCI = beanDescRef.findExpectedFormat(null)
+                .getFeature(JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES);
+        boolean caseInsensitive = (formatCI == null)
+                ? config.isEnabled(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+                : formatCI.booleanValue();
+        boolean declaresViews = config.getAnnotationIntrospector()
+                .findViews(config, beanDesc.getClassInfo()) != null;
+        Map<String, List<PropertyName>> aliases = null;
+        for (BeanPropertyDefinition def : beanDesc.findProperties()) {
+            if (def.findViews() != null) {
+                declaresViews = true;
             }
-        } else {
-            if (type == String.class) {
-                newProps.add(new SettableStringProperty(prop,
-                    createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter)));
-            } else {
-                newProps.add(new SettableObjectProperty(prop,
-                    createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter)));
+            List<PropertyName> defAliases = def.findAliases();
+            if (!defAliases.isEmpty()) {
+                if (aliases == null) {
+                    aliases = new HashMap<>();
+                }
+                aliases.put(def.getName(), defAliases);
+            }
+            if (def.getPrimaryMember() != null
+                    && config.getAnnotationIntrospector()
+                            .findUnwrappingNameTransformer(config, def.getPrimaryMember()) != null) {
+                return skip(beanDescRef, deserializer, "unwrapped property");
+            }
+            if (def.getMetadata() != null && def.getMetadata().getMergeInfo() != null) {
+                return skip(beanDescRef, deserializer, "property merge");
             }
         }
+        return new BBReaderPlaceholder((BeanDeserializerBase) deserializer,
+                builderBased ? buildMethod : null, declaresViews, codecIgnorals, aliases,
+                caseInsensitive);
     }
 
-    private <T> T createSetter(Lookup lookup, Class<T> iface, Class<?> thunkType, MethodHandle trampoline, Class<?> valueType, MethodHandle setter)
-            throws Throwable, LambdaConversionException {
-        if (setter.type().returnType() == void.class) {
-            return iface.cast(LambdaMetafactory.metafactory(
-                    lookup,
-                    "accept",
-                    MethodType.methodType(iface),
-                    MethodType.methodType(void.class, Object.class, valueType),
-                    setter,
-                    setter.type())
-                    .getTarget().invoke());
-        }
-        Object builtThunk = LambdaMetafactory.metafactory(
-                lookup,
-                "apply",
-                MethodType.methodType(thunkType),
-                MethodType.methodType(Object.class, Object.class, valueType),
-                setter,
-                setter.type())
-            .getTarget().invoke();
-        return iface.cast(LambdaMetafactory.metafactory(
-                MethodHandles.lookup(),
-                "accept",
-                MethodType.methodType(iface, thunkType),
-                MethodType.methodType(void.class, Object.class, valueType),
-                trampoline,
-                MethodType.methodType(void.class, Object.class, valueType))
-            .getTarget().invoke(builtThunk));
+    private static ValueDeserializer<?> skip(BeanDescription.Supplier beanDescRef,
+            ValueDeserializer<?> deserializer, String reason) {
+        CodegenDebug.logSkip("reader", beanDescRef.getBeanClass(), reason);
+        return deserializer;
     }
 
-    /**
-     * Helper method used to check whether given deserializer is the default
-     * deserializer implementation: this is necessary to avoid overriding other
-     * kinds of deserializers.
-     */
-    protected boolean isDefaultDeserializer(ValueDeserializer<?> deser) {
-        return ClassUtil.isJacksonStdImpl(deser)
-                // 07-May-2018, tatu: Probably can't happen but just in case
-                || (deser instanceof SuperSonicBeanDeserializer);
-
-    }
-
-    // These trampolines adapt BiFunction-like setters (i.e. returns a value)
-    // to BiConsumer style through a generated thunk lambda.
-
-    @FunctionalInterface
-    public interface ObjIntBiFunction {
-        Object apply(Object bean, int value);
-    }
-
-    @FunctionalInterface
-    public interface ObjLongBiFunction {
-        Object apply(Object bean, long value);
-    }
-
-    @FunctionalInterface
-    public interface ObjBooleanBiFunction {
-        Object apply(Object bean, boolean value);
-    }
-
-    static void intTrampoline(ObjIntBiFunction thunk, Object bean, int value) {
-        thunk.apply(bean, value);
-    }
-
-    static void longTrampoline(ObjLongBiFunction thunk, Object bean, long value) {
-        thunk.apply(bean, value);
-    }
-
-    static void booleanTrampoline(ObjBooleanBiFunction thunk, Object bean, boolean value) {
-        thunk.apply(bean, value);
-    }
-
-    static void trampoline(BiFunction<Object, Object, Object> thunk, Object bean, Object value) {
-        thunk.apply(bean, value);
-    }
 }

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>tools.jackson.module</groupId>
+    <artifactId>jackson-modules-base</artifactId>
+    <version>3.3.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>jackson-module-blackbird-jpms-tests</artifactId>
+  <name>Jackson module: Blackbird JPMS integration tests</name>
+  <packaging>jar</packaging>
+  <description>Module-path integration tests: a foreign named module that
+requires blackbird, exercising codec generation for its own non-public
+classes. Not published.</description>
+
+  <properties>
+    <maven.compiler.release>25</maven.compiler.release>
+    <javac.src.version>25</javac.src.version>
+    <javac.target.version>25</javac.target.version>
+    <!-- test-only module -->
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <gpg.skip>true</gpg.skip>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- These tests assert module-path semantics (what a named module
+               can and cannot reach); the reactor-wide classpath toggle
+               (-Dsurefire.useModulePath=false) must not apply here. -->
+          <useModulePath>true</useModulePath>
+          <!-- The tests assert codec engagement through the generation trace. -->
+          <systemPropertyVariables>
+            <blackbird.debug.codegen>true</blackbird.debug.codegen>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>tools.jackson.module</groupId>
+      <artifactId>jackson-module-blackbird</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

@@ -36,7 +36,6 @@ module tools.jackson.module.blackbird
     opens tools.jackson.module.blackbird.roundtrip;
     opens tools.jackson.module.blackbird.ser;
     opens tools.jackson.module.blackbird.ser.filter;
-    opens tools.jackson.module.blackbird.tofix;
     opens tools.jackson.module.blackbird.testutil;
     opens tools.jackson.module.blackbird.testutil.failure;
 
