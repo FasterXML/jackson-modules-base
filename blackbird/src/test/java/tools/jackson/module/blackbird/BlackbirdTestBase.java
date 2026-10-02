@@ -11,6 +11,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 import tools.jackson.module.blackbird.testutil.NoCheckSubTypeValidator;
+import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -211,6 +212,13 @@ public abstract class BlackbirdTestBase
 
     protected static JsonMapper.Builder blackbirdMapperBuilder() {
         return mapperBuilder();
+    }
+
+    static {
+        // The suite runs strict: a codec-generation failure fails the test
+        // instead of demoting to the stock path, so the lenient production
+        // fallback cannot mask a generator bug here.
+        System.setProperty(CodegenFallbacks.FAIL_ON_ERROR_PROPERTY, "true");
     }
 
     protected static JsonMapper.Builder mapperBuilder() {
