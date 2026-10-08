@@ -5,7 +5,7 @@
 This module provides a way to inject OSGI services into deserialized objects.
 Thanks to the _JacksonInject_ annotations, the _OsgiJacksonModule_ will search for the required service in the OSGI service registry and injects it in the object while deserializing.
 
-Module is licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+Module is licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt)
 
 ## Usage
 

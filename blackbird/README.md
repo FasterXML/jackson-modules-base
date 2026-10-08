@@ -2,7 +2,7 @@
 
 _Upgrade your Afterburner for your Java 11+ Environment 🚀_
 
-The [Afterburner](https://github.com/FasterXML/jackson-modules-base/tree/master/afterburner)
+The [Afterburner](../afterburner/)
 has long been your engine of choice for maximum Jackson performance.
 But in the brave new Java 11 world, the trusty Afterburner is showing its age.
 It uses horrifying bytecode manipulation and cracks `Unsafe.defineClass` which will

@@ -25,11 +25,11 @@ Currently included are:
 
 ## Status
 
-[![Build Status](https://travis-ci.org/FasterXML/jackson-modules-base.svg)](https://travis-ci.org/FasterXML/jackson-modules-base)
+[![Build Status](https://api.travis-ci.com/FasterXML/jackson-modules-base.svg)](https://app.travis-ci.com/FasterXML/jackson-modules-base)
 
 ## License
 
-All modules are licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt).
+All modules are licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt).
 
 Additionally, 2.x versions of `Afterburner` and `Mr Bean` use [ASM](https://gitlab.ow2.org/asm/asm),
 licensed as per:

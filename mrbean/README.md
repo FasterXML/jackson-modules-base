@@ -4,7 +4,7 @@ Mr Bean is an extension that implements support for "POJO type materialization";
 ability for [databinder](jackson-databind) to construct implementation classes for Java interfaces and abstract classes, as part of deserialization.
 Extension plugs in using standard `Module` interface, and requires Jackson 2.0 or above.
 
-Module is licensed under [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt)
+Module is licensed under [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt)
 
 [![Maven Central](https://img.shields.io/maven-central/v/tools.jackson.module/jackson-module-mrbean.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/tools.jackson.module/jackson-module-mrbean)
 
@@ -68,7 +68,7 @@ Note: this works transitively as well, meaning that implementation classes will 
 
 Module implements Jackson's `AbstractTypeResolver` interface and registers it via Module interface. This is how it gets invoked when an abstract type is encountered, which is problematic for deserialization (unless polymorphic handling is enabled; see the next section).
 
-Actual byte code generation uses [ASM](http://asm.ow2.org/) library, and simply generates methods for all abstract methods.
+Actual byte code generation uses [ASM](https://asm.ow2.io/) library, and simply generates methods for all abstract methods.
 No naming convention is required; basic signature is enough. This means that zero-argument methods are considered "getters" and one-argument methods "setters".
 Naming is considered to be able to generate internal field; but beyond this naming is of no consequence.
 Annotations are not introspected at this point; however, Jackson databinding will make use of them later on -- typically annotations from implemented interface or abstract class get used, as no annotations are added to the implementation classes.
