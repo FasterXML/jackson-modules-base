@@ -24,7 +24,7 @@ Active maintainers:
 
 3.3.0 (not yet released)
 
-No changes since 3.2
+#362: Bump `byte-buddy` dependency from 1.17.8 to 1.18.15
 
 3.2.3 (21-Sep-2026)
 
