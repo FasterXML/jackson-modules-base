@@ -23,11 +23,9 @@
     <parent>
         <groupId>tools.jackson.module</groupId>
         <artifactId>jackson-modules-base</artifactId>
-        <version>3.1.6</version>
-        <!-- Not part of the reactor: resolve parent (and the module artifacts
-             benchmarked below) from the repository, as released versions
-          -->
-        <relativePath />
+        <version>3.3.0-SNAPSHOT</version>
+        <!-- Not part of the reactor: install the modules first, see README -->
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>jackson-module-blackbird-benchmark</artifactId>
@@ -35,8 +33,13 @@
     <name>Jackson Blackbird JMH benchmarks</name>
 
     <properties>
-        <jmh.version>1.25</jmh.version>
+        <jmh.version>1.37</jmh.version>
+        <maven.compiler.release>25</maven.compiler.release>
+        <javac.src.version>25</javac.src.version>
+        <javac.target.version>25</javac.target.version>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.install.skip>true</maven.install.skip>
+        <blackbird.version>${project.version}</blackbird.version>
         <uberjar.name>benchmarks</uberjar.name>
     </properties>
 
@@ -50,7 +53,7 @@
         <dependency>
             <groupId>tools.jackson.module</groupId>
             <artifactId>jackson-module-blackbird</artifactId>
-            <version>${project.version}</version>
+            <version>${blackbird.version}</version>
         </dependency>
         <dependency>
             <groupId>tools.jackson.module</groupId>
@@ -100,6 +103,10 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>org.openjdk.jmh.Main</mainClass>
+                                    <manifestEntries>
+                                        <!-- Blackbird's code generators are in META-INF/versions/25 -->
+                                        <Multi-Release>true</Multi-Release>
+                                    </manifestEntries>
                                 </transformer>
                             </transformers>
                             <filters>
@@ -122,4 +129,19 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Builds target/classic/benchmarks-classic.jar against the last release
+             of the LambdaMetafactory engine, with the same databind as the main jar -->
+        <profile>
+            <id>classic-blackbird</id>
+            <properties>
+                <blackbird.version>3.2.2</blackbird.version>
+                <uberjar.name>benchmarks-classic</uberjar.name>
+            </properties>
+            <build>
+                <directory>${project.basedir}/target/classic</directory>
+            </build>
+        </profile>
+    </profiles>
 </project>
