@@ -17,6 +17,14 @@ import tools.jackson.module.blackbird.internal.DiscoveredBlackbirdModule;
 import tools.jackson.module.blackbird.ser.BBSerializerModifier;
 
 /**
+ * Registers Blackbird's generated per-bean codecs. No access configuration is
+ * needed: generated codecs reach members through handles unreflected after
+ * databind's own access checks, so whatever stock databind can read or write
+ * accelerates (on the module path, the same {@code opens ... to
+ * tools.jackson.databind} stock needs). The lookup-supplying constructors and
+ * the {@code findLookup}/{@code findLookupSupplier} overrides remain
+ * supported released API, but no acceleration requires a lookup any more.
+ *<p>
  * Code generation needs Java 25 or later: the generators use the ClassFile
  * API (final in Java 24) and compile at release 25. On Java 17 to 24, module
  * discovery ({@code MapperBuilder.findAndAddModules()}) skips this module with
@@ -125,9 +133,8 @@ public class BlackbirdModule extends JacksonModule
                     + " (jackson-module-afterburner supports Java 17 and later).");
         }
         Function<Class<?>, Lookup> lookup = findLookup();
-        CrossLoaderAccess openSesame = new CrossLoaderAccess();
         context.addDeserializerModifier(new BBDeserializerModifier(lookup));
-        context.addSerializerModifier(new BBSerializerModifier(lookup, openSesame));
+        context.addSerializerModifier(new BBSerializerModifier(lookup));
     }
 
     private static String _unavailableReason() {

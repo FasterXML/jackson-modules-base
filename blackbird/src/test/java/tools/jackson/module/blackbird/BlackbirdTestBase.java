@@ -9,13 +9,16 @@ import tools.jackson.core.*;
 
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.json.JsonMapper;
 
 import tools.jackson.module.blackbird.testutil.NoCheckSubTypeValidator;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 import tools.jackson.module.blackbird.internal.GeneratedBuilderBase;
 import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
+import tools.jackson.module.blackbird.internal.GeneratedWriterBase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -247,6 +250,12 @@ public abstract class BlackbirdTestBase
         return ctxt.findRootValueDeserializer(ctxt.constructType(type));
     }
 
+    /** The (contextualized) serializer the mapper uses for a root value of the type. */
+    protected static ValueSerializer<Object> rootWriter(ObjectMapper mapper, Class<?> type) {
+        SerializationContext ctxt = mapper._serializationContext();
+        return ctxt.handleRootContextualization(ctxt.findValueSerializer(type));
+    }
+
     /**
      * Whether a (de)serializer that a modifier captured resolved to a
      * generated codec: the placeholder stays in place either way, and only
@@ -281,6 +290,21 @@ public abstract class BlackbirdTestBase
         ValueDeserializer<Object> d = rootReader(mapper, type);
         assertFalse(d instanceof GeneratedReaderBase || d instanceof GeneratedBuilderBase,
                 type.getSimpleName() + " should keep the stock deserializer, uses " + d);
+    }
+
+    /** Asserts that the generated writer handles the type, and returns its layout. */
+    protected static String assertGeneratedWriter(ObjectMapper mapper, Class<?> type) {
+        ValueSerializer<Object> s = rootWriter(mapper, type);
+        assertTrue(s instanceof GeneratedWriterBase,
+                type.getSimpleName() + " should use a generated writer, uses " + s);
+        return ((GeneratedWriterBase) s).codecLayout();
+    }
+
+    /** Asserts that the stock serializer handles the type. */
+    protected static void assertStockWriter(ObjectMapper mapper, Class<?> type) {
+        ValueSerializer<Object> s = rootWriter(mapper, type);
+        assertFalse(s instanceof GeneratedWriterBase,
+                type.getSimpleName() + " should keep the stock serializer, uses " + s);
     }
 
     /*

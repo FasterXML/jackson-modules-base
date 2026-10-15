@@ -64,6 +64,18 @@ public final class MemberHandles
                 .asType(MethodType.methodType(void.class, Object.class, erase(field.getType())));
     }
 
+    /** Getter adapted to {@code (Object)eV}. */
+    public static MethodHandle getter(Method getter) throws IllegalAccessException {
+        return LOOKUP.unreflect(getter).asType(
+                MethodType.methodType(erase(getter.getReturnType()), Object.class));
+    }
+
+    /** Field load adapted to {@code (Object)eV}. */
+    public static MethodHandle fieldGetter(Field field) throws IllegalAccessException {
+        return LOOKUP.unreflectGetter(field)
+                .asType(MethodType.methodType(erase(field.getType()), Object.class));
+    }
+
     /** No-arg constructor adapted to {@code ()Object}. */
     public static MethodHandle defaultConstructor(Constructor<?> ctor)
             throws IllegalAccessException {

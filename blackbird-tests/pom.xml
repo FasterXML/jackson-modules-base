@@ -21,6 +21,15 @@ over the target package. That path is not exercised by in-tree tests (caller and
 share a module, so privateLookupIn already has full privilege). This module is test-only
 and is never published.</description>
 
+  <properties>
+    <!-- Blackbird's codecs need JDK 25+, and the tests use the ClassFile API. -->
+    <maven.compiler.release>25</maven.compiler.release>
+    <javac.src.version>25</javac.src.version>
+    <javac.target.version>25</javac.target.version>
+    <!-- Java 17-24 JDK homes for JdkCompatibilityTest; empty skips those cases. -->
+    <blackbird.test.oldJdks></blackbird.test.oldJdks>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>tools.jackson.module</groupId>
@@ -158,6 +167,10 @@ and is never published.</description>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <useModulePath>false</useModulePath>
+          <systemPropertyVariables>
+            <!-- Java 17-24 homes (comma-separated) for JdkCompatibilityTest -->
+            <blackbird.test.oldJdks>${blackbird.test.oldJdks}</blackbird.test.oldJdks>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
     </plugins>
