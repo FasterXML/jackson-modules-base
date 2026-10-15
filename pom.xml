@@ -26,9 +26,7 @@ not datatype, data format, or JAX-RS provider modules.
     <!-- Classpath-mode integration tests for afterburner; not published. See module pom for why. -->
     <module>afterburner-tests</module>
     <module>android-record</module>
-    <module>blackbird</module>
-    <!-- Classpath-mode integration tests for blackbird; not published. See module pom for why. -->
-    <module>blackbird-tests</module>
+    <!-- blackbird and blackbird-tests build under the blackbird-jdk25 profile below -->
     <module>guice</module>
     <module>guice7</module>
     <module>jakarta-xmlbind</module>
@@ -46,6 +44,55 @@ not datatype, data format, or JAX-RS provider modules.
     <module>spi-subtypes</module>
   </modules>
 
+  <profiles>
+    <!-- Blackbird's code generators use the ClassFile API and compile at
+         release 25 (into META-INF/versions/25 of a jar whose other classes
+         keep the JDK 17 floor), so the Blackbird modules build only on
+         JDK 25+. -->
+    <profile>
+      <id>blackbird-jdk25</id>
+      <activation>
+        <jdk>[25,)</jdk>
+      </activation>
+      <modules>
+        <module>blackbird</module>
+        <!-- Classpath-mode integration tests for blackbird; not published. See module pom for why. -->
+        <module>blackbird-tests</module>
+      </modules>
+    </profile>
+    <!-- maven-release-plugin passes -Prelease (oss-parent) to both its
+         preparation build and the deploy. A release on JDK < 25 would leave
+         out the Blackbird modules without an error, so it fails instead. -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>enforce-jdk25-for-release</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <configuration>
+                  <rules>
+                    <requireJavaVersion>
+                      <version>[25,)</version>
+                      <message>Release builds need JDK 25 or later: on older JDKs the reactor leaves out jackson-module-blackbird.</message>
+                    </requireJavaVersion>
+                  </rules>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
   <url>https://github.com/FasterXML/jackson-modules-base</url>
   <scm>
     <connection>scm:git:git@github.com:FasterXML/jackson-modules-base.git</connection>
@@ -58,6 +105,10 @@ not datatype, data format, or JAX-RS provider modules.
   </issueManagement>
 
   <properties>
+    <!-- The parent chain sets compiler source/target only; release pins the
+         17 floor against JDK 17 APIs (ct.sym) even when the build JDK is
+         newer. blackbird compiles only its two code generators at 25. -->
+    <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- [databind#4820]: Java 17 baseline -->
