@@ -5,50 +5,46 @@ test-only and is never published.**
 
 ## Why this module exists
 
-This module is the Blackbird counterpart to
-[`afterburner-tests`](../afterburner-tests/README.md). The coverage gap it
-addresses is narrower than Afterburner's, because Blackbird's optimizer
-mechanism is structurally different — and better aligned with JPMS — than
-Afterburner's.
+Blackbird's in-tree tests run as Blackbird's own named JPMS module, so their
+test beans live in that module. This module has no `module-info.java`, and its
+tests run on the classpath: the test beans live in the unnamed module, as in
+most applications. It also holds the tests that need the packaged jar or other
+JDKs.
 
-**Afterburner:** uses ByteBuddy + `ClassLoader.defineClass` + reflective
-access to `java.lang.ClassLoader` methods. On Java 9+, reflective access to
-`ClassLoader` is gated by JPMS, and in the JPMS-named test module every test
-POJO ends up in a sealed package. That combination silently disables the
-optimizer in the in-tree afterburner test suite. See the `afterburner-tests`
-README for the full story.
+## What is covered
 
-**Blackbird:** uses `MethodHandles.Lookup.defineClass` (a JDK 9+ supported
-API) + `MethodHandles.privateLookupIn`. Neither needs reflective access to
-`ClassLoader` methods, neither cares whether the target package is "sealed by
-module", and `privateLookupIn` works across the JPMS module boundary whenever
-the target module opens its package to the caller (or lives in the unnamed
-module). As a result, Blackbird's in-tree tests **do** exercise the optimizer
-for setter-based POJOs.
+- `inject`: generated codecs engage for setter-based and field-backed POJOs
+  in the unnamed module, on the reader and the writer side.
+- `diff`: differential tests. Each scenario runs through a stock mapper and a
+  mapper with Blackbird, built from the same configuration, and the two must
+  give the same value or the same exception (class and message, with the
+  reference path). Each scenario then asserts which path Blackbird took: the
+  generated codec, a stock property inside it, or the stock (de)serializer for
+  the whole bean. The checks look at the (de)serializer that the mapper uses,
+  not at the placeholder that a modifier sees. The scenarios cover polymorphic
+  values, non-standard creation, property wrappers, ignoral sets, absent
+  record components, construction and setter failures, builder setters that
+  return null, null serializers, self-references, failures with their
+  reference paths, and wide beans.
+- `jdk`: the packaged jar. `JdkCompatibilityTest` runs a small program
+  against the jar in child JVMs, on the build JDK and on each Java 17-24 home
+  listed in `-Dblackbird.test.oldJdks=<home>[,<home>]`: module discovery on the
+  class path and module path, with a second module provider on the path, and
+  explicit registration with discovery before it, after it and without it.
+  Without that property, the old-JDK cases are skipped. `PackagingTest`
+  checks the module descriptor, the OSGi exports and the release guard of the
+  root POM. `IsolatedLoaderTest` loads Jackson and Blackbird in a class loader
+  that the system class loader cannot see, as an application server or OSGi
+  does.
 
-What's NOT exercised by Blackbird's in-tree tests, and is covered here:
-
-- **Classpath / unnamed-module POJOs.** A real-world POJO loaded by the
-  system class loader rather than as part of the Blackbird JPMS module.
-  This module's test POJOs live in the unnamed module (no `module-info.java`
-  anywhere), so the optimizer has to cross the module boundary.
-- **The documented limitations of Blackbird's optimizer** — specifically
-  that direct public-field access is **not** optimized on either the
-  deserializer or serializer side. Blackbird's
-  `BBDeserializerModifier.nextProperty` and
-  `BBSerializerModifier.createProperty` both skip non-method members.
-- **The `CrossLoaderAccess` fast-path behavior.** Blackbird's
-  `CrossLoaderAccess` contains a slow-path that defines a
-  `$$JacksonBlackbirdAccess` companion class via `Lookup.defineClass(byte[])`
-  to upgrade a partial-privilege lookup. `CrossLoaderAccessTest` pins the
-  current behavior that on JDK 9+ with an unnamed-module bean, the fast
-  path always wins and the companion class is never defined.
+Some checks need the packaged jar (`mvn verify`); a build that stops before the
+package phase reads `blackbird/target/classes`, which is not a multi-release
+jar, and those checks are skipped.
 
 ## Do not add a `module-info.java` here
 
-Same reason as `afterburner-tests`: adding a module descriptor would put the
-test POJOs back into a named module and change how `privateLookupIn`
-resolves them, silently undermining the classpath-coverage purpose.
+Adding a module descriptor would put the test beans back into a named module
+and remove the classpath coverage.
 
 ## Do not publish this module
 
@@ -57,41 +53,3 @@ that `mvn install` on this module produces no jar, no SBOM, no Gradle module
 metadata, and no OSGi bundle. See `afterburner-tests/pom.xml` for the same
 pattern with extended commentary; this module's `pom.xml` shares the same
 shape.
-
-## What is covered
-
-- `BBDeserializerModifier` — setter specializations (int / long / boolean /
-  String / Object) in `SetterOptimizationTest`.
-- `BBSerializerModifier` — getter-based writer specializations in
-  `SerializerInjectionTest`.
-- Field-access negative cases (known design limitation) on both sides, in
-  `FieldAccessNotOptimizedTest` and `SerializerInjectionTest`.
-- `CrossLoaderAccess` fast-path short-circuit for unnamed-module beans, in
-  `CrossLoaderAccessTest`.
-
-## What is *not* covered
-
-- Private-class guard (`Modifier.isPrivate(beanClass)` in both modifiers).
-- The slow-path `CrossLoaderAccess.accessClassIn` companion-class definition
-  — that code is effectively dead for classpath POJOs on JDK 9+; see
-  `CrossLoaderAccessTest` javadoc for the explanation.
-- `CreatorOptimizer` — Blackbird has one; a follow-up could mirror
-  `afterburner-tests/CreatorOptimizerTest`.
-- Concurrent deserializer construction.
-- Bean classes in a JPMS module other than Blackbird's own. Testing that
-  would require a third submodule with its own `module-info.java` that
-  `opens` its package to Blackbird, which adds complexity for unclear
-  additional value.
-- Lambda-classloader growth as a function of mapper count. Blackbird's
-  fundamental design creates a new anonymous lambda class per
-  `LambdaMetafactory.metafactory` invocation; this isn't a bug and isn't
-  caching-related, so there's nothing to assert.
-
-## References
-
-- PR that introduced this module — see git history
-- [`afterburner-tests/README.md`](../afterburner-tests/README.md) for the
-  sibling module and the broader rationale
-- Issue #348 — analogous (but different) afterburner classloader caching
-  issue. Does not apply to Blackbird: Blackbird uses `Lookup.defineClass`,
-  not reflective `ClassLoader.defineClass`, so it is structurally immune.

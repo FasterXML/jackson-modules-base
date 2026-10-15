@@ -14,7 +14,8 @@
   <name>Jackson module: Blackbird</name>
   <packaging>jar</packaging>
   <description>Jackson (https://github.com/FasterXML/jackson) extension module
-that uses LambdaMetafactory based code generation to replace reflection calls.
+that generates a deserializer and a serializer class per bean with the JDK ClassFile API
+(Java 25 or later at run time).
   </description>
   <url>https://github.com/FasterXML/jackson-modules-base</url>
 

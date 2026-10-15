@@ -44,12 +44,12 @@ Every module follows the same pattern:
 - A `*Module` class (e.g., `AfterburnerModule`, `BlackbirdModule`) extends Jackson's `tools.jackson.databind.JacksonModule`, registered on a mapper builder (e.g., `JsonMapper.builder().addModule(...)`)
 - Package: `tools.jackson.module.<name>` (hyphens dropped or turned into sub-packages: `androidrecord`, `noctordeser`, `spisubtypes`, `jakarta.xmlbind`)
 - `PackageVersion.java` is generated from `PackageVersion.java.in` by the replacer Maven plugin — do not edit manually
-- JPMS module descriptors are real sources: `<module>/src/main/java/module-info.java` (and `src/test/java/module-info.java` for tests). Moditect is no longer used; stray `src/moditect/` dirs in blackbird and android-record are leftovers
+- JPMS module descriptors are real sources: `<module>/src/main/java/module-info.java` (and `src/test/java/module-info.java` for tests). Moditect is no longer used; the stray `src/moditect/` dir in android-record is a leftover
 - SPI registration: `src/main/resources/META-INF/services/tools.jackson.databind.JacksonModule` (all modules except guice, guice7, osgi)
 
 ### Key module categories
 
-- **Performance (bytecode generation):** afterburner (Byte Buddy-based), blackbird (LambdaMetafactory-based, modern replacement) — both disable themselves automatically in GraalVM native images via `NativeImageUtil.isInNativeImage()` check in `setupModule`
+- **Performance (bytecode generation):** afterburner (Byte Buddy-based), blackbird (generated per-bean codecs through the JDK ClassFile API; a multi-release jar that builds and runs on JDK 25+, see `blackbird/README.md`) — both disable themselves automatically in GraalVM native images via `NativeImageUtil.isInNativeImage()` check in `setupModule`
 - **DI integration:** guice (javax.inject), guice7 (jakarta.inject) — note: guice's `ObjectMapperModule` implements Guice's `com.google.inject.Module`, not Jackson's `JacksonModule`
 - **Type materialization:** mrbean (generates implementations for interfaces/abstract classes, Byte Buddy-based)
 - **Annotation support:** jaxb (javax.xml.bind), jakarta-xmlbind (jakarta.xml.bind)

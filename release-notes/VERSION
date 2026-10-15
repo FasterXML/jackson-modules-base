@@ -24,6 +24,24 @@ Active maintainers:
 
 3.3.0 (not yet released)
 
+#359: (blackbird) New code generation engine: per-bean codec classes, generated with
+  the JDK ClassFile API, replace the LambdaMetafactory accessors. The codecs also
+  cover records (through the canonical constructor) and builder-based beans.
+  Blackbird needs Java 25 or later at run time: the generators use the ClassFile API
+  (final in Java 24) and compile at release 25, the current LTS release. The jar is
+  a multi-release jar whose base classes stay at Java 17: on Java 17-24, module
+  discovery (`findAndAddModules()`) skips Blackbird with one logged warning, and an
+  explicit `addModule(new BlackbirdModule())` throws `IllegalStateException`. The
+  build needs JDK 25 for Blackbird, and a release build on an older JDK fails.
+  Removed public types: `deser.CreatorOptimizer`, `deser.ObjBooleanConsumer`, the
+  `ObjIntBiFunction`, `ObjLongBiFunction` and `ObjBooleanBiFunction` interfaces of
+  `BBDeserializerModifier`, `ser.ToBooleanFunction`, and all of `util`
+  (`CheckedFunction`, `CheckedSupplier`, `ReflectionHack`, `Sneaky`, `Unchecked`).
+  `BBDeserializerModifier` and `BBSerializerModifier` take only the lookup function
+  now. Blackbird no longer uses the lookup that `BlackbirdModule` constructors and
+  `findLookup()` overrides supply. The OSGi bundle exports only
+  `tools.jackson.module.blackbird`, as the JPMS module does.
+ (contributed by @stevenschlansker)
 #362: Bump `byte-buddy` dependency from 1.17.8 to 1.18.15
 
 3.2.3 (21-Sep-2026)
