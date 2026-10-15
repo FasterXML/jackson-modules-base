@@ -32,6 +32,8 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
          compile at release 25 and ship under META-INF/versions/25 (see the
          build section). Tests run on JDK 25+ only. -->
     <maven.compiler.testRelease>25</maven.compiler.testRelease>
+    <!-- Only the module class is API, as in module-info. -->
+    <osgi.export>tools.jackson.module.blackbird;version=${project.version}</osgi.export>
     <packageVersion.dir>tools/jackson/module/blackbird</packageVersion.dir>
     <packageVersion.package>${project.groupId}.blackbird</packageVersion.package>
   </properties>
