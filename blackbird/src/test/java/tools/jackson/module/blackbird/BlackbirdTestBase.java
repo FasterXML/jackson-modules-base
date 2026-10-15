@@ -14,6 +14,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import tools.jackson.module.blackbird.testutil.NoCheckSubTypeValidator;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
+import tools.jackson.module.blackbird.internal.GeneratedBuilderBase;
 import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -269,13 +270,16 @@ public abstract class BlackbirdTestBase
         if (d instanceof GeneratedReaderBase r) {
             return r.codecLayout();
         }
+        if (d instanceof GeneratedBuilderBase b) {
+            return b.codecLayout();
+        }
         return fail(type.getSimpleName() + " should use a generated reader, uses " + d);
     }
 
     /** Asserts that the stock deserializer handles the type. */
     protected static void assertStockReader(ObjectMapper mapper, Class<?> type) {
         ValueDeserializer<Object> d = rootReader(mapper, type);
-        assertFalse(d instanceof GeneratedReaderBase,
+        assertFalse(d instanceof GeneratedReaderBase || d instanceof GeneratedBuilderBase,
                 type.getSimpleName() + " should keep the stock deserializer, uses " + d);
     }
 

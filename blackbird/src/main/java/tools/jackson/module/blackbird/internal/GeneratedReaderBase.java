@@ -10,11 +10,15 @@ import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.bean.BeanDeserializer;
 import tools.jackson.databind.deser.bean.BeanPropertyMap;
+import tools.jackson.databind.deser.bean.PropertyValueBuffer;
 import tools.jackson.databind.deser.std.StdValueInstantiator;
+import tools.jackson.databind.util.IgnorePropertiesUtil;
 import tools.jackson.databind.util.NameTransformer;
+import tools.jackson.databind.util.TokenBuffer;
 
 /**
- * Superclass for generated codecs. A codec is a copy of the resolved stock
+ * Superclass for generated POJO and record codecs (builder codecs extend
+ * {@link GeneratedBuilderBase}). A codec is a copy of the resolved stock
  * {@link BeanDeserializer} whose {@code deserialize} method the generated
  * class overrides with the per-bean loop: everything else, and every input
  * the loop does not model, is the stock implementation, and databind sees a
@@ -136,6 +140,81 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
 
     /*
     /**********************************************************************
+    /* Record loop helpers
+    /**********************************************************************
+     */
+
+    // A name no component takes: the order of the stock property-based
+    // loop. Ignored names go through ignored-property handling at once;
+    // other names are skipped when stock would skip them, and otherwise
+    // buffered, to be reported against the record once it exists (see
+    // _recordReplayUnknown). Returns the buffer, created on first use.
+    protected final Object _recordUnknown(JsonParser p, DeserializationContext ctxt,
+            Object buffered) {
+        String name = p.currentName();
+        p.nextToken();
+        if (IgnorePropertiesUtil.shouldIgnore(name, _ignorableProps, _includableProps)) {
+            handleIgnoredProperty(p, ctxt, handledType(), name);
+            return buffered;
+        }
+        if (_shouldSkipUnknowns(ctxt)) {
+            p.skipChildren();
+            return buffered;
+        }
+        TokenBuffer tb = (buffered == null) ? ctxt.bufferForInputBuffering(p)
+                : (TokenBuffer) buffered;
+        tb.writeName(name);
+        tb.copyCurrentStructure(p);
+        return tb;
+    }
+
+    protected final Object _recordReplayUnknown(DeserializationContext ctxt, Object bean,
+            Object buffered) {
+        return handleUnknownProperties(ctxt, bean, (TokenBuffer) buffered);
+    }
+
+    // Record codecs call the canonical constructor directly only when the
+    // document supplied every component, no primitive component received a
+    // null from a custom deserializer, and FAIL_ON_NULL_CREATOR_PROPERTIES is
+    // off. Everything else ends here: values holds the components (boxed, in
+    // creator-index order), seen marks the ones the document supplied, and
+    // nullPrimitives marks primitive components whose deserializer returned
+    // null. Without a constructor failure, the stock creator completes the
+    // arguments (absent values, required and FAIL_ON_MISSING /
+    // FAIL_ON_NULL_CREATOR_PROPERTIES checks) and constructs; a failure from
+    // the fast path goes where StdValueInstantiator sends it. Either way a
+    // failure ends in wrapInstantiationProblem, as in the stock loop.
+    protected final Object _recordBuild(JsonParser p, DeserializationContext ctxt, long seen,
+            long nullPrimitives, Object[] values, Throwable ctorFailure) {
+        for (int i = 0; i < values.length; i++) {
+            if ((nullPrimitives & (1L << i)) != 0) {
+                values[i] = null;
+            }
+        }
+        if (ctorFailure != null) {
+            try {
+                return ReaderSupport.creatorProblem((StdValueInstantiator) _valueInstantiator,
+                        ctxt, values, ctorFailure);
+            } catch (Exception e) {
+                return wrapInstantiationProblem(ctxt, e);
+            }
+        }
+        SettableBeanProperty[] props = _propertyBasedCreator.allPropertiesInOrder();
+        PropertyValueBuffer buffer = _propertyBasedCreator.startBuilding(p, ctxt, null, false);
+        for (int i = 0; i < props.length; i++) {
+            if ((seen & (1L << i)) != 0) {
+                buffer.assignParameter(props[i], values[i]);
+            }
+        }
+        try {
+            return _propertyBasedCreator.build(ctxt, buffer);
+        } catch (Exception e) {
+            return wrapInstantiationProblem(ctxt, e);
+        }
+    }
+
+    /*
+    /**********************************************************************
     /* Views and class data
     /**********************************************************************
      */
@@ -159,7 +238,7 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
         handleUnexpectedView(p, ctxt, prop, ctxt.getActiveView());
     }
 
-    // Constant bootstrap for generated code:
+    // Constant bootstrap for generated code (reader and builder codecs):
     // resolves one named entry of the hidden class's class data, a Map built
     // at generation time. The JDK's classDataAt bootstrap requires the condy
     // name to be "_", so named entries need this owner. The generated

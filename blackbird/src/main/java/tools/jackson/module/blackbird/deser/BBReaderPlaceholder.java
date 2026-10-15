@@ -9,7 +9,8 @@ import tools.jackson.databind.util.NameTransformer;
 import tools.jackson.module.blackbird.codegen.CodegenDebug;
 
 /**
- * Takes the place of a stock {@link BeanDeserializer} from the modifier on: it is a copy of that deserializer, so other
+ * Takes the place of a stock {@link BeanDeserializer} (POJOs and records)
+ * from the modifier on: it is a copy of that deserializer, so other
  * modifiers and databind's own checks see a {@code BeanDeserializer}, and
  * it behaves as stock until resolution. Resolving it resolves the stock
  * state and generates the codec, which needs the resolved properties and
@@ -35,8 +36,11 @@ final class BBReaderPlaceholder extends BeanDeserializer
     public void resolve(DeserializationContext ctxt) {
         CodegenDebug.log(() -> "reader resolve " + handledType().getName());
         super.resolve(ctxt);
-        _codec = BBReaderFactory.tryGenerate(new BBReaderFactory.Source(this,
-                _injectables != null, _beanProperties, _nonStandardCreation),
+        _codec = BBReaderFactory.tryGenerate(new BBReaderFactory.Source(this, _anySetter,
+                _injectables != null, _beanProperties, _propertyBasedCreator,
+                _nonStandardCreation,
+                (_delegateDeserializer != null) || (_arrayDelegateDeserializer != null),
+                _externalTypeIdHandler != null, _unwrappedPropertyHandler != null, null),
                 ctxt, _declaresViews);
     }
 

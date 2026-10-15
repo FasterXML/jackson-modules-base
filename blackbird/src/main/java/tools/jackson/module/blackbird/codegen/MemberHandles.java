@@ -39,6 +39,25 @@ public final class MemberHandles
                 .asType(MethodType.methodType(void.class, Object.class, erase(valueType)));
     }
 
+    /**
+     * Builder setter adapted to {@code (Object, eV)Object}: the fluent return
+     * when there is one, the receiver for a void setter, so generated code
+     * applies every setter uniformly. Generated code keeps the receiver when
+     * a fluent setter returns null, as stock does.
+     */
+    public static MethodHandle builderSetter(Method setter, Class<?> valueType)
+            throws IllegalAccessException {
+        MethodHandle raw = LOOKUP.unreflect(setter);
+        Class<?> ev = erase(valueType);
+        if (setter.getReturnType() == void.class) {
+            MethodHandle keepReceiver = MethodHandles.dropArguments(
+                    MethodHandles.identity(Object.class), 1, ev);
+            return MethodHandles.foldArguments(keepReceiver,
+                    raw.asType(MethodType.methodType(void.class, Object.class, ev)));
+        }
+        return raw.asType(MethodType.methodType(Object.class, Object.class, ev));
+    }
+
     /** Field store adapted to {@code (Object, eV)void}. */
     public static MethodHandle fieldSetter(Field field) throws IllegalAccessException {
         return LOOKUP.unreflectSetter(field)
@@ -50,5 +69,22 @@ public final class MemberHandles
             throws IllegalAccessException {
         return LOOKUP.unreflectConstructor(ctor)
                 .asType(MethodType.methodType(Object.class));
+    }
+
+    /** Constructor adapted to {@code (e1..en)Object}. */
+    public static MethodHandle constructor(Constructor<?> ctor) throws IllegalAccessException {
+        MethodHandle raw = LOOKUP.unreflectConstructor(ctor);
+        Class<?>[] params = ctor.getParameterTypes();
+        Class<?>[] erased = new Class<?>[params.length];
+        for (int i = 0; i < params.length; i++) {
+            erased[i] = erase(params[i]);
+        }
+        return raw.asType(MethodType.methodType(Object.class, erased));
+    }
+
+    /** Method adapted to {@code (Object)Object} (build methods). */
+    public static MethodHandle unary(Method method) throws IllegalAccessException {
+        return LOOKUP.unreflect(method)
+                .asType(MethodType.methodType(Object.class, Object.class));
     }
 }

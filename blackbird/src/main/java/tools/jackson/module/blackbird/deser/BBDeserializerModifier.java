@@ -9,6 +9,7 @@ import tools.jackson.databind.DeserializationConfig;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.deser.bean.BeanDeserializer;
+import tools.jackson.databind.deser.bean.BuilderBasedDeserializer;
 import tools.jackson.databind.introspect.BeanPropertyDefinition;
 import tools.jackson.module.blackbird.codegen.CodegenDebug;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
@@ -54,7 +55,8 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
     private ValueDeserializer<?> doModify(DeserializationConfig config,
             BeanDescription.Supplier beanDescRef, ValueDeserializer<?> deserializer)
     {
-        if (deserializer.getClass() != BeanDeserializer.class) {
+        if (deserializer.getClass() != BeanDeserializer.class
+                && deserializer.getClass() != BuilderBasedDeserializer.class) {
             return skip(beanDescRef, deserializer, "not a stock bean deserializer");
         }
         if (Boolean.TRUE.equals(config.getDefaultMergeable())) {
@@ -71,7 +73,8 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
                 && beanClass.getEnclosingClass() != null) {
             return skip(beanDescRef, deserializer, "non-static inner class");
         }
-        if (Modifier.isAbstract(beanClass.getModifiers())) {
+        if (deserializer.getClass() == BeanDeserializer.class && !beanClass.isRecord()
+                && Modifier.isAbstract(beanClass.getModifiers())) {
             return skip(beanDescRef, deserializer, "abstract");
         }
         // Whether the bean or any property declares @JsonView explicitly: the
@@ -92,6 +95,9 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
             if (def.getMetadata() != null && def.getMetadata().getMergeInfo() != null) {
                 return skip(beanDescRef, deserializer, "property merge");
             }
+        }
+        if (deserializer instanceof BuilderBasedDeserializer builder) {
+            return new BBBuilderPlaceholder(builder, declaresViews);
         }
         return new BBReaderPlaceholder((BeanDeserializer) deserializer, declaresViews);
     }

@@ -15,6 +15,7 @@ import tools.jackson.databind.deser.ValueInstantiator;
 import tools.jackson.databind.deser.bean.BeanDeserializer;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.deser.bean.BeanPropertyMap;
+import tools.jackson.databind.deser.bean.BuilderBasedDeserializer;
 
 /**
  * Defines the hidden-class deserializer for one bean: assembles the class
@@ -38,10 +39,12 @@ public final class ReaderCodegen
     // view-active calls keep the generated fast path.
     public enum ViewStrategy { NONE, DELEGATE, MASK }
 
-    // One arm per property. handle stores the value into the bean as an
-    // (Object, eV)void handle, and is null for STOCK arms. type is the child
-    // value type for CHILD; child is the linked generated codec for CHILD
-    // (a GeneratedReaderBase).
+    // One arm per property. handle stores the value into the bean:
+    // (Object, eV)void in POJO mode, (Object, eV)Object in builder mode (the
+    // returned builder is kept), and null in record mode (values collect into
+    // locals) and for STOCK arms. type is the record component type in record
+    // mode and the child value type for CHILD; child is the linked generated
+    // codec for CHILD (a GeneratedReaderBase or GeneratedBuilderBase).
     public record GenProp(String name, Kind kind, SettableBeanProperty stock,
             Class<?> type, ValueDeserializer<?> child, MethodHandle handle) {
         public GenProp(String name, Kind kind, SettableBeanProperty stock) {
@@ -54,12 +57,18 @@ public final class ReaderCodegen
         /** POJO, built by the no-arg constructor handle. */
         CONSTRUCTOR,
         /** POJO, built by ValueInstantiator.createUsingDefault. */
-        INSTANTIATOR
+        INSTANTIATOR,
+        /** Builder created by the instantiator, finished by the build method. */
+        BUILDER,
+        /** Record: typed locals, then the canonical constructor handle. */
+        RECORD
     }
 
     /**
      * The construction side of a codec: the handle is the no-arg constructor
-     * ({@code ()Object}); the instantiator creates the bean (INSTANTIATOR).
+     * ({@code ()Object}), the build method ({@code (Object)Object}) or the
+     * canonical constructor ({@code (e1..en)Object}); the instantiator
+     * creates the bean (INSTANTIATOR) or the builder (BUILDER).
      */
     public record Construction(Mode mode, MethodHandle handle, ValueInstantiator instantiator) {
         public static Construction constructor(MethodHandle ctor) {
@@ -69,17 +78,27 @@ public final class ReaderCodegen
         public static Construction instantiator(ValueInstantiator inst) {
             return new Construction(Mode.INSTANTIATOR, null, inst);
         }
+
+        public static Construction builder(ValueInstantiator inst, MethodHandle build) {
+            return new Construction(Mode.BUILDER, build, inst);
+        }
+
+        public static Construction record(MethodHandle ctor) {
+            return new Construction(Mode.RECORD, ctor, null);
+        }
     }
 
     /**
      * Everything the bytecode emitter needs. The String arrays hold the
      * class-data entry name per arm ({@code null} where an arm has no such
      * entry); matchArms gives the arm for each index of the name matcher (an
-     * arm can have several names, its aliases).
+     * arm can have several names, aliases, or none, an ignored record
+     * component); localNames are the record component names (record mode
+     * only), which name the component locals in the debug table.
      */
     record Plan(String className, List<GenProp> props, String[] stockName,
             String[] childName, String[] handleName, Mode mode, boolean injectables,
-            ViewStrategy views, int[] matchArms) {}
+            ViewStrategy views, int[] matchArms, String[] localNames) {}
 
     private ReaderCodegen() {}
 
@@ -92,7 +111,7 @@ public final class ReaderCodegen
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, int[] matchArms, BeanDeserializerBase source,
             BeanPropertyMap beanProps, Construction construction, boolean injectables,
-            ViewStrategy views)
+            ViewStrategy views, String[] localNames)
             throws ReflectiveOperationException {
         Map<String, Object> classData = new LinkedHashMap<>();
         classData.put("matcher", matcher);
@@ -119,8 +138,12 @@ public final class ReaderCodegen
         }
         Mode mode = construction.mode();
         switch (mode) {
-            case CONSTRUCTOR -> classData.put("constructor", construction.handle());
+            case CONSTRUCTOR, RECORD -> classData.put("constructor", construction.handle());
             case INSTANTIATOR -> classData.put("instantiator", construction.instantiator());
+            case BUILDER -> {
+                classData.put("instantiator", construction.instantiator());
+                classData.put("buildMethod", construction.handle());
+            }
         }
 
         MethodHandles.Lookup definer = MethodHandles.lookup();
@@ -128,7 +151,7 @@ public final class ReaderCodegen
         String className = definer.lookupClass().getPackageName()
                 + ".BBReader_" + codecName(beanClass);
         byte[] bytes = ClassFileEmitters.emit(new Plan(className, props, stockName, childName,
-                handleName, mode, injectables, views, matchArms));
+                handleName, mode, injectables, views, matchArms, localNames));
         if (bytes == null) {
             CodegenDebug.log(() -> "reader gate: a generated method is over "
                     + ClassFileEmitters.MAX_METHOD_BYTES + " bytes");
@@ -142,9 +165,12 @@ public final class ReaderCodegen
         // generator bug, surfaced through the placeholder's failure handling.
         MethodHandles.Lookup hidden = definer.defineHiddenClassWithClassData(
                 bytes, Map.copyOf(classData), true);
-        // The codec is a copy of the resolved source (see GeneratedReaderBase).
+        // The codec is a copy of the resolved source (see the generated
+        // reader base classes).
+        Class<?> sourceType = (mode == Mode.BUILDER)
+                ? BuilderBasedDeserializer.class : BeanDeserializer.class;
         MethodHandle ctor = hidden.findConstructor(hidden.lookupClass(),
-                MethodType.methodType(void.class, BeanDeserializer.class, BeanPropertyMap.class,
+                MethodType.methodType(void.class, sourceType, BeanPropertyMap.class,
                         String.class));
         try {
             return (ValueDeserializer<Object>) ctor.invoke(source, beanProps, layout.toString());

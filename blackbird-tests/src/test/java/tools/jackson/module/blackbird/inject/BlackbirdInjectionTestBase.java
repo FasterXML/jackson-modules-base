@@ -11,6 +11,7 @@ import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.module.blackbird.BlackbirdModule;
+import tools.jackson.module.blackbird.internal.GeneratedBuilderBase;
 import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
 
 // Test utilities for verifying that Blackbird's codec generation engaged for a
@@ -50,7 +51,7 @@ abstract class BlackbirdInjectionTestBase
 
     /** True if the deserializer is a generated Blackbird codec. */
     protected static boolean isBlackbirdReader(ValueDeserializer<?> deser) {
-        return deser instanceof GeneratedReaderBase;
+        return (deser instanceof GeneratedReaderBase) || (deser instanceof GeneratedBuilderBase);
     }
 
     /** Returns the BeanPropertyWriter[] from a bean serializer, as a list. */
