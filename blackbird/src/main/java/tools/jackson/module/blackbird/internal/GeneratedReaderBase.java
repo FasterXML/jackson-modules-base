@@ -1,0 +1,180 @@
+package tools.jackson.module.blackbird.internal;
+
+import java.lang.constant.ConstantDescs;
+import java.lang.invoke.MethodHandles;
+import java.util.Map;
+
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.deser.SettableBeanProperty;
+import tools.jackson.databind.deser.bean.BeanDeserializer;
+import tools.jackson.databind.deser.bean.BeanPropertyMap;
+import tools.jackson.databind.deser.std.StdValueInstantiator;
+import tools.jackson.databind.util.NameTransformer;
+
+/**
+ * Superclass for generated codecs. A codec is a copy of the resolved stock
+ * {@link BeanDeserializer} whose {@code deserialize} method the generated
+ * class overrides with the per-bean loop: everything else, and every input
+ * the loop does not model, is the stock implementation, and databind sees a
+ * {@code BeanDeserializer} wherever it checks for one. The helpers below are
+ * the cold paths of the generated loop; each one calls the stock code for
+ * the same situation. Not API.
+ */
+public abstract class GeneratedReaderBase extends BeanDeserializer
+{
+    // One "name=KIND" entry per arm, for diagnostics and tests.
+    private final String _layout;
+
+    private final ViewMasks _viewMasks = new ViewMasks(this::_computeViewMask);
+
+    protected GeneratedReaderBase(BeanDeserializer src, BeanPropertyMap props, String layout) {
+        // Built from the resolved deserializer, with the bean property map
+        // whose name matcher is initialized.
+        super(src, props);
+        _layout = layout;
+        _propertiesContextualized = true;
+    }
+
+    /** The generated arms, as "name=KIND" entries in arm order. */
+    public final String codecLayout() {
+        return _layout;
+    }
+
+    @Override
+    public String toString() {
+        return "BBReader[" + handledType().getName() + ": " + _layout + "]";
+    }
+
+    // A copy of a resolved deserializer: nothing left to resolve.
+    @Override
+    public void resolve(DeserializationContext ctxt) { }
+
+    // The generated deserialize hands inputs it does not model here.
+    protected final Object _stockDeserialize(JsonParser p, DeserializationContext ctxt) {
+        return super.deserialize(p, ctxt);
+    }
+
+    // BeanDeserializer unwraps only for its exact class (subclasses "MUST
+    // override"); an exact-class copy of this state does what it would. The
+    // field guards against recursive unwrapping, as in stock.
+    @Override
+    public ValueDeserializer<Object> unwrappingDeserializer(DeserializationContext ctxt,
+            NameTransformer transformer) {
+        if (_currentlyTransforming == transformer) {
+            return this;
+        }
+        _currentlyTransforming = transformer;
+        try {
+            return withBeanProperties(_beanProperties).unwrappingDeserializer(ctxt, transformer);
+        } finally {
+            _currentlyTransforming = null;
+        }
+    }
+
+    /*
+    /**********************************************************************
+    /* Failures
+    /**********************************************************************
+     */
+
+    // The no-arg constructor handle threw: what StdValueInstantiator
+    // .createUsingDefault does (the factory uses the handle only with exactly
+    // that instantiator). Returns a problem handler's replacement value.
+    protected final Object _instantiationFailure(DeserializationContext ctxt, Throwable t) {
+        return ReaderSupport.creatorProblem((StdValueInstantiator) _valueInstantiator, ctxt,
+                null, t);
+    }
+
+    // Called from the generated exception handler that covers every property
+    // arm: the stock loop's wrapAndThrow, so property errors carry the
+    // reference path. Always throws; the return type only satisfies the
+    // generated athrow.
+    protected final RuntimeException _propertyException(Throwable t, Object beanOrNull,
+            SettableBeanProperty prop, DeserializationContext ctxt) {
+        Object ref = (beanOrNull == null) ? handledType() : beanOrNull;
+        throw wrapAndThrow(t, ref, prop.getName(), ctxt);
+    }
+
+    // A generated store (setter call or field write) threw: what the stock
+    // property throws for it, through the stock loop's wrapAndThrow.
+    protected final RuntimeException _storeFailure(Throwable t, Object bean,
+            Object childValue, SettableBeanProperty prop, JsonParser p,
+            DeserializationContext ctxt) {
+        throw wrapAndThrow(ReaderSupport.storeException(t, childValue, prop, p), bean,
+                prop.getName(), ctxt);
+    }
+
+    /*
+    /**********************************************************************
+    /* POJO loop helpers
+    /**********************************************************************
+     */
+
+    // Right after construction, before the property loop: the placement
+    // stock deserializeFromObject uses, so values from the document override
+    // injected values exactly like stock.
+    protected final void _injectValues(DeserializationContext ctxt, Object bean) {
+        injectValues(ctxt, bean);
+    }
+
+    // A name the matcher does not know: stock handleUnknownVanilla (ignored
+    // names, then the any-setter, then unknown-property handling).
+    protected final void _handleUnknown(JsonParser p, DeserializationContext ctxt,
+            Object bean) {
+        String name = p.currentName();
+        p.nextToken();
+        handleUnknownVanilla(p, ctxt, bean, name);
+    }
+
+    // Neither a name nor the end of the object where a name was expected.
+    protected final Object _unexpectedToken(JsonParser p, DeserializationContext ctxt,
+            Object bean) {
+        return _handleUnexpectedWithin(p, ctxt, bean);
+    }
+
+    /*
+    /**********************************************************************
+    /* Views and class data
+    /**********************************************************************
+     */
+
+    // Called by generated code once per view-active call.
+    protected final long _viewMask(Class<?> view) {
+        return _viewMasks.maskFor(view);
+    }
+
+    // Overridden by generated codecs that filter per view: bit i reports
+    // whether property arm i is visible in the given view. Codecs that
+    // delegate view-active calls whole (more than 64 properties) never call
+    // the mask machinery.
+    protected long _computeViewMask(Class<?> view) {
+        throw new UnsupportedOperationException("codec has no view mask");
+    }
+
+    // An arm hidden in the active view, the parser on the value token.
+    protected final void _hiddenView(JsonParser p, DeserializationContext ctxt,
+            SettableBeanProperty prop) {
+        handleUnexpectedView(p, ctxt, prop, ctxt.getActiveView());
+    }
+
+    // Constant bootstrap for generated code:
+    // resolves one named entry of the hidden class's class data, a Map built
+    // at generation time. The JDK's classDataAt bootstrap requires the condy
+    // name to be "_", so named entries need this owner. The generated
+    // classes are defined in this module (in the codegen package), so they
+    // resolve it like any other class of the module. A condy links once and
+    // then constant-folds the same as classDataAt; the names exist for dump
+    // readability and to remove positional-index bookkeeping from the
+    // generators.
+    public static Object classDataEntry(MethodHandles.Lookup lookup, String name, Class<?> type)
+            throws IllegalAccessException {
+        Map<?, ?> data = MethodHandles.classData(lookup, ConstantDescs.DEFAULT_NAME, Map.class);
+        Object value = data.get(name);
+        if (value == null) {
+            throw new IllegalStateException("no class data entry named " + name);
+        }
+        return type.cast(value);
+    }
+}

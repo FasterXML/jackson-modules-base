@@ -31,6 +31,7 @@ module tools.jackson.module.blackbird
     opens tools.jackson.module.blackbird.deser.merge;
     opens tools.jackson.module.blackbird.deser.struct;
     opens tools.jackson.module.blackbird.format;
+    opens tools.jackson.module.blackbird.internal;
     opens tools.jackson.module.blackbird.misc;
     opens tools.jackson.module.blackbird.objectid;
     opens tools.jackson.module.blackbird.roundtrip;
@@ -41,6 +42,6 @@ module tools.jackson.module.blackbird
     opens tools.jackson.module.blackbird.testutil.failure;
 
     provides tools.jackson.databind.JacksonModule with
-        tools.jackson.module.blackbird.BlackbirdModule;
+        tools.jackson.module.blackbird.internal.DiscoveredBlackbirdModule;
     uses tools.jackson.databind.JacksonModule;
 }

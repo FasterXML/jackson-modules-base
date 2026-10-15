@@ -58,6 +58,8 @@ not datatype, data format, or JAX-RS provider modules.
         <module>blackbird</module>
         <!-- Classpath-mode integration tests for blackbird; not published. See module pom for why. -->
         <module>blackbird-tests</module>
+        <!-- Module-path integration tests: a foreign named module requiring blackbird. Not published. -->
+        <module>blackbird-jpms-tests</module>
       </modules>
     </profile>
     <!-- maven-release-plugin passes -Prelease (oss-parent) to both its

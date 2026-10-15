@@ -9,5 +9,5 @@ module tools.jackson.module.blackbird
     exports tools.jackson.module.blackbird;
 
     provides tools.jackson.databind.JacksonModule with
-        tools.jackson.module.blackbird.BlackbirdModule;
+        tools.jackson.module.blackbird.internal.DiscoveredBlackbirdModule;
 }
