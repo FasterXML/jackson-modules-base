@@ -1,2 +1,1 @@
-tools.jackson.module.blackbird.BlackbirdModule
-
+tools.jackson.module.blackbird.internal.DiscoveredBlackbirdModule

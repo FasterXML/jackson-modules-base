@@ -4,8 +4,6 @@ module tools.jackson.module.blackbird
     // Since we are not split from Main artifact, will not
     // need to depend on Main artifact -- but need its dependencies
 
-    requires java.logging;
-    
     requires com.fasterxml.jackson.annotation;
     requires tools.jackson.core;
     requires tools.jackson.databind;
@@ -31,16 +29,16 @@ module tools.jackson.module.blackbird
     opens tools.jackson.module.blackbird.deser.merge;
     opens tools.jackson.module.blackbird.deser.struct;
     opens tools.jackson.module.blackbird.format;
+    opens tools.jackson.module.blackbird.internal;
     opens tools.jackson.module.blackbird.misc;
     opens tools.jackson.module.blackbird.objectid;
     opens tools.jackson.module.blackbird.roundtrip;
     opens tools.jackson.module.blackbird.ser;
     opens tools.jackson.module.blackbird.ser.filter;
-    opens tools.jackson.module.blackbird.tofix;
     opens tools.jackson.module.blackbird.testutil;
     opens tools.jackson.module.blackbird.testutil.failure;
 
     provides tools.jackson.databind.JacksonModule with
-        tools.jackson.module.blackbird.BlackbirdModule;
+        tools.jackson.module.blackbird.internal.DiscoveredBlackbirdModule;
     uses tools.jackson.databind.JacksonModule;
 }
