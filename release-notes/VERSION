@@ -61,6 +61,10 @@ No changes since 3.2.0
 - Removed project Android SDK level overrides, use defaults (ASDK 34)
  (affects `android-records` module's verification; was validating ASDK 26)
 
+3.1.8 (17-Oct-2026)
+
+No changes since 3.1.7
+
 3.1.7 (21-Sep-2026)
 
 No changes since 3.1.6
