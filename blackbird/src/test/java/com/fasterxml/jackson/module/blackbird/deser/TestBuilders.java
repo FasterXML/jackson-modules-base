@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.impl.MethodProperty;
@@ -208,6 +210,63 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
+    // Void setters keep going through the delegate
+    static final class VoidSetterBuilder
+    {
+        String str;
+        List<String> list;
+        int i;
+        long l;
+        boolean b;
+
+        public void withStr(String v) { str = v; }
+        public void withList(List<String> v) { list = v; }
+        public void withI(int v) { i = v; }
+        public void withL(long v) { l = v; }
+        public void withB(boolean v) { b = v; }
+
+        public VoidSetterBuilt build() {
+            return new VoidSetterBuilt(str, list, i, l, b);
+        }
+    }
+
+    @JsonDeserialize(builder=VoidSetterBuilder.class)
+    static class VoidSetterBuilt extends Values {
+        VoidSetterBuilt(String str, List<String> list, int i, long l, boolean b) {
+            super(str, list, i, l, b, 0);
+        }
+    }
+
+    // Explicit nulls must be skipped, leaving the builder's defaults intact
+    static final class SkipNullsBuilder
+    {
+        String str = "default";
+        List<String> list = Arrays.asList("keep");
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public SkipNullsBuilder withStr(String v) {
+            str = v;
+            return this;
+        }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public SkipNullsBuilder withList(List<String> v) {
+            list = v;
+            return this;
+        }
+
+        public SkipNullsBuilt build() {
+            return new SkipNullsBuilt(str, list);
+        }
+    }
+
+    @JsonDeserialize(builder=SkipNullsBuilder.class)
+    static class SkipNullsBuilt extends Values {
+        SkipNullsBuilt(String str, List<String> list) {
+            super(str, list, 0, 0L, false, 0);
+        }
+    }
+
     static class Values {
         final String str;
         final List<String> list;
@@ -299,6 +358,20 @@ public class TestBuilders extends BlackbirdTestBase
     {
         AccessErrorBuilt v = MAPPER.readValue(a2q("{'str':'foo'}"), AccessErrorBuilt.class);
         assertEquals("foo", v.str);
+    }
+
+    @Test
+    public void testVoidSetterBuilder() throws Exception
+    {
+        _verifyValues(MAPPER.readValue(VALUES_JSON, VoidSetterBuilt.class));
+    }
+
+    @Test
+    public void testSkipNullsBuilder() throws Exception
+    {
+        Values v = MAPPER.readValue(a2q("{'str':null,'list':null}"), SkipNullsBuilt.class);
+        assertEquals("default", v.str);
+        assertEquals(Arrays.asList("keep"), v.list);
     }
 
     private void _verifyValues(Values v) {
