@@ -181,30 +181,51 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
 
         if (type.isPrimitive()) {
             if (type == Integer.TYPE) {
+                ObjIntBiFunction thunk = createThunk(lookup, ObjIntBiFunction.class, int.class, setter);
                 newProps.add(new SettableIntProperty(prop,
                     createSetter(lookup, ObjIntConsumer.class, ObjIntBiFunction.class,
-                        INT_TRAMPOLINE, int.class, setter)));
+                        INT_TRAMPOLINE, int.class, setter, thunk), thunk));
             } else if (type == Long.TYPE) {
+                ObjLongBiFunction thunk = createThunk(lookup, ObjLongBiFunction.class, long.class, setter);
                 newProps.add(new SettableLongProperty(prop,
                     createSetter(lookup, ObjLongConsumer.class, ObjLongBiFunction.class,
-                        LONG_TRAMPOLINE, long.class, setter)));
+                        LONG_TRAMPOLINE, long.class, setter, thunk), thunk));
             } else if (type == Boolean.TYPE) {
+                ObjBooleanBiFunction thunk = createThunk(lookup, ObjBooleanBiFunction.class, boolean.class, setter);
                 newProps.add(new SettableBooleanProperty(prop,
                     createSetter(lookup, ObjBooleanConsumer.class, ObjBooleanBiFunction.class,
-                        BOOLEAN_TRAMPOLINE, boolean.class, setter)));
+                        BOOLEAN_TRAMPOLINE, boolean.class, setter, thunk), thunk));
             }
         } else {
+            BiFunction<Object, Object, Object> thunk = createThunk(lookup, BiFunction.class, Object.class, setter);
             if (type == String.class) {
                 newProps.add(new SettableStringProperty(prop,
-                    createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter)));
+                    createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter, thunk), thunk));
             } else {
                 newProps.add(new SettableObjectProperty(prop,
-                    createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter)));
+                    createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter, thunk), thunk));
             }
         }
     }
 
-    private <T> T createSetter(Lookup lookup, Class<T> iface, Class<?> thunkType, MethodHandle trampoline, Class<?> valueType, MethodHandle setter)
+    // Returns null for void setters, which have nothing to return
+    private <T> T createThunk(Lookup lookup, Class<T> thunkType, Class<?> valueType, MethodHandle setter)
+            throws Throwable, LambdaConversionException {
+        if (setter.type().returnType() == void.class) {
+            return null;
+        }
+        return thunkType.cast(LambdaMetafactory.metafactory(
+                lookup,
+                "apply",
+                MethodType.methodType(thunkType),
+                MethodType.methodType(Object.class, Object.class, valueType),
+                setter,
+                setter.type())
+            .getTarget().invoke());
+    }
+
+    private <T> T createSetter(Lookup lookup, Class<T> iface, Class<?> thunkType, MethodHandle trampoline, Class<?> valueType, MethodHandle setter,
+            Object builtThunk)
             throws Throwable, LambdaConversionException {
         if (setter.type().returnType() == void.class) {
             return iface.cast(LambdaMetafactory.metafactory(
@@ -216,14 +237,6 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
                     setter.type())
                     .getTarget().invoke());
         }
-        Object builtThunk = LambdaMetafactory.metafactory(
-                lookup,
-                "apply",
-                MethodType.methodType(thunkType),
-                MethodType.methodType(Object.class, Object.class, valueType),
-                setter,
-                setter.type())
-            .getTarget().invoke();
         return iface.cast(LambdaMetafactory.metafactory(
                 MethodHandles.lookup(),
                 "accept",

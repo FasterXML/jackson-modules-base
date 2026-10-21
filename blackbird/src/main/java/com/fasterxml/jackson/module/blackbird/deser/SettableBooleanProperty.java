@@ -5,22 +5,26 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
+import com.fasterxml.jackson.module.blackbird.deser.BBDeserializerModifier.ObjBooleanBiFunction;
 
 final class SettableBooleanProperty
     extends OptimizedSettableBeanProperty<SettableBooleanProperty>
 {
     private static final long serialVersionUID = 1L;
     private ObjBooleanConsumer _optimizedSetter;
+    private ObjBooleanBiFunction _optimizedSetterAndReturn;
 
-    public SettableBooleanProperty(SettableBeanProperty src, ObjBooleanConsumer optimizedSetter)
+    public SettableBooleanProperty(SettableBeanProperty src, ObjBooleanConsumer optimizedSetter,
+            ObjBooleanBiFunction optimizedSetterAndReturn)
     {
         super(src);
         _optimizedSetter = optimizedSetter;
+        _optimizedSetterAndReturn = optimizedSetterAndReturn;
     }
 
     @Override
     protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
-        return new SettableBooleanProperty(del, _optimizedSetter);
+        return new SettableBooleanProperty(del, _optimizedSetter, _optimizedSetterAndReturn);
     }
 
     /*
@@ -54,10 +58,10 @@ final class SettableBooleanProperty
     {
         JsonToken t = p.currentToken();
         if (t == JsonToken.VALUE_TRUE) {
-            return setAndReturn(instance, Boolean.TRUE);
+            return _setAndReturn(instance, true);
         }
         if (t == JsonToken.VALUE_FALSE) {
-            return setAndReturn(instance, Boolean.FALSE);
+            return _setAndReturn(instance, false);
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
@@ -70,6 +74,27 @@ final class SettableBooleanProperty
             _optimizedSetter.accept(bean, b);
         } catch (Throwable e) {
             _reportProblem(bean, b, e);
+        }
+    }
+
+    @Override
+    public Object setAndReturn(Object instance, Object value) throws IOException {
+        if (value == null) {
+            return delegate.setAndReturn(instance, value);
+        }
+        // not optimal (due to boxing), but better than using reflection:
+        return _setAndReturn(instance, ((Boolean) value).booleanValue());
+    }
+
+    private Object _setAndReturn(Object instance, boolean b) throws IOException {
+        if (_optimizedSetterAndReturn == null) {
+            return delegate.setAndReturn(instance, b);
+        }
+        try {
+            Object result = _optimizedSetterAndReturn.apply(instance, b);
+            return (result == null) ? instance : result;
+        } catch (Throwable e) {
+            return _reportProblem(instance, b, e);
         }
     }
 }

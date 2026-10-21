@@ -2,6 +2,7 @@ package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.io.IOException;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
@@ -12,16 +13,19 @@ final class SettableStringProperty
 {
     private static final long serialVersionUID = 1L;
     private final BiConsumer<Object, String> _optimizedSetter;
+    private final BiFunction<Object, Object, Object> _optimizedSetterAndReturn;
 
-    public SettableStringProperty(SettableBeanProperty src, BiConsumer<Object, String> optimizedSetter)
+    public SettableStringProperty(SettableBeanProperty src, BiConsumer<Object, String> optimizedSetter,
+            BiFunction<Object, Object, Object> optimizedSetterAndReturn)
     {
         super(src);
         _optimizedSetter = optimizedSetter;
+        _optimizedSetterAndReturn = optimizedSetterAndReturn;
     }
 
     @Override
     protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
-        return new SettableStringProperty(del, _optimizedSetter);
+        return new SettableStringProperty(del, _optimizedSetter, _optimizedSetterAndReturn);
     }
 
     /*
@@ -56,6 +60,22 @@ final class SettableStringProperty
             _optimizedSetter.accept(bean, (String) value);
         } catch (Throwable e) {
             _reportProblem(bean, value, e);
+        }
+    }
+
+    @Override
+    public Object setAndReturn(Object instance, Object value) throws IOException {
+        if (_optimizedSetterAndReturn == null) {
+            return delegate.setAndReturn(instance, value);
+        }
+        if ((value == null) && _skipNulls) {
+            return instance;
+        }
+        try {
+            Object result = _optimizedSetterAndReturn.apply(instance, value);
+            return (result == null) ? instance : result;
+        } catch (Throwable e) {
+            return _reportProblem(instance, value, e);
         }
     }
 }

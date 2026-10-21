@@ -81,25 +81,15 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     /**********************************************************************
      */
 
-    /* !!! 19-Feb-2012, tatu:
-     *
-     * We do not yet generate code for these methods: it would not be hugely
-     * difficult to add them, but let's first see if anyone needs them...
-     * (it is non-trivial, adds code etc, so not without cost).
-     *
-     * That is: we'll use Reflection fallback for Builder-based deserialization,
-     * so it will not be significantly faster.
-     */
+    // Setters that return a value use the generated accessor and keep the
+    // returned builder; void setters still go through the delegate.
 
     @Override
     public abstract Object deserializeSetAndReturn(JsonParser jp,
             DeserializationContext ctxt, Object instance) throws IOException;
 
-
     @Override
-    public Object setAndReturn(Object instance, Object value) throws IOException {
-        return delegate.setAndReturn(instance, value);
-    }
+    public abstract Object setAndReturn(Object instance, Object value) throws IOException;
 
     /*
     /**********************************************************************
@@ -113,7 +103,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      *
      * @since 2.9
      */
-    protected void _reportProblem(Object bean, Object value, Throwable e)
+    protected Object _reportProblem(Object bean, Object value, Throwable e)
         throws IOException
     {
         if ((e instanceof IllegalAccessError)
@@ -129,8 +119,8 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
                     Logger.getLogger(getClass().getName()).log(Level.WARNING, msg, e);
                 }
             }
-            delegate.set(bean, value);
-            return;
+            // delegate is a MethodProperty: same as `set()`, but also returns the builder
+            return delegate.setAndReturn(bean, value);
         }
         if (e instanceof IOException) {
             throw (IOException) e;
