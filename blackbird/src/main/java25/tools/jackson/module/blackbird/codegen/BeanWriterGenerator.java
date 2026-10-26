@@ -22,6 +22,7 @@ import tools.jackson.databind.ser.bean.BeanSerializerBase;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.ViewStrategy;
 import tools.jackson.module.blackbird.codegen.WriterCodegen.GenWProp;
 import tools.jackson.module.blackbird.codegen.WriterCodegen.WKind;
+import tools.jackson.module.blackbird.internal.ClassDataBootstrap;
 import tools.jackson.module.blackbird.internal.GeneratedWriterBase;
 
 /**
@@ -93,11 +94,11 @@ final class BeanWriterGenerator
             ConstantDescs.CD_void, ConstantDescs.CD_Object, CD_JSON_GENERATOR, CD_SER_CONTEXT,
             CD_TYPE_SERIALIZER);
 
-    // Named class-data entries through the writer base's classDataEntry
-    // bootstrap; rationale in BeanReaderGenerator.
+    // Named class-data entries through the shared classDataEntry bootstrap;
+    // rationale in BeanReaderGenerator.
     private static final java.lang.constant.DirectMethodHandleDesc BSM_DATA_ENTRY =
-            ConstantDescs.ofConstantBootstrap(CD_WRITER_BASE, "classDataEntry",
-                    ConstantDescs.CD_Object);
+            ConstantDescs.ofConstantBootstrap(Descs.of(ClassDataBootstrap.class),
+                    "classDataEntry", ConstantDescs.CD_Object);
 
     private BeanWriterGenerator() {}
 

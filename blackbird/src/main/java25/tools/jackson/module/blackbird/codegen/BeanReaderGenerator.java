@@ -34,6 +34,7 @@ import tools.jackson.databind.util.ClassUtil;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.GenProp;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.Mode;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.ViewStrategy;
+import tools.jackson.module.blackbird.internal.ClassDataBootstrap;
 import tools.jackson.module.blackbird.internal.GeneratedBuilderBase;
 import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
 
@@ -121,10 +122,11 @@ final class BeanReaderGenerator
             MethodTypeDesc.of(ConstantDescs.CD_boolean, ConstantDescs.CD_Class);
 
     // Generated code resolves class-data entries by NAME through the
-    // classDataEntry bootstrap on the base class (the JDK classDataAt
+    // classDataEntry bootstrap of ClassDataBootstrap (the JDK classDataAt
     // bootstrap rejects any condy name but "_"); see ReaderCodegen.dataName.
     private static final java.lang.constant.DirectMethodHandleDesc BSM_DATA_ENTRY =
-            ConstantDescs.ofConstantBootstrap(CD_READER_BASE, "classDataEntry", CD_OBJECT);
+            ConstantDescs.ofConstantBootstrap(Descs.of(ClassDataBootstrap.class),
+                    "classDataEntry", CD_OBJECT);
 
     // Stack map frames can need the supertypes of the types the code uses.
     // The default resolver reads class files through the system class

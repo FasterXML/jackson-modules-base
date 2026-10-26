@@ -1,9 +1,5 @@
 package tools.jackson.module.blackbird.internal;
 
-import java.lang.constant.ConstantDescs;
-import java.lang.invoke.MethodHandles;
-import java.util.Map;
-
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.SerializationContext;
@@ -78,18 +74,6 @@ public abstract class GeneratedWriterBase extends BeanSerializer
         }
         wrapAndThrow(ctxt, t, bean, name);
         throw new IllegalStateException("wrapAndThrow returned", t);
-    }
-
-    // Constant bootstrap for generated code; see
-    // GeneratedReaderBase.classDataEntry.
-    public static Object classDataEntry(MethodHandles.Lookup lookup, String name, Class<?> type)
-            throws IllegalAccessException {
-        Map<?, ?> data = MethodHandles.classData(lookup, ConstantDescs.DEFAULT_NAME, Map.class);
-        Object value = data.get(name);
-        if (value == null) {
-            throw new IllegalStateException("no class data entry named " + name);
-        }
-        return type.cast(value);
     }
 
     protected final long _viewMask(Class<?> view) {
