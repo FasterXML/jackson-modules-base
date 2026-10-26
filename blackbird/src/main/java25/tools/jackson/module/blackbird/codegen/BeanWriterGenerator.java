@@ -6,7 +6,6 @@ import java.lang.classfile.Label;
 import java.lang.classfile.attribute.MethodParametersAttribute;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
-import java.lang.constant.DynamicConstantDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.List;
 
@@ -22,7 +21,6 @@ import tools.jackson.databind.ser.bean.BeanSerializerBase;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.ViewStrategy;
 import tools.jackson.module.blackbird.codegen.WriterCodegen.GenWProp;
 import tools.jackson.module.blackbird.codegen.WriterCodegen.WKind;
-import tools.jackson.module.blackbird.internal.ClassDataBootstrap;
 import tools.jackson.module.blackbird.internal.GeneratedWriterBase;
 
 /**
@@ -94,16 +92,10 @@ final class BeanWriterGenerator
             ConstantDescs.CD_void, ConstantDescs.CD_Object, CD_JSON_GENERATOR, CD_SER_CONTEXT,
             CD_TYPE_SERIALIZER);
 
-    // Named class-data entries through the shared classDataEntry bootstrap;
-    // rationale in BeanReaderGenerator.
-    private static final java.lang.constant.DirectMethodHandleDesc BSM_DATA_ENTRY =
-            ConstantDescs.ofConstantBootstrap(Descs.of(ClassDataBootstrap.class),
-                    "classDataEntry", ConstantDescs.CD_Object);
-
     private BeanWriterGenerator() {}
 
     private static void ldcData(CodeBuilder cob, String name, ClassDesc type) {
-        cob.ldc(DynamicConstantDesc.ofNamed(BSM_DATA_ENTRY, name, type));
+        cob.ldc(Descs.classDataEntry(name, type));
     }
 
     static byte[] emit(WriterCodegen.Plan plan) {

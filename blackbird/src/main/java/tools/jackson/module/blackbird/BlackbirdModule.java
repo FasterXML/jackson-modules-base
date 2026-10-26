@@ -103,7 +103,14 @@ public class BlackbirdModule extends JacksonModule
                 : MethodHandles::lookup;
         
     }
-    
+
+    /**
+     * Helper {@link #findLookup()} uses to wrap the lookup supplier.
+     *
+     * @deprecated Since 3.3: only {@link #findLookup()} called it, and module
+     *    setup no longer calls that.
+     */
+    @Deprecated // @since 3.3
     protected Function<Class<?>, Lookup> _wrapWithJdkClassCheck(Supplier<MethodHandles.Lookup> lookup)
     {
         return c -> {

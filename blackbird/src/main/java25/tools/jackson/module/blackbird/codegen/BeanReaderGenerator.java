@@ -12,7 +12,6 @@ import java.lang.classfile.attribute.MethodParametersAttribute;
 import java.lang.classfile.instruction.SwitchCase;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
-import java.lang.constant.DynamicConstantDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -34,7 +33,6 @@ import tools.jackson.databind.util.ClassUtil;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.GenProp;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.Mode;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.ViewStrategy;
-import tools.jackson.module.blackbird.internal.ClassDataBootstrap;
 import tools.jackson.module.blackbird.internal.GeneratedBuilderBase;
 import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
 
@@ -121,13 +119,6 @@ final class BeanReaderGenerator
     private static final MethodTypeDesc MTD_VISIBLE_IN_VIEW =
             MethodTypeDesc.of(ConstantDescs.CD_boolean, ConstantDescs.CD_Class);
 
-    // Generated code resolves class-data entries by NAME through the
-    // classDataEntry bootstrap of ClassDataBootstrap (the JDK classDataAt
-    // bootstrap rejects any condy name but "_"); see ReaderCodegen.dataName.
-    private static final java.lang.constant.DirectMethodHandleDesc BSM_DATA_ENTRY =
-            ConstantDescs.ofConstantBootstrap(Descs.of(ClassDataBootstrap.class),
-                    "classDataEntry", CD_OBJECT);
-
     // Stack map frames can need the supertypes of the types the code uses.
     // The default resolver reads class files through the system class
     // loader, which does not see Jackson in an application server, an OSGi
@@ -189,7 +180,7 @@ final class BeanReaderGenerator
     }
 
     static void ldcData(CodeBuilder cob, String name, ClassDesc type) {
-        cob.ldc(DynamicConstantDesc.ofNamed(BSM_DATA_ENTRY, name, type));
+        cob.ldc(Descs.classDataEntry(name, type));
     }
 
     // Debug metadata: parameter names and named locals make dumped codecs
