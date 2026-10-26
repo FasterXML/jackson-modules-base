@@ -16,6 +16,9 @@ import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
+import tools.jackson.databind.ser.jdk.BooleanSerializer;
+import tools.jackson.databind.ser.jdk.NumberSerializers;
+import tools.jackson.databind.ser.jdk.StringSerializer;
 import tools.jackson.databind.ser.std.NullSerializer;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.ViewStrategy;
@@ -38,11 +41,12 @@ import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
  */
 final class BBWriterFactory
 {
-    private static final Set<String> STOCK_SCALAR_SERS = Set.of(
-            "tools.jackson.databind.ser.jdk.StringSerializer",
-            "tools.jackson.databind.ser.jdk.NumberSerializers$IntegerSerializer",
-            "tools.jackson.databind.ser.jdk.NumberSerializers$LongSerializer",
-            "tools.jackson.databind.ser.jdk.BooleanSerializer");
+    // Exact classes: a subclass may write differently
+    private static final Set<Class<?>> STOCK_SCALAR_SERS = Set.of(
+            StringSerializer.class,
+            NumberSerializers.IntegerSerializer.class,
+            NumberSerializers.LongSerializer.class,
+            BooleanSerializer.class);
 
     private BBWriterFactory() {}
 
@@ -162,7 +166,7 @@ final class BBWriterFactory
         }
         WKind kind = scalarKind(raw);
         if (kind == null || valueSer == null
-                || !STOCK_SCALAR_SERS.contains(valueSer.getClass().getName())) {
+                || !STOCK_SCALAR_SERS.contains(valueSer.getClass())) {
             return stock(writer);
         }
         return new GenWProp(kind, writer, bpw.getSerializedName(), null, handle);

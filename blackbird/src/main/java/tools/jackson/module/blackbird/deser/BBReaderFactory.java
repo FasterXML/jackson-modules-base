@@ -25,6 +25,8 @@ import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.deser.bean.BeanPropertyMap;
 import tools.jackson.databind.deser.bean.PropertyBasedCreator;
 import tools.jackson.databind.deser.impl.MethodProperty;
+import tools.jackson.databind.deser.jdk.NumberDeserializers;
+import tools.jackson.databind.deser.jdk.StringDeserializer;
 import tools.jackson.databind.deser.std.StdValueInstantiator;
 import tools.jackson.databind.introspect.AnnotatedConstructor;
 import tools.jackson.databind.introspect.AnnotatedField;
@@ -55,11 +57,12 @@ import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
  */
 final class BBReaderFactory
 {
-    private static final Set<String> STOCK_SCALAR_DESERS = Set.of(
-            "tools.jackson.databind.deser.jdk.StringDeserializer",
-            "tools.jackson.databind.deser.jdk.NumberDeserializers$IntegerDeserializer",
-            "tools.jackson.databind.deser.jdk.NumberDeserializers$LongDeserializer",
-            "tools.jackson.databind.deser.jdk.NumberDeserializers$BooleanDeserializer");
+    // Exact classes: a subclass may read differently
+    private static final Set<Class<?>> STOCK_SCALAR_DESERS = Set.of(
+            StringDeserializer.class,
+            NumberDeserializers.IntegerDeserializer.class,
+            NumberDeserializers.LongDeserializer.class,
+            NumberDeserializers.BooleanDeserializer.class);
 
     private BBReaderFactory() {}
 
@@ -333,7 +336,7 @@ final class BBReaderFactory
             } else {
                 kind = scalarKind(compType);
                 if (kind == null || valueDeser == null
-                        || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass().getName())) {
+                        || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass())) {
                     kind = Kind.STOCK;
                 }
             }
@@ -441,7 +444,7 @@ final class BBReaderFactory
         }
         Kind kind = scalarKind(raw);
         if (kind == null || valueDeser == null
-                || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass().getName())) {
+                || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass())) {
             return stock(prop);
         }
         return new GenProp(prop.getName(), kind, prop, raw, null, handle);
