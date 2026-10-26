@@ -182,10 +182,11 @@ public final class ReaderCodegen
     // The bean's short name without Class.getSimpleName(): that call consults
     // InnerClasses metadata, which raises IncompatibleClassChangeError for a
     // member class redefined in a foreign classloader, and such beans
-    // accelerate. Class.getName() reads no metadata.
+    // accelerate. Class.getName() reads no metadata. A hidden bean class is
+    // named "Foo/0x..." and '/' is not allowed in a binary name.
     static String codecName(Class<?> beanClass) {
         String name = beanClass.getName();
-        return name.substring(name.lastIndexOf('.') + 1);
+        return name.substring(name.lastIndexOf('.') + 1).replace('/', '$');
     }
 
     // Condy names are JVM member names ('.', ';', '[', '/', '<', '>' forbidden;
