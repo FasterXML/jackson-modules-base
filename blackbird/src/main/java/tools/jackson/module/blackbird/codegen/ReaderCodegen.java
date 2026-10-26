@@ -188,8 +188,9 @@ public final class ReaderCodegen
         return name.substring(name.lastIndexOf('.') + 1);
     }
 
-    // Condy names are JVM unqualified names ('.', ';', '[', '/' forbidden) and
-    // JSON property names are arbitrary, so sanitize and dedupe.
+    // Condy names are JVM member names ('.', ';', '[', '/', '<', '>' forbidden;
+    // DynamicConstantDesc validates them as method names) and JSON property
+    // names are arbitrary, so sanitize and dedupe.
     static String dataName(Map<String, Object> data, String base) {
         String name = unqualifiedName(base);
         String candidate = name;
@@ -199,7 +200,8 @@ public final class ReaderCodegen
         return candidate;
     }
 
-    // A JVM unqualified name (JVMS 4.2.2) derived from an arbitrary string.
+    // A JVM member name (JVMS 4.2.2, angle brackets excluded too) derived
+    // from an arbitrary string.
     static String unqualifiedName(String base) {
         if (base.isEmpty()) {
             return "$";
@@ -207,7 +209,8 @@ public final class ReaderCodegen
         StringBuilder sb = new StringBuilder(base.length());
         for (int i = 0; i < base.length(); i++) {
             char c = base.charAt(i);
-            sb.append(c == '.' || c == ';' || c == '[' || c == '/' ? '$' : c);
+            sb.append(c == '.' || c == ';' || c == '[' || c == '/'
+                    || c == '<' || c == '>' ? '$' : c);
         }
         return sb.toString();
     }
