@@ -1,9 +1,14 @@
 package tools.jackson.module.blackbird.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.deser.ReadableObjectId;
 import tools.jackson.databind.deser.SettableBeanProperty;
+import tools.jackson.databind.deser.UnresolvedForwardReference;
 import tools.jackson.databind.deser.bean.BeanDeserializer;
 import tools.jackson.databind.deser.bean.BeanPropertyMap;
 import tools.jackson.databind.deser.bean.PropertyValueBuffer;
@@ -169,24 +174,77 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
         return handleUnknownProperties(ctxt, bean, (TokenBuffer) buffered);
     }
 
+    // A component value that is a forward Object Id reference: what the
+    // stock property-based loop does ([databind#3030]). The component gets
+    // null, and the reference resolves against the record once it exists
+    // (see _recordResolveForwardRefs). Returns the referrings, a list
+    // created on first use.
+    protected final Object _recordForwardRef(DeserializationContext ctxt,
+            SettableBeanProperty prop, UnresolvedForwardReference ref, Object referrings) {
+        RecordReferring referring = new RecordReferring(ctxt, ref, prop);
+        ref.getRoid().appendReferring(referring);
+        @SuppressWarnings("unchecked")
+        List<RecordReferring> list = (referrings == null) ? new ArrayList<>()
+                : (List<RecordReferring>) referrings;
+        list.add(referring);
+        return list;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected final void _recordResolveForwardRefs(Object bean, Object referrings) {
+        if (bean != null) {
+            for (RecordReferring referring : (List<RecordReferring>) referrings) {
+                referring.setBean(bean);
+            }
+        }
+    }
+
+    // The stock BeanDeserializer.BeanReferring, which is not accessible.
+    private static final class RecordReferring extends ReadableObjectId.Referring {
+        private final DeserializationContext _context;
+        private final SettableBeanProperty _prop;
+        private Object _bean;
+        private Object _resolvedValue;
+
+        RecordReferring(DeserializationContext ctxt, UnresolvedForwardReference ref,
+                SettableBeanProperty prop) {
+            super(ref, prop.getType());
+            _context = ctxt;
+            _prop = prop;
+        }
+
+        void setBean(Object bean) {
+            _bean = bean;
+            if (_resolvedValue != null) {
+                _prop.set(_context, _bean, _resolvedValue);
+                _resolvedValue = null;
+            }
+        }
+
+        @Override
+        public void handleResolvedForwardReference(DeserializationContext ctxt,
+                Object id, Object value) {
+            if (_bean == null) {
+                _resolvedValue = value;
+            } else {
+                _prop.set(ctxt, _bean, value);
+            }
+        }
+    }
+
     // Record codecs call the canonical constructor directly only when the
-    // document supplied every component, no primitive component received a
-    // null from a custom deserializer, and FAIL_ON_NULL_CREATOR_PROPERTIES is
-    // off. Everything else ends here: values holds the components (boxed, in
-    // creator-index order), seen marks the ones the document supplied, and
-    // nullPrimitives marks primitive components whose deserializer returned
-    // null. Without a constructor failure, the stock creator completes the
+    // document supplied every component, every primitive component received
+    // its exact wrapper (not null or another type from a custom
+    // deserializer), and FAIL_ON_NULL_CREATOR_PROPERTIES is off. Everything
+    // else ends here: values holds the components (boxed, or the raw stock
+    // value, in creator-index order) and seen marks the ones the document
+    // supplied. Without a constructor failure, the stock creator completes the
     // arguments (absent values, required and FAIL_ON_MISSING /
     // FAIL_ON_NULL_CREATOR_PROPERTIES checks) and constructs; a failure from
     // the fast path goes where StdValueInstantiator sends it. Either way a
     // failure ends in wrapInstantiationProblem, as in the stock loop.
     protected final Object _recordBuild(JsonParser p, DeserializationContext ctxt, long seen,
-            long nullPrimitives, Object[] values, Throwable ctorFailure) {
-        for (int i = 0; i < values.length; i++) {
-            if ((nullPrimitives & (1L << i)) != 0) {
-                values[i] = null;
-            }
-        }
+            Object[] values, Throwable ctorFailure) {
         if (ctorFailure != null) {
             try {
                 return ReaderSupport.creatorProblem((StdValueInstantiator) _valueInstantiator,

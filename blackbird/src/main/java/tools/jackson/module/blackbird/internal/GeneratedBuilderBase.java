@@ -47,6 +47,18 @@ public abstract class GeneratedBuilderBase extends BuilderBasedDeserializer
         return wrapInstantiationProblem(ctxt, t);
     }
 
+    // The generated code calls the build method itself only on an instance
+    // of the builder class; anything else a with-method or a problem handler
+    // produced (the built target, null, another type) goes to the stock
+    // finishBuild, which returns the target as-is and reports the rest.
+    protected final boolean _isBuilder(Object builder) {
+        return handledType().isInstance(builder);
+    }
+
+    protected final Object _finishBuild(DeserializationContext ctxt, Object builder) {
+        return finishBuild(ctxt, builder);
+    }
+
     protected final RuntimeException _propertyException(Throwable t, Object builder,
             SettableBeanProperty prop, DeserializationContext ctxt) {
         throw wrapAndThrow(t, builder, prop.getName(), ctxt);
@@ -70,9 +82,11 @@ public abstract class GeneratedBuilderBase extends BuilderBasedDeserializer
         handleUnknownVanilla(p, ctxt, builder, name);
     }
 
+    // As in the stock vanilla loop, whatever the unexpected-token handling
+    // returns is then built.
     protected final Object _unexpectedToken(JsonParser p, DeserializationContext ctxt,
             Object builder) {
-        return _handleUnexpectedWithin(p, ctxt, builder);
+        return finishBuild(ctxt, _handleUnexpectedWithin(p, ctxt, builder));
     }
 
     protected final long _viewMask(Class<?> view) {

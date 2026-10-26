@@ -23,14 +23,18 @@ import tools.jackson.core.JsonToken;
 import tools.jackson.core.sym.PropertyNameMatcher;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.deser.NullValueProvider;
 import tools.jackson.databind.deser.SettableBeanProperty;
+import tools.jackson.databind.deser.UnresolvedForwardReference;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.ValueInstantiator;
 import tools.jackson.databind.deser.bean.BeanDeserializer;
 import tools.jackson.databind.deser.bean.BeanPropertyMap;
 import tools.jackson.databind.deser.bean.BuilderBasedDeserializer;
+import tools.jackson.databind.deser.impl.NullsConstantProvider;
 import tools.jackson.databind.util.ClassUtil;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.GenProp;
+import tools.jackson.module.blackbird.codegen.ReaderCodegen.Kind;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.Mode;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.ViewStrategy;
 import tools.jackson.module.blackbird.internal.GeneratedBuilderBase;
@@ -52,6 +56,9 @@ final class BeanReaderGenerator
     private static final ClassDesc CD_DESER_FEATURE = Descs.of(DeserializationFeature.class);
     private static final ClassDesc CD_NAME_MATCHER = Descs.of(PropertyNameMatcher.class);
     private static final ClassDesc CD_SETTABLE_PROP = Descs.of(SettableBeanProperty.class);
+    private static final ClassDesc CD_NULL_PROVIDER = Descs.of(NullValueProvider.class);
+    private static final ClassDesc CD_FORWARD_REF = Descs.of(UnresolvedForwardReference.class);
+    private static final ClassDesc CD_NULLS_CONSTANT = Descs.of(NullsConstantProvider.class);
     private static final ClassDesc CD_READER_BASE = Descs.of(GeneratedReaderBase.class);
     private static final ClassDesc CD_BUILDER_BASE = Descs.of(GeneratedBuilderBase.class);
     private static final ClassDesc CD_VALUE_DESERIALIZER = Descs.of(ValueDeserializer.class);
@@ -89,7 +96,16 @@ final class BeanReaderGenerator
     private static final MethodTypeDesc MTD_CREATE_DEFAULT =
             MethodTypeDesc.of(CD_OBJECT, CD_DESER_CONTEXT);
     private static final MethodTypeDesc MTD_NEW_INSTANCE = MethodTypeDesc.of(CD_OBJECT);
+    private static final MethodTypeDesc MTD_GET_NULL_PROVIDER = MethodTypeDesc.of(CD_NULL_PROVIDER);
+    private static final MethodTypeDesc MTD_GET_NULL_VALUE = MethodTypeDesc.of(CD_OBJECT,
+            CD_DESER_CONTEXT);
+    private static final MethodTypeDesc MTD_IS_SKIPPER = MethodTypeDesc.of(
+            ConstantDescs.CD_boolean, CD_NULL_PROVIDER);
     private static final MethodTypeDesc MTD_BUILD_INVOKE = MethodTypeDesc.of(CD_OBJECT, CD_OBJECT);
+    private static final MethodTypeDesc MTD_IS_BUILDER =
+            MethodTypeDesc.of(ConstantDescs.CD_boolean, CD_OBJECT);
+    private static final MethodTypeDesc MTD_FINISH_BUILD =
+            MethodTypeDesc.of(CD_OBJECT, CD_DESER_CONTEXT, CD_OBJECT);
     private static final MethodTypeDesc MTD_INJECT = MethodTypeDesc.of(
             ConstantDescs.CD_void, CD_DESER_CONTEXT, CD_OBJECT);
     private static final MethodTypeDesc MTD_HANDLE_UNKNOWN = MethodTypeDesc.of(
@@ -99,8 +115,12 @@ final class BeanReaderGenerator
     private static final MethodTypeDesc MTD_RECORD_REPLAY = MethodTypeDesc.of(
             CD_OBJECT, CD_DESER_CONTEXT, CD_OBJECT, CD_OBJECT);
     private static final MethodTypeDesc MTD_RECORD_BUILD = MethodTypeDesc.of(CD_OBJECT,
-            CD_JSON_PARSER, CD_DESER_CONTEXT, ConstantDescs.CD_long, ConstantDescs.CD_long,
+            CD_JSON_PARSER, CD_DESER_CONTEXT, ConstantDescs.CD_long,
             CD_OBJECT.arrayType(), CD_THROWABLE);
+    private static final MethodTypeDesc MTD_RECORD_FORWARD_REF = MethodTypeDesc.of(CD_OBJECT,
+            CD_DESER_CONTEXT, CD_SETTABLE_PROP, CD_FORWARD_REF, CD_OBJECT);
+    private static final MethodTypeDesc MTD_RECORD_RESOLVE_REFS = MethodTypeDesc.of(
+            ConstantDescs.CD_void, CD_OBJECT, CD_OBJECT);
     private static final MethodTypeDesc MTD_CREATION_FAILURE =
             MethodTypeDesc.of(CD_OBJECT, CD_DESER_CONTEXT, CD_THROWABLE);
     private static final MethodTypeDesc MTD_PROP_WRAP = MethodTypeDesc.of(
@@ -479,12 +499,17 @@ final class BeanReaderGenerator
     }
 
     // BuilderBasedDeserializer.finishBuild: a failing build method goes
-    // through wrapInstantiationProblem.
+    // through wrapInstantiationProblem. A receiver that is not a builder
+    // instance (see GeneratedBuilderBase._isBuilder) takes the stock call.
     private static void emitBuild(CodeBuilder cob, ClassDesc base, int ctxt, int builderSlot,
             int excSlot) {
         Label start = cob.newLabel();
         Label end = cob.newLabel();
         Label handler = cob.newLabel();
+        Label notBuilder = cob.newLabel();
+        cob.aload(0).aload(builderSlot);
+        cob.invokevirtual(base, "_isBuilder", MTD_IS_BUILDER);
+        cob.ifeq(notBuilder);
         cob.exceptionCatch(start, end, handler, CD_EXCEPTION);
         cob.labelBinding(start);
         ldcData(cob, "buildMethod", ConstantDescs.CD_MethodHandle);
@@ -496,6 +521,10 @@ final class BeanReaderGenerator
         cob.astore(excSlot);
         cob.aload(0).aload(ctxt).aload(excSlot);
         cob.invokevirtual(base, "_buildFailure", MTD_CREATION_FAILURE);
+        cob.areturn();
+        cob.labelBinding(notBuilder);
+        cob.aload(0).aload(ctxt).aload(builderSlot);
+        cob.invokevirtual(base, "_finishBuild", MTD_FINISH_BUILD);
         cob.areturn();
     }
 
@@ -550,17 +579,28 @@ final class BeanReaderGenerator
 
     // A child bean on START_OBJECT goes to the linked child codec, anything
     // else to the stock property. The child value passes through valueSlot so
-    // that a failing store can name its class, as stock does.
+    // that a failing store can name its class, as stock does. A null from the
+    // child codec (a null build result, or a problem handler's) gets what
+    // stock deserializeAndSet gives it ([databind#2023]): skipped for a
+    // skipping null provider, otherwise replaced by the provider's value.
     private static void emitChildArm(CodeBuilder cob, int receiverSlot, int parser, int ctxt,
             int valueSlot, String childName, String stockName, Store store) {
         Label childStock = cob.newLabel();
         Label childDone = cob.newLabel();
+        Label haveValue = cob.newLabel();
         // The fused match left the value token current.
         cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
         cob.getstatic(CD_JSON_TOKEN, "START_OBJECT", CD_JSON_TOKEN);
         cob.if_acmpne(childStock);
         emitChildCall(cob, parser, ctxt, childName);
         cob.astore(valueSlot);
+        cob.aload(valueSlot).ifnonnull(haveValue);
+        emitNullProvider(cob, stockName);
+        cob.invokestatic(CD_NULLS_CONSTANT, "isSkipper", MTD_IS_SKIPPER);
+        cob.ifne(childDone);
+        emitNullValue(cob, ctxt, stockName);
+        cob.astore(valueSlot);
+        cob.labelBinding(haveValue);
         ldcData(cob, store.handleName(), ConstantDescs.CD_MethodHandle);
         cob.aload(receiverSlot);
         cob.aload(valueSlot);
@@ -569,6 +609,19 @@ final class BeanReaderGenerator
         cob.labelBinding(childStock);
         emitStockSet(cob, parser, ctxt, receiverSlot, stockName, store.builderMode());
         cob.labelBinding(childDone);
+    }
+
+    private static void emitNullProvider(CodeBuilder cob, String stockName) {
+        ldcData(cob, stockName, CD_SETTABLE_PROP);
+        cob.invokevirtual(CD_SETTABLE_PROP, "getNullValueProvider", MTD_GET_NULL_PROVIDER);
+    }
+
+    // The stock property's null value (its null provider's, which applies
+    // Nulls.FAIL, AS_EMPTY and the null config overrides).
+    private static void emitNullValue(CodeBuilder cob, int ctxt, String stockName) {
+        emitNullProvider(cob, stockName);
+        cob.aload(ctxt);
+        cob.invokeinterface(CD_NULL_PROVIDER, "getNullValue", MTD_GET_NULL_VALUE);
     }
 
     // Child codecs are reader or builder codecs; the constant receiver makes
@@ -623,7 +676,7 @@ final class BeanReaderGenerator
         final int ixSlot = next++;
         final int seenSlot = next;
         next += 2;
-        final int nullPrimSlot = next;
+        final int rawPrimSlot = next;
         next += 2;
         final int maskSlot = next;
         next += 2;
@@ -631,7 +684,14 @@ final class BeanReaderGenerator
         final int excSlot = next++;
         final int unknownSlot = next++;
         final int beanSlot = next++;
-        final int pendingSlot = next;
+        final int pendingSlot = next++;
+        final int referringsSlot = next++;
+        // Primitive components: the stock value when it is not exactly the
+        // wrapper (see emitStockValueToLocal).
+        int[] rawSlot = new int[n];
+        for (int i = 0; i < n; i++) {
+            rawSlot[i] = props.get(i).type().isPrimitive() ? next++ : -1;
+        }
         Label propHandler = cob.newLabel();
 
         Label scopeStart = cob.newBoundLabel();
@@ -653,10 +713,14 @@ final class BeanReaderGenerator
             } else {
                 cob.aconst_null().astore(componentSlot[i]);
             }
+            if (rawSlot[i] >= 0) {
+                cob.aconst_null().astore(rawSlot[i]);
+            }
         }
         cob.lconst_0().lstore(seenSlot);
-        cob.lconst_0().lstore(nullPrimSlot);
+        cob.lconst_0().lstore(rawPrimSlot);
         cob.aconst_null().astore(unknownSlot);
+        cob.aconst_null().astore(referringsSlot);
 
         ldcData(cob, "matcher", CD_NAME_MATCHER);
         cob.astore(matcherSlot);
@@ -682,11 +746,23 @@ final class BeanReaderGenerator
                 emitArmViewCheck(cob, base, parser, ctxt, maskSlot, matcherSlot, ixSlot, i,
                         plan.stockName()[i], loop);
             }
-            Label armEnd = beginArm(cob, plan.stockName()[i], propSlot, propHandler);
             GenProp prop = props.get(i);
+            // A stock component value may be a forward Object Id reference,
+            // which the stock loop catches; the region registers before the
+            // arm's, so that it takes precedence.
+            Label fwdStart = null;
+            Label fwdEnd = null;
+            Label fwdHandler = null;
+            if (prop.kind() == Kind.STOCK) {
+                fwdStart = cob.newLabel();
+                fwdEnd = cob.newLabel();
+                fwdHandler = cob.newLabel();
+                cob.exceptionCatch(fwdStart, fwdEnd, fwdHandler, CD_FORWARD_REF);
+            }
+            Label armEnd = beginArm(cob, plan.stockName()[i], propSlot, propHandler);
             Class<?> t = prop.type();
             String stockName = plan.stockName()[i];
-            ComponentLocal local = new ComponentLocal(componentSlot[i], t, nullPrimSlot, i);
+            ComponentLocal local = new ComponentLocal(componentSlot[i], t, rawPrimSlot, rawSlot[i], i);
             switch (prop.kind()) {
                 case STRING -> emitRecordScalar(cob, parser, ctxt, local,
                         "getString", MTD_GET_STRING, stockName, "VALUE_STRING");
@@ -704,12 +780,21 @@ final class BeanReaderGenerator
                     cob.if_acmpne(childStock);
                     emitChildCall(cob, parser, ctxt, plan.childName()[i]);
                     cob.astore(componentSlot[i]);
+                    // A null child value: the null provider's value, as stock
+                    // SettableBeanProperty.deserialize gives a creator property.
+                    cob.aload(componentSlot[i]).ifnonnull(childDone);
+                    emitNullValue(cob, ctxt, stockName);
+                    cob.astore(componentSlot[i]);
                     cob.goto_(childDone);
                     cob.labelBinding(childStock);
                     emitStockValueToLocal(cob, parser, ctxt, local, stockName);
                     cob.labelBinding(childDone);
                 }
-                case STOCK -> emitStockValueToLocal(cob, parser, ctxt, local, stockName);
+                case STOCK -> {
+                    cob.labelBinding(fwdStart);
+                    emitStockValueToLocal(cob, parser, ctxt, local, stockName);
+                    cob.labelBinding(fwdEnd);
+                }
             }
             cob.labelBinding(armEnd);
             cob.lload(seenSlot);
@@ -718,6 +803,22 @@ final class BeanReaderGenerator
             cob.lstore(seenSlot);
             nextNameMatch(cob, parser, matcherSlot, ixSlot);
             cob.goto_(loop);
+            if (fwdHandler != null) {
+                // The component is assigned null, as in stock.
+                cob.labelBinding(fwdHandler);
+                cob.astore(excSlot);
+                cob.aload(0).aload(ctxt).aload(propSlot).aload(excSlot)
+                   .checkcast(CD_FORWARD_REF).aload(referringsSlot);
+                cob.invokevirtual(base, "_recordForwardRef", MTD_RECORD_FORWARD_REF);
+                cob.astore(referringsSlot);
+                if (t.isPrimitive()) {
+                    cob.aconst_null().astore(rawSlot[i]);
+                    emitRawPrimitive(cob, local, true);
+                } else {
+                    cob.aconst_null().astore(componentSlot[i]);
+                }
+                cob.goto_(armEnd);
+            }
         }
 
         cob.labelBinding(defaultCase);
@@ -733,7 +834,7 @@ final class BeanReaderGenerator
         cob.lcmp();
         cob.ifne(slow);
         if (anyPrimitive) {
-            cob.lload(nullPrimSlot);
+            cob.lload(rawPrimSlot);
             cob.lconst_0();
             cob.lcmp();
             cob.ifne(slow);
@@ -766,17 +867,28 @@ final class BeanReaderGenerator
         cob.labelBinding(ctorHandler);
         cob.astore(pendingSlot);
         cob.labelBinding(slow);
-        cob.aload(0).aload(parser).aload(ctxt).lload(seenSlot).lload(nullPrimSlot);
+        cob.aload(0).aload(parser).aload(ctxt).lload(seenSlot);
         cob.loadConstant(n);
         cob.anewarray(CD_OBJECT);
         for (int i = 0; i < n; i++) {
             Class<?> t = props.get(i).type();
             cob.dup();
             cob.loadConstant(i);
-            loadLocal(cob, t, componentSlot[i]);
             if (t.isPrimitive()) {
+                // A raw stock value goes to the stock creator as it is.
+                Label boxIt = cob.newLabel();
+                Label stored = cob.newLabel();
+                cob.lload(rawPrimSlot).loadConstant(1L << i).land().lconst_0().lcmp();
+                cob.ifeq(boxIt);
+                cob.aload(rawSlot[i]);
+                cob.goto_(stored);
+                cob.labelBinding(boxIt);
+                loadLocal(cob, t, componentSlot[i]);
                 ClassDesc boxDesc = Descs.of(ClassUtil.wrapperType(t));
                 cob.invokestatic(boxDesc, "valueOf", MethodTypeDesc.of(boxDesc, Descs.of(t)));
+                cob.labelBinding(stored);
+            } else {
+                loadLocal(cob, t, componentSlot[i]);
             }
             cob.aastore();
         }
@@ -784,6 +896,11 @@ final class BeanReaderGenerator
         cob.invokevirtual(base, "_recordBuild", MTD_RECORD_BUILD);
         cob.astore(beanSlot);
         cob.labelBinding(finish);
+        Label noReferrings = cob.newLabel();
+        cob.aload(referringsSlot).ifnull(noReferrings);
+        cob.aload(0).aload(beanSlot).aload(referringsSlot);
+        cob.invokevirtual(base, "_recordResolveForwardRefs", MTD_RECORD_RESOLVE_REFS);
+        cob.labelBinding(noReferrings);
         Label noUnknown = cob.newLabel();
         cob.aload(unknownSlot).ifnull(noUnknown);
         cob.aload(0).aload(ctxt).aload(beanSlot).aload(unknownSlot);
@@ -819,21 +936,23 @@ final class BeanReaderGenerator
         cob.localVariable(matcherSlot, "matcher", CD_NAME_MATCHER, scopeStart, scopeEnd);
         cob.localVariable(ixSlot, "ix", ConstantDescs.CD_int, scopeStart, scopeEnd);
         cob.localVariable(seenSlot, "seen", ConstantDescs.CD_long, scopeStart, scopeEnd);
-        cob.localVariable(nullPrimSlot, "nullPrimitives", ConstantDescs.CD_long,
+        cob.localVariable(rawPrimSlot, "rawPrimitives", ConstantDescs.CD_long,
                 scopeStart, scopeEnd);
         cob.localVariable(propSlot, "prop", CD_SETTABLE_PROP, scopeStart, scopeEnd);
         cob.localVariable(excSlot, "e", CD_THROWABLE, scopeStart, scopeEnd);
         cob.localVariable(unknownSlot, "unknown", CD_OBJECT, scopeStart, scopeEnd);
         cob.localVariable(beanSlot, "bean", CD_OBJECT, scopeStart, scopeEnd);
         cob.localVariable(pendingSlot, "ctorFailure", CD_THROWABLE, scopeStart, scopeEnd);
+        cob.localVariable(referringsSlot, "referrings", CD_OBJECT, scopeStart, scopeEnd);
         if (views == ViewStrategy.MASK) {
             cob.localVariable(maskSlot, "viewMask", ConstantDescs.CD_long, scopeStart, scopeEnd);
         }
     }
 
-    // A record component local: its slot and type, and its bit in the
-    // nullPrimitives mask (primitive components only).
-    private record ComponentLocal(int slot, Class<?> type, int nullPrimSlot, int index) {}
+    // A record component local: its slot and type, and (primitive components
+    // only) its raw-value slot and its bit in the rawPrimitives mask.
+    private record ComponentLocal(int slot, Class<?> type, int rawPrimSlot, int rawSlot,
+            int index) {}
 
     private static void emitRecordScalar(CodeBuilder cob, int parser, int ctxt,
             ComponentLocal local, String getter, MethodTypeDesc getterType, String stockName,
@@ -844,7 +963,7 @@ final class BeanReaderGenerator
         cob.aload(parser).invokevirtual(CD_JSON_PARSER, getter, getterType);
         storeLocal(cob, local.type(), local.slot());
         if (local.type().isPrimitive()) {
-            emitNullPrimitive(cob, local, false);
+            emitRawPrimitive(cob, local, false);
         }
         cob.goto_(done);
         cob.labelBinding(useStock);
@@ -854,10 +973,11 @@ final class BeanReaderGenerator
 
     // Reads the whole value through the stock property (parser positioned on
     // the value token). Reference components stay Object, since the erased
-    // constructor handle casts on invocation. Primitive components unbox; a
-    // null (a custom deserializer may return one) leaves the local alone and
-    // marks the component, so that the stock creator receives the null, as
-    // it would without Blackbird.
+    // constructor handle casts on invocation. Primitive components unbox an
+    // exact wrapper; anything else a custom deserializer may return (null,
+    // another wrapper type) is kept raw and marks the component, so that the
+    // stock creator receives it as it would without Blackbird, and widens it,
+    // or fails in the creator call, as stock does.
     private static void emitStockValueToLocal(CodeBuilder cob, int parser, int ctxt,
             ComponentLocal local, String stockName) {
         ldcData(cob, stockName, CD_SETTABLE_PROP);
@@ -868,35 +988,36 @@ final class BeanReaderGenerator
             cob.astore(local.slot());
             return;
         }
-        Label isNull = cob.newLabel();
+        Label raw = cob.newLabel();
         Label done = cob.newLabel();
-        cob.dup();
-        cob.ifnull(isNull);
         ClassDesc boxDesc = Descs.of(ClassUtil.wrapperType(type));
+        cob.dup();
+        cob.instanceOf(boxDesc);
+        cob.ifeq(raw);
         cob.checkcast(boxDesc);
         cob.invokevirtual(boxDesc, type.getName() + "Value", MethodTypeDesc.of(Descs.of(type)));
         storeLocal(cob, type, local.slot());
-        emitNullPrimitive(cob, local, false);
+        emitRawPrimitive(cob, local, false);
         cob.goto_(done);
-        cob.labelBinding(isNull);
-        cob.pop();
-        emitNullPrimitive(cob, local, true);
+        cob.labelBinding(raw);
+        cob.astore(local.rawSlot());
+        emitRawPrimitive(cob, local, true);
         cob.labelBinding(done);
     }
 
-    // Sets or clears the component's bit in the nullPrimitives mask: a later
+    // Sets or clears the component's bit in the rawPrimitives mask: a later
     // value for a duplicate name replaces an earlier one, as in stock.
-    private static void emitNullPrimitive(CodeBuilder cob, ComponentLocal local, boolean isNull) {
+    private static void emitRawPrimitive(CodeBuilder cob, ComponentLocal local, boolean isRaw) {
         long bit = 1L << local.index();
-        cob.lload(local.nullPrimSlot());
-        if (isNull) {
+        cob.lload(local.rawPrimSlot());
+        if (isRaw) {
             cob.loadConstant(bit);
             cob.lor();
         } else {
             cob.loadConstant(~bit);
             cob.land();
         }
-        cob.lstore(local.nullPrimSlot());
+        cob.lstore(local.rawPrimSlot());
     }
 
     private static void storeLocal(CodeBuilder cob, Class<?> type, int slot) {
