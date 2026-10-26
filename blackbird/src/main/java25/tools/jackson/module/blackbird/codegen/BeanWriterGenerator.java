@@ -16,6 +16,7 @@ import tools.jackson.core.SerializableString;
 import tools.jackson.core.type.WritableTypeId;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.jsontype.TypeSerializer;
+import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.ViewStrategy;
@@ -408,8 +409,10 @@ final class BeanWriterGenerator
                 cob.istore(ixSlot);
             }
             Label hidden = null;
+            Label next = null;
             if (views == ViewStrategy.MASK) {
                 hidden = cob.newLabel();
+                next = hasDeclaredViews(prop) ? cob.newLabel() : hidden;
                 cob.lload(maskSlot);
                 cob.loadConstant(1L << i);
                 cob.land();
@@ -473,10 +476,28 @@ final class BeanWriterGenerator
                             MTD_SERIALIZE_AS_PROPERTY);
                 }
             }
-            if (hidden != null) {
+            if (next != hidden) {
+                // Hidden by a declared view: stock FilteredBeanPropertyWriter
+                // hands it to serializeAsOmittedProperty, which writes a
+                // placeholder on generators that cannot omit properties.
+                // A view-less property hidden by DEFAULT_VIEW_INCLUSION is
+                // left out of stock's filtered array, so writes nothing.
+                cob.goto_(next);
                 cob.labelBinding(hidden);
+                ldcData(cob, stockName[i], CD_PROPERTY_WRITER);
+                cob.aload(1).aload(gen).aload(ctxt);
+                cob.invokevirtual(CD_PROPERTY_WRITER, "serializeAsOmittedProperty",
+                        MTD_SERIALIZE_AS_PROPERTY);
+            }
+            if (next != null) {
+                cob.labelBinding(next);
             }
         }
+    }
+
+    private static boolean hasDeclaredViews(GenWProp prop) {
+        return prop.stock() instanceof BeanPropertyWriter bpw
+                && bpw.getViews() != null && bpw.getViews().length > 0;
     }
 
     // Overrides GeneratedWriterBase._computeViewMask: bit i set when property
