@@ -35,6 +35,9 @@ that generates a deserializer and a serializer class per bean with the JDK Class
     <maven.compiler.testRelease>25</maven.compiler.testRelease>
     <!-- Only the module class is API, as in module-info. -->
     <osgi.export>tools.jackson.module.blackbird;version=${project.version}</osgi.export>
+    <!-- The ClassFile API exists only on Java 25+; the bundle must still
+         resolve on 17-24, where codegen is simply unavailable. -->
+    <osgi.import>java.lang.classfile;resolution:=optional,java.lang.classfile.*;resolution:=optional,*</osgi.import>
     <packageVersion.dir>tools/jackson/module/blackbird</packageVersion.dir>
     <packageVersion.package>${project.groupId}.blackbird</packageVersion.package>
   </properties>
@@ -64,7 +67,9 @@ that generates a deserializer and a serializer class per bean with the JDK Class
            META-INF/versions/25. A copy goes to the base output directory, so
            that the unit tests and the reactor modules that read
            target/classes (which is not multi-release) see them, and the jar
-           leaves the base copies out. On Java 17-24 the JVM never sees them,
+           leaves the base copies out. The copy runs in the compile phase so
+           that bnd (bundle-manifest, process-classes) analyzes them too and
+           imports the packages they use. On Java 17-24 the JVM never sees them,
            and ClassFileEmitters reports code generation as unavailable. -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -120,7 +125,7 @@ that generates a deserializer and a serializer class per bean with the JDK Class
         <executions>
           <execution>
             <id>copy-java25-classes</id>
-            <phase>process-classes</phase>
+            <phase>compile</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>

@@ -19,13 +19,128 @@ classes. Not published.</description>
     <maven.compiler.release>25</maven.compiler.release>
     <javac.src.version>25</javac.src.version>
     <javac.target.version>25</javac.target.version>
-    <!-- test-only module -->
-    <maven.deploy.skip>true</maven.deploy.skip>
-    <gpg.skip>true</gpg.skip>
   </properties>
 
   <build>
     <plugins>
+      <!-- This module is test-only and must never produce a publishable artifact.
+           Packaging stays `jar` so the compile + test lifecycle runs normally,
+           but every artifact-producing / artifact-publishing plugin inherited
+           from the parent chain is unbound here.
+
+           Verified via `mvn help:effective-pom -pl blackbird-jpms-tests`: every
+           execution listed below appears in the merged model at phase=none or
+           with skip=true. If you rename an execution here, re-verify with that
+           command — a typo turns into silent dead config and stale artifacts
+           in target/ rather than a build error. See afterburner-tests/pom.xml
+           for the same pattern with more detailed comments. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-install-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <!-- See afterburner-tests/pom.xml for why this is required in addition
+           to skipping maven-deploy-plugin. -->
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>injected-central-publishing</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>bundle-manifest</id>
+            <phase>none</phase>
+          </execution>
+          <execution>
+            <id>default-install</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.gradlex</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>report</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- The `release` profile (inherited from oss-parent, activated by the
+           `-Prelease` argument that maven-release-plugin passes to its
+           `clean verify` preparation build) binds maven-source-plugin,
+           maven-javadoc-plugin and maven-gpg-plugin. All three assume a main
+           artifact exists, but `default-jar` is unbound above, so GPG signing
+           fails with "project artifact has not been assigned a file" and the
+           whole `release:prepare` aborts. These plugins only run under
+           `-Prelease`, so skipping them here has no effect on normal builds.
+           See afterburner-tests/pom.xml for the same pattern. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <configuration>
+          <skipSource>true</skipSource>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
