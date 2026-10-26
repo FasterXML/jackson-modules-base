@@ -1,16 +1,22 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
+import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.deser.impl.MethodProperty;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -176,41 +182,6 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
-    // Generated accessor fails with an access error, so Blackbird falls back to
-    // reflection, which must still return the new builder
-    static final class AccessErrorBuilder
-    {
-        final String str;
-
-        public AccessErrorBuilder() {
-            this(null);
-        }
-
-        AccessErrorBuilder(String str) {
-            this.str = str;
-        }
-
-        public AccessErrorBuilder withStr(String v) {
-            if (reflectiveCall() == 0) {
-                throw new IllegalAccessError("boom!");
-            }
-            return new AccessErrorBuilder(v);
-        }
-
-        public AccessErrorBuilt build() {
-            return new AccessErrorBuilt(str);
-        }
-    }
-
-    @JsonDeserialize(builder=AccessErrorBuilder.class)
-    static class AccessErrorBuilt {
-        final String str;
-
-        AccessErrorBuilt(String str) {
-            this.str = str;
-        }
-    }
-
     // Void setters keep going through the delegate
     static final class VoidSetterBuilder
     {
@@ -268,15 +239,28 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
-    // A failing setter should be reported the same way with and without Blackbird
+    // A failing setter should be reported the same way with and without Blackbird.
+    // The throwable is created inside the setter, as a real one would be.
+    static Supplier<Throwable> toThrow;
+    static int setterCalls;
+
     static final class ThrowingBuilder
     {
-        public ThrowingBuilder withStr(String v) {
-            throw new IllegalStateException("bad str");
+        public ThrowingBuilder withStr(String v) throws Exception {
+            return fail();
         }
 
-        public ThrowingBuilder withI(int v) {
-            throw new IllegalStateException("bad i");
+        public ThrowingBuilder withI(int v) throws Exception {
+            return fail();
+        }
+
+        private static ThrowingBuilder fail() throws Exception {
+            setterCalls++;
+            Throwable t = toThrow.get();
+            if (t instanceof Error) {
+                throw (Error) t;
+            }
+            throw (Exception) t;
         }
 
         public ThrowingBuilt build() {
@@ -286,6 +270,29 @@ public class TestBuilders extends BlackbirdTestBase
 
     @JsonDeserialize(builder=ThrowingBuilder.class)
     static class ThrowingBuilt { }
+
+    // Fails inside the setter on the first call only, so a retry would succeed
+    static int flakyCalls;
+
+    static final class FlakyBuilder
+    {
+        String str;
+
+        public FlakyBuilder withStr(String v) {
+            if (flakyCalls++ == 0) {
+                throw new SecurityException("thrown by setter");
+            }
+            str = v;
+            return this;
+        }
+
+        public FlakyBuilt build() {
+            return new FlakyBuilt();
+        }
+    }
+
+    @JsonDeserialize(builder=FlakyBuilder.class)
+    static class FlakyBuilt { }
 
     static class Values {
         final String str;
@@ -373,11 +380,32 @@ public class TestBuilders extends BlackbirdTestBase
         assertEquals(42, v.i);
     }
 
+    // An access failure of the generated accessor happens before the setter
+    // runs; the reflective fallback must still return the new builder
     @Test
-    public void testAccessErrorFallbackKeepsReturnedBuilder() throws Exception
+    public void testAccessFailureFallsBackToReflection() throws Exception
     {
-        AccessErrorBuilt v = MAPPER.readValue(a2q("{'str':'foo'}"), AccessErrorBuilt.class);
-        assertEquals("foo", v.str);
+        ObjectMapper vanilla = newVanillaJSONMapper();
+        DefaultDeserializationContext ctxt = ((DefaultDeserializationContext) vanilla.getDeserializationContext())
+                .createInstance(vanilla.getDeserializationConfig(), null, null);
+        BeanDeserializerBase deser = (BeanDeserializerBase) ctxt.findRootValueDeserializer(
+                vanilla.constructType(CopyingBuilt.class));
+        SettableStringProperty prop = new SettableStringProperty(deser.findProperty("str"),
+                (bean, v) -> { throw new IllegalAccessError("simulated"); },
+                (bean, v) -> { throw new IllegalAccessError("simulated"); });
+
+        CopyingBuilder result = (CopyingBuilder) prop.setAndReturn(new CopyingBuilder(), "foo");
+        assertEquals("foo", result.str);
+        assertEquals(1, result.reflectiveCalls);
+    }
+
+    @Test
+    public void testSetterSecurityExceptionIsNotRetried() throws Exception
+    {
+        flakyCalls = 0;
+        assertThrows(JsonMappingException.class,
+                () -> MAPPER.readValue(a2q("{'str':'foo'}"), FlakyBuilt.class));
+        assertEquals(1, flakyCalls);
     }
 
     @Test
@@ -397,19 +425,56 @@ public class TestBuilders extends BlackbirdTestBase
     @Test
     public void testThrowingSetterMatchesVanilla() throws Exception
     {
-        for (String json : new String[] { a2q("{'str':'foo'}"), a2q("{'i':42}") }) {
-            JsonMappingException expected = assertThrows(JsonMappingException.class,
-                    () -> newVanillaJSONMapper().readValue(json, ThrowingBuilt.class));
-            JsonMappingException actual = assertThrows(JsonMappingException.class,
-                    () -> MAPPER.readValue(json, ThrowingBuilt.class));
-            assertEquals(expected.getClass(), actual.getClass());
-            assertEquals(expected.getOriginalMessage(), actual.getOriginalMessage());
-            assertEquals(expected.getPathReference(), actual.getPathReference());
-            assertEquals(expected.getCause().getClass(), actual.getCause().getClass());
-            assertEquals(expected.getCause().getMessage(), actual.getCause().getMessage());
-            // and the Blackbird failure came from the generated accessor
-            assertTrue(Arrays.stream(actual.getCause().getStackTrace())
-                    .noneMatch(e -> e.getClassName().equals(MethodProperty.class.getName())));
+        List<Supplier<Throwable>> failures = Arrays.asList(
+                () -> new IllegalStateException("unchecked"),
+                () -> new IllegalStateException("outer", new IllegalArgumentException("root")),
+                () -> new IOException("bad value"),
+                () -> new Exception("checked"),
+                () -> new AssertionError("error"),
+                () -> new SecurityException("thrown by setter"));
+        for (boolean wrap : new boolean[] { true, false }) {
+            ObjectMapper vanilla = JsonMapper.builder()
+                    .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
+            ObjectMapper blackbird = mapperBuilder()
+                    .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
+            for (Supplier<Throwable> failure : failures) {
+                for (String json : new String[] { a2q("{'str':'foo'}"), a2q("{'i':42}") }) {
+                    toThrow = failure;
+                    setterCalls = 0;
+                    Throwable expected = assertThrows(Throwable.class,
+                            () -> vanilla.readValue(json, ThrowingBuilt.class));
+                    Throwable actual = assertThrows(Throwable.class,
+                            () -> blackbird.readValue(json, ThrowingBuilt.class));
+                    String desc = "wrap=" + wrap + ", " + json + ", " + expected;
+                    assertEquals(2, setterCalls, desc);
+                    _assertSameFailure(desc, expected, actual);
+                    // and the Blackbird failure came from the generated accessor
+                    Throwable root = actual;
+                    while (root.getCause() != null) {
+                        root = root.getCause();
+                    }
+                    assertTrue(Arrays.stream(root.getStackTrace())
+                            .noneMatch(e -> e.getClassName().equals(MethodProperty.class.getName())), desc);
+                }
+            }
+        }
+    }
+
+    private static void _assertSameFailure(String desc, Throwable expected, Throwable actual) {
+        assertEquals(expected.getClass(), actual.getClass(), desc);
+        if (expected instanceof JsonMappingException) {
+            JsonMappingException e = (JsonMappingException) expected;
+            JsonMappingException a = (JsonMappingException) actual;
+            assertEquals(e.getOriginalMessage(), a.getOriginalMessage(), desc);
+            assertEquals(e.getPathReference(), a.getPathReference(), desc);
+        } else {
+            assertEquals(expected.getMessage(), actual.getMessage(), desc);
+        }
+        Throwable ec = expected.getCause();
+        Throwable ac = actual.getCause();
+        assertEquals((ec == null) ? null : ec.getClass(), (ac == null) ? null : ac.getClass(), desc);
+        if (ec != null) {
+            assertEquals(ec.getMessage(), ac.getMessage(), desc);
         }
     }
 

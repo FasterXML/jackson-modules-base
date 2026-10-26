@@ -105,7 +105,7 @@ final class SettableObjectProperty
             Object result = _optimizedSetterAndReturn.apply(instance, value);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblem(instance, value, e);
+            return _reportProblemAndReturn(instance, value, e);
         }
     }
 }

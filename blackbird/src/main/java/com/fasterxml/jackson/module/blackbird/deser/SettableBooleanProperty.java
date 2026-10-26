@@ -94,7 +94,7 @@ final class SettableBooleanProperty
             Object result = _optimizedSetterAndReturn.apply(instance, b);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblem(instance, b, e);
+            return _reportProblemAndReturn(instance, b, e);
         }
     }
 }

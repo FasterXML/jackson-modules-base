@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.*;
 import com.fasterxml.jackson.databind.deser.impl.NullsConstantProvider;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 
 /**
@@ -103,24 +105,14 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      *
      * @since 2.9
      */
-    protected Object _reportProblem(Object bean, Object value, Throwable e)
+    protected void _reportProblem(Object bean, Object value, Throwable e)
         throws IOException
     {
         if ((e instanceof IllegalAccessError)
                 || (e instanceof SecurityException)) {
-            synchronized (this) {
-                // yes, double-locking, so not guaranteed; but all we want here is to reduce likelihood
-                // of multiple logging of same underlying problem. Not guaranteed, just improved.
-                if (!broken) {
-                    broken = true;
-                    String msg = String.format("Disabling Blackbird deserialization for %s (field %s; mutator %s), due to access error (type %s, message=%s)%n",
-                            bean.getClass(), _propName, getClass().getName(),
-                            e.getClass().getName(), e.getMessage());
-                    Logger.getLogger(getClass().getName()).log(Level.WARNING, msg, e);
-                }
-            }
-            // delegate is a MethodProperty: same as `set()`, but also returns the builder
-            return delegate.setAndReturn(bean, value);
+            _logAccessProblem(bean, e);
+            delegate.set(bean, value);
+            return;
         }
         if (e instanceof IOException) {
             throw (IOException) e;
@@ -133,6 +125,58 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         }
         // how could this ever happen?
         throw new RuntimeException(e);
+    }
+
+    /**
+     * Like {@link #_reportProblem}, for {@link #setAndReturn}: an access failure of
+     * the generated accessor falls back to the delegate, and anything the setter
+     * throws is reported the way {@code MethodProperty.setAndReturn} reports it.
+     */
+    protected Object _reportProblemAndReturn(Object bean, Object value, Throwable e)
+        throws IOException
+    {
+        if (((e instanceof IllegalAccessError) || (e instanceof SecurityException))
+                && !_thrownBySetter(e)) {
+            _logAccessProblem(bean, e);
+            return delegate.setAndReturn(bean, value);
+        }
+        // `Method.invoke` wraps whatever the setter throws, and `MethodProperty`
+        // translates that wrapper; doing the same keeps type, message, cause and path
+        _throwAsIOE(new InvocationTargetException(e), value);
+        return null; // never gets here
+    }
+
+    // The setter may already have run, so it must not be called again; an
+    // access failure happens before it is entered. Without a stack trace we
+    // cannot tell, so assume the setter ran.
+    private boolean _thrownBySetter(Throwable e) {
+        StackTraceElement[] trace = e.getStackTrace();
+        if (trace.length == 0) {
+            return true;
+        }
+        AnnotatedMember setter = getMember();
+        String className = setter.getDeclaringClass().getName();
+        String methodName = setter.getName();
+        for (StackTraceElement elem : trace) {
+            if (methodName.equals(elem.getMethodName()) && className.equals(elem.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void _logAccessProblem(Object bean, Throwable e) {
+        synchronized (this) {
+            // yes, double-locking, so not guaranteed; but all we want here is to reduce likelihood
+            // of multiple logging of same underlying problem. Not guaranteed, just improved.
+            if (!broken) {
+                broken = true;
+                String msg = String.format("Disabling Blackbird deserialization for %s (field %s; mutator %s), due to access error (type %s, message=%s)%n",
+                        bean.getClass(), _propName, getClass().getName(),
+                        e.getClass().getName(), e.getMessage());
+                Logger.getLogger(getClass().getName()).log(Level.WARNING, msg, e);
+            }
+        }
     }
 
     /*

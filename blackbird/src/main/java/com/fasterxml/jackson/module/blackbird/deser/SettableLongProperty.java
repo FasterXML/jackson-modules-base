@@ -88,7 +88,7 @@ final class SettableLongProperty
             Object result = _optimizedSetterAndReturn.apply(instance, v);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblem(instance, v, e);
+            return _reportProblemAndReturn(instance, v, e);
         }
     }
 }
