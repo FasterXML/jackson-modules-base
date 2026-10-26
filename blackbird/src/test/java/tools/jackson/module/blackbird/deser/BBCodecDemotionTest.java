@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -39,6 +40,11 @@ public class BBCodecDemotionTest extends BlackbirdTestBase
     public static class IdBean {
         public int value;
         public IdBean next;
+    }
+
+    @JsonFilter("f")
+    public static class FilterBean {
+        public int value;
     }
 
     public static class MergeTarget {
@@ -116,6 +122,19 @@ public class BBCodecDemotionTest extends BlackbirdTestBase
                     cls.getSimpleName() + " unexpectedly generated a codec; if support"
                             + " was added deliberately, flip this pin to assert engagement");
         }
+    }
+
+    // A demoted bean gets the stock (de)serializer itself from
+    // contextualization, not the placeholder that stands in for it
+    @Test
+    public void testDemotedBeanUsesStockClasses() throws Exception {
+        ObjectMapper mapper = newObjectMapper();
+        assertSame(rootWriter(vanilla, FilterBean.class).getClass(),
+                rootWriter(mapper, FilterBean.class).getClass());
+        assertSame(rootReader(vanilla, IdBean.class).getClass(),
+                rootReader(mapper, IdBean.class).getClass());
+        assertSame(rootReader(vanilla, InjectRecord.class).getClass(),
+                rootReader(mapper, InjectRecord.class).getClass());
     }
 
     @Test

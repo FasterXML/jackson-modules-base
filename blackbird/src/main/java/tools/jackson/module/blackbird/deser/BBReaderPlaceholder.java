@@ -5,6 +5,7 @@ import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.bean.BeanDeserializer;
+import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.util.NameTransformer;
 import tools.jackson.module.blackbird.codegen.CodegenDebug;
 
@@ -15,7 +16,10 @@ import tools.jackson.module.blackbird.codegen.CodegenDebug;
  * it behaves as stock until resolution. Resolving it resolves the stock
  * state and generates the codec, which needs the resolved properties and
  * the context's TokenStreamFactory. Contextualization then hands out the
- * codec, so steady-state call sites reference it with no extra hop.
+ * codec, so steady-state call sites reference it with no extra hop. When
+ * no codec is generated, contextualization hands out an exact-class copy of
+ * the resolved stock state instead, so a demoted bean costs nothing over
+ * stock.
  */
 final class BBReaderPlaceholder extends BeanDeserializer
 {
@@ -27,6 +31,10 @@ final class BBReaderPlaceholder extends BeanDeserializer
 
     private volatile ValueDeserializer<Object> _codec;
 
+    // Set once resolution generated no codec: a plain BeanDeserializer with
+    // this placeholder's resolved state
+    private volatile BeanDeserializerBase _stock;
+
     BBReaderPlaceholder(BeanDeserializer src, boolean declaresViews) {
         super(src);
         _declaresViews = declaresViews;
@@ -36,18 +44,26 @@ final class BBReaderPlaceholder extends BeanDeserializer
     public void resolve(DeserializationContext ctxt) {
         CodegenDebug.log(() -> "reader resolve " + handledType().getName());
         super.resolve(ctxt);
-        _codec = BBReaderFactory.tryGenerate(new BBReaderFactory.Source(this, _anySetter,
+        ValueDeserializer<Object> codec = BBReaderFactory.tryGenerate(new BBReaderFactory.Source(this, _anySetter,
                 _injectables != null, _beanProperties, _propertyBasedCreator,
                 _nonStandardCreation,
                 (_delegateDeserializer != null) || (_arrayDelegateDeserializer != null),
                 _externalTypeIdHandler != null, _unwrappedPropertyHandler != null, null),
                 ctxt, _declaresViews);
+        _codec = codec;
+        if (codec == null) {
+            _stock = withBeanProperties(_beanProperties);
+        }
     }
 
     // Contextualization is the stock one; when it leaves this deserializer
     // as it is, the codec takes its place.
     @Override
     public ValueDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
+        BeanDeserializerBase stock = _stock;
+        if (stock != null) {
+            return stock.createContextual(ctxt, property);
+        }
         ValueDeserializer<?> contextual = super.createContextual(ctxt, property);
         ValueDeserializer<Object> codec = _codec;
         return (contextual == this && codec != null) ? codec : contextual;
