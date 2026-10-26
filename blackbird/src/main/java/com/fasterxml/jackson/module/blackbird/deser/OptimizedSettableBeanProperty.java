@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.*;
 import com.fasterxml.jackson.databind.deser.impl.NullsConstantProvider;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 
 /**
@@ -132,11 +131,10 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      * the generated accessor falls back to the delegate, and anything the setter
      * throws is reported the way {@code MethodProperty.setAndReturn} reports it.
      */
-    protected Object _reportProblemAndReturn(Object bean, Object value, Throwable e)
+    protected Object _reportProblemAndReturn(Object accessor, Object bean, Object value, Throwable e)
         throws IOException
     {
-        if (((e instanceof IllegalAccessError) || (e instanceof SecurityException))
-                && !_thrownBySetter(e)) {
+        if (_isAccessorAccessFailure(accessor, e)) {
             _logAccessProblem(bean, e);
             return delegate.setAndReturn(bean, value);
         }
@@ -146,23 +144,21 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         return null; // never gets here
     }
 
-    // The setter may already have run, so it must not be called again; an
-    // access failure happens before it is entered. Without a stack trace we
-    // cannot tell, so assume the setter ran.
-    private boolean _thrownBySetter(Throwable e) {
+    // Retrying is only safe if the setter never ran, so require positive evidence:
+    // the JVM raises an access failure in the accessor's own frame, which is then
+    // on top of the stack (or, where generated frames are hidden from stack traces,
+    // this property's frame that called it). A throwable created anywhere else,
+    // such as one the setter saved and throws later, keeps its original failure.
+    private boolean _isAccessorAccessFailure(Object accessor, Throwable e) {
+        if (!(e instanceof IllegalAccessError) && !(e instanceof SecurityException)) {
+            return false;
+        }
         StackTraceElement[] trace = e.getStackTrace();
         if (trace.length == 0) {
-            return true;
+            return false;
         }
-        AnnotatedMember setter = getMember();
-        String className = setter.getDeclaringClass().getName();
-        String methodName = setter.getName();
-        for (StackTraceElement elem : trace) {
-            if (methodName.equals(elem.getMethodName()) && className.equals(elem.getClassName())) {
-                return true;
-            }
-        }
-        return false;
+        String top = trace[0].getClassName();
+        return top.equals(accessor.getClass().getName()) || top.equals(getClass().getName());
     }
 
     private void _logAccessProblem(Object bean, Throwable e) {

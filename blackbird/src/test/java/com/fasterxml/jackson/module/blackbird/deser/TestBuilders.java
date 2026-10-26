@@ -3,6 +3,8 @@ package com.fasterxml.jackson.module.blackbird.deser;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
@@ -239,8 +241,7 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
-    // A failing setter should be reported the same way with and without Blackbird.
-    // The throwable is created inside the setter, as a real one would be.
+    // A failing setter should be reported the same way with and without Blackbird
     static Supplier<Throwable> toThrow;
     static int setterCalls;
 
@@ -271,7 +272,8 @@ public class TestBuilders extends BlackbirdTestBase
     @JsonDeserialize(builder=ThrowingBuilder.class)
     static class ThrowingBuilt { }
 
-    // Fails inside the setter on the first call only, so a retry would succeed
+    // Fails on the first call only, so a retry would succeed
+    static Supplier<Throwable> flakyFailure;
     static int flakyCalls;
 
     static final class FlakyBuilder
@@ -280,7 +282,11 @@ public class TestBuilders extends BlackbirdTestBase
 
         public FlakyBuilder withStr(String v) {
             if (flakyCalls++ == 0) {
-                throw new SecurityException("thrown by setter");
+                Throwable t = flakyFailure.get();
+                if (t instanceof Error) {
+                    throw (Error) t;
+                }
+                throw (RuntimeException) t;
             }
             str = v;
             return this;
@@ -380,8 +386,9 @@ public class TestBuilders extends BlackbirdTestBase
         assertEquals(42, v.i);
     }
 
-    // An access failure of the generated accessor happens before the setter
-    // runs; the reflective fallback must still return the new builder
+    // An access failure is raised by the JVM in the generated accessor's own frame,
+    // before the setter runs; the anonymous classes stand in for that accessor.
+    // The reflective fallback must still return the new builder.
     @Test
     public void testAccessFailureFallsBackToReflection() throws Exception
     {
@@ -391,21 +398,43 @@ public class TestBuilders extends BlackbirdTestBase
         BeanDeserializerBase deser = (BeanDeserializerBase) ctxt.findRootValueDeserializer(
                 vanilla.constructType(CopyingBuilt.class));
         SettableStringProperty prop = new SettableStringProperty(deser.findProperty("str"),
-                (bean, v) -> { throw new IllegalAccessError("simulated"); },
-                (bean, v) -> { throw new IllegalAccessError("simulated"); });
+                new BiConsumer<Object, String>() {
+                    @Override
+                    public void accept(Object bean, String v) {
+                        throw new IllegalAccessError("simulated");
+                    }
+                },
+                new BiFunction<Object, Object, Object>() {
+                    @Override
+                    public Object apply(Object bean, Object v) {
+                        throw new IllegalAccessError("simulated");
+                    }
+                });
 
         CopyingBuilder result = (CopyingBuilder) prop.setAndReturn(new CopyingBuilder(), "foo");
         assertEquals("foo", result.str);
         assertEquals(1, result.reflectiveCalls);
     }
 
+    // Whether the setter creates the throwable or saved it earlier, it may already
+    // have done its work, so it must not run again
     @Test
-    public void testSetterSecurityExceptionIsNotRetried() throws Exception
+    public void testSetterFailureIsNotRetried() throws Exception
     {
-        flakyCalls = 0;
-        assertThrows(JsonMappingException.class,
-                () -> MAPPER.readValue(a2q("{'str':'foo'}"), FlakyBuilt.class));
-        assertEquals(1, flakyCalls);
+        SecurityException savedSecurity = new SecurityException("saved");
+        IllegalAccessError savedAccess = new IllegalAccessError("saved");
+        List<Supplier<Throwable>> failures = Arrays.asList(
+                () -> new SecurityException("thrown by setter"),
+                () -> new IllegalAccessError("thrown by setter"),
+                () -> savedSecurity,
+                () -> savedAccess);
+        for (Supplier<Throwable> failure : failures) {
+            flakyFailure = failure;
+            flakyCalls = 0;
+            assertThrows(JsonMappingException.class,
+                    () -> MAPPER.readValue(a2q("{'str':'foo'}"), FlakyBuilt.class));
+            assertEquals(1, flakyCalls, String.valueOf(failure.get()));
+        }
     }
 
     @Test
@@ -425,13 +454,18 @@ public class TestBuilders extends BlackbirdTestBase
     @Test
     public void testThrowingSetterMatchesVanilla() throws Exception
     {
+        SecurityException savedSecurity = new SecurityException("saved");
+        IllegalAccessError savedAccess = new IllegalAccessError("saved");
         List<Supplier<Throwable>> failures = Arrays.asList(
                 () -> new IllegalStateException("unchecked"),
                 () -> new IllegalStateException("outer", new IllegalArgumentException("root")),
                 () -> new IOException("bad value"),
                 () -> new Exception("checked"),
                 () -> new AssertionError("error"),
-                () -> new SecurityException("thrown by setter"));
+                () -> new SecurityException("thrown by setter"),
+                () -> new IllegalAccessError("thrown by setter"),
+                () -> savedSecurity,
+                () -> savedAccess);
         for (boolean wrap : new boolean[] { true, false }) {
             ObjectMapper vanilla = JsonMapper.builder()
                     .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
