@@ -149,6 +149,7 @@ public class BBCodecFieldTest extends BlackbirdTestBase
         ObjectMapper m = JsonMapper.builder()
                 .addModule(new BlackbirdModule() {
                     @Override
+                    @SuppressWarnings("deprecation")
                     protected Supplier<MethodHandles.Lookup> findLookupSupplier() {
                         return here;
                     }

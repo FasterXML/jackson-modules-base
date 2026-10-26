@@ -40,6 +40,7 @@ public class JpmsPackagePrivateTest
                 .addModule(new BlackbirdModule() {
                     private static final long serialVersionUID = 1L;
                     @Override
+                    @SuppressWarnings("deprecation")
                     protected Supplier<MethodHandles.Lookup> findLookupSupplier() {
                         return Beans::lookup;
                     }

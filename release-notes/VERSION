@@ -37,9 +37,9 @@ Active maintainers:
   `ObjIntBiFunction`, `ObjLongBiFunction` and `ObjBooleanBiFunction` interfaces of
   `BBDeserializerModifier`, `ser.ToBooleanFunction`, and all of `util`
   (`CheckedFunction`, `CheckedSupplier`, `ReflectionHack`, `Sneaky`, `Unchecked`).
-  `BBDeserializerModifier` and `BBSerializerModifier` take only the lookup function
-  now. Blackbird no longer uses the lookup that `BlackbirdModule` constructors and
-  `findLookup()` overrides supply. The OSGi bundle exports only
+  `BBDeserializerModifier` and `BBSerializerModifier` take no arguments now.
+  Blackbird no longer uses the lookup that `BlackbirdModule` constructors and
+  `findLookup()` overrides supply, and module setup no longer calls `findLookup()`. The OSGi bundle exports only
   `tools.jackson.module.blackbird`, as the JPMS module does.
  (contributed by @stevenschlansker)
 #362: Bump `byte-buddy` dependency from 1.17.8 to 1.18.15

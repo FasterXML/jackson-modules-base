@@ -53,8 +53,8 @@ public class BlackbirdModule extends JacksonModule
     }
 
     /**
-     * @since 3.1 Use default (no-args) constructor and override
-     *    {@link #findLookupSupplier()}) instead.
+     * @deprecated Since 3.1. Use the default (no-args) constructor: since 3.3
+     *    Blackbird no longer uses the lookup, so no override is needed either.
      */
     @Deprecated // @since 3.1
     public BlackbirdModule(Supplier<MethodHandles.Lookup> lookupS) {
@@ -63,8 +63,8 @@ public class BlackbirdModule extends JacksonModule
     }
 
     /**
-     * @since 3.1 Use default (no-args) constructor and override
-     *  {@link #findLookup}) instead.
+     * @deprecated Since 3.1. Use the default (no-args) constructor: since 3.3
+     *    Blackbird no longer uses the lookup, so no override is needed either.
      */
     @Deprecated // @since 3.1
     public BlackbirdModule(Function<Class<?>, MethodHandles.Lookup> lookupF) {
@@ -73,11 +73,14 @@ public class BlackbirdModule extends JacksonModule
     }
 
     /**
-     * Overridable method module uses to access {@code MethodHandles.Lookup} supplier;
+     * Overridable method module used to access {@code MethodHandles.Lookup} supplier;
      * needed to keep module itself {@link java.io.Serializable}.
      *
      * @since 3.1
+     * @deprecated Since 3.3: module setup no longer calls it, and overriding it
+     *    has no effect.
      */
+    @Deprecated // @since 3.3
     protected Function<Class<?>, Lookup> findLookup() {
         if (_lookupFunction != null) {
             return _lookupFunction;
@@ -86,11 +89,14 @@ public class BlackbirdModule extends JacksonModule
     }
 
     /**
-     * Overridable method module uses to access {@code MethodHandles.Lookup} supplier
-     * used to create actual lookup {@code Function}
+     * Overridable method module used to access {@code MethodHandles.Lookup} supplier
+     * used to create actual lookup {@code Function}.
      *
      * @since 3.1
+     * @deprecated Since 3.3: module setup no longer calls it, and overriding it
+     *    has no effect.
      */
+    @Deprecated // @since 3.3
     protected Supplier<MethodHandles.Lookup> findLookupSupplier() {
         return (_lookupSupplier != null)
                 ? _lookupSupplier
