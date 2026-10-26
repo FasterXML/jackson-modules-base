@@ -15,7 +15,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java_version: ['17', '21']
+        # 25: Blackbird (which subclasses stock (de)serializers and reads
+        # their protected state) builds and tests only on JDK 25+.
+        java_version: ['17', '21', '25']
     env:
       JAVA_OPTS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
     steps:

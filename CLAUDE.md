@@ -10,7 +10,9 @@ Jackson modules-base is a multi-module Maven project containing 11 foundational 
 
 (paranamer is not part of 3.x — it only appears commented out in the root `pom.xml`.)
 
-There are also two test-only, never-published modules: `afterburner-tests` and `blackbird-tests`. They have no `module-info.java`, so their test POJOs live in the unnamed module and exercise the bytecode-generation paths that are disabled for beans in named JPMS modules (see each module's `README.md`).
+There are also three test-only, never-published modules: `afterburner-tests` and `blackbird-tests` have no `module-info.java`, so their test POJOs live in the unnamed module and exercise the bytecode-generation paths that are disabled for beans in named JPMS modules (see each module's `README.md`); `blackbird-jpms-tests` is a foreign named module that requires blackbird and runs on the module path.
+
+**Blackbird builds only on JDK 25+:** `blackbird`, `blackbird-tests` and `blackbird-jpms-tests` are in the root pom's `blackbird-jdk25` profile (activated on JDK 25+). On an older JDK the full build silently leaves them out, and `-pl blackbird` fails with "Could not find the selected project in the reactor"; use a JDK 25 (`JAVA_HOME=... ./mvnw ...`) for Blackbird work.
 
 Maven coordinates: groupId `tools.jackson.module`, parent `tools.jackson:jackson-base`; depends on `tools.jackson.core:jackson-databind`.
 
@@ -36,7 +38,7 @@ Maven coordinates: groupId `tools.jackson.module`, parent `tools.jackson:jackson
 ./mvnw -B -ff -ntp test -pl afterburner -Dtest=BasicDeserializeTest#testIntMethod
 ```
 
-Java 17 is the minimum (`javac.src.version` 17); CI tests against 17, 21, 24, 25. osgi and afterburner-tests add `--add-opens java.base/java.lang=ALL-UNNAMED` to their test `argLine`.
+Java 17 is the minimum (`javac.src.version` 17); CI tests against 17, 21, 24, 25 (Blackbird only on 25, which also runs Blackbird's runtime tests on 17 and 21 through `-Dblackbird.test.oldJdks`). osgi and afterburner-tests add `--add-opens java.base/java.lang=ALL-UNNAMED` to their test `argLine`.
 
 ## Architecture
 
