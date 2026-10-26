@@ -8,14 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.SerializationConfig;
 import tools.jackson.databind.ValueSerializer;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.module.SimpleModule;
-import tools.jackson.databind.ser.ValueSerializerModifier;
-import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,7 +34,7 @@ public class ChildClassloaderTest extends BlackbirdTestBase
         Class<?> clazz = Class.forName(Data.class.getName(), true, loader);
         assertNotSame(Data.class, clazz);
         Map<Class<?>, ValueSerializer<?>> seen = new ConcurrentHashMap<>();
-        ObjectMapper mapper = capturingMapper(seen);
+        ObjectMapper mapper = capturingWriterMapper(seen);
         Constructor<?> constructor = clazz.getConstructor(int.class);
         Object data = constructor.newInstance(42);
         assertEquals("{\"field\":42}", mapper.writeValueAsString(data));
@@ -52,29 +46,6 @@ public class ChildClassloaderTest extends BlackbirdTestBase
         codec.setAccessible(true);
         assertNotNull(codec.get(captured),
                 "child-loaded bean engaged but no writer generated");
-    }
-
-    private static ObjectMapper capturingMapper(Map<Class<?>, ValueSerializer<?>> seen) {
-        SimpleModule capture = new SimpleModule("capture") {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void setupModule(SetupContext ctxt) {
-                super.setupModule(ctxt);
-                ctxt.addSerializerModifier(new ValueSerializerModifier() {
-                    private static final long serialVersionUID = 1L;
-                    @Override
-                    public ValueSerializer<?> modifySerializer(SerializationConfig cfg,
-                            BeanDescription.Supplier ref, ValueSerializer<?> s) {
-                        seen.put(ref.getBeanClass(), s);
-                        return s;
-                    }
-                });
-            }
-        };
-        return JsonMapper.builder()
-                .addModule(capture)
-                .addModule(new BlackbirdModule())
-                .build();
     }
 
     public static class Data {

@@ -10,16 +10,12 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.*;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.deser.SettableBeanProperty;
-import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.deser.impl.MethodProperty;
 import tools.jackson.databind.ext.jdk8.Jdk8OptionalDeserializer;
-import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.jsontype.TypeDeserializer;
-import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.type.TypeFactory;
 
-import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -99,18 +95,9 @@ public class OptionalDeser355Test extends BlackbirdTestBase
         }
     }
 
-    static class DeserializerCapture extends ValueDeserializerModifier {
-        private static final long serialVersionUID = 1L;
-
+    static class DeserializerCapture {
         private final Map<Class<?>, ValueDeserializer<?>> deserializers =
                 new ConcurrentHashMap<>();
-
-        @Override
-        public ValueDeserializer<?> modifyDeserializer(DeserializationConfig config,
-                BeanDescription.Supplier beanDescRef, ValueDeserializer<?> deserializer) {
-            deserializers.put(beanDescRef.getBeanClass(), deserializer);
-            return deserializer;
-        }
 
         public ValueDeserializer<?> deserializerFor(Class<?> beanType) {
             ValueDeserializer<?> deserializer = deserializers.get(beanType);
@@ -153,13 +140,6 @@ public class OptionalDeser355Test extends BlackbirdTestBase
     }
 
     private ObjectMapper mapperWithCapture(DeserializerCapture capture) {
-        SimpleModule captureModule = new SimpleModule()
-                .setDeserializerModifier(capture);
-        // Modifiers run in reverse registration order: the capture module
-        // registers first so it observes what Blackbird installed.
-        return JsonMapper.builder()
-                .addModule(captureModule)
-                .addModule(new BlackbirdModule())
-                .build();
+        return capturingMapper(capture.deserializers);
     }
 }

@@ -13,16 +13,10 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.databind.BeanDescription;
-import tools.jackson.databind.DeserializationConfig;
 import tools.jackson.databind.InjectableValues;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ValueDeserializer;
-import tools.jackson.databind.deser.ValueDeserializerModifier;
-import tools.jackson.databind.module.SimpleModule;
-import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
-import tools.jackson.databind.json.JsonMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -85,29 +79,6 @@ public class BBCodecDemotionTest extends BlackbirdTestBase
 
     private final ObjectMapper vanilla = newVanillaJSONMapper();
 
-    private static ObjectMapper capturingMapper(Map<Class<?>, ValueDeserializer<?>> seen) {
-        SimpleModule capture = new SimpleModule("capture") {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void setupModule(SetupContext ctxt) {
-                super.setupModule(ctxt);
-                ctxt.addDeserializerModifier(new ValueDeserializerModifier() {
-                    private static final long serialVersionUID = 1L;
-                    @Override
-                    public ValueDeserializer<?> modifyDeserializer(DeserializationConfig cfg,
-                            BeanDescription.Supplier ref, ValueDeserializer<?> d) {
-                        seen.put(ref.getBeanClass(), d);
-                        return d;
-                    }
-                });
-            }
-        };
-        return JsonMapper.builder()
-                .addModule(capture)
-                .addModule(new BlackbirdModule())
-                .build();
-    }
-
     // Stock comes in two shapes: the modifier demoted (raw stock captured),
     // or the factory gated at resolve time (placeholder captured, codec never
     // generated). Both mean every call runs the stock deserializer.
@@ -124,6 +95,18 @@ public class BBCodecDemotionTest extends BlackbirdTestBase
         }
     }
 
+    @Test
+    public void testObjectIdBeanStaysStock() throws Exception {
+        Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
+        ObjectMapper mapper = capturingMapper(seen);
+        String doc = a2q("{'@id':1,'value':5,'next':1}");
+        IdBean v = vanilla.readValue(doc, IdBean.class);
+        IdBean m = mapper.readValue(doc, IdBean.class);
+        assertStock(seen, IdBean.class);
+        assertEquals(v.value, m.value);
+        assertSame(m, m.next);
+    }
+
     // A demoted bean gets the stock (de)serializer itself from
     // contextualization, not the placeholder that stands in for it
     @Test
@@ -135,18 +118,6 @@ public class BBCodecDemotionTest extends BlackbirdTestBase
                 rootReader(mapper, IdBean.class).getClass());
         assertSame(rootReader(vanilla, InjectRecord.class).getClass(),
                 rootReader(mapper, InjectRecord.class).getClass());
-    }
-
-    @Test
-    public void testObjectIdBeanStaysStock() throws Exception {
-        Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
-        ObjectMapper mapper = capturingMapper(seen);
-        String doc = a2q("{'@id':1,'value':5,'next':1}");
-        IdBean v = vanilla.readValue(doc, IdBean.class);
-        IdBean m = mapper.readValue(doc, IdBean.class);
-        assertStock(seen, IdBean.class);
-        assertEquals(v.value, m.value);
-        assertSame(m, m.next);
     }
 
     @Test

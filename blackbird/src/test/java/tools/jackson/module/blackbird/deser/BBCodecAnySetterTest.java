@@ -9,16 +9,10 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import tools.jackson.databind.BeanDescription;
-import tools.jackson.databind.DeserializationConfig;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ValueDeserializer;
-import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.exc.IgnoredPropertyException;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.module.SimpleModule;
-import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,29 +62,6 @@ public class BBCodecAnySetterTest extends BlackbirdTestBase
     }
 
     private final ObjectMapper vanilla = newVanillaJSONMapper();
-
-    private static ObjectMapper capturingMapper(Map<Class<?>, ValueDeserializer<?>> seen) {
-        SimpleModule capture = new SimpleModule("capture") {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void setupModule(SetupContext ctxt) {
-                super.setupModule(ctxt);
-                ctxt.addDeserializerModifier(new ValueDeserializerModifier() {
-                    private static final long serialVersionUID = 1L;
-                    @Override
-                    public ValueDeserializer<?> modifyDeserializer(DeserializationConfig cfg,
-                            BeanDescription.Supplier ref, ValueDeserializer<?> d) {
-                        seen.put(ref.getBeanClass(), d);
-                        return d;
-                    }
-                });
-            }
-        };
-        return JsonMapper.builder()
-                .addModule(capture)
-                .addModule(new BlackbirdModule())
-                .build();
-    }
 
     private static void assertEngaged(Map<Class<?>, ValueDeserializer<?>> seen, Class<?> cls,
             boolean engaged) {

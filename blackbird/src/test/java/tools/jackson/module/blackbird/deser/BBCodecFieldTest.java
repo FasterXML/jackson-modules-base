@@ -8,17 +8,13 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.databind.BeanDescription;
-import tools.jackson.databind.DeserializationConfig;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ValueDeserializer;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.module.SimpleModule;
 
 import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
@@ -176,19 +172,7 @@ public class BBCodecFieldTest extends BlackbirdTestBase
     @Test
     public void testFieldBeanEngagesCodec() throws Exception {
         Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
-        ValueDeserializerModifier capture = new ValueDeserializerModifier() {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public ValueDeserializer<?> modifyDeserializer(DeserializationConfig config,
-                    BeanDescription.Supplier ref, ValueDeserializer<?> deser) {
-                seen.put(ref.getBeanClass(), deser);
-                return deser;
-            }
-        };
-        ObjectMapper m = JsonMapper.builder()
-                .addModule(new SimpleModule("capture").setDeserializerModifier(capture))
-                .addModule(new BlackbirdModule())
-                .build();
+        ObjectMapper m = capturingMapper(seen);
         m.readValue(a2q("{'name':'a'}"), FieldBean.class);
         assertTrue(hasGeneratedCodec(seen.get(FieldBean.class)));
     }

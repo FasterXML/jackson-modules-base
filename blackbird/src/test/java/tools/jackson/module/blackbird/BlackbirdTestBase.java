@@ -2,17 +2,24 @@ package tools.jackson.module.blackbird;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.core.*;
 
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.DeserializationConfig;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationConfig;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.ValueSerializerModifier;
 
 import tools.jackson.module.blackbird.testutil.NoCheckSubTypeValidator;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
@@ -236,6 +243,53 @@ public abstract class BlackbirdTestBase
 
     protected static JsonMapper newVanillaJSONMapper() {
         return new JsonMapper();
+    }
+
+    /**
+     * Builder for a Blackbird mapper that records, per bean class, what
+     * Blackbird's modifiers installed: the placeholder, or the stock
+     * (de)serializer when a gate skipped the bean. Either map may be null.
+     * Modifiers run in reverse registration order, so the capture module
+     * registers before Blackbird to observe its result.
+     */
+    protected static JsonMapper.Builder capturingMapperBuilder(
+            Map<Class<?>, ValueDeserializer<?>> desers, Map<Class<?>, ValueSerializer<?>> sers) {
+        SimpleModule capture = new SimpleModule("capture");
+        if (desers != null) {
+            capture.setDeserializerModifier(new ValueDeserializerModifier() {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public ValueDeserializer<?> modifyDeserializer(DeserializationConfig cfg,
+                        BeanDescription.Supplier ref, ValueDeserializer<?> d) {
+                    desers.put(ref.getBeanClass(), d);
+                    return d;
+                }
+            });
+        }
+        if (sers != null) {
+            capture.setSerializerModifier(new ValueSerializerModifier() {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public ValueSerializer<?> modifySerializer(SerializationConfig cfg,
+                        BeanDescription.Supplier ref, ValueSerializer<?> s) {
+                    sers.put(ref.getBeanClass(), s);
+                    return s;
+                }
+            });
+        }
+        return JsonMapper.builder()
+                .addModule(capture)
+                .addModule(new BlackbirdModule());
+    }
+
+    /** Blackbird mapper recording installed deserializers; see {@link #capturingMapperBuilder}. */
+    protected static ObjectMapper capturingMapper(Map<Class<?>, ValueDeserializer<?>> desers) {
+        return capturingMapperBuilder(desers, null).build();
+    }
+
+    /** Blackbird mapper recording installed serializers; see {@link #capturingMapperBuilder}. */
+    protected static ObjectMapper capturingWriterMapper(Map<Class<?>, ValueSerializer<?>> sers) {
+        return capturingMapperBuilder(null, sers).build();
     }
 
     /*

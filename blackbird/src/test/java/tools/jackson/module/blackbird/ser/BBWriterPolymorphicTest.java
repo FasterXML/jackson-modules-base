@@ -11,14 +11,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.SerializationConfig;
 import tools.jackson.databind.ValueSerializer;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.module.SimpleModule;
-import tools.jackson.databind.ser.ValueSerializerModifier;
-import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -179,26 +173,7 @@ public class BBWriterPolymorphicTest extends BlackbirdTestBase
     @Test
     public void testSubtypeWriterGeneratesCodec() throws Exception {
         Map<Class<?>, ValueSerializer<?>> seen = new ConcurrentHashMap<>();
-        SimpleModule capture = new SimpleModule("capture") {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void setupModule(SetupContext ctxt) {
-                super.setupModule(ctxt);
-                ctxt.addSerializerModifier(new ValueSerializerModifier() {
-                    private static final long serialVersionUID = 1L;
-                    @Override
-                    public ValueSerializer<?> modifySerializer(SerializationConfig cfg,
-                            BeanDescription.Supplier ref, ValueSerializer<?> s) {
-                        seen.put(ref.getBeanClass(), s);
-                        return s;
-                    }
-                });
-            }
-        };
-        ObjectMapper capturing = JsonMapper.builder()
-                .addModule(capture)
-                .addModule(new BlackbirdModule())
-                .build();
+        ObjectMapper capturing = capturingWriterMapper(seen);
         Animal cat = Cat.of("mia", 9, true);
         assertEquals(vanilla.writerFor(Animal.class).writeValueAsString(cat),
                 capturing.writerFor(Animal.class).writeValueAsString(cat));

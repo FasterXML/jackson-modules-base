@@ -8,13 +8,9 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.databind.BeanDescription;
-import tools.jackson.databind.DeserializationConfig;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ValueDeserializer;
-import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
@@ -178,19 +174,7 @@ public class BBCodecViewTest extends BlackbirdTestBase
         // The cases above only pin view parity if the codecs actually engage
         // for these beans when no view is active.
         Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
-        ValueDeserializerModifier capture = new ValueDeserializerModifier() {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public ValueDeserializer<?> modifyDeserializer(DeserializationConfig config,
-                    BeanDescription.Supplier beanDescRef, ValueDeserializer<?> deserializer) {
-                seen.put(beanDescRef.getBeanClass(), deserializer);
-                return deserializer;
-            }
-        };
-        ObjectMapper m = JsonMapper.builder()
-                .addModule(new SimpleModule("capture").setDeserializerModifier(capture))
-                .addModule(new BlackbirdModule())
-                .build();
+        ObjectMapper m = capturingMapper(seen);
         m.readValue(DOC, ViewBean.class);
         m.readValue("{\"a\":\"x\",\"b\":7}", ViewRecord.class);
         assertTrue(hasGeneratedCodec(seen.get(ViewBean.class)));

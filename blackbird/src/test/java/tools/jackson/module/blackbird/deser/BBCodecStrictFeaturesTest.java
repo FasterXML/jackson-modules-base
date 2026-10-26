@@ -7,16 +7,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.junit.jupiter.api.Test;
 
-import tools.jackson.databind.BeanDescription;
-import tools.jackson.databind.DeserializationConfig;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ValueDeserializer;
-import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.exc.UnrecognizedPropertyException;
-import tools.jackson.databind.module.SimpleModule;
-import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -51,26 +46,7 @@ public class BBCodecStrictFeaturesTest extends BlackbirdTestBase
     /** Blackbird mapper with a capture modifier, so engagement is assertable. */
     private static ObjectMapper capturingMapper(Map<Class<?>, ValueDeserializer<?>> seen,
             DeserializationFeature... enable) {
-        SimpleModule capture = new SimpleModule("capture") {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void setupModule(SetupContext ctxt) {
-                super.setupModule(ctxt);
-                ctxt.addDeserializerModifier(new ValueDeserializerModifier() {
-                    private static final long serialVersionUID = 1L;
-                    @Override
-                    public ValueDeserializer<?> modifyDeserializer(DeserializationConfig cfg,
-                            BeanDescription.Supplier ref, ValueDeserializer<?> d) {
-                        seen.put(ref.getBeanClass(), d);
-                        return d;
-                    }
-                });
-            }
-        };
-        JsonMapper.Builder b =
-                JsonMapper.builder()
-                        .addModule(capture)
-                        .addModule(new BlackbirdModule());
+        JsonMapper.Builder b = capturingMapperBuilder(seen, null);
         for (DeserializationFeature f : enable) {
             b = b.enable(f);
         }
