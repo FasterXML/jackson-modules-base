@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.impl.MethodProperty;
@@ -267,6 +268,25 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
+    // A failing setter should be reported the same way with and without Blackbird
+    static final class ThrowingBuilder
+    {
+        public ThrowingBuilder withStr(String v) {
+            throw new IllegalStateException("bad str");
+        }
+
+        public ThrowingBuilder withI(int v) {
+            throw new IllegalStateException("bad i");
+        }
+
+        public ThrowingBuilt build() {
+            return new ThrowingBuilt();
+        }
+    }
+
+    @JsonDeserialize(builder=ThrowingBuilder.class)
+    static class ThrowingBuilt { }
+
     static class Values {
         final String str;
         final List<String> list;
@@ -372,6 +392,25 @@ public class TestBuilders extends BlackbirdTestBase
         Values v = MAPPER.readValue(a2q("{'str':null,'list':null}"), SkipNullsBuilt.class);
         assertEquals("default", v.str);
         assertEquals(Arrays.asList("keep"), v.list);
+    }
+
+    @Test
+    public void testThrowingSetterMatchesVanilla() throws Exception
+    {
+        for (String json : new String[] { a2q("{'str':'foo'}"), a2q("{'i':42}") }) {
+            JsonMappingException expected = assertThrows(JsonMappingException.class,
+                    () -> newVanillaJSONMapper().readValue(json, ThrowingBuilt.class));
+            JsonMappingException actual = assertThrows(JsonMappingException.class,
+                    () -> MAPPER.readValue(json, ThrowingBuilt.class));
+            assertEquals(expected.getClass(), actual.getClass());
+            assertEquals(expected.getOriginalMessage(), actual.getOriginalMessage());
+            assertEquals(expected.getPathReference(), actual.getPathReference());
+            assertEquals(expected.getCause().getClass(), actual.getCause().getClass());
+            assertEquals(expected.getCause().getMessage(), actual.getCause().getMessage());
+            // and the Blackbird failure came from the generated accessor
+            assertTrue(Arrays.stream(actual.getCause().getStackTrace())
+                    .noneMatch(e -> e.getClassName().equals(MethodProperty.class.getName())));
+        }
     }
 
     private void _verifyValues(Values v) {
