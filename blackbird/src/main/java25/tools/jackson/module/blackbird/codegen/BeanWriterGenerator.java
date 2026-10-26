@@ -41,6 +41,7 @@ final class BeanWriterGenerator
     private static final ClassDesc CD_SER_CONTEXT = Descs.of(SerializationContext.class);
     private static final ClassDesc CD_SERIALIZABLE_STRING = Descs.of(SerializableString.class);
     private static final ClassDesc CD_PROPERTY_WRITER = Descs.of(PropertyWriter.class);
+    private static final ClassDesc CD_BEAN_PROPERTY_WRITER = Descs.of(BeanPropertyWriter.class);
     private static final ClassDesc CD_WRITER_BASE =
             Descs.of(GeneratedWriterBase.class);
     private static final ClassDesc CD_BEAN_SER_BASE = Descs.of(BeanSerializerBase.class);
@@ -64,6 +65,9 @@ final class BeanWriterGenerator
     private static final MethodTypeDesc MTD_WRITE_END = MethodTypeDesc.of(CD_JSON_GENERATOR);
     private static final MethodTypeDesc MTD_SERIALIZE_AS_PROPERTY = MethodTypeDesc.of(
             ConstantDescs.CD_void, ConstantDescs.CD_Object, CD_JSON_GENERATOR, CD_SER_CONTEXT);
+    private static final MethodTypeDesc MTD_SELF_REFERENCE = MethodTypeDesc.of(
+            ConstantDescs.CD_void, CD_BEAN_PROPERTY_WRITER, ConstantDescs.CD_Object,
+            CD_JSON_GENERATOR, CD_SER_CONTEXT);
     private static final MethodTypeDesc MTD_CTOR = MethodTypeDesc.of(ConstantDescs.CD_void,
             CD_BEAN_SER_BASE, ConstantDescs.CD_String);
     private static final MethodTypeDesc MTD_PROP_FAILURE = MethodTypeDesc.of(
@@ -432,9 +436,9 @@ final class BeanWriterGenerator
                 }
                 case CHILD -> {
                     // A value that is the bean itself goes to the stock
-                    // writer, which owns the self-reference handling
-                    // (FAIL_ON_SELF_REFERENCES, WRITE_SELF_REFERENCES_AS_NULL)
-                    // and reads the value again.
+                    // self-reference handling (FAIL_ON_SELF_REFERENCES,
+                    // WRITE_SELF_REFERENCES_AS_NULL), with the value read
+                    // here, so that the getter runs once, as in stock.
                     Label isNull = cob.newLabel();
                     Label self = cob.newLabel();
                     Label done = cob.newLabel();
@@ -456,10 +460,11 @@ final class BeanWriterGenerator
                     cob.aload(gen).invokevirtual(CD_JSON_GENERATOR, "writeNull", MTD_WRITE_NULL).pop();
                     cob.goto_(done);
                     cob.labelBinding(self);
+                    cob.aload(0);
                     ldcData(cob, stockName[i], CD_PROPERTY_WRITER);
+                    cob.checkcast(CD_BEAN_PROPERTY_WRITER);
                     cob.aload(1).aload(gen).aload(ctxt);
-                    cob.invokevirtual(CD_PROPERTY_WRITER, "serializeAsProperty",
-                            MTD_SERIALIZE_AS_PROPERTY);
+                    cob.invokevirtual(CD_WRITER_BASE, "_selfReference", MTD_SELF_REFERENCE);
                     cob.labelBinding(done);
                 }
                 case STOCK -> {

@@ -6,7 +6,6 @@ import java.lang.invoke.MethodType;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.StringJoiner;
 
 import tools.jackson.core.SerializableString;
@@ -117,23 +116,26 @@ public final class WriterCodegen
     }
 
     // A normal class, not a hidden one, so that the hidden writers can name
-    // it. The class initialization defines it at most once per class loader
-    // of Blackbird; a second define of the same name would fail.
+    // it. It is defined at most once per class loader of Blackbird (a second
+    // define of the same name would fail), on first use rather than in a
+    // static initializer: a failed attempt (say, a throwable from deep in a
+    // recursive resolution) must not leave the class unusable for every
+    // later writer, so the next generation tries again.
     private static final class HelpersHolder
     {
-        private static final Class<?> DEFINED = define();
+        private static volatile Class<?> _defined;
 
-        static void ensureDefined() {
-            Objects.requireNonNull(DEFINED);
+        static void ensureDefined() throws IllegalAccessException {
+            if (_defined == null) {
+                define();
+            }
         }
 
-        private static Class<?> define() {
-            byte[] bytes = ClassFileEmitters.emitWriteHelpers();
-            CodegenDump.dump(HELPERS_CLASS, bytes);
-            try {
-                return MethodHandles.lookup().defineClass(bytes);
-            } catch (IllegalAccessException e) {
-                throw new IllegalStateException("cannot define " + HELPERS_CLASS, e);
+        private static synchronized void define() throws IllegalAccessException {
+            if (_defined == null) {
+                byte[] bytes = ClassFileEmitters.emitWriteHelpers();
+                CodegenDump.dump(HELPERS_CLASS, bytes);
+                _defined = MethodHandles.lookup().defineClass(bytes);
             }
         }
     }

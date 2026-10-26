@@ -3,6 +3,7 @@ package tools.jackson.module.blackbird.internal;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.BeanSerializer;
@@ -74,6 +75,37 @@ public abstract class GeneratedWriterBase extends BeanSerializer
         }
         wrapAndThrow(ctxt, t, bean, name);
         throw new IllegalStateException("wrapAndThrow returned", t);
+    }
+
+    // A child property whose value is the bean itself: the rest of stock
+    // BeanPropertyWriter.serializeAsProperty from the self-reference check
+    // on (the generated arm has read the value, which stock reads once; the
+    // arm's properties have no type serializer, value suppression or
+    // applied view).
+    protected final void _selfReference(BeanPropertyWriter prop, Object bean, JsonGenerator g,
+            SerializationContext ctxt) throws Exception {
+        new SelfReferenceProbe(prop).serializeSelf(bean, g, ctxt);
+    }
+
+    // BeanPropertyWriter's self-reference handling and serializer state are
+    // protected; the copy constructor carries the writer's state over.
+    private static final class SelfReferenceProbe extends BeanPropertyWriter {
+        SelfReferenceProbe(BeanPropertyWriter base) {
+            super(base);
+        }
+
+        void serializeSelf(Object bean, JsonGenerator g, SerializationContext ctxt)
+                throws Exception {
+            ValueSerializer<Object> ser = _serializer;
+            if (ser == null) {
+                ser = _findAndAddDynamic(_dynamicSerializers, bean.getClass(), ctxt);
+            }
+            if (_handleSelfReference(bean, g, ctxt, ser)) {
+                return;
+            }
+            g.writeName(_name);
+            ser.serialize(bean, g, ctxt);
+        }
     }
 
     protected final long _viewMask(Class<?> view) {

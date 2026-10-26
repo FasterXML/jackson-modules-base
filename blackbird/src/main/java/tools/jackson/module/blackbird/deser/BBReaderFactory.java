@@ -84,8 +84,14 @@ final class BBReaderFactory
             CodegenDebug.log(() -> "reader tryGenerate " + delegate.handledType().getName()
                     + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
             return codec;
+        } catch (StackOverflowError e) {
+            // Generation ran out of stack deep in a recursive resolution: not
+            // a generator bug, and the stock path, which needs no generation,
+            // can still complete the call. Nothing more (not even logging)
+            // runs on the nearly exhausted stack.
+            return null;
         } catch (VirtualMachineError e) {
-            // Out of memory or stack, not a generator bug: never demote
+            // Out of memory or a broken JVM, not a generator bug: never demote
             throw e;
         } catch (Throwable t) {
             if (CodegenDebug.ENABLED) {

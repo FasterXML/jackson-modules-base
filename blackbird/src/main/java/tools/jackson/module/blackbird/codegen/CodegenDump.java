@@ -32,7 +32,8 @@ final class CodegenDump
             Path path = Path.of(dir);
             Files.createDirectories(path);
             Files.write(path.resolve(fileStem + ".class"), bytes);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
+            // RuntimeException: an invalid path, a security manager's refusal
             System.getLogger("tools.jackson.module.blackbird").log(Level.DEBUG,
                     "Generated-class dump failed for " + fileStem, e);
         }
