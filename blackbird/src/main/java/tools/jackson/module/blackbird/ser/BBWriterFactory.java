@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -14,8 +15,10 @@ import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.introspect.AnnotatedField;
 import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.databind.ser.BeanPropertyWriter;
+import tools.jackson.databind.ser.BeanSerializer;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
+import tools.jackson.databind.ser.impl.FilteredBeanPropertyWriter;
 import tools.jackson.databind.ser.jdk.BooleanSerializer;
 import tools.jackson.databind.ser.jdk.NumberSerializers;
 import tools.jackson.databind.ser.jdk.StringSerializer;
@@ -94,17 +97,33 @@ final class BBWriterFactory
         boolean nativePolyWrites = !hasTypeId;
         // null when the writer would be too large to JIT-compile.
         return WriterCodegen.generate(beanClass, props, delegate,
-                viewStrategy(props, includeByDefault), includeByDefault, nativePolyWrites);
+                viewStrategy(delegate, props, includeByDefault), includeByDefault, nativePolyWrites);
     }
 
-    // Matches the stock filtered-writer-array rule. No property declares a
-    // view: with default inclusion on, stock ignores views entirely (NONE, no
-    // view code); with it off, an active view hides every property, so the
-    // rare view-active call DELEGATEs to stock's write-nothing path and the
-    // no-view hot path stays free of per-property tests. Properties with
-    // views take MASK (fast path under views) up to 64 properties, DELEGATE
-    // beyond. Visibility is read per property from BeanPropertyWriter.getViews.
-    private static ViewStrategy viewStrategy(List<GenWProp> props, boolean includeByDefault) {
+    // Under an active view stock writes the resolved filtered-writer array
+    // (_filteredProps, or every property when there is none). The generated
+    // code derives visibility from each property's views instead, which is
+    // only the same as long as the array is the one processViews builds:
+    // with no array, views cannot affect the output at all (NONE); an array
+    // anything else built (a filtered writer replaced, nulled or added by
+    // updateBuilder, a processViews or constructFilteredBeanWriter override)
+    // DELEGATEs the view-active call to stock. Otherwise, as processViews:
+    // no property declares a view, so with default inclusion off an active
+    // view hides every property and the rare view-active call DELEGATEs to
+    // stock's write-nothing path, keeping the no-view hot path free of
+    // per-property tests. Properties with views take MASK (fast path under
+    // views) up to 64 properties, DELEGATE beyond. Visibility is read per
+    // property from BeanPropertyWriter.getViews.
+    private static ViewStrategy viewStrategy(BeanSerializerBase delegate,
+            List<GenWProp> props, boolean includeByDefault) {
+        ViewArrays arrays = ViewArrays.of(delegate);
+        if (arrays.filtered() == null) {
+            return ViewStrategy.NONE;
+        }
+        if (!isStockViewArray(arrays.props(), arrays.filtered(), includeByDefault)) {
+            CodegenDebug.log(() -> "writer views: non-stock filtered writers, delegating");
+            return ViewStrategy.DELEGATE;
+        }
         boolean viewsFound = false;
         for (GenWProp p : props) {
             if (p.stock() instanceof BeanPropertyWriter bpw
@@ -117,6 +136,53 @@ final class BBWriterFactory
             return includeByDefault ? ViewStrategy.NONE : ViewStrategy.DELEGATE;
         }
         return (props.size() > 64) ? ViewStrategy.DELEGATE : ViewStrategy.MASK;
+    }
+
+    // Whether filtered is what BeanSerializerFactory.processViews builds
+    // from props: an unannotated property as itself (default inclusion on)
+    // or left out (off), one with views as a stock FilteredBeanPropertyWriter
+    // for the same property and views.
+    private static boolean isStockViewArray(BeanPropertyWriter[] props,
+            BeanPropertyWriter[] filtered, boolean includeByDefault) {
+        if (filtered.length != props.length) {
+            return false;
+        }
+        for (int i = 0; i < props.length; i++) {
+            BeanPropertyWriter prop = props[i];
+            BeanPropertyWriter f = filtered[i];
+            Class<?>[] views = prop.getViews();
+            if (views == null || views.length == 0) {
+                if (f != (includeByDefault ? prop : null)) {
+                    return false;
+                }
+            } else if (f == null
+                    || f.getClass().getEnclosingClass() != FilteredBeanPropertyWriter.class
+                    || !f.getName().equals(prop.getName())
+                    || !Arrays.equals(f.getViews(), views)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Reads the resolved property arrays of a bean serializer, which are
+    // protected, through a copy.
+    private static final class ViewArrays extends BeanSerializer {
+        private ViewArrays(BeanSerializerBase src) {
+            super(src);
+        }
+
+        static ViewArrays of(BeanSerializerBase src) {
+            return new ViewArrays(src);
+        }
+
+        BeanPropertyWriter[] props() {
+            return _props;
+        }
+
+        BeanPropertyWriter[] filtered() {
+            return _filteredProps;
+        }
     }
 
     // A generated arm writes the value directly, so every per-property

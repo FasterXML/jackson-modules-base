@@ -213,7 +213,7 @@ final class BBReaderFactory
         }
         return ReaderCodegen.generate(beanClass, props, beanProps.getNameMatcher(), matchArms,
                 delegate, beanProps, construction, stock.injectables(),
-                viewStrategy(ctxt, props, declaresViews), null);
+                viewStrategy(ctxt, delegate, props, declaresViews), null);
     }
 
     // The stock matcher has one index per primary name (the arms, in order),
@@ -233,21 +233,27 @@ final class BBReaderFactory
         return out;
     }
 
-    // Beans that declare no @JsonView anywhere (read from the property
-    // definitions at modify time; the resolved matchers cannot distinguish a
-    // declared view from the empty set that disabled DEFAULT_VIEW_INCLUSION
-    // forces onto every unannotated property) emit no per-arm view code:
-    // with inclusion on, views cannot affect them at all (NONE); with it off,
-    // an active view hides every property, so the degenerate view-active call
-    // DELEGATEs to stock and the no-view hot path stays free of mask tests.
-    // Declared views take MASK (the fast path under views) up to 64
-    // properties, DELEGATE beyond. Mask visibility is read per property from
-    // SettableBeanProperty.visibleInView, so semantics stay exactly stock.
+    // With DEFAULT_VIEW_INCLUSION on, unannotated properties have no views,
+    // so the resolved hasViews() (which also sees views assigned in code, by
+    // updateBuilder or a property definition) tells exactly whether views
+    // can affect the bean; without any, no per-arm view code is emitted
+    // (NONE). With inclusion off, disabled inclusion forces the empty set
+    // onto every unannotated property, so hasViews() cannot tell a declared
+    // view apart; beans that declare no @JsonView (read from the property
+    // definitions at modify time) have every property hidden under an active
+    // view, so the degenerate view-active call DELEGATEs to stock and the
+    // no-view hot path stays free of mask tests. Otherwise MASK (the fast
+    // path under views) up to 64 properties, DELEGATE beyond. Mask
+    // visibility is read per property from SettableBeanProperty.visibleInView,
+    // so semantics stay exactly stock.
     private static ViewStrategy viewStrategy(DeserializationContext ctxt,
-            List<GenProp> props, boolean declaresViews) {
-        if (!declaresViews) {
-            return ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)
-                    ? ViewStrategy.NONE : ViewStrategy.DELEGATE;
+            BeanDeserializerBase delegate, List<GenProp> props, boolean declaresViews) {
+        if (ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION)) {
+            if (!delegate.hasViews()) {
+                return ViewStrategy.NONE;
+            }
+        } else if (!declaresViews) {
+            return ViewStrategy.DELEGATE;
         }
         return (props.size() > 64) ? ViewStrategy.DELEGATE : ViewStrategy.MASK;
     }
@@ -350,7 +356,7 @@ final class BBReaderFactory
         RecordNames names = recordNames(ctxt, creator, beanProps, props);
         return ReaderCodegen.generate(beanClass, props, names.matcher(), names.matchArms(),
                 delegate, beanProps, Construction.record(recordCtor), false,
-                viewStrategy(ctxt, props, declaresViews), localNames);
+                viewStrategy(ctxt, delegate, props, declaresViews), localNames);
     }
 
     private record RecordNames(PropertyNameMatcher matcher, int[] matchArms) {}
