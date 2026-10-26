@@ -312,8 +312,10 @@ public abstract class BlackbirdTestBase
 
     /**
      * Whether a (de)serializer that a modifier captured resolved to a
-     * generated codec: the placeholder stays in place either way, and only
-     * its codec field tells a generated bean from a gated one.
+     * generated codec. The modifier captures the placeholder either way, and
+     * only its codec field tells a generated bean from a gated one;
+     * contextualization (rootReader/rootWriter) hands out the codec or, for
+     * a gated bean, a stock (de)serializer instead.
      */
     protected static boolean hasGeneratedCodec(Object captured) {
         try {

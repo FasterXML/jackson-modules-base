@@ -3,19 +3,28 @@ package tools.jackson.module.blackbird.deser;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonMerge;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import org.junit.jupiter.api.Test;
 
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.InjectableValues;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.deser.std.StdDeserializer;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,6 +48,71 @@ public class BBCodecDemotionTest extends BlackbirdTestBase
     @JsonFilter("f")
     public static class FilterBean {
         public int value;
+    }
+
+    // A builder with a creator constructor: the builder codec demotes
+    @JsonDeserialize(builder = CreatorBuilt.Builder.class)
+    public static class CreatorBuilt {
+        final String name;
+        final int n;
+
+        CreatorBuilt(String name, int n) {
+            this.name = name;
+            this.n = n;
+        }
+
+        public static class Builder {
+            private final String name;
+            private int n;
+
+            @JsonCreator
+            public Builder(@JsonProperty("name") String name) {
+                this.name = name;
+            }
+
+            public Builder withN(int n) {
+                this.n = n;
+                return this;
+            }
+
+            public CreatorBuilt build() {
+                return new CreatorBuilt(name, n);
+            }
+        }
+    }
+
+    // Counts how often databind contextualizes it
+    public static class CountingDeser extends StdDeserializer<String> {
+        static final AtomicInteger CONTEXTUALIZED = new AtomicInteger();
+
+        public CountingDeser() {
+            super(String.class);
+        }
+
+        @Override
+        public ValueDeserializer<?> createContextual(DeserializationContext ctxt,
+                BeanProperty property) {
+            CONTEXTUALIZED.incrementAndGet();
+            return this;
+        }
+
+        @Override
+        public String deserialize(JsonParser p, DeserializationContext ctxt) {
+            return p.getValueAsString();
+        }
+    }
+
+    // Demoted (object id); the per-property ignoral contextualizes it into
+    // a new instance
+    @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class)
+    public static class CountedIdBean {
+        @JsonDeserialize(using = CountingDeser.class)
+        public String s;
+    }
+
+    public static class CountedHolder {
+        @JsonIgnoreProperties("x")
+        public CountedIdBean bean;
     }
 
     public static class MergeTarget {
@@ -118,6 +192,26 @@ public class BBCodecDemotionTest extends BlackbirdTestBase
                 rootReader(mapper, IdBean.class).getClass());
         assertSame(rootReader(vanilla, InjectRecord.class).getClass(),
                 rootReader(mapper, InjectRecord.class).getClass());
+        assertSame(rootReader(vanilla, CreatorBuilt.class).getClass(),
+                rootReader(mapper, CreatorBuilt.class).getClass());
+
+        CreatorBuilt built = mapper.readValue(a2q("{'name':'a','n':3}"), CreatorBuilt.class);
+        assertEquals("a", built.name);
+        assertEquals(3, built.n);
+    }
+
+    // Resolution already contextualized the demoted bean's properties, so a
+    // later contextualization into a new instance must not redo it
+    @Test
+    public void testDemotedBeanPropertiesContextualizedAsStock() throws Exception {
+        final String doc = a2q("{'bean':{'@id':1,'s':'v'}}");
+        CountingDeser.CONTEXTUALIZED.set(0);
+        assertEquals("v", newVanillaJSONMapper().readValue(doc, CountedHolder.class).bean.s);
+        int stock = CountingDeser.CONTEXTUALIZED.get();
+
+        CountingDeser.CONTEXTUALIZED.set(0);
+        assertEquals("v", newObjectMapper().readValue(doc, CountedHolder.class).bean.s);
+        assertEquals(stock, CountingDeser.CONTEXTUALIZED.get());
     }
 
     @Test

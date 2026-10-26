@@ -4,19 +4,28 @@ import tools.jackson.core.JsonParser;
 import tools.jackson.databind.BeanProperty;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.deser.bean.BuilderBasedDeserializer;
 import tools.jackson.module.blackbird.codegen.CodegenDebug;
 
 /**
  * The builder-based counterpart of {@link BBReaderPlaceholder}: a copy of
  * the stock {@link BuilderBasedDeserializer} that generates the builder
- * codec when resolved.
+ * codec when resolved, and hands out an exact-class copy of the resolved
+ * stock state when no codec is generated.
  */
 final class BBBuilderPlaceholder extends BuilderBasedDeserializer
 {
     private final boolean _declaresViews;
 
     private volatile ValueDeserializer<Object> _codec;
+
+    // Set once resolution generated no codec
+    private volatile boolean _demoted;
+
+    // A plain BuilderBasedDeserializer with this placeholder's resolved and
+    // contextualized state, made on first demoted contextualization
+    private volatile BeanDeserializerBase _stock;
 
     BBBuilderPlaceholder(BuilderBasedDeserializer src, boolean declaresViews) {
         super(src);
@@ -29,23 +38,42 @@ final class BBBuilderPlaceholder extends BuilderBasedDeserializer
         super.resolve(ctxt);
         // A builder without a build method (the builder is the value) keeps
         // the stock path.
-        if (_buildMethod == null) {
-            return;
+        ValueDeserializer<Object> codec = null;
+        if (_buildMethod != null) {
+            codec = BBReaderFactory.tryGenerate(new BBReaderFactory.Source(this, _anySetter,
+                    _injectables != null, _beanProperties, _propertyBasedCreator,
+                    _nonStandardCreation,
+                    (_delegateDeserializer != null) || (_arrayDelegateDeserializer != null),
+                    _externalTypeIdHandler != null, _unwrappedPropertyHandler != null,
+                    _buildMethod),
+                    ctxt, _declaresViews);
         }
-        _codec = BBReaderFactory.tryGenerate(new BBReaderFactory.Source(this, _anySetter,
-                _injectables != null, _beanProperties, _propertyBasedCreator,
-                _nonStandardCreation,
-                (_delegateDeserializer != null) || (_arrayDelegateDeserializer != null),
-                _externalTypeIdHandler != null, _unwrappedPropertyHandler != null,
-                _buildMethod),
-                ctxt, _declaresViews);
+        _codec = codec;
+        _demoted = (codec == null);
     }
 
+    // As in BBReaderPlaceholder: contextualize this resolved instance, then
+    // hand out the codec or the stock copy (made after contextualization)
+    // when that leaves it as it is.
     @Override
     public ValueDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
         ValueDeserializer<?> contextual = super.createContextual(ctxt, property);
+        if (contextual != this) {
+            return contextual;
+        }
         ValueDeserializer<Object> codec = _codec;
-        return (contextual == this && codec != null) ? codec : contextual;
+        if (codec != null) {
+            return codec;
+        }
+        if (!_demoted) {
+            return this;
+        }
+        BeanDeserializerBase stock = _stock;
+        if (stock == null) {
+            stock = withBeanProperties(_beanProperties);
+            _stock = stock;
+        }
+        return stock;
     }
 
     @Override

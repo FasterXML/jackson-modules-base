@@ -31,8 +31,11 @@ final class BBReaderPlaceholder extends BeanDeserializer
 
     private volatile ValueDeserializer<Object> _codec;
 
-    // Set once resolution generated no codec: a plain BeanDeserializer with
-    // this placeholder's resolved state
+    // Set once resolution generated no codec
+    private volatile boolean _demoted;
+
+    // A plain BeanDeserializer with this placeholder's resolved and
+    // contextualized state, made on first demoted contextualization
     private volatile BeanDeserializerBase _stock;
 
     BBReaderPlaceholder(BeanDeserializer src, boolean declaresViews) {
@@ -51,22 +54,36 @@ final class BBReaderPlaceholder extends BeanDeserializer
                 _externalTypeIdHandler != null, _unwrappedPropertyHandler != null, null),
                 ctxt, _declaresViews);
         _codec = codec;
-        if (codec == null) {
-            _stock = withBeanProperties(_beanProperties);
-        }
+        _demoted = (codec == null);
     }
 
     // Contextualization is the stock one; when it leaves this deserializer
-    // as it is, the codec takes its place.
+    // as it is, the codec (or, when demoted, the stock copy) takes its place.
+    // It runs on this resolved instance, never on the copy: copies do not
+    // carry _propertiesContextualized, so contextualizing one would redo
+    // the property contextualization that resolution already did. The copy
+    // caches the name matcher when constructed, and contextualization
+    // initializes the matcher, so the copy is made after that (a racing
+    // duplicate copy is harmless).
     @Override
     public ValueDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
-        BeanDeserializerBase stock = _stock;
-        if (stock != null) {
-            return stock.createContextual(ctxt, property);
-        }
         ValueDeserializer<?> contextual = super.createContextual(ctxt, property);
+        if (contextual != this) {
+            return contextual;
+        }
         ValueDeserializer<Object> codec = _codec;
-        return (contextual == this && codec != null) ? codec : contextual;
+        if (codec != null) {
+            return codec;
+        }
+        if (!_demoted) {
+            return this;
+        }
+        BeanDeserializerBase stock = _stock;
+        if (stock == null) {
+            stock = withBeanProperties(_beanProperties);
+            _stock = stock;
+        }
+        return stock;
     }
 
     @Override
