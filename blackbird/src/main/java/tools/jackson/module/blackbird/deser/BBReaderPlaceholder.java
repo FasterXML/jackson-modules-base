@@ -94,7 +94,11 @@ final class BBReaderPlaceholder extends BeanDeserializer
 
     // BeanDeserializer unwraps only for its exact class (subclasses "MUST
     // override"); an exact-class copy of this state does what it would. The
-    // field guards against recursive unwrapping, as in stock.
+    // field guards against recursive unwrapping, as in stock. The copy is
+    // fresh on purpose, not the shared demoted _stock: stock unwrapping uses
+    // the instance's own _currentlyTransforming as its guard, which a shared
+    // instance would race on. Unwrapping runs once per unwrapped property,
+    // while the outer bean resolves.
     @Override
     public ValueDeserializer<Object> unwrappingDeserializer(DeserializationContext ctxt,
             NameTransformer transformer) {

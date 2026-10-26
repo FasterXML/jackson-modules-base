@@ -254,6 +254,12 @@ public abstract class BlackbirdTestBase
      */
     protected static JsonMapper.Builder capturingMapperBuilder(
             Map<Class<?>, ValueDeserializer<?>> desers, Map<Class<?>, ValueSerializer<?>> sers) {
+        return capturingMapperBuilder(new BlackbirdModule(), desers, sers);
+    }
+
+    /** As {@link #capturingMapperBuilder(Map, Map)}, with the given Blackbird module. */
+    protected static JsonMapper.Builder capturingMapperBuilder(BlackbirdModule blackbird,
+            Map<Class<?>, ValueDeserializer<?>> desers, Map<Class<?>, ValueSerializer<?>> sers) {
         SimpleModule capture = new SimpleModule("capture");
         if (desers != null) {
             capture.setDeserializerModifier(new ValueDeserializerModifier() {
@@ -279,7 +285,7 @@ public abstract class BlackbirdTestBase
         }
         return JsonMapper.builder()
                 .addModule(capture)
-                .addModule(new BlackbirdModule());
+                .addModule(blackbird);
     }
 
     /** Blackbird mapper recording installed deserializers; see {@link #capturingMapperBuilder}. */

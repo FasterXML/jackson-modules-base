@@ -160,13 +160,9 @@ public class BBCodecDemotionTest extends BlackbirdTestBase
             throws Exception {
         ValueDeserializer<?> d = seen.get(cls);
         assertNotNull(d, "no deserializer captured for " + cls);
-        if (d instanceof BBReaderPlaceholder placeholder) {
-            java.lang.reflect.Field f = BBReaderPlaceholder.class.getDeclaredField("_codec");
-            f.setAccessible(true);
-            assertNull(f.get(placeholder),
-                    cls.getSimpleName() + " unexpectedly generated a codec; if support"
-                            + " was added deliberately, flip this pin to assert engagement");
-        }
+        assertFalse(hasGeneratedCodec(d),
+                cls.getSimpleName() + " unexpectedly generated a codec; if support"
+                        + " was added deliberately, flip this pin to assert engagement");
     }
 
     @Test

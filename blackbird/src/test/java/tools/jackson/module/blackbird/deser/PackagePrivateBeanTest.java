@@ -1,6 +1,5 @@
 package tools.jackson.module.blackbird.deser;
 
-import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -81,18 +80,14 @@ public class PackagePrivateBeanTest extends BlackbirdTestBase
         assertEquals("BBReaderPlaceholder", placeholder.getClass().getSimpleName(),
                 "expected the deserializer placeholder, got "
                         + placeholder.getClass().getName());
-        Field codec = placeholder.getClass().getDeclaredField("_codec");
-        codec.setAccessible(true);
-        assertNotNull(codec.get(placeholder), "placeholder engaged but no codec generated");
+        assertTrue(hasGeneratedCodec(placeholder), "placeholder engaged but no codec generated");
     }
 
     private static void assertWriterGenerated(Object placeholder) throws Exception {
         assertEquals("BBWriterPlaceholder", placeholder.getClass().getSimpleName(),
                 "expected the serializer placeholder, got "
                         + placeholder.getClass().getName());
-        Field codec = placeholder.getClass().getDeclaredField("_codec");
-        codec.setAccessible(true);
-        assertNotNull(codec.get(placeholder), "placeholder engaged but no writer generated");
+        assertTrue(hasGeneratedCodec(placeholder), "placeholder engaged but no writer generated");
     }
 
     @Test

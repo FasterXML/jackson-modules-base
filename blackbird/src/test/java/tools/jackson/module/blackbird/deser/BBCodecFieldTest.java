@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import tools.jackson.databind.exc.MismatchedInputException;
-import tools.jackson.databind.json.JsonMapper;
 
 import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
@@ -23,7 +23,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 // Field-backed properties: the generator stores through putfield / reads
 // through getfield for public fields, and reaches a non-public field through a
-// lookup-derived handle. Behavior must match stock databind on every path.
+// handle unreflected after databind's own fixAccess. Behavior must match
+// stock databind on every path.
 public class BBCodecFieldTest extends BlackbirdTestBase
 {
     @JsonPropertyOrder({ "name", "count", "total", "active", "tags", "child" })
@@ -144,30 +145,40 @@ public class BBCodecFieldTest extends BlackbirdTestBase
     }
 
     @Test
-    public void testPrivateFieldWithLookupAccelerates() throws Exception {
-        Supplier<MethodHandles.Lookup> here = MethodHandles::lookup;
-        ObjectMapper m = JsonMapper.builder()
-                .addModule(new BlackbirdModule() {
-                    @Override
-                    @SuppressWarnings("deprecation")
-                    protected Supplier<MethodHandles.Lookup> findLookupSupplier() {
-                        return here;
-                    }
-                })
-                .build();
+    public void testPrivateFieldAccelerates() throws Exception {
+        // No lookup needed: databind opens the private fields, and the
+        // codec reaches them through handles, not the stock path.
+        Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
+        ObjectMapper m = capturingMapper(seen);
         PrivateFieldBean bean = m.readValue(a2q("{'name':'a','count':3}"), PrivateFieldBean.class);
+        assertTrue(hasGeneratedCodec(seen.get(PrivateFieldBean.class)));
         assertEquals("a", bean.name());
         assertEquals(3, bean.count());
+        String layout = assertGeneratedReader(m, PrivateFieldBean.class);
+        assertFalse(layout.contains("STOCK"), layout);
     }
 
     @Test
-    public void testPrivateFieldWithoutLookupStillWorks() throws Exception {
-        // The default lookup cannot reach the private field, so the property
-        // demotes to the stock path; the value must still round-trip.
-        PrivateFieldBean bean = MAPPER.readValue(a2q("{'name':'a','count':3}"),
-                PrivateFieldBean.class);
+    public void testDeprecatedLookupOverrideIsIgnored() throws Exception {
+        // The released findLookupSupplier() override still compiles, but
+        // module setup no longer calls it, and acceleration does not change.
+        AtomicInteger calls = new AtomicInteger();
+        Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
+        ObjectMapper m = capturingMapperBuilder(new BlackbirdModule() {
+                    private static final long serialVersionUID = 1L;
+                    @Override
+                    @SuppressWarnings("deprecation")
+                    protected Supplier<MethodHandles.Lookup> findLookupSupplier() {
+                        calls.incrementAndGet();
+                        return MethodHandles::lookup;
+                    }
+                }, seen, null)
+                .build();
+        PrivateFieldBean bean = m.readValue(a2q("{'name':'a','count':3}"), PrivateFieldBean.class);
+        assertTrue(hasGeneratedCodec(seen.get(PrivateFieldBean.class)));
         assertEquals("a", bean.name());
         assertEquals(3, bean.count());
+        assertEquals(0, calls.get());
     }
 
     @Test
