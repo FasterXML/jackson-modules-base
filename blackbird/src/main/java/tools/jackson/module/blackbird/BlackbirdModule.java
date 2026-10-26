@@ -22,8 +22,9 @@ import tools.jackson.module.blackbird.ser.BBSerializerModifier;
  * databind's own access checks, so whatever stock databind can read or write
  * accelerates (on the module path, the same {@code opens ... to
  * tools.jackson.databind} stock needs). The lookup-supplying constructors and
- * the {@code findLookup}/{@code findLookupSupplier} overrides remain
- * supported released API, but no acceleration requires a lookup any more.
+ * the {@code findLookup}/{@code findLookupSupplier} overrides remain for
+ * source compatibility, but no acceleration requires a lookup any more, and
+ * module setup no longer calls them.
  *<p>
  * Code generation needs Java 25 or later: the generators use the ClassFile
  * API (final in Java 24) and compile at release 25. On Java 17 to 24, module
@@ -132,9 +133,8 @@ public class BlackbirdModule extends JacksonModule
                     + _unavailableReason() + ". Remove the registration on this runtime"
                     + " (jackson-module-afterburner supports Java 17 and later).");
         }
-        Function<Class<?>, Lookup> lookup = findLookup();
-        context.addDeserializerModifier(new BBDeserializerModifier(lookup));
-        context.addSerializerModifier(new BBSerializerModifier(lookup));
+        context.addDeserializerModifier(new BBDeserializerModifier());
+        context.addSerializerModifier(new BBSerializerModifier());
     }
 
     private static String _unavailableReason() {

@@ -1,8 +1,6 @@
 package tools.jackson.module.blackbird.ser;
 
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Modifier;
-import java.util.function.Function;
 
 import tools.jackson.databind.BeanDescription;
 import tools.jackson.databind.SerializationConfig;
@@ -23,14 +21,9 @@ public class BBSerializerModifier extends ValueSerializerModifier
 {
     private static final long serialVersionUID = 1L;
 
-    // Kept for the released BlackbirdModule(Function) contract; the codec
-    // no longer needs it. Member access rides databind's own fixAccess (see
-    // MemberHandles), so a user lookup is not required for acceleration.
-    private final Function<Class<?>, MethodHandles.Lookup> _lookups;
-
-    public BBSerializerModifier(Function<Class<?>, MethodHandles.Lookup> lookups) {
-        _lookups = lookups;
-    }
+    // Member access rides databind's own fixAccess (see MemberHandles), so
+    // no lookup is needed.
+    public BBSerializerModifier() { }
 
     @Override
     public ValueSerializer<?> modifySerializer(SerializationConfig config,
