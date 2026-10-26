@@ -21,6 +21,11 @@ import java.lang.reflect.Method;
  * databind could not open the member either (CAN_OVERRIDE_ACCESS_MODIFIERS
  * disabled, or a module not open to databind); the caller demotes to the
  * stock path, which fails the same way at first use.
+ *<p>
+ * Varargs members unreflect to variable-arity handles, whose {@code asType}
+ * would collect an erased trailing {@code Object} into a fresh array instead
+ * of passing the array through; generated code always passes the array, as
+ * stock does, so such handles are made fixed-arity first.
  */
 public final class MemberHandles
 {
@@ -35,7 +40,7 @@ public final class MemberHandles
     /** Setter adapted to {@code (Object, eV)void}; a fluent return is discarded. */
     public static MethodHandle setter(Method setter, Class<?> valueType)
             throws IllegalAccessException {
-        return LOOKUP.unreflect(setter)
+        return LOOKUP.unreflect(setter).asFixedArity()
                 .asType(MethodType.methodType(void.class, Object.class, erase(valueType)));
     }
 
@@ -47,7 +52,7 @@ public final class MemberHandles
      */
     public static MethodHandle builderSetter(Method setter, Class<?> valueType)
             throws IllegalAccessException {
-        MethodHandle raw = LOOKUP.unreflect(setter);
+        MethodHandle raw = LOOKUP.unreflect(setter).asFixedArity();
         Class<?> ev = erase(valueType);
         if (setter.getReturnType() == void.class) {
             MethodHandle keepReceiver = MethodHandles.dropArguments(
@@ -85,7 +90,7 @@ public final class MemberHandles
 
     /** Constructor adapted to {@code (e1..en)Object}. */
     public static MethodHandle constructor(Constructor<?> ctor) throws IllegalAccessException {
-        MethodHandle raw = LOOKUP.unreflectConstructor(ctor);
+        MethodHandle raw = LOOKUP.unreflectConstructor(ctor).asFixedArity();
         Class<?>[] params = ctor.getParameterTypes();
         Class<?>[] erased = new Class<?>[params.length];
         for (int i = 0; i < params.length; i++) {

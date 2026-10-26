@@ -50,6 +50,10 @@ public class BBCodecCreatorTest extends BlackbirdTestBase
         }
     }
 
+    // Canonical constructor is varargs: the generated codec must pass the
+    // array through, not wrap it as a single element
+    public record VarargsRec(String name, String... tags) { }
+
     private final ObjectMapper vanilla = newVanillaJSONMapper();
 
     private static ObjectMapper capturingMapper(Map<Class<?>, ValueDeserializer<?>> seen) {
@@ -97,5 +101,20 @@ public class BBCodecCreatorTest extends BlackbirdTestBase
         assertEquals(expected.viaFactory, actual.viaFactory,
                 "construction path differs from stock (default creator is the factory)");
         assertTrue(actual.viaFactory);
+    }
+
+    @Test
+    public void testVarargsRecordConstructor() throws Exception {
+        final String json = "{\"name\":\"a\",\"tags\":[\"x\",\"y\"]}";
+        VarargsRec expected = vanilla.readValue(json, VarargsRec.class);
+
+        Map<Class<?>, ValueDeserializer<?>> seen = new ConcurrentHashMap<>();
+        ObjectMapper mapper = capturingMapper(seen);
+        VarargsRec actual = mapper.readValue(json, VarargsRec.class);
+        assertTrue(hasGeneratedCodec(seen.get(VarargsRec.class)),
+                "varargs record did not engage a codec");
+        assertEquals(expected.name(), actual.name());
+        assertArrayEquals(expected.tags(), actual.tags());
+        assertArrayEquals(new String[] { "x", "y" }, actual.tags());
     }
 }
