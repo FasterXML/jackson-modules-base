@@ -81,6 +81,9 @@ final class BBReaderFactory
             CodegenDebug.log(() -> "reader tryGenerate " + delegate.handledType().getName()
                     + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
             return codec;
+        } catch (VirtualMachineError e) {
+            // Out of memory or stack, not a generator bug: never demote
+            throw e;
         } catch (Throwable t) {
             if (CodegenDebug.ENABLED) {
                 CodegenDebug.log(() -> "reader tryGenerate " + delegate.handledType().getName() + " threw:");

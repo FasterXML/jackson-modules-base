@@ -53,6 +53,9 @@ final class BBWriterFactory
             CodegenDebug.log(() -> "writer tryGenerate " + delegate.handledType().getName()
                     + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
             return codec;
+        } catch (VirtualMachineError e) {
+            // Out of memory or stack, not a generator bug: never demote
+            throw e;
         } catch (Throwable t) {
             if (CodegenDebug.ENABLED) {
                 CodegenDebug.log(() -> "writer tryGenerate " + delegate.handledType().getName() + " threw:");
