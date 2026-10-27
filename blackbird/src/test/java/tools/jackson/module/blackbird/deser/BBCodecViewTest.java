@@ -12,7 +12,6 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.MapperFeature;
-import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -200,9 +199,8 @@ public class BBCodecViewTest extends BlackbirdTestBase
         ObjectMapper vanilla = JsonMapper.builder()
                 .disable(MapperFeature.DEFAULT_VIEW_INCLUSION)
                 .build();
-        ObjectMapper module = JsonMapper.builder()
+        ObjectMapper module = mapperBuilder()
                 .disable(MapperFeature.DEFAULT_VIEW_INCLUSION)
-                .addModule(new BlackbirdModule())
                 .build();
         PlainBean bean = new PlainBean();
         bean.setA("x");

@@ -149,7 +149,7 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
     // loop. Ignored names go through ignored-property handling at once;
     // other names are skipped when stock would skip them, and otherwise
     // buffered, to be reported against the record once it exists (see
-    // _recordReplayUnknown). Returns the buffer, created on first use.
+    // _recordFinish). Returns the buffer, created on first use.
     protected final Object _recordUnknown(JsonParser p, DeserializationContext ctxt,
             Object buffered) {
         String name = p.currentName();
@@ -169,15 +169,10 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
         return tb;
     }
 
-    protected final Object _recordReplayUnknown(DeserializationContext ctxt, Object bean,
-            Object buffered) {
-        return handleUnknownProperties(ctxt, bean, (TokenBuffer) buffered);
-    }
-
     // A component value that is a forward Object Id reference: what the
     // stock property-based loop does ([databind#3030]). The component gets
     // null, and the reference resolves against the record once it exists
-    // (see _recordResolveForwardRefs). Returns the referrings, a list
+    // (see _recordFinish). Returns the referrings, a list
     // created on first use.
     protected final Object _recordForwardRef(DeserializationContext ctxt,
             SettableBeanProperty prop, UnresolvedForwardReference ref, Object referrings) {
@@ -190,14 +185,29 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
         return list;
     }
 
-    // Also for a null bean (a creator or problem handler returned null), as
-    // stock _handleNullFromPropsBasedCreator: a reference that resolved
-    // before construction is then set on null and fails there.
+    // After construction, with forward-reference referrings and/or buffered
+    // unknown properties (either may be null): what stock
+    // _deserializeUsingPropertyBased does. For a built record the references
+    // resolve against it, then the unknown properties replay. For a null one
+    // (a creator or problem handler returned null), as stock
+    // _handleNullFromPropsBasedCreator, the unknown properties are handled
+    // first, then a reference that resolved before construction is set on
+    // null and fails there.
     @SuppressWarnings("unchecked")
-    protected final void _recordResolveForwardRefs(Object bean, Object referrings) {
-        for (RecordReferring referring : (List<RecordReferring>) referrings) {
-            referring.setBean(bean);
+    protected final Object _recordFinish(DeserializationContext ctxt, Object bean,
+            Object referrings, Object buffered) {
+        if (bean == null && buffered != null) {
+            handleUnknownProperties(ctxt, null, (TokenBuffer) buffered);
         }
+        if (referrings != null) {
+            for (RecordReferring referring : (List<RecordReferring>) referrings) {
+                referring.setBean(bean);
+            }
+        }
+        if (bean == null || buffered == null) {
+            return bean;
+        }
+        return handleUnknownProperties(ctxt, bean, (TokenBuffer) buffered);
     }
 
     // The stock BeanDeserializer.BeanReferring, which is not accessible.

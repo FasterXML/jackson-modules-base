@@ -4,8 +4,12 @@ import java.lang.classfile.ClassFile;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
@@ -15,7 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * A hidden bean class (as bytecode-generating frameworks define) has a
  * name like {@code Foo/0x1234}; generated codecs are named after the bean,
- * and '/' must not end up in their binary name.
+ * and '/' must not end up in their binary name, nor in the names of their
+ * dumped class files.
  */
 public class HiddenBeanClassTest extends BlackbirdTestBase
 {
@@ -49,5 +54,29 @@ public class HiddenBeanClassTest extends BlackbirdTestBase
         assertEquals("a", type.getField("name").get(bean));
         assertEquals(newVanillaJSONMapper().writeValueAsString(bean),
                 mapper.writeValueAsString(bean));
+    }
+
+    @Test
+    public void testHiddenBeanClassDump(@TempDir Path dir) throws Exception {
+        String old = System.getProperty(CodegenDebug.DUMP_DIR_PROPERTY);
+        System.setProperty(CodegenDebug.DUMP_DIR_PROPERTY, dir.toString());
+        try {
+            Class<?> type = defineHiddenBean();
+            ObjectMapper mapper = newObjectMapper();
+            assertGeneratedReader(mapper, type);
+            assertGeneratedWriter(mapper, type);
+        } finally {
+            if (old == null) {
+                System.clearProperty(CodegenDebug.DUMP_DIR_PROPERTY);
+            } else {
+                System.setProperty(CodegenDebug.DUMP_DIR_PROPERTY, old);
+            }
+        }
+        try (Stream<Path> files = Files.list(dir)) {
+            String names = files.map(f -> f.getFileName().toString()).sorted()
+                    .reduce("", (a, b) -> a + " " + b);
+            assertTrue(names.matches(".*HiddenBean\\$0x[0-9a-f]+-reader\\.class.*"), names);
+            assertTrue(names.matches(".*HiddenBean\\$0x[0-9a-f]+-writer\\.class.*"), names);
+        }
     }
 }

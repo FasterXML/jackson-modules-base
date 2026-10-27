@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
+import tools.jackson.core.TokenStreamContext;
 import tools.jackson.core.sym.PropertyNameMatcher;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
@@ -51,6 +52,7 @@ import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
 final class BeanReaderGenerator
 {
     private static final ClassDesc CD_JSON_PARSER = Descs.of(JsonParser.class);
+    private static final ClassDesc CD_STREAM_CONTEXT = Descs.of(TokenStreamContext.class);
     private static final ClassDesc CD_JSON_TOKEN = Descs.of(JsonToken.class);
     private static final ClassDesc CD_DESER_CONTEXT = Descs.of(DeserializationContext.class);
     private static final ClassDesc CD_DESER_FEATURE = Descs.of(DeserializationFeature.class);
@@ -112,15 +114,13 @@ final class BeanReaderGenerator
             ConstantDescs.CD_void, CD_JSON_PARSER, CD_DESER_CONTEXT, CD_OBJECT);
     private static final MethodTypeDesc MTD_RECORD_UNKNOWN = MethodTypeDesc.of(
             CD_OBJECT, CD_JSON_PARSER, CD_DESER_CONTEXT, CD_OBJECT);
-    private static final MethodTypeDesc MTD_RECORD_REPLAY = MethodTypeDesc.of(
-            CD_OBJECT, CD_DESER_CONTEXT, CD_OBJECT, CD_OBJECT);
+    private static final MethodTypeDesc MTD_RECORD_FINISH = MethodTypeDesc.of(
+            CD_OBJECT, CD_DESER_CONTEXT, CD_OBJECT, CD_OBJECT, CD_OBJECT);
     private static final MethodTypeDesc MTD_RECORD_BUILD = MethodTypeDesc.of(CD_OBJECT,
             CD_JSON_PARSER, CD_DESER_CONTEXT, ConstantDescs.CD_long,
             CD_OBJECT.arrayType(), CD_THROWABLE);
     private static final MethodTypeDesc MTD_RECORD_FORWARD_REF = MethodTypeDesc.of(CD_OBJECT,
             CD_DESER_CONTEXT, CD_SETTABLE_PROP, CD_FORWARD_REF, CD_OBJECT);
-    private static final MethodTypeDesc MTD_RECORD_RESOLVE_REFS = MethodTypeDesc.of(
-            ConstantDescs.CD_void, CD_OBJECT, CD_OBJECT);
     private static final MethodTypeDesc MTD_CREATION_FAILURE =
             MethodTypeDesc.of(CD_OBJECT, CD_DESER_CONTEXT, CD_THROWABLE);
     private static final MethodTypeDesc MTD_PROP_WRAP = MethodTypeDesc.of(
@@ -128,6 +128,16 @@ final class BeanReaderGenerator
     private static final MethodTypeDesc MTD_STORE_FAILURE = MethodTypeDesc.of(CD_RTE,
             CD_THROWABLE, CD_OBJECT, CD_OBJECT, CD_SETTABLE_PROP, CD_JSON_PARSER,
             CD_DESER_CONTEXT);
+    // Builder codecs: the same with the name context (see
+    // GeneratedBuilderBase._nameContext) before the DeserializationContext.
+    private static final MethodTypeDesc MTD_BUILDER_PROP_WRAP = MethodTypeDesc.of(
+            CD_RTE, CD_THROWABLE, CD_OBJECT, CD_SETTABLE_PROP, CD_STREAM_CONTEXT,
+            CD_DESER_CONTEXT);
+    private static final MethodTypeDesc MTD_BUILDER_STORE_FAILURE = MethodTypeDesc.of(CD_RTE,
+            CD_THROWABLE, CD_OBJECT, CD_OBJECT, CD_SETTABLE_PROP, CD_JSON_PARSER,
+            CD_STREAM_CONTEXT, CD_DESER_CONTEXT);
+    private static final MethodTypeDesc MTD_NAME_CONTEXT = MethodTypeDesc.of(
+            CD_STREAM_CONTEXT, CD_JSON_PARSER, CD_DESER_CONTEXT);
     private static final MethodTypeDesc MTD_IS_ENABLED =
             MethodTypeDesc.of(ConstantDescs.CD_boolean, CD_DESER_FEATURE);
     private static final MethodTypeDesc MTD_GET_ACTIVE_VIEW =
@@ -338,6 +348,7 @@ final class BeanReaderGenerator
         final int excSlot = 7;
         final int maskSlot = 8;
         final int valueSlot = 10;
+        final int nameCtxSlot = builderMode ? 11 : -1;
         Label propHandler = cob.newLabel();
         Label storeHandler = cob.newLabel();
 
@@ -361,6 +372,12 @@ final class BeanReaderGenerator
         Label delegate = emitEntryGuard(cob, parser, ctxt, views);
         if (views == ViewStrategy.MASK) {
             emitViewMask(cob, base, ctxt, maskSlot);
+        }
+        if (builderMode) {
+            // Read by the failure handlers: which property name stock reports.
+            cob.aload(0).aload(parser).aload(ctxt);
+            cob.invokevirtual(base, "_nameContext", MTD_NAME_CONTEXT);
+            cob.astore(nameCtxSlot);
         }
         if (anyStore) {
             // Read by the store handler; child arms set it before storing.
@@ -461,13 +478,20 @@ final class BeanReaderGenerator
            .invokevirtual(base, "_unexpectedToken", MTD_UNEXPECTED)
            .areturn();
 
-        emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, beanSlot);
+        emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, beanSlot,
+                nameCtxSlot);
         if (anyStore) {
             cob.labelBinding(storeHandler);
             cob.astore(excSlot);
             cob.aload(0).aload(excSlot).aload(beanSlot).aload(valueSlot).aload(propSlot)
-               .aload(parser).aload(ctxt);
-            cob.invokevirtual(base, "_storeFailure", MTD_STORE_FAILURE);
+               .aload(parser);
+            if (builderMode) {
+                cob.aload(nameCtxSlot).aload(ctxt);
+                cob.invokevirtual(base, "_storeFailure", MTD_BUILDER_STORE_FAILURE);
+            } else {
+                cob.aload(ctxt);
+                cob.invokevirtual(base, "_storeFailure", MTD_STORE_FAILURE);
+            }
             cob.athrow();
         }
         if (ctorHandler != null) {
@@ -495,6 +519,10 @@ final class BeanReaderGenerator
         }
         if (anyStore) {
             cob.localVariable(valueSlot, "value", CD_OBJECT, scopeStart, scopeEnd);
+        }
+        if (builderMode) {
+            cob.localVariable(nameCtxSlot, "nameContext", CD_STREAM_CONTEXT,
+                    scopeStart, scopeEnd);
         }
     }
 
@@ -896,17 +924,17 @@ final class BeanReaderGenerator
         cob.invokevirtual(base, "_recordBuild", MTD_RECORD_BUILD);
         cob.astore(beanSlot);
         cob.labelBinding(finish);
-        Label noReferrings = cob.newLabel();
-        cob.aload(referringsSlot).ifnull(noReferrings);
-        cob.aload(0).aload(beanSlot).aload(referringsSlot);
-        cob.invokevirtual(base, "_recordResolveForwardRefs", MTD_RECORD_RESOLVE_REFS);
-        cob.labelBinding(noReferrings);
-        Label noUnknown = cob.newLabel();
-        cob.aload(unknownSlot).ifnull(noUnknown);
-        cob.aload(0).aload(ctxt).aload(beanSlot).aload(unknownSlot);
-        cob.invokevirtual(base, "_recordReplayUnknown", MTD_RECORD_REPLAY);
+        // Forward references and buffered unknown properties, in stock's
+        // order (see _recordFinish); neither on the common path.
+        Label finishRest = cob.newLabel();
+        Label finished = cob.newLabel();
+        cob.aload(referringsSlot).ifnonnull(finishRest);
+        cob.aload(unknownSlot).ifnull(finished);
+        cob.labelBinding(finishRest);
+        cob.aload(0).aload(ctxt).aload(beanSlot).aload(referringsSlot).aload(unknownSlot);
+        cob.invokevirtual(base, "_recordFinish", MTD_RECORD_FINISH);
         cob.astore(beanSlot);
-        cob.labelBinding(noUnknown);
+        cob.labelBinding(finished);
         cob.aload(beanSlot).areturn();
 
         cob.labelBinding(unknown);
@@ -921,7 +949,7 @@ final class BeanReaderGenerator
            .invokevirtual(base, "_unexpectedToken", MTD_UNEXPECTED)
            .areturn();
 
-        emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, -1);
+        emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, -1, -1);
         emitDelegateTail(cob, base, parser, ctxt, delegate);
 
         Label scopeEnd = cob.newBoundLabel();
@@ -1124,10 +1152,11 @@ final class BeanReaderGenerator
         return armEnd;
     }
 
-    // receiverSlot < 0 selects aconst_null (record mode: no instance yet).
+    // receiverSlot < 0 selects aconst_null (record mode: no instance yet);
+    // nameCtxSlot >= 0 (builder mode) passes the name context.
     private static void emitPropertyHandler(CodeBuilder cob, ClassDesc base, Label handler,
             int ctxt,
-            int propSlot, int excSlot, int receiverSlot) {
+            int propSlot, int excSlot, int receiverSlot, int nameCtxSlot) {
         cob.labelBinding(handler);
         cob.astore(excSlot);
         cob.aload(0);
@@ -1138,8 +1167,14 @@ final class BeanReaderGenerator
             cob.aload(receiverSlot);
         }
         cob.aload(propSlot);
-        cob.aload(ctxt);
-        cob.invokevirtual(base, "_propertyException", MTD_PROP_WRAP);
+        if (nameCtxSlot >= 0) {
+            cob.aload(nameCtxSlot);
+            cob.aload(ctxt);
+            cob.invokevirtual(base, "_propertyException", MTD_BUILDER_PROP_WRAP);
+        } else {
+            cob.aload(ctxt);
+            cob.invokevirtual(base, "_propertyException", MTD_PROP_WRAP);
+        }
         cob.athrow();
     }
 

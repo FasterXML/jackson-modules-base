@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
@@ -18,6 +19,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.deser.DeserializationProblemHandler;
+import tools.jackson.databind.exc.UnrecognizedPropertyException;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
@@ -66,6 +68,30 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
         public static class Builder {
             public Object withV(int v) { return new Wt(v * 10); }
             public Wt build() { return new Wt(-1); }
+        }
+    }
+
+    // A builder property with an alias; a negative value fails in the
+    // with-method.
+    @JsonDeserialize(builder = Aliased.Builder.class)
+    public static class Aliased {
+        final int v;
+
+        Aliased(int v) { this.v = v; }
+
+        public static class Builder {
+            int v;
+
+            @JsonAlias("alt")
+            public Builder withV(int v) {
+                if (v < 0) {
+                    throw new IllegalArgumentException("negative");
+                }
+                this.v = v;
+                return this;
+            }
+
+            public Aliased build() { return new Aliased(v); }
         }
     }
 
@@ -220,9 +246,37 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
         assertGeneratedReader(module, RefPair.class);
         assertThrows(Exception.class, () -> vanilla.readValue(doc, RefPair.class));
         assertSameOutcome(vanilla, module, doc, RefPair.class, r -> r);
+        // With an unknown property too, stock reports that first, before the
+        // resolved reference fails on the null record.
+        String unknown = doc.replace("{\"ref\"", "{\"extra\":true,\"ref\"");
+        ObjectMapper strictVanilla = vanilla.rebuild()
+                .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).build();
+        ObjectMapper strictModule = module.rebuild()
+                .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).build();
+        assertThrows(UnrecognizedPropertyException.class,
+                () -> strictVanilla.readValue(unknown, RefPair.class));
+        assertSameOutcome(strictVanilla, strictModule, unknown, RefPair.class, r -> r);
         // Without the failure both build the record with the reference set.
         String ok = doc.replace("-1", "2");
         assertSameOutcome(vanilla, module, ok, RefPair.class,
                 r -> r.ref().get().name + "/" + r.items().get(0).name + "/" + r.tag());
+    }
+
+    // A failing builder property is reported under the name in the input,
+    // as stock's general builder loop does: here the alias.
+    @Test
+    public void testBuilderFailureReportsInputName() throws Exception {
+        assertGeneratedReader(MODULE, Aliased.class);
+        for (String doc : new String[] { "{\"alt\":\"x\"}", "{\"alt\":-1}", "{\"v\":-1}" }) {
+            Exception expected = assertThrows(Exception.class,
+                    () -> VANILLA.readValue(doc, Aliased.class));
+            Exception actual = assertThrows(Exception.class,
+                    () -> MODULE.readValue(doc, Aliased.class));
+            assertEquals(expected.getClass(), actual.getClass(), doc);
+            assertEquals(expected.getMessage(), actual.getMessage(), doc);
+        }
+        Exception e = assertThrows(Exception.class,
+                () -> MODULE.readValue("{\"alt\":-1}", Aliased.class));
+        assertTrue(e.getMessage().contains("[\"alt\"]"), e.getMessage());
     }
 }

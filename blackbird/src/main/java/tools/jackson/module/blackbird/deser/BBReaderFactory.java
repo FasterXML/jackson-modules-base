@@ -190,8 +190,9 @@ final class BBReaderFactory
 
     // POJO and builder codecs reuse the stock name matcher: the bean
     // property map's matcher, with aliases after the primary names and the
-    // stock case-insensitivity. Stock createContextual initializes it right
-    // after resolve; initializing it here builds the same matcher.
+    // stock case-insensitivity. Initialized here, during resolve; the
+    // placeholders then skip stock createContextual's rebuild of it (see
+    // BBReaderPlaceholder.initNameMatcher).
     private static ValueDeserializer<Object> generateWithStockMatcher(
             BeanDeserializerBase delegate, DeserializationContext ctxt, Class<?> beanClass,
             Source stock, Construction construction,

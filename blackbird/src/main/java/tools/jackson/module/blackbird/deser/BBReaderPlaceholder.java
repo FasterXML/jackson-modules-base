@@ -86,6 +86,20 @@ final class BBReaderPlaceholder extends BeanDeserializer
         return stock;
     }
 
+    // Stock createContextual initializes the name matcher of the property
+    // map on every contextualization; generation already did, for this map
+    // and this mapper's stream factory (BBReaderFactory), so with a codec
+    // the map is not rebuilt: only this instance's cached view of it is set.
+    @Override
+    protected void initNameMatcher(DeserializationContext ctxt) {
+        if (_codec == null) {
+            super.initNameMatcher(ctxt);
+            return;
+        }
+        _propNameMatcher = _beanProperties.getNameMatcher();
+        _propsByIndex = _beanProperties.getNameMatcherProperties();
+    }
+
     @Override
     public Object deserialize(JsonParser p, DeserializationContext ctxt) {
         ValueDeserializer<Object> codec = _codec;

@@ -19,8 +19,10 @@ final class CodegenDump
 
     // Read per class (generation is rare and costly anyway), so that tests
     // can turn dumping on and off.
+    // A hidden bean class's name has a '/' ("Foo/0x...") that a file name
+    // cannot.
     static void dump(Class<?> beanClass, String kind, byte[] bytes) {
-        dump(beanClass.getName() + "-" + kind, bytes);
+        dump(beanClass.getName().replace('/', '$') + "-" + kind, bytes);
     }
 
     static void dump(String fileStem, byte[] bytes) {
