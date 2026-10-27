@@ -53,7 +53,11 @@ jobs:
     - name: Build
       run: |
         OLD_JDKS=""
-        if [ -n "${JAVA_HOME_17_X64:-}" ] && [ -n "${JAVA_HOME_21_X64:-}" ]; then
+        if [ "${{ matrix.java_version }}" = "25" ]; then
+          if [ -z "${JAVA_HOME_17_X64:-}" ] || [ -z "${JAVA_HOME_21_X64:-}" ]; then
+            echo "::error::JDK 17/21 homes not found; Blackbird old-JDK tests would be skipped"
+            exit 1
+          fi
           OLD_JDKS="-Dblackbird.test.oldJdks=${JAVA_HOME_17_X64},${JAVA_HOME_21_X64}"
         fi
         ./mvnw -B -ff -ntp clean verify ${OLD_JDKS}

@@ -190,12 +190,13 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
         return list;
     }
 
+    // Also for a null bean (a creator or problem handler returned null), as
+    // stock _handleNullFromPropsBasedCreator: a reference that resolved
+    // before construction is then set on null and fails there.
     @SuppressWarnings("unchecked")
     protected final void _recordResolveForwardRefs(Object bean, Object referrings) {
-        if (bean != null) {
-            for (RecordReferring referring : (List<RecordReferring>) referrings) {
-                referring.setBean(bean);
-            }
+        for (RecordReferring referring : (List<RecordReferring>) referrings) {
+            referring.setBean(bean);
         }
     }
 

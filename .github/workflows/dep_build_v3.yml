@@ -45,10 +45,12 @@ jobs:
       run: |
         BUILD_ARGS=""
         if [ "${{ matrix.java_version }}" = "25" ]; then
-          BUILD_ARGS="-pl blackbird,blackbird-tests,blackbird-jpms-tests -am"
-          if [ -n "${JAVA_HOME_17_X64:-}" ] && [ -n "${JAVA_HOME_21_X64:-}" ]; then
-            BUILD_ARGS="${BUILD_ARGS} -Dblackbird.test.oldJdks=${JAVA_HOME_17_X64},${JAVA_HOME_21_X64}"
+          if [ -z "${JAVA_HOME_17_X64:-}" ] || [ -z "${JAVA_HOME_21_X64:-}" ]; then
+            echo "::error::JDK 17/21 homes not found; Blackbird old-JDK tests would be skipped"
+            exit 1
           fi
+          BUILD_ARGS="-pl blackbird,blackbird-tests,blackbird-jpms-tests -am"
+          BUILD_ARGS="${BUILD_ARGS} -Dblackbird.test.oldJdks=${JAVA_HOME_17_X64},${JAVA_HOME_21_X64}"
         fi
         ./mvnw -B -ff -ntp clean verify ${BUILD_ARGS}
 

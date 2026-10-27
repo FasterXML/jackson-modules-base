@@ -101,12 +101,22 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
 
     public record RefHolder(AtomicReference<Item> ref, String tag) { }
 
+    // The reference resolves inside the record (items comes after ref),
+    // before construction; a negative tag makes the constructor throw.
+    public record RefPair(AtomicReference<Item> ref, List<Item> items, int tag) {
+        public RefPair {
+            if (tag < 0) {
+                throw new IllegalArgumentException("negative tag");
+            }
+        }
+    }
+
     public static class RefDoc {
         public RefHolder holder;
         public List<Item> items;
     }
 
-    private static final ObjectMapper VANILLA = new JsonMapper();
+    private static final ObjectMapper VANILLA = newVanillaJSONMapper();
     private static final ObjectMapper MODULE = newObjectMapper();
 
     private static <T> void assertSameOutcome(ObjectMapper vanilla, ObjectMapper module,
@@ -190,5 +200,29 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
         String doc = "{\"holder\":{\"ref\":1,\"tag\":\"t\"},\"items\":[{\"id\":1,\"name\":\"a\"}]}";
         assertSameOutcome(VANILLA, MODULE, doc, RefDoc.class, d -> d.holder + "/" + d.items);
         assertThrows(Exception.class, () -> VANILLA.readValue(doc, RefDoc.class));
+    }
+
+    // A problem handler replaces the failed construction with null after the
+    // forward reference has resolved: stock applies the resolved value to
+    // the null record and fails, it does not drop it.
+    @Test
+    public void testForwardReferenceResolvedBeforeNullRecord() throws Exception {
+        DeserializationProblemHandler toNull = new DeserializationProblemHandler() {
+            @Override
+            public Object handleInstantiationProblem(DeserializationContext ctxt,
+                    Class<?> instClass, Object argument, Throwable t) {
+                return null;
+            }
+        };
+        ObjectMapper vanilla = JsonMapper.builder().addHandler(toNull).build();
+        ObjectMapper module = mapperBuilder().addHandler(toNull).build();
+        String doc = "{\"ref\":1,\"items\":[{\"id\":1,\"name\":\"a\"}],\"tag\":-1}";
+        assertGeneratedReader(module, RefPair.class);
+        assertThrows(Exception.class, () -> vanilla.readValue(doc, RefPair.class));
+        assertSameOutcome(vanilla, module, doc, RefPair.class, r -> r);
+        // Without the failure both build the record with the reference set.
+        String ok = doc.replace("-1", "2");
+        assertSameOutcome(vanilla, module, ok, RefPair.class,
+                r -> r.ref().get().name + "/" + r.items().get(0).name + "/" + r.tag());
     }
 }

@@ -10,8 +10,10 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * A failing class dump (here an invalid dump directory, which fails with an
  * unchecked InvalidPathException rather than an IOException) must never
- * affect generation, and in particular must not leave the shared write
- * helpers undefined for the writers generated after it.
+ * affect generation. The direct {@code CodegenDump.dump} call stands for the
+ * dump of the shared write helpers, which runs just before they are defined:
+ * they are defined once per JVM, usually by an earlier test, so this test
+ * cannot reach that define itself.
  */
 public class CodegenDumpTest extends BlackbirdTestBase
 {

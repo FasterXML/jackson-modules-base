@@ -104,8 +104,8 @@ final class BeanWriterGenerator
 
     static byte[] emit(WriterCodegen.Plan plan) {
         return BeanReaderGenerator.withinSizeLimit(buildClass(plan.className(), plan.props(),
-                plan.stockName(), plan.nameName(), plan.childName(), plan.handleName(),
-                plan.views(), plan.includeByDefault(), plan.nativePolyWrites()));
+                plan.stockName(), plan.nameName(), plan.childName(), plan.selfName(),
+                plan.handleName(), plan.views(), plan.includeByDefault(), plan.nativePolyWrites()));
     }
 
     // HotSpot C2 measure. The nops make each write helper larger than
@@ -136,8 +136,9 @@ final class BeanWriterGenerator
             CD_JSON_GENERATOR, CD_SERIALIZABLE_STRING);
 
     private static byte[] buildClass(String className, List<GenWProp> props,
-            String[] stockName, String[] nameName, String[] childName, String[] handleName,
-            ViewStrategy views, boolean includeByDefault, boolean nativePolyWrites) {
+            String[] stockName, String[] nameName, String[] childName, String[] selfName,
+            String[] handleName, ViewStrategy views, boolean includeByDefault,
+            boolean nativePolyWrites) {
         ClassDesc thisClass = ClassDesc.of(className);
         return BeanReaderGenerator.CLASS_FILE.build(thisClass, clb -> {
             clb.withFlags(ClassFile.ACC_PUBLIC | ClassFile.ACC_FINAL | ClassFile.ACC_SUPER);
@@ -150,12 +151,13 @@ final class BeanWriterGenerator
             clb.withMethod("serialize", MTD_SERIALIZE, ClassFile.ACC_PUBLIC,
                     mb -> mb.with(BeanReaderGenerator.params("value", "g", "ctxt"))
                             .withCode(cob -> buildSerialize(cob, props,
-                                    stockName, nameName, childName, handleName, views)));
+                                    stockName, nameName, childName, selfName, handleName, views)));
             if (nativePolyWrites) {
                 clb.withMethod("serializeWithType", MTD_SERIALIZE_WITH_TYPE, ClassFile.ACC_PUBLIC,
                         mb -> mb.with(BeanReaderGenerator.params("value", "g", "ctxt", "typeSer"))
                                 .withCode(cob -> buildSerializeWithType(cob, props,
-                                        stockName, nameName, childName, handleName, views)));
+                                        stockName, nameName, childName, selfName, handleName,
+                                        views)));
             }
             if (views == ViewStrategy.MASK) {
                 emitComputeViewMask(clb, props, stockName, includeByDefault);
@@ -221,7 +223,7 @@ final class BeanWriterGenerator
 
     private static void buildSerialize(CodeBuilder cob,
             List<GenWProp> props, String[] stockName, String[] nameName, String[] childName,
-            String[] handleName, ViewStrategy views) {
+            String[] selfName, String[] handleName, ViewStrategy views) {
         final int gen = 2;
         final int ctxt = 3;
         final int refSlot = 5;
@@ -247,7 +249,7 @@ final class BeanWriterGenerator
            .invokevirtual(CD_JSON_GENERATOR, "writeStartObject", MTD_WRITE_START_OBJECT).pop();
 
         Label handler = emitPropsWithHandler(cob, props, stockName, nameName,
-                childName, handleName, views, gen, ctxt, refSlot, maskSlot, ixSlot);
+                childName, selfName, handleName, views, gen, ctxt, refSlot, maskSlot, ixSlot);
 
         cob.aload(gen).invokevirtual(CD_JSON_GENERATOR, "writeEndObject", MTD_WRITE_END).pop();
         cob.return_();
@@ -283,7 +285,7 @@ final class BeanWriterGenerator
     // serialize path keeps its measured shape.
     private static void buildSerializeWithType(CodeBuilder cob,
             List<GenWProp> props, String[] stockName, String[] nameName, String[] childName,
-            String[] handleName, ViewStrategy views) {
+            String[] selfName, String[] handleName, ViewStrategy views) {
         final int gen = 2;
         final int ctxt = 3;
         final int typeSer = 4;
@@ -313,7 +315,7 @@ final class BeanWriterGenerator
            .invokevirtual(CD_JSON_GENERATOR, "assignCurrentValue", MTD_ASSIGN_CURRENT);
 
         Label handler = emitPropsWithHandler(cob, props, stockName, nameName,
-                childName, handleName, views, gen, ctxt, refSlot, maskSlot, ixSlot);
+                childName, selfName, handleName, views, gen, ctxt, refSlot, maskSlot, ixSlot);
 
         cob.aload(typeSer).aload(gen).aload(ctxt).aload(typeIdSlot);
         cob.invokevirtual(CD_TYPE_SERIALIZER, "writeTypeSuffix", MTD_WRITE_TYPE_PART).pop();
@@ -369,8 +371,8 @@ final class BeanWriterGenerator
     // caller binds after its return (see emitPropertyHandler).
     private static Label emitPropsWithHandler(CodeBuilder cob,
             List<GenWProp> props, String[] stockName, String[] nameName, String[] childName,
-            String[] handleName, ViewStrategy views, int gen, int ctxt, int refSlot,
-            int maskSlot, int ixSlot) {
+            String[] selfName, String[] handleName, ViewStrategy views, int gen, int ctxt,
+            int refSlot, int maskSlot, int ixSlot) {
         Label start = cob.newLabel();
         Label end = cob.newLabel();
         Label handler = cob.newLabel();
@@ -380,7 +382,7 @@ final class BeanWriterGenerator
         // instruction in it.
         cob.iconst_0().istore(ixSlot);
         cob.labelBinding(start);
-        emitProps(cob, props, stockName, nameName, childName, handleName, views,
+        emitProps(cob, props, stockName, nameName, childName, selfName, handleName, views,
                 gen, ctxt, refSlot, maskSlot, ixSlot);
         cob.labelBinding(end);
         return handler;
@@ -397,8 +399,9 @@ final class BeanWriterGenerator
 
     // One writeName/write-value pair per property, the bean in slot 1.
     private static void emitProps(CodeBuilder cob, List<GenWProp> props,
-            String[] stockName, String[] nameName, String[] childName, String[] handleName,
-            ViewStrategy views, int gen, int ctxt, int refSlot, int maskSlot, int ixSlot) {
+            String[] stockName, String[] nameName, String[] childName, String[] selfName,
+            String[] handleName, ViewStrategy views, int gen, int ctxt, int refSlot, int maskSlot,
+            int ixSlot) {
         for (int i = 0; i < props.size(); i++) {
             GenWProp prop = props.get(i);
             if (i > 0) {
@@ -461,8 +464,7 @@ final class BeanWriterGenerator
                     cob.goto_(done);
                     cob.labelBinding(self);
                     cob.aload(0);
-                    ldcData(cob, stockName[i], CD_PROPERTY_WRITER);
-                    cob.checkcast(CD_BEAN_PROPERTY_WRITER);
+                    ldcData(cob, selfName[i], CD_BEAN_PROPERTY_WRITER);
                     cob.aload(1).aload(gen).aload(ctxt);
                     cob.invokevirtual(CD_WRITER_BASE, "_selfReference", MTD_SELF_REFERENCE);
                     cob.labelBinding(done);

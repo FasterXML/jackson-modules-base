@@ -10,6 +10,7 @@ import java.util.StringJoiner;
 
 import tools.jackson.core.SerializableString;
 import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.ViewStrategy;
@@ -41,7 +42,7 @@ public final class WriterCodegen
      * keeps the base forwarding.
      */
     record Plan(String className, List<GenWProp> props, String[] stockName,
-            String[] nameName, String[] childName, String[] handleName,
+            String[] nameName, String[] childName, String[] selfName, String[] handleName,
             ViewStrategy views, boolean includeByDefault, boolean nativePolyWrites) {}
 
     /**
@@ -67,6 +68,7 @@ public final class WriterCodegen
         String[] stockName = new String[props.size()];
         String[] nameName = new String[props.size()];
         String[] childName = new String[props.size()];
+        String[] selfName = new String[props.size()];
         String[] handleName = new String[props.size()];
         StringJoiner layout = new StringJoiner(",");
         for (int i = 0; i < props.size(); i++) {
@@ -82,6 +84,9 @@ public final class WriterCodegen
             if (p.child() != null) {
                 childName[i] = ReaderCodegen.dataName(classData, base + "Codec");
                 classData.put(childName[i], p.child());
+                selfName[i] = ReaderCodegen.dataName(classData, base + "Self");
+                classData.put(selfName[i], GeneratedWriterBase.selfReferenceWriter(
+                        (BeanPropertyWriter) p.stock()));
             }
             if (p.handle() != null) {
                 handleName[i] = ReaderCodegen.dataName(classData, base + "Get");
@@ -95,7 +100,7 @@ public final class WriterCodegen
         String className = definer.lookupClass().getPackageName()
                 + ".BBWriter_" + ReaderCodegen.codecName(beanClass);
         byte[] bytes = ClassFileEmitters.emit(new Plan(className, props, stockName, nameName,
-                childName, handleName, views, includeByDefault, nativePolyWrites));
+                childName, selfName, handleName, views, includeByDefault, nativePolyWrites));
         if (bytes == null) {
             CodegenDebug.log(() -> "writer gate: a generated method is over "
                     + ClassFileEmitters.MAX_METHOD_BYTES + " bytes");
@@ -135,7 +140,22 @@ public final class WriterCodegen
             if (_defined == null) {
                 byte[] bytes = ClassFileEmitters.emitWriteHelpers();
                 CodegenDump.dump(HELPERS_CLASS, bytes);
-                _defined = MethodHandles.lookup().defineClass(bytes);
+                try {
+                    _defined = MethodHandles.lookup().defineClass(bytes);
+                } catch (LinkageError e) {
+                    // An earlier attempt may have defined the class and then
+                    // failed before recording it: use that definition.
+                    _defined = _alreadyDefined(e);
+                }
+            }
+        }
+
+        private static Class<?> _alreadyDefined(LinkageError defineFailure) {
+            try {
+                return Class.forName(HELPERS_CLASS, false, WriterCodegen.class.getClassLoader());
+            } catch (ClassNotFoundException | LinkageError e) {
+                defineFailure.addSuppressed(e);
+                throw defineFailure;
             }
         }
     }

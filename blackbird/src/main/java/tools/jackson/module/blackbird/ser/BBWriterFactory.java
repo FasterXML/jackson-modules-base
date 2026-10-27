@@ -15,7 +15,6 @@ import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.introspect.AnnotatedField;
 import tools.jackson.databind.introspect.AnnotatedMethod;
 import tools.jackson.databind.ser.BeanPropertyWriter;
-import tools.jackson.databind.ser.BeanSerializer;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
 import tools.jackson.databind.ser.impl.FilteredBeanPropertyWriter;
@@ -53,10 +52,13 @@ final class BBWriterFactory
 
     private BBWriterFactory() {}
 
-    static ValueSerializer<Object> tryGenerate(BeanSerializerBase delegate, boolean hasTypeId,
+    // props and filtered: the resolved _props and _filteredProps of delegate,
+    // which are protected.
+    static ValueSerializer<Object> tryGenerate(BeanSerializerBase delegate,
+            BeanPropertyWriter[] props, BeanPropertyWriter[] filtered, boolean hasTypeId,
             SerializationContext ctxt) {
         try {
-            ValueSerializer<Object> codec = generate(delegate, hasTypeId, ctxt);
+            ValueSerializer<Object> codec = generate(delegate, props, filtered, hasTypeId, ctxt);
             CodegenDebug.log(() -> "writer tryGenerate " + delegate.handledType().getName()
                     + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
             return codec;
@@ -80,7 +82,8 @@ final class BBWriterFactory
     }
 
     private static ValueSerializer<Object> generate(BeanSerializerBase delegate,
-            boolean hasTypeId, SerializationContext ctxt)
+            BeanPropertyWriter[] beanProps, BeanPropertyWriter[] filtered, boolean hasTypeId,
+            SerializationContext ctxt)
             throws ReflectiveOperationException {
         if (delegate.usesObjectId() || delegate.getFilterId() != null) {
             CodegenDebug.log(() -> "writer gate: object id or filter id");
@@ -103,7 +106,8 @@ final class BBWriterFactory
         boolean nativePolyWrites = !hasTypeId;
         // null when the writer would be too large to JIT-compile.
         return WriterCodegen.generate(beanClass, props, delegate,
-                viewStrategy(delegate, props, includeByDefault), includeByDefault, nativePolyWrites);
+                viewStrategy(beanProps, filtered, props, includeByDefault), includeByDefault,
+                nativePolyWrites);
     }
 
     // Under an active view stock writes the resolved filtered-writer array
@@ -120,13 +124,12 @@ final class BBWriterFactory
     // per-property tests. Properties with views take MASK (fast path under
     // views) up to 64 properties, DELEGATE beyond. Visibility is read per
     // property from BeanPropertyWriter.getViews.
-    private static ViewStrategy viewStrategy(BeanSerializerBase delegate,
-            List<GenWProp> props, boolean includeByDefault) {
-        ViewArrays arrays = ViewArrays.of(delegate);
-        if (arrays.filtered() == null) {
+    private static ViewStrategy viewStrategy(BeanPropertyWriter[] beanProps,
+            BeanPropertyWriter[] filtered, List<GenWProp> props, boolean includeByDefault) {
+        if (filtered == null) {
             return ViewStrategy.NONE;
         }
-        if (!isStockViewArray(arrays.props(), arrays.filtered(), includeByDefault)) {
+        if (!isStockViewArray(beanProps, filtered, includeByDefault)) {
             CodegenDebug.log(() -> "writer views: non-stock filtered writers, delegating");
             return ViewStrategy.DELEGATE;
         }
@@ -147,7 +150,12 @@ final class BBWriterFactory
     // Whether filtered is what BeanSerializerFactory.processViews builds
     // from props: an unannotated property as itself (default inclusion on)
     // or left out (off), one with views as a stock FilteredBeanPropertyWriter
-    // for the same property and views.
+    // with the same name and views. Which writer a stock filtered writer
+    // wraps is not visible (its delegate field is in a private class of a
+    // package that databind does not open), so one built by
+    // constructViewBased around a different writer for the same property
+    // (say, a wrapper that changes the value) is taken as stock: under an
+    // active view the generated writer then writes props[i], not the wrapper.
     private static boolean isStockViewArray(BeanPropertyWriter[] props,
             BeanPropertyWriter[] filtered, boolean includeByDefault) {
         if (filtered.length != props.length) {
@@ -169,26 +177,6 @@ final class BBWriterFactory
             }
         }
         return true;
-    }
-
-    // Reads the resolved property arrays of a bean serializer, which are
-    // protected, through a copy.
-    private static final class ViewArrays extends BeanSerializer {
-        private ViewArrays(BeanSerializerBase src) {
-            super(src);
-        }
-
-        static ViewArrays of(BeanSerializerBase src) {
-            return new ViewArrays(src);
-        }
-
-        BeanPropertyWriter[] props() {
-            return _props;
-        }
-
-        BeanPropertyWriter[] filtered() {
-            return _filteredProps;
-        }
     }
 
     // A generated arm writes the value directly, so every per-property

@@ -70,7 +70,7 @@ public class BBCodecViewTest extends BlackbirdTestBase
         public void setChild(ViewBean c) { child = c; }
     }
 
-    private static final ObjectMapper VANILLA = new JsonMapper();
+    private static final ObjectMapper VANILLA = newVanillaJSONMapper();
     private static final ObjectMapper MODULE = newObjectMapper();
 
     private static final String DOC = "{\"a\":\"x\",\"b\":7,\"plain\":\"p\"}";

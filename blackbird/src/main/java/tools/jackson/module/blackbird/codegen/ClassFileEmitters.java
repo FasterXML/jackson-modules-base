@@ -76,14 +76,28 @@ public final class ClassFileEmitters
     // A class from META-INF/versions/25 is absent on Java 17-24
     // (ClassNotFoundException); if a repackaged jar moved it to the base
     // directory, loading it there fails with UnsupportedClassVersionError.
+    // A found emitter is initialized here, on the shallow stack of
+    // BlackbirdModule.setupModule (the first use of this class), not inside
+    // the first generation: a throwable there (say, a StackOverflowError deep
+    // in a recursive resolution) would leave the emitter class unusable for
+    // the rest of the JVM. An initializer failure is a bug and is not caught,
+    // so it is not reported as an old runtime.
     private static MethodHandle find(String simpleName, String method, MethodType type) {
         MethodHandles.Lookup lookup = MethodHandles.lookup();
+        Class<?> emitter;
+        MethodHandle handle;
         try {
-            Class<?> emitter = lookup.findClass(
+            emitter = lookup.findClass(
                     ClassFileEmitters.class.getPackageName() + "." + simpleName);
-            return lookup.findStatic(emitter, method, type);
+            handle = lookup.findStatic(emitter, method, type);
         } catch (ReflectiveOperationException | LinkageError e) {
             return null;
         }
+        try {
+            lookup.ensureInitialized(emitter);
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        }
+        return handle;
     }
 }

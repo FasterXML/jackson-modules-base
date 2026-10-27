@@ -39,7 +39,8 @@ final class BBWriterPlaceholder extends BeanSerializer
     public void resolve(SerializationContext ctxt) {
         CodegenDebug.log(() -> "writer resolve " + handledType().getName());
         super.resolve(ctxt);
-        ValueSerializer<Object> codec = BBWriterFactory.tryGenerate(this, _typeId != null, ctxt);
+        ValueSerializer<Object> codec = BBWriterFactory.tryGenerate(this, _props, _filteredProps,
+                _typeId != null, ctxt);
         _codec = codec;
         if (codec == null) {
             _stock = _original;

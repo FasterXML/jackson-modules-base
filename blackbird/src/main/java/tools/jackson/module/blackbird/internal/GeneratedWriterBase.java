@@ -77,34 +77,45 @@ public abstract class GeneratedWriterBase extends BeanSerializer
         throw new IllegalStateException("wrapAndThrow returned", t);
     }
 
+    /**
+     * The writer that a generated child arm passes to
+     * {@link #_selfReference}, built once per child property at generation
+     * time (class data) rather than per write.
+     */
+    public static BeanPropertyWriter selfReferenceWriter(BeanPropertyWriter prop) {
+        return new SelfReferenceProbe(prop);
+    }
+
     // A child property whose value is the bean itself: the rest of stock
     // BeanPropertyWriter.serializeAsProperty from the self-reference check
     // on (the generated arm has read the value, which stock reads once; the
     // arm's properties have no type serializer, value suppression or
-    // applied view).
-    protected final void _selfReference(BeanPropertyWriter prop, Object bean, JsonGenerator g,
+    // applied view). probe comes from selfReferenceWriter.
+    protected final void _selfReference(BeanPropertyWriter probe, Object bean, JsonGenerator g,
             SerializationContext ctxt) throws Exception {
-        new SelfReferenceProbe(prop).serializeSelf(bean, g, ctxt);
+        ((SelfReferenceProbe) probe).serializeSelf(bean, g, ctxt);
     }
 
     // BeanPropertyWriter's self-reference handling and serializer state are
-    // protected; the copy constructor carries the writer's state over.
+    // protected; the copy constructor carries the writer's state over. A
+    // child arm exists only for a writer whose serializer is a generated
+    // writer (BBWriterFactory.classify), so _serializer is always set.
     private static final class SelfReferenceProbe extends BeanPropertyWriter {
         SelfReferenceProbe(BeanPropertyWriter base) {
             super(base);
+            if (_serializer == null) {
+                throw new IllegalStateException("child property '" + _name.getValue()
+                        + "' has no serializer");
+            }
         }
 
         void serializeSelf(Object bean, JsonGenerator g, SerializationContext ctxt)
                 throws Exception {
-            ValueSerializer<Object> ser = _serializer;
-            if (ser == null) {
-                ser = _findAndAddDynamic(_dynamicSerializers, bean.getClass(), ctxt);
-            }
-            if (_handleSelfReference(bean, g, ctxt, ser)) {
+            if (_handleSelfReference(bean, g, ctxt, _serializer)) {
                 return;
             }
             g.writeName(_name);
-            ser.serialize(bean, g, ctxt);
+            _serializer.serialize(bean, g, ctxt);
         }
     }
 

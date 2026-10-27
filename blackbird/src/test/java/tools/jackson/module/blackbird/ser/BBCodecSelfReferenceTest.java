@@ -67,7 +67,7 @@ public class BBCodecSelfReferenceTest extends BlackbirdTestBase
         Derived bean = new Derived();
         Exception e = assertThrows(Exception.class, () -> newObjectMapper().writeValueAsString(bean));
         Exception expected = assertThrows(Exception.class,
-                () -> new JsonMapper().writeValueAsString(new Derived()));
+                () -> newVanillaJSONMapper().writeValueAsString(new Derived()));
         assertEquals(expected.getClass(), e.getClass());
         assertEquals(1, bean.getCalls());
     }
