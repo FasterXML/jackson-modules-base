@@ -166,3 +166,8 @@ Apoorva Manjunath (@apoorvam)
 * Reported, contributed fix for #285: `JacksonBlackbirdAccess` Class access
   exception with Groovy Script serialization using `BlackbirdModule`
  (2.19.0)
+
+Parker Winchester (@parker89)
+
+* Contributed #364: (blackbird) Use generated setters for Builder-based deserialization
+ (2.23.0)
