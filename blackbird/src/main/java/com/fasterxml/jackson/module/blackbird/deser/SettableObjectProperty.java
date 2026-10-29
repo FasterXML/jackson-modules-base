@@ -113,7 +113,7 @@ final class SettableObjectProperty
         try {
             _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
-            _reportProblem(p, _optimizedSetter, _optimizedSetterAndReturn, bean, v, e);
+            _reportProblem(p, v, e);
         }
     }
 
@@ -138,7 +138,7 @@ final class SettableObjectProperty
             Object result = _optimizedSetterAndReturn.apply(instance, value);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(p, _optimizedSetterAndReturn, instance, value, e);
+            return _reportProblemAndReturn(p, value, e);
         }
     }
 }

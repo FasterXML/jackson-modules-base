@@ -355,7 +355,7 @@ public class TestSetterFailures extends BlackbirdTestBase
     }
 
     @Test
-    public void testVoidAccessorAccessFailureFallsBack() throws Throwable {
+    public void testVoidAccessorAccessFailureIsNotRetried() throws Throwable {
         InaccessibleSetterValue bean = new InaccessibleSetterValue();
         Object value = InaccessibleSetterValue.newValue();
         Method setter = InaccessibleSetterValue.class.getMethod("setVoidValue", value.getClass());
@@ -364,16 +364,16 @@ public class TestSetterFailures extends BlackbirdTestBase
                 property(newVanillaJSONMapper(), bean.getClass(), "voidValue"), accessor, null,
                 InaccessibleSetterValue.class);
 
-        // The generated accessor cannot cast to the package-private parameter type.
+        // The generated accessor cannot cast to the package-private parameter type;
+        // that is reported like the setter's failure, and the setter never runs
         assertThrows(IllegalAccessError.class, () -> accessor.accept(bean, value));
+        JsonMappingException e = assertThrows(JsonMappingException.class, () -> property.set(bean, value));
+        assertEquals(IllegalAccessError.class, e.getCause().getClass());
         assertEquals(0, bean.calls);
-        property.set(bean, value);
-        assertEquals(1, bean.calls);
-        assertSame(value, bean.value);
     }
 
     @Test
-    public void testFluentAccessorAccessFailureFallsBack() throws Throwable {
+    public void testFluentAccessorAccessFailureIsNotRetried() throws Throwable {
         InaccessibleSetterValue bean = new InaccessibleSetterValue();
         Object value = InaccessibleSetterValue.newValue();
         Method setter = InaccessibleSetterValue.class.getMethod("setFluentValue", value.getClass());
@@ -383,12 +383,11 @@ public class TestSetterFailures extends BlackbirdTestBase
                 property(newVanillaJSONMapper(), bean.getClass(), "fluentValue"), accessor, thunk,
                 InaccessibleSetterValue.class);
 
-        // With hidden lambda frames, the error's top frame is the trampoline.
+        // the same through the trampoline that fluent setters on regular beans use
         assertThrows(IllegalAccessError.class, () -> accessor.accept(bean, value));
+        JsonMappingException e = assertThrows(JsonMappingException.class, () -> property.set(bean, value));
+        assertEquals(IllegalAccessError.class, e.getCause().getClass());
         assertEquals(0, bean.calls);
-        property.set(bean, value);
-        assertEquals(1, bean.calls);
-        assertSame(value, bean.value);
     }
 
     private SettableBeanProperty property(ObjectMapper mapper, Class<?> beanType, String name) throws Exception {
