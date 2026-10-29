@@ -16,6 +16,7 @@ import java.util.function.BiFunction;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
@@ -325,11 +326,10 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
     }
 
 
-    // Setup skips this accessor, so build it the same way here to check that the
-    // access error the JVM really raises (from a hidden frame on Java 9+) is
-    // recognized as the accessor's, and falls back without running the setter twice
+    // Setup skips this accessor, so build it the same way here: the access error the
+    // JVM really raises is reported like a setter failure, and the setter never runs
     @Test
-    public void testRealAccessorFailureFallsBack() throws Throwable
+    public void testRealAccessorFailureIsNotRetried() throws Throwable
     {
         Class<?> mode = Class.forName(ModeBuilderBase.class.getPackage().getName() + ".Mode");
         MethodHandle setter = MethodHandles.lookup().unreflect(
@@ -352,15 +352,12 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
                 setter.type().parameterType(0));
 
         Object fast = mode.getEnumConstants()[0];
-        for (int i = 0; i < 2; i++) {
-            ModeBuilderBase.setterCalls = 0;
-            ModeBuilder builder = new ModeBuilder();
-            assertThrows(IllegalAccessError.class, () -> thunk.apply(builder, fast));
-            assertEquals(0, ModeBuilderBase.setterCalls);
-            assertSame(builder, prop.setAndReturn(builder, fast));
-            assertEquals("FAST", builder.build().mode);
-            assertEquals(1, ModeBuilderBase.setterCalls);
-        }
+        ModeBuilderBase.setterCalls = 0;
+        ModeBuilder builder = new ModeBuilder();
+        assertThrows(IllegalAccessError.class, () -> thunk.apply(builder, fast));
+        JsonMappingException e = assertThrows(JsonMappingException.class, () -> prop.setAndReturn(builder, fast));
+        assertEquals(IllegalAccessError.class, e.getCause().getClass());
+        assertEquals(0, ModeBuilderBase.setterCalls);
     }
 
     private SettableBeanProperty _findProperty(Class<?> type, String name) throws Exception

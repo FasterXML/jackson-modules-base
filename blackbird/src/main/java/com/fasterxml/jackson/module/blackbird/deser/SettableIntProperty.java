@@ -92,7 +92,7 @@ final class SettableIntProperty
             Object result = _optimizedSetterAndReturn.apply(instance, v);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(p, _optimizedSetterAndReturn, instance, v, e);
+            return _reportProblemAndReturn(p, v, e);
         }
     }
 }

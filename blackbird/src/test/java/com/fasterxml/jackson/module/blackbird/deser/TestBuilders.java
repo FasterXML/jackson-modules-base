@@ -336,7 +336,7 @@ public class TestBuilders extends BlackbirdTestBase
     @JsonDeserialize(builder=FlakyBuilder.class)
     static class FlakyBuilt { }
 
-    // The builder is a hidden subclass whose setter fails after doing its work. Hidden
+    // The builder is a hidden subclass whose setter fails after doing its work. Its
     // frames are left out of stack traces, as the generated accessor's are.
     static Class<?> hiddenBuilderClass;
     static int hiddenCalls;
@@ -706,37 +706,6 @@ public class TestBuilders extends BlackbirdTestBase
         assertEquals(42, v.i);
     }
 
-    // An access failure is raised by the JVM in the generated accessor's own frame,
-    // before the setter runs; the anonymous classes stand in for that accessor.
-    // The reflective fallback must still return the new builder.
-    @Test
-    public void testAccessFailureFallsBackToReflection() throws Exception
-    {
-        ObjectMapper vanilla = newVanillaJSONMapper();
-        DefaultDeserializationContext ctxt = ((DefaultDeserializationContext) vanilla.getDeserializationContext())
-                .createInstance(vanilla.getDeserializationConfig(), null, null);
-        BeanDeserializerBase deser = (BeanDeserializerBase) ctxt.findRootValueDeserializer(
-                vanilla.constructType(CopyingBuilt.class));
-        SettableStringProperty prop = new SettableStringProperty(deser.findProperty("str"),
-                new BiConsumer<Object, String>() {
-                    @Override
-                    public void accept(Object bean, String v) {
-                        throw new IllegalAccessError("simulated");
-                    }
-                },
-                new BiFunction<Object, Object, Object>() {
-                    @Override
-                    public Object apply(Object bean, Object v) {
-                        throw new IllegalAccessError("simulated");
-                    }
-                },
-                CopyingBuilder.class);
-
-        CopyingBuilder result = (CopyingBuilder) prop.setAndReturn(new CopyingBuilder(), "foo");
-        assertEquals("foo", result.str);
-        assertEquals(1, result.reflectiveCalls);
-    }
-
     // Whether the setter creates the throwable or saved it earlier, it may already
     // have done its work, so it must not run again. That includes throwables with no
     // stack trace, as with `-XX:-StackTraceInThrowable`.
@@ -825,7 +794,7 @@ public class TestBuilders extends BlackbirdTestBase
     }
 
     // A setter in a hidden class looks like the generated accessor in a stack trace
-    // (both are left out), so its failure must not be mistaken for an accessor's
+    // (both are left out), but it must still run only once
     @Test
     public void testHiddenClassSetterFailureIsNotRetried() throws Exception
     {
@@ -903,43 +872,49 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
-    // If the generated setter fails to access it and the setter then fails through
-    // reflection, the error still has the JSON location
+    // A failure of the generated accessor itself (simulated by the anonymous classes)
+    // is reported like the setter's, without trying the setter again through
+    // reflection, and with the JSON location where there is one
     @Test
-    public void testAccessFailureFallbackKeepsLocation() throws Exception
+    public void testAccessorFailureIsNotRetried() throws Exception
     {
         ObjectMapper vanilla = newVanillaJSONMapper();
         BeanDeserializerBase deser = (BeanDeserializerBase) ((DefaultDeserializationContext) vanilla.getDeserializationContext())
                 .createInstance(vanilla.getDeserializationConfig(), null, null)
                 .findRootValueDeserializer(vanilla.constructType(ThrowingBuilt.class));
+        IllegalAccessError failure = new IllegalAccessError("simulated");
         SettableStringProperty prop = new SettableStringProperty(deser.findProperty("str"),
                 new BiConsumer<Object, String>() {
                     @Override
                     public void accept(Object bean, String v) {
-                        throw new IllegalAccessError("simulated");
+                        throw failure;
                     }
                 },
                 new BiFunction<Object, Object, Object>() {
                     @Override
                     public Object apply(Object bean, Object v) {
-                        throw new IllegalAccessError("simulated");
+                        throw failure;
                     }
                 },
                 ThrowingBuilder.class);
         toThrow = () -> new IllegalStateException("thrown by setter");
         setterCalls = 0;
+
+        JsonMappingException e = assertThrows(JsonMappingException.class,
+                () -> prop.setAndReturn(new ThrowingBuilder(), "foo"));
+        assertSame(failure, e.getCause());
         try (JsonParser p = vanilla.createParser(a2q("{'str':'foo'}"))) {
             p.nextToken();
             p.nextToken();
             p.nextToken();
             DefaultDeserializationContext ctxt = ((DefaultDeserializationContext) vanilla.getDeserializationContext())
                     .createInstance(vanilla.getDeserializationConfig(), p, null);
-            JsonMappingException e = assertThrows(JsonMappingException.class,
+            e = assertThrows(JsonMappingException.class,
                     () -> prop.deserializeSetAndReturn(p, ctxt, new ThrowingBuilder()));
-            assertEquals("thrown by setter", e.getOriginalMessage());
+            assertSame(failure, e.getCause());
             assertNotNull(e.getLocation());
         }
-        assertEquals(1, setterCalls);
+        assertEquals(0, setterCalls);
     }
 
     @Test

@@ -137,20 +137,17 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     }
 
     /**
-     * Like {@link #_reportProblem}, for {@link #setAndReturn}: an access failure of
-     * the generated accessor falls back to the delegate, and anything the setter
-     * throws is reported the way {@code MethodProperty} reports it. The parser is
-     * only used for the error location, and is null outside of
+     * Like {@link #_reportProblem}, for {@link #setAndReturn}: anything the generated
+     * setter throws is reported the way {@code MethodProperty} reports it, and never
+     * retried. Telling a failure of the generated accessor itself from one thrown by
+     * the setter would mean guessing from the stack trace, and a retry could run the
+     * setter twice; setup instead leaves the setters it can't call to reflection.
+     * The parser is only used for the error location, and is null outside of
      * {@link #deserializeSetAndReturn}, as it is for {@code MethodProperty}.
      */
-    protected Object _reportProblemAndReturn(JsonParser p, Object accessor, Object bean, Object value,
-            Throwable e)
+    protected Object _reportProblemAndReturn(JsonParser p, Object value, Throwable e)
         throws IOException
     {
-        if (_isAccessorAccessFailure(accessor, bean, e)) {
-            _logAccessProblem(bean, e);
-            return _reflectiveSetAndReturn(p, bean, value);
-        }
         // `Method.invoke` wraps whatever the setter throws, and `MethodProperty`
         // translates that wrapper; doing the same keeps type, message, cause and path
         _throwAsIOE(p, new InvocationTargetException(e), value);
@@ -177,40 +174,6 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             _throwAsIOE(p, e, value);
             return null; // never gets here
         }
-    }
-
-    // Retrying is only safe if the setter never ran, so require positive evidence:
-    // the JVM raises an access failure in the accessor's own frame, which is then
-    // on top of the stack (or, where generated frames are hidden from stack traces,
-    // this property's frame that called it). A throwable created anywhere else,
-    // such as one the setter saved and throws later, keeps its original failure.
-    private boolean _isAccessorAccessFailure(Object accessor, Object bean, Throwable e) {
-        if (!(e instanceof IllegalAccessError) && !(e instanceof SecurityException)) {
-            return false;
-        }
-        StackTraceElement[] trace;
-        try {
-            trace = e.getStackTrace();
-        } catch (Throwable traceFailure) {
-            // a subclass can override it; that is no evidence either, and mustn't
-            // replace the setter's failure (unless the JVM itself is failing)
-            if (traceFailure instanceof VirtualMachineError) {
-                throw (VirtualMachineError) traceFailure;
-            }
-            return false;
-        }
-        // No trace (stack traces disabled, or a stackless throwable) is no evidence;
-        // setup already skips the accessors known to fail this way
-        if ((trace == null) || (trace.length == 0) || (trace[0] == null)) {
-            return false;
-        }
-        String top = trace[0].getClassName();
-        if (top.equals(accessor.getClass().getName())) {
-            return true;
-        }
-        // A setter in a hidden class is left out of the trace too, which is only
-        // possible if the bean's own class is hidden (their names contain a '/')
-        return top.equals(getClass().getName()) && (bean.getClass().getName().indexOf('/') < 0);
     }
 
     private void _logAccessProblem(Object bean, Throwable e) {
