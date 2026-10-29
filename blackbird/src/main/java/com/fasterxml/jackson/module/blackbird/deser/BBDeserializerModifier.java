@@ -205,8 +205,9 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             }
         }
         // Calling the setter also names its return type, which nothing casts to, but
-        // the JVM still requires to be the same class from the accessor's loader
-        if (!ReflectionHack.canResolveClass(lookup, setter.type().returnType())) {
+        // the JVM still requires to be the same class from the accessor's loader.
+        // The accessor never loads it, so neither may this check.
+        if (!ReflectionHack.isSameClassWithoutLoading(lookup, setter.type().returnType())) {
             return;
         }
 

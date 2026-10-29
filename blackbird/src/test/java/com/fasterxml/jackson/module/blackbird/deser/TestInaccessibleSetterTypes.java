@@ -7,7 +7,10 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -123,6 +126,38 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
         assertEquals(MethodProperty.class, _findProperty(bean, "level").getClass());
     }
 
+    // Nor may the check load the return type, which the generated setter never does:
+    // the loader would define its own copy, and the code using it might then fail
+    @Test
+    public void testReturnTypeIsNotLoaded() throws Exception
+    {
+        ChildFirstLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                Arrays.asList(Chain.class, ChainBuilder.class, ChainBuilt.class));
+        Class<?> built = Class.forName(ChainBuilt.class.getName(), true, loader);
+
+        ChainBuilderBase.setterCalls = 0;
+        Object result = MAPPER.readValue(a2q("{'level':'HIGH'}"), built);
+        assertEquals("HIGH", built.getField("level").get(result));
+        assertEquals(1, ChainBuilderBase.setterCalls);
+        assertFalse(loader.defined.contains(Chain.class.getName()));
+    }
+
+    // A loader that fails (other than not finding the class) only stops the optimization
+    @Test
+    public void testFailingLoader() throws Exception
+    {
+        ChildFirstLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                Arrays.asList(LevelBuilder.class, LevelBuilt.class),
+                Collections.singleton(Level.class.getName()));
+        Class<?> built = Class.forName(LevelBuilt.class.getName(), true, loader);
+
+        LevelBuilderBase.setterCalls = 0;
+        Object result = MAPPER.readValue(a2q("{'level':'HIGH'}"), built);
+        assertEquals("HIGH", built.getField("level").get(result));
+        assertEquals(1, LevelBuilderBase.setterCalls);
+        assertEquals(MethodProperty.class, _findProperty(built, "level").getClass());
+    }
+
     // Same for the setter's return type: nothing casts to it, but calling the setter
     // names it, and the JVM requires both loaders to agree on it
     @Test
@@ -226,18 +261,29 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
         return deser.findProperty(name);
     }
 
-    // Defines its own copies of the given classes, delegating everything else
+    // Defines its own copies of the given classes, delegating everything else, and
+    // fails for the names it's told to
     static final class ChildFirstLoader extends ClassLoader
     {
         private final List<Class<?>> _copied;
+        private final Set<String> _failing;
+        final Set<String> defined = Collections.synchronizedSet(new HashSet<>());
 
         ChildFirstLoader(ClassLoader parent, List<Class<?>> copied) {
+            this(parent, copied, Collections.emptySet());
+        }
+
+        ChildFirstLoader(ClassLoader parent, List<Class<?>> copied, Set<String> failing) {
             super(parent);
             _copied = copied;
+            _failing = failing;
         }
 
         @Override
         protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            if (_failing.contains(name)) {
+                throw new IllegalStateException("loader closed: " + name);
+            }
             synchronized (getClassLoadingLock(name)) {
                 Class<?> c = findLoadedClass(name);
                 if (c == null) {
@@ -245,6 +291,7 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
                         if (copied.getName().equals(name)) {
                             byte[] bytes = _bytesOf(copied);
                             c = defineClass(name, bytes, 0, bytes.length);
+                            defined.add(name);
                         }
                     }
                 }

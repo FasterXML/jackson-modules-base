@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+import com.fasterxml.jackson.module.blackbird.deser.otherpackage.HiddenSetterBuilderBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ReplacingBuilderBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ReplacingBuilt;
 
@@ -413,6 +414,25 @@ public class TestBuilders extends BlackbirdTestBase
 
     @JsonDeserialize(builder=NullCreatorBuilder.class)
     static class NullCreatorBuilt { }
+
+    // Inherits a package-private setter from another package, which the generated
+    // setter can't reach (`unreflect` refuses it) but reflection can
+    public static final class HiddenSetterBuilder extends HiddenSetterBuilderBase
+    {
+        public HiddenSetterBuilt build() {
+            return new HiddenSetterBuilt(y);
+        }
+    }
+
+    @JsonDeserialize(builder=HiddenSetterBuilder.class)
+    static class HiddenSetterBuilt
+    {
+        final int y;
+
+        HiddenSetterBuilt(int y) {
+            this.y = y;
+        }
+    }
 
     // Reflection can't call the protected setter without CAN_OVERRIDE_ACCESS_MODIFIERS
     static int protectedCalls;
@@ -883,6 +903,41 @@ public class TestBuilders extends BlackbirdTestBase
             assertNotNull(e.getLocation());
         }
         assertEquals(1, setterCalls);
+    }
+
+    @Test
+    public void testInheritedPackagePrivateSetter() throws Exception
+    {
+        assertEquals(3, newVanillaJSONMapper().readValue(a2q("{'y':3}"), HiddenSetterBuilt.class).y);
+        assertEquals(3, MAPPER.readValue(a2q("{'y':3}"), HiddenSetterBuilt.class).y);
+    }
+
+    // As `deserializeSetAndReturn` does, `setAndReturn` leaves a builder the generated
+    // setter can't take to reflection, and skips nulls
+    @Test
+    public void testSetAndReturnWithUnusableBuilder() throws Exception
+    {
+        ObjectMapper vanilla = newVanillaJSONMapper();
+        Object[][] cases = { { "i", 1 }, { "l", 1L }, { "b", true }, { "str", "x" }, { "list", Arrays.asList("x") } };
+        for (Object[] c : cases) {
+            String name = (String) c[0];
+            for (Object instance : new Object[] { "not a builder", null }) {
+                String desc = name + " on " + instance;
+                Throwable expected = assertThrows(Throwable.class,
+                        () -> _findProperty(vanilla, name).setAndReturn(instance, c[1]), desc);
+                Throwable actual = assertThrows(Throwable.class,
+                        () -> _findProperty(MAPPER, name).setAndReturn(instance, c[1]), desc);
+                _assertSameFailure(desc + ", " + expected, expected, actual);
+            }
+        }
+        for (String name : new String[] { "str", "list" }) {
+            SettableBeanProperty prop = _findProperty(MAPPER, SkipNullsBuilt.class, name);
+            assertTrue(prop instanceof OptimizedSettableBeanProperty, name);
+            SkipNullsBuilder builder = new SkipNullsBuilder();
+            assertSame(builder, prop.setAndReturn(builder, null));
+            assertEquals("default", builder.str);
+            assertEquals(Arrays.asList("keep"), builder.list);
+        }
     }
 
     @Test

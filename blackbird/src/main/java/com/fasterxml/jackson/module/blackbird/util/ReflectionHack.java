@@ -53,9 +53,9 @@ public class ReflectionHack {
     }
 
     /**
-     * Like {@link #canAccessClass}, for a type that code only names, as in the
-     * descriptor of a method it calls: it must resolve to the same class, but
-     * need not be accessible.
+     * Like {@link #canAccessClass}, for a type that code refers to and so resolves
+     * (as the owner of a method it calls), but need not be able to access: it must
+     * resolve to the same class.
      */
     public static boolean canResolveClass(Lookup lookup, Class<?> type) {
         type = elementType(type);
@@ -64,6 +64,25 @@ public class ReflectionHack {
         }
         try {
             return resolvesTo(lookup, type);
+        } catch (SecurityException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Whether {@code type}, which code defined with {@code lookup} only names in a
+     * descriptor (as a called method's return type) and so never loads itself, is
+     * known to be the same class from the lookup class's loader. Unlike
+     * {@link #canResolveClass} this doesn't ask that loader, which could make it
+     * define its own copy and break code that relies on it never doing so.
+     */
+    public static boolean isSameClassWithoutLoading(Lookup lookup, Class<?> type) {
+        type = elementType(type);
+        if (type.isPrimitive() || type.getName().startsWith("java.")) {
+            return true;
+        }
+        try {
+            return type.getClassLoader() == lookup.lookupClass().getClassLoader();
         } catch (SecurityException e) {
             return false;
         }
@@ -80,9 +99,16 @@ public class ReflectionHack {
     // which may find a different class of the same name (e.g. a child-first loader
     // with its own copy) or none at all
     private static boolean resolvesTo(Lookup lookup, Class<?> type) {
+        ClassLoader loader = lookup.lookupClass().getClassLoader();
+        // a class its loader defined is what that loader resolves its name to,
+        // without asking it to load anything
+        if (type.getClassLoader() == loader) {
+            return true;
+        }
         try {
-            return Class.forName(type.getName(), false, lookup.lookupClass().getClassLoader()) == type;
-        } catch (ClassNotFoundException | LinkageError e) {
+            return Class.forName(type.getName(), false, loader) == type;
+        } catch (ClassNotFoundException | LinkageError | RuntimeException e) {
+            // including whatever else a misbehaving or closed loader throws
             return false;
         }
     }
