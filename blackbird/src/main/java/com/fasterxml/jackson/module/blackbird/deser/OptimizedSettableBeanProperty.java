@@ -2,6 +2,8 @@ package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,16 +34,24 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      */
     private volatile boolean broken = false;
 
+    /**
+     * Type the generated builder setter casts the instance to: the setter's declaring
+     * class, or the builder's own class for an inherited protected setter. A builder
+     * setter can return an instance of another type, which reflection may still accept.
+     */
+    protected final Class<?> _receiverType;
+
     /*
     /**********************************************************************
     /* Life-cycle
     /**********************************************************************
      */
 
-    protected OptimizedSettableBeanProperty(SettableBeanProperty src)
+    protected OptimizedSettableBeanProperty(SettableBeanProperty src, Class<?> receiverType)
     {
         super(src);
         _skipNulls = NullsConstantProvider.isSkipper(_nullProvider);
+        _receiverType = receiverType;
     }
 
     // Base impl of `withName()` fine as-is:
@@ -107,7 +117,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     protected void _reportProblem(Object accessor, Object thunk, Object bean, Object value, Throwable e)
         throws IOException
     {
-        if (_isAccessorAccessFailure(accessor, thunk, e)) {
+        if (_isAccessorAccessFailure(accessor, thunk, bean, e)) {
             _logAccessProblem(bean, e);
             delegate.set(bean, value);
             return;
@@ -128,46 +138,89 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     /**
      * Like {@link #_reportProblem}, for {@link #setAndReturn}: an access failure of
      * the generated accessor falls back to the delegate, and anything the setter
-     * throws is reported the way {@code MethodProperty.setAndReturn} reports it.
+     * throws is reported the way {@code MethodProperty} reports it. The parser is
+     * only used for the error location, and is null outside of
+     * {@link #deserializeSetAndReturn}, as it is for {@code MethodProperty}.
      */
-    protected Object _reportProblemAndReturn(Object accessor, Object bean, Object value, Throwable e)
+    protected Object _reportProblemAndReturn(JsonParser p, Object accessor, Object bean, Object value,
+            Throwable e)
         throws IOException
     {
-        if (_isAccessorAccessFailure(accessor, null, e)) {
+        if (_isAccessorAccessFailure(accessor, null, bean, e)) {
             _logAccessProblem(bean, e);
-            return delegate.setAndReturn(bean, value);
+            return _reflectiveSetAndReturn(p, bean, value);
         }
         // `Method.invoke` wraps whatever the setter throws, and `MethodProperty`
         // translates that wrapper; doing the same keeps type, message, cause and path
-        _throwAsIOE(new InvocationTargetException(e), value);
+        _throwAsIOE(p, new InvocationTargetException(e), value);
         return null; // never gets here
     }
 
+    /**
+     * Calls the setter the way {@code MethodProperty.deserializeSetAndReturn} does once
+     * it has the value, so a failure is reported the same way, with the parser's
+     * location if {@code p} isn't null. For a value or builder the generated setter
+     * can't take, once the value has been read.
+     */
+    protected Object _reflectiveSetAndReturn(JsonParser p, Object instance, Object value)
+        throws IOException
+    {
+        Member setter = getMember().getMember();
+        if (!(setter instanceof Method)) {
+            return delegate.setAndReturn(instance, value);
+        }
+        try {
+            Object result = ((Method) setter).invoke(instance, value);
+            return (result == null) ? instance : result;
+        } catch (Exception e) {
+            _throwAsIOE(p, e, value);
+            return null; // never gets here
+        }
+    }
+
     // Retrying is only safe if the setter never ran, so require positive evidence:
-    // the JVM raises an access failure in the accessor's own frame, which is then
-    // on top of the stack (or, where generated frames are hidden from stack traces,
-    // this property's frame that called it). A throwable created anywhere else,
-    // such as one the setter saved and throws later, keeps its original failure.
-    private boolean _isAccessorAccessFailure(Object accessor, Object thunk, Throwable e) {
+    // the JVM raises an access failure in the accessor's own frame (or the thunk's,
+    // for a fluent setter on a regular bean), which is then on top of the stack.
+    // Where generated frames are hidden from stack traces, it's the frame that
+    // called it instead: this property's, or the trampoline that calls the thunk.
+    // A throwable created anywhere else, such as one the setter saved and throws
+    // later, keeps its original failure.
+    private boolean _isAccessorAccessFailure(Object accessor, Object thunk, Object bean, Throwable e) {
         if (!(e instanceof IllegalAccessError) && !(e instanceof SecurityException)) {
             return false;
         }
-        StackTraceElement[] trace = e.getStackTrace();
-        if (trace.length == 0) {
+        StackTraceElement[] trace;
+        try {
+            trace = e.getStackTrace();
+        } catch (Throwable traceFailure) {
+            // a subclass can override it; that is no evidence either, and mustn't
+            // replace the setter's failure (unless the JVM itself is failing)
+            if (traceFailure instanceof VirtualMachineError) {
+                throw (VirtualMachineError) traceFailure;
+            }
+            return false;
+        }
+        // No trace (stack traces disabled, or a stackless throwable) is no evidence;
+        // setup already skips the accessors known to fail this way
+        if ((trace == null) || (trace.length == 0) || (trace[0] == null)) {
             return false;
         }
         String top = trace[0].getClassName();
-        if (top.equals(accessor.getClass().getName()) || top.equals(getClass().getName())) {
+        if (top.equals(accessor.getClass().getName())
+                || ((thunk != null) && top.equals(thunk.getClass().getName()))) {
             return true;
         }
-        if (thunk == null) {
+        // A setter in a hidden class is left out of the trace too, which is only
+        // possible if the bean's own class is hidden (their names contain a '/');
+        // then the frames that called it are no evidence
+        if (bean.getClass().getName().indexOf('/') >= 0) {
             return false;
         }
-        if (top.equals(thunk.getClass().getName())) {
+        if (top.equals(getClass().getName())) {
             return true;
         }
-        // Regular fluent setters discard the result through a trampoline. When
-        // lambda frames are hidden, an access failure in the thunk points there.
+        // Only the generated fluent setter of a regular bean calls the trampoline,
+        // which in turn only calls the thunk
         String method = trace[0].getMethodName();
         return top.equals(BBDeserializerModifier.class.getName())
                 && (method.equals("trampoline") || method.equals("intTrampoline")

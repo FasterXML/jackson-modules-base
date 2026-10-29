@@ -129,7 +129,8 @@ public class TestSetterFailures extends BlackbirdTestBase
         Method setter = InaccessibleSetterValue.class.getMethod("setVoidValue", value.getClass());
         BiConsumer<Object, Object> accessor = voidAccessor(setter);
         SettableObjectProperty property = new SettableObjectProperty(
-                property(newVanillaJSONMapper(), bean.getClass(), "voidValue"), accessor, null);
+                property(newVanillaJSONMapper(), bean.getClass(), "voidValue"), accessor, null,
+                InaccessibleSetterValue.class);
 
         // The generated accessor cannot cast to the package-private parameter type.
         assertThrows(IllegalAccessError.class, () -> accessor.accept(bean, value));
@@ -147,7 +148,8 @@ public class TestSetterFailures extends BlackbirdTestBase
         BiFunction<Object, Object, Object> thunk = returningAccessor(setter);
         BiConsumer<Object, Object> accessor = (instance, v) -> BBDeserializerModifier.trampoline(thunk, instance, v);
         SettableObjectProperty property = new SettableObjectProperty(
-                property(newVanillaJSONMapper(), bean.getClass(), "fluentValue"), accessor, thunk);
+                property(newVanillaJSONMapper(), bean.getClass(), "fluentValue"), accessor, thunk,
+                InaccessibleSetterValue.class);
 
         // With hidden lambda frames, the error's top frame is the trampoline.
         assertThrows(IllegalAccessError.class, () -> accessor.accept(bean, value));

@@ -16,16 +16,16 @@ final class SettableLongProperty
     private ObjLongBiFunction _optimizedSetterAndReturn;
 
     public SettableLongProperty(SettableBeanProperty src, ObjLongConsumer<Object> optimizedSetter,
-            ObjLongBiFunction optimizedSetterAndReturn)
+            ObjLongBiFunction optimizedSetterAndReturn, Class<?> receiverType)
     {
-        super(src);
+        super(src, receiverType);
         _optimizedSetter = optimizedSetter;
         _optimizedSetterAndReturn = optimizedSetterAndReturn;
     }
 
     @Override
     protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
-        return new SettableLongProperty(del, _optimizedSetter, _optimizedSetterAndReturn);
+        return new SettableLongProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType);
     }
 
     /*
@@ -54,8 +54,9 @@ final class SettableLongProperty
     public Object deserializeSetAndReturn(JsonParser p,
             DeserializationContext ctxt, Object instance) throws IOException
     {
-        if (p.isExpectedNumberIntToken()) {
-            return _setAndReturn(instance, p.getLongValue());
+        if ((_optimizedSetterAndReturn != null) && _receiverType.isInstance(instance)
+                && p.isExpectedNumberIntToken()) {
+            return _setAndReturn(p, instance, p.getLongValue());
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
@@ -73,14 +74,16 @@ final class SettableLongProperty
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        if (value == null) {
+        // anything else (null, or another type that reflection may widen or reject),
+        // or an instance the generated setter can't take, is left to the delegate
+        if (!(value instanceof Long) || !_receiverType.isInstance(instance)) {
             return delegate.setAndReturn(instance, value);
         }
         // not optimal (due to boxing), but better than using reflection:
-        return _setAndReturn(instance, ((Number) value).longValue());
+        return _setAndReturn(null, instance, ((Long) value).longValue());
     }
 
-    private Object _setAndReturn(Object instance, long v) throws IOException {
+    private Object _setAndReturn(JsonParser p, Object instance, long v) throws IOException {
         if (_optimizedSetterAndReturn == null) {
             return delegate.setAndReturn(instance, v);
         }
@@ -88,7 +91,7 @@ final class SettableLongProperty
             Object result = _optimizedSetterAndReturn.apply(instance, v);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(_optimizedSetterAndReturn, instance, v, e);
+            return _reportProblemAndReturn(p, _optimizedSetterAndReturn, instance, v, e);
         }
     }
 }

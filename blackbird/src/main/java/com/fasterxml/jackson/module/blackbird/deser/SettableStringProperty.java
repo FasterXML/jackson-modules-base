@@ -16,16 +16,16 @@ final class SettableStringProperty
     private final BiFunction<Object, Object, Object> _optimizedSetterAndReturn;
 
     public SettableStringProperty(SettableBeanProperty src, BiConsumer<Object, String> optimizedSetter,
-            BiFunction<Object, Object, Object> optimizedSetterAndReturn)
+            BiFunction<Object, Object, Object> optimizedSetterAndReturn, Class<?> receiverType)
     {
-        super(src);
+        super(src, receiverType);
         _optimizedSetter = optimizedSetter;
         _optimizedSetterAndReturn = optimizedSetterAndReturn;
     }
 
     @Override
     protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
-        return new SettableStringProperty(del, _optimizedSetter, _optimizedSetterAndReturn);
+        return new SettableStringProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType);
     }
 
     /*
@@ -48,8 +48,14 @@ final class SettableStringProperty
     @Override
     public Object deserializeSetAndReturn(JsonParser p, DeserializationContext ctxt, Object instance) throws IOException
     {
-        if (p.hasToken(JsonToken.VALUE_STRING)) {
-            return setAndReturn(instance, p.getText());
+        if ((_optimizedSetterAndReturn != null) && _receiverType.isInstance(instance)
+                && p.hasToken(JsonToken.VALUE_STRING)) {
+            String text = p.getText();
+            // some parsers give null here (e.g. for a `TextNode(null)`), which needs
+            // the delegate's null handling
+            if (text != null) {
+                return _setAndReturn(p, instance, text);
+            }
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
@@ -65,17 +71,26 @@ final class SettableStringProperty
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        if (_optimizedSetterAndReturn == null) {
+        // a value of another type, or an instance the generated setter can't take,
+        // is left to the delegate, which reports it
+        if ((_optimizedSetterAndReturn == null) || !_receiverType.isInstance(instance)
+                || ((value != null) && !(value instanceof String))) {
             return delegate.setAndReturn(instance, value);
         }
+        // as in `MethodProperty`, only here: `deserializeSetAndReturn` already skipped
+        // the nulls it should
         if ((value == null) && _skipNulls) {
             return instance;
         }
+        return _setAndReturn(null, instance, value);
+    }
+
+    private Object _setAndReturn(JsonParser p, Object instance, Object value) throws IOException {
         try {
             Object result = _optimizedSetterAndReturn.apply(instance, value);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(_optimizedSetterAndReturn, instance, value, e);
+            return _reportProblemAndReturn(p, _optimizedSetterAndReturn, instance, value, e);
         }
     }
 }
