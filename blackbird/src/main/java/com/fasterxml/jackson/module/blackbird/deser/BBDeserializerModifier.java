@@ -172,11 +172,36 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
         Class<?> type;
         if (jdkMember instanceof Method && prop instanceof MethodProperty) {
             final Method method = (Method) jdkMember;
-            setter = lookup.unreflect(method);
+            try {
+                setter = lookup.unreflect(method);
+            } catch (IllegalAccessException e) {
+                // e.g. an inherited protected setter, where the lookup class isn't the
+                // subclass (as with `CrossLoaderAccess` on some JDKs); reflection can still call it
+                return;
+            }
             type = ((AnnotatedMethod) member).getRawParameterType(0);
+            // For an inherited protected setter the handle's receiver is narrowed to
+            // the lookup class, but calling it still names the declaring class
+            if (!ReflectionHack.canResolveClass(lookup, method.getDeclaringClass())) {
+                return;
+            }
         } else {
             return;
             //setter = lookup.unreflectGetter((Field) jdkMember);
+        }
+        // The generated accessor casts to each type in the setter's signature, so
+        // one it can't access (like a package-private type from another package)
+        // would fail on every call; leave those to reflection
+        for (Class<?> paramType : setter.type().parameterArray()) {
+            if (!ReflectionHack.canAccessClass(lookup, paramType)) {
+                return;
+            }
+        }
+        // Calling the setter also names its return type, which nothing casts to, but
+        // the JVM still requires to be the same class from the accessor's loader.
+        // The accessor never loads it, so neither may this check.
+        if (!ReflectionHack.isSameClassWithoutLoading(lookup, setter.type().returnType())) {
+            return;
         }
 
         if (type.isPrimitive()) {
