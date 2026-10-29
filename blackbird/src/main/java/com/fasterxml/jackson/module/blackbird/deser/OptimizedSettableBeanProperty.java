@@ -2,6 +2,8 @@ package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -147,12 +149,34 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     {
         if (_isAccessorAccessFailure(accessor, bean, e)) {
             _logAccessProblem(bean, e);
-            return delegate.setAndReturn(bean, value);
+            return _reflectiveSetAndReturn(p, bean, value);
         }
         // `Method.invoke` wraps whatever the setter throws, and `MethodProperty`
         // translates that wrapper; doing the same keeps type, message, cause and path
         _throwAsIOE(p, new InvocationTargetException(e), value);
         return null; // never gets here
+    }
+
+    /**
+     * Calls the setter the way {@code MethodProperty.deserializeSetAndReturn} does once
+     * it has the value, so a failure is reported the same way, with the parser's
+     * location if {@code p} isn't null. For a value or builder the generated setter
+     * can't take, once the value has been read.
+     */
+    protected Object _reflectiveSetAndReturn(JsonParser p, Object instance, Object value)
+        throws IOException
+    {
+        Member setter = getMember().getMember();
+        if (!(setter instanceof Method)) {
+            return delegate.setAndReturn(instance, value);
+        }
+        try {
+            Object result = ((Method) setter).invoke(instance, value);
+            return (result == null) ? instance : result;
+        } catch (Exception e) {
+            _throwAsIOE(p, e, value);
+            return null; // never gets here
+        }
     }
 
     // Retrying is only safe if the setter never ran, so require positive evidence:
@@ -164,10 +188,17 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         if (!(e instanceof IllegalAccessError) && !(e instanceof SecurityException)) {
             return false;
         }
-        StackTraceElement[] trace = e.getStackTrace();
+        StackTraceElement[] trace;
+        try {
+            trace = e.getStackTrace();
+        } catch (RuntimeException traceFailure) {
+            // a subclass can override it; that is no evidence either, and mustn't
+            // replace the setter's failure
+            return false;
+        }
         // No trace (stack traces disabled, or a stackless throwable) is no evidence;
         // setup already skips the accessors known to fail this way
-        if (trace.length == 0) {
+        if ((trace == null) || (trace.length == 0) || (trace[0] == null)) {
             return false;
         }
         String top = trace[0].getClassName();

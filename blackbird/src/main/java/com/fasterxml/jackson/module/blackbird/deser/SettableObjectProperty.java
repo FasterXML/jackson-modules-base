@@ -89,6 +89,11 @@ final class SettableObjectProperty
         } else {
             value = _valueDeserializer.deserializeWithType(p, ctxt, _valueTypeDeserializer);
         }
+        // a deserializer can give a value of another type (e.g. from a creator declared
+        // to return `Object`), which the generated setter can't take
+        if ((value != null) && !_setterValueType.isInstance(value)) {
+            return _reflectiveSetAndReturn(p, instance, value);
+        }
         return _setAndReturn(p, instance, value);
     }
 

@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,6 +28,9 @@ import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.deser.impl.MethodProperty;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ReplacingBuilderBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ReplacingBuilt;
@@ -373,9 +377,11 @@ public class TestBuilders extends BlackbirdTestBase
             return "not a builder";
         }
 
-        public UnrelatedBuilder withX(int v) {
-            return this;
-        }
+        public UnrelatedBuilder withX(int v) { return this; }
+        public UnrelatedBuilder withL(long v) { return this; }
+        public UnrelatedBuilder withB(boolean v) { return this; }
+        public UnrelatedBuilder withS(String v) { return this; }
+        public UnrelatedBuilder withList(List<String> v) { return this; }
 
         public UnrelatedBuilt build() {
             return new UnrelatedBuilt();
@@ -392,9 +398,11 @@ public class TestBuilders extends BlackbirdTestBase
             return null;
         }
 
-        public NullCreatorBuilder withX(int v) {
-            return this;
-        }
+        public NullCreatorBuilder withX(int v) { return this; }
+        public NullCreatorBuilder withL(long v) { return this; }
+        public NullCreatorBuilder withB(boolean v) { return this; }
+        public NullCreatorBuilder withS(String v) { return this; }
+        public NullCreatorBuilder withList(List<String> v) { return this; }
 
         public NullCreatorBuilt build() {
             return new NullCreatorBuilt();
@@ -403,6 +411,93 @@ public class TestBuilders extends BlackbirdTestBase
 
     @JsonDeserialize(builder=NullCreatorBuilder.class)
     static class NullCreatorBuilt { }
+
+    // Its creator gives a `String`, not a `Child`, which databind accepts
+    static class Child
+    {
+        public int foo;
+
+        @JsonCreator
+        public static Object create() {
+            return "not a Child";
+        }
+    }
+
+    static final class ChildBuilder
+    {
+        public ChildBuilder withChild(Child c) {
+            return this;
+        }
+
+        public ChildBuilt build() {
+            return new ChildBuilt();
+        }
+    }
+
+    @JsonDeserialize(builder=ChildBuilder.class)
+    static class ChildBuilt { }
+
+    // Overrides `getStackTrace`, which `MethodProperty` never calls
+    @SuppressWarnings("serial")
+    static class TraceFailingException extends SecurityException
+    {
+        TraceFailingException() {
+            super("thrown by setter");
+        }
+
+        @Override
+        public StackTraceElement[] getStackTrace() {
+            throw new IllegalStateException("no trace for you");
+        }
+    }
+
+    static final class TraceFailingBuilder
+    {
+        public TraceFailingBuilder withX(int v) {
+            throw new TraceFailingException();
+        }
+
+        public TraceFailingBuilt build() {
+            return new TraceFailingBuilt();
+        }
+    }
+
+    @JsonDeserialize(builder=TraceFailingBuilder.class)
+    static class TraceFailingBuilt { }
+
+    static final class NullTextBuilder
+    {
+        String skipped = "default";
+        String plain = "default";
+        int calls;
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public NullTextBuilder withSkipped(String v) {
+            calls++;
+            skipped = v;
+            return this;
+        }
+
+        public NullTextBuilder withPlain(String v) {
+            calls++;
+            plain = v;
+            return this;
+        }
+
+        public NullTextBuilt build() {
+            return new NullTextBuilt(skipped + "," + plain + "," + calls);
+        }
+    }
+
+    @JsonDeserialize(builder=NullTextBuilder.class)
+    static class NullTextBuilt
+    {
+        final String result;
+
+        NullTextBuilt(String result) {
+            this.result = result;
+        }
+    }
 
     // An unknown type id gives null, which plain Jackson passes to the setter even
     // with `Nulls.SKIP`
@@ -452,9 +547,12 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
+    // through `MethodProperty`, or Blackbird's own reflective call for what its
+    // generated setters can't take
     static int reflectiveCall() {
         for (StackTraceElement elem : new Throwable().getStackTrace()) {
-            if (elem.getClassName().equals(MethodProperty.class.getName())) {
+            if (elem.getClassName().equals(MethodProperty.class.getName())
+                    || elem.getMethodName().equals("_reflectiveSetAndReturn")) {
                 return 1;
             }
         }
@@ -701,14 +799,93 @@ public class TestBuilders extends BlackbirdTestBase
                     .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
             ObjectMapper blackbird = mapperBuilder()
                     .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
-            for (Class<?> type : new Class<?>[] { UnrelatedBuilt.class, NullCreatorBuilt.class }) {
-                String json = a2q("{'first':1,'x':2}");
-                Throwable expected = assertThrows(Throwable.class, () -> vanilla.readValue(json, type));
-                Throwable actual = assertThrows(Throwable.class, () -> blackbird.readValue(json, type));
-                _assertSameFailure("wrap=" + wrap + ", " + type.getSimpleName() + ", " + expected,
-                        expected, actual);
+            for (String value : new String[] { "'x':2", "'l':2", "'b':true", "'s':'a'", "'list':['a']" }) {
+                // the unrelated builder comes from `withFirst`, the null one from its creator
+                for (String json : new String[] { a2q("{'first':1," + value + "}"), a2q("{" + value + "}") }) {
+                    Class<?> type = json.contains("first") ? UnrelatedBuilt.class : NullCreatorBuilt.class;
+                    Throwable expected = assertThrows(Throwable.class, () -> vanilla.readValue(json, type));
+                    Throwable actual = assertThrows(Throwable.class, () -> blackbird.readValue(json, type));
+                    String desc = "wrap=" + wrap + ", " + type.getSimpleName() + ", " + json + ", " + expected;
+                    // and not an unknown property, or some other failure before the setter
+                    assertFalse(expected instanceof com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException,
+                            desc);
+                    _assertSameFailure(desc, expected, actual);
+                }
             }
         }
+    }
+
+    // If the generated setter fails to access it and the setter then fails through
+    // reflection, the error still has the JSON location
+    @Test
+    public void testAccessFailureFallbackKeepsLocation() throws Exception
+    {
+        ObjectMapper vanilla = newVanillaJSONMapper();
+        BeanDeserializerBase deser = (BeanDeserializerBase) ((DefaultDeserializationContext) vanilla.getDeserializationContext())
+                .createInstance(vanilla.getDeserializationConfig(), null, null)
+                .findRootValueDeserializer(vanilla.constructType(ThrowingBuilt.class));
+        SettableStringProperty prop = new SettableStringProperty(deser.findProperty("str"),
+                new BiConsumer<Object, String>() {
+                    @Override
+                    public void accept(Object bean, String v) {
+                        throw new IllegalAccessError("simulated");
+                    }
+                },
+                new BiFunction<Object, Object, Object>() {
+                    @Override
+                    public Object apply(Object bean, Object v) {
+                        throw new IllegalAccessError("simulated");
+                    }
+                },
+                ThrowingBuilder.class);
+        toThrow = () -> new IllegalStateException("thrown by setter");
+        setterCalls = 0;
+        try (JsonParser p = vanilla.createParser(a2q("{'str':'foo'}"))) {
+            p.nextToken();
+            p.nextToken();
+            p.nextToken();
+            DefaultDeserializationContext ctxt = ((DefaultDeserializationContext) vanilla.getDeserializationContext())
+                    .createInstance(vanilla.getDeserializationConfig(), p, null);
+            JsonMappingException e = assertThrows(JsonMappingException.class,
+                    () -> prop.deserializeSetAndReturn(p, ctxt, new ThrowingBuilder()));
+            assertEquals("thrown by setter", e.getOriginalMessage());
+            assertNotNull(e.getLocation());
+        }
+        assertEquals(1, setterCalls);
+    }
+
+    @Test
+    public void testValueOfAnotherTypeMatchesVanilla() throws Exception
+    {
+        assertTrue(_findProperty(MAPPER, ChildBuilt.class, "child") instanceof OptimizedSettableBeanProperty);
+        String json = a2q("{'child':{}}");
+        Throwable expected = assertThrows(Throwable.class, () -> newVanillaJSONMapper().readValue(json, ChildBuilt.class));
+        Throwable actual = assertThrows(Throwable.class, () -> MAPPER.readValue(json, ChildBuilt.class));
+        _assertSameFailure(String.valueOf(expected), expected, actual);
+    }
+
+    @Test
+    public void testFailingStackTraceKeepsSetterFailure() throws Exception
+    {
+        String json = a2q("{'x':1}");
+        Throwable expected = assertThrows(Throwable.class,
+                () -> newVanillaJSONMapper().readValue(json, TraceFailingBuilt.class));
+        Throwable actual = assertThrows(Throwable.class, () -> MAPPER.readValue(json, TraceFailingBuilt.class));
+        assertEquals(TraceFailingException.class, actual.getCause().getClass());
+        _assertSameFailure(String.valueOf(expected), expected, actual);
+    }
+
+    // `TextNode(null)` reads as a VALUE_STRING whose text is null
+    @Test
+    public void testNullTextMatchesVanilla() throws Exception
+    {
+        assertTrue(_findProperty(MAPPER, NullTextBuilt.class, "skipped") instanceof OptimizedSettableBeanProperty);
+        ObjectNode tree = JsonNodeFactory.instance.objectNode();
+        tree.set("skipped", new TextNode(null));
+        tree.set("plain", new TextNode(null));
+        String expected = newVanillaJSONMapper().treeToValue(tree, NullTextBuilt.class).result;
+        assertEquals("default,null,1", expected);
+        assertEquals(expected, MAPPER.treeToValue(tree, NullTextBuilt.class).result);
     }
 
     @Test

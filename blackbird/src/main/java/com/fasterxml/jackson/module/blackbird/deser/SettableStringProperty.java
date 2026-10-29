@@ -50,7 +50,12 @@ final class SettableStringProperty
     {
         if ((_optimizedSetterAndReturn != null) && _receiverType.isInstance(instance)
                 && p.hasToken(JsonToken.VALUE_STRING)) {
-            return _setAndReturn(p, instance, p.getText());
+            String text = p.getText();
+            // some parsers give null here (e.g. for a `TextNode(null)`), which needs
+            // the delegate's null handling
+            if (text != null) {
+                return _setAndReturn(p, instance, text);
+            }
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
