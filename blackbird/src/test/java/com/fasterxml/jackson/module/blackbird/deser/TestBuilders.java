@@ -15,12 +15,14 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
@@ -411,6 +413,35 @@ public class TestBuilders extends BlackbirdTestBase
 
     @JsonDeserialize(builder=NullCreatorBuilder.class)
     static class NullCreatorBuilt { }
+
+    // Reflection can't call the protected setter without CAN_OVERRIDE_ACCESS_MODIFIERS
+    static int protectedCalls;
+
+    public static final class ProtectedSetterBuilder
+    {
+        int value;
+
+        @JsonProperty("value")
+        protected ProtectedSetterBuilder withValue(int v) {
+            protectedCalls++;
+            value = v;
+            return this;
+        }
+
+        public ProtectedSetterBuilt build() {
+            return new ProtectedSetterBuilt(value);
+        }
+    }
+
+    @JsonDeserialize(builder=ProtectedSetterBuilder.class)
+    public static final class ProtectedSetterBuilt
+    {
+        public final int value;
+
+        ProtectedSetterBuilt(int value) {
+            this.value = value;
+        }
+    }
 
     // Its creator gives a `String`, not a `Child`, which databind accepts
     static class Child
@@ -852,6 +883,28 @@ public class TestBuilders extends BlackbirdTestBase
             assertNotNull(e.getLocation());
         }
         assertEquals(1, setterCalls);
+    }
+
+    @Test
+    public void testAccessModifierOverridesMatchVanilla() throws Exception
+    {
+        String json = a2q("{'value':42}");
+        for (boolean canOverride : new boolean[] { true, false }) {
+            ObjectMapper vanilla = JsonMapper.builder()
+                    .configure(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS, canOverride).build();
+            ObjectMapper blackbird = mapperBuilder()
+                    .configure(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS, canOverride).build();
+            if (canOverride) {
+                assertEquals(42, vanilla.readValue(json, ProtectedSetterBuilt.class).value);
+                assertEquals(42, blackbird.readValue(json, ProtectedSetterBuilt.class).value);
+                continue;
+            }
+            protectedCalls = 0;
+            Throwable expected = assertThrows(Throwable.class, () -> vanilla.readValue(json, ProtectedSetterBuilt.class));
+            Throwable actual = assertThrows(Throwable.class, () -> blackbird.readValue(json, ProtectedSetterBuilt.class));
+            _assertSameFailure(String.valueOf(expected), expected, actual);
+            assertEquals(0, protectedCalls);
+        }
     }
 
     @Test

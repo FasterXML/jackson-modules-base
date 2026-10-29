@@ -129,7 +129,7 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
         // Ok, then, find any properties for which we could generate accessors
         while (propIterator.hasNext()) {
             try {
-                nextProperty(propIterator.next(), lookup, newProps);
+                nextProperty(propIterator.next(), lookup, config, newProps);
             } catch (Throwable e) {
                 if (e instanceof Error) {
                     throw (Error) e;
@@ -145,7 +145,7 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
 
     @SuppressWarnings("unchecked")
     private void nextProperty(SettableBeanProperty prop,
-            Lookup lookup,
+            Lookup lookup, DeserializationConfig config,
             ArrayList<OptimizedSettableBeanProperty<?>> newProps) throws Throwable
     {
         AnnotatedMember member = prop.getMember();
@@ -170,6 +170,7 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
 
         MethodHandle setter;
         Class<?> type;
+        boolean optimizeBuilderSetter;
         if (jdkMember instanceof Method && prop instanceof MethodProperty) {
             final Method method = (Method) jdkMember;
             try {
@@ -185,6 +186,12 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             if (!ReflectionHack.canResolveClass(lookup, method.getDeclaringClass())) {
                 return;
             }
+            // Builder setters used to go through reflection, which without
+            // CAN_OVERRIDE_ACCESS_MODIFIERS can only call public setters of public
+            // classes; the generated one must not call any others
+            optimizeBuilderSetter = config.canOverrideAccessModifiers()
+                    || (Modifier.isPublic(method.getModifiers())
+                            && Modifier.isPublic(method.getDeclaringClass().getModifiers()));
         } else {
             return;
             //setter = lookup.unreflectGetter((Field) jdkMember);
@@ -210,28 +217,31 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
                 ObjIntBiFunction thunk = createThunk(lookup, ObjIntBiFunction.class, int.class, setter);
                 newProps.add(new SettableIntProperty(prop,
                     createSetter(lookup, ObjIntConsumer.class, ObjIntBiFunction.class,
-                        INT_TRAMPOLINE, int.class, setter, thunk), thunk, receiverType));
+                        INT_TRAMPOLINE, int.class, setter, thunk),
+                    optimizeBuilderSetter ? thunk : null, receiverType));
             } else if (type == Long.TYPE) {
                 ObjLongBiFunction thunk = createThunk(lookup, ObjLongBiFunction.class, long.class, setter);
                 newProps.add(new SettableLongProperty(prop,
                     createSetter(lookup, ObjLongConsumer.class, ObjLongBiFunction.class,
-                        LONG_TRAMPOLINE, long.class, setter, thunk), thunk, receiverType));
+                        LONG_TRAMPOLINE, long.class, setter, thunk),
+                    optimizeBuilderSetter ? thunk : null, receiverType));
             } else if (type == Boolean.TYPE) {
                 ObjBooleanBiFunction thunk = createThunk(lookup, ObjBooleanBiFunction.class, boolean.class, setter);
                 newProps.add(new SettableBooleanProperty(prop,
                     createSetter(lookup, ObjBooleanConsumer.class, ObjBooleanBiFunction.class,
-                        BOOLEAN_TRAMPOLINE, boolean.class, setter, thunk), thunk, receiverType));
+                        BOOLEAN_TRAMPOLINE, boolean.class, setter, thunk),
+                    optimizeBuilderSetter ? thunk : null, receiverType));
             }
         } else {
             BiFunction<Object, Object, Object> thunk = createThunk(lookup, BiFunction.class, Object.class, setter);
             if (type == String.class) {
                 newProps.add(new SettableStringProperty(prop,
                     createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter, thunk),
-                    thunk, receiverType));
+                    optimizeBuilderSetter ? thunk : null, receiverType));
             } else {
                 newProps.add(new SettableObjectProperty(prop,
                     createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter, thunk),
-                    thunk, receiverType));
+                    optimizeBuilderSetter ? thunk : null, receiverType));
             }
         }
     }
