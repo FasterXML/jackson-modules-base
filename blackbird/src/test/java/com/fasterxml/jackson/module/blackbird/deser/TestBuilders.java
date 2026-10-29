@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -33,6 +34,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.HiddenSetterBuilderBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ReplacingBuilderBase;
@@ -972,6 +974,37 @@ public class TestBuilders extends BlackbirdTestBase
             assertSame(builder, prop.setAndReturn(builder, null));
             assertEquals("default", builder.str);
             assertEquals(Arrays.asList("keep"), builder.list);
+        }
+    }
+
+    // The rule the generated builder setters follow is the one Jackson uses to make
+    // setters accessible, including leaving public JDK setters alone
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testIsMadeAccessibleMatchesJackson() throws Exception
+    {
+        for (boolean canOverride : new boolean[] { true, false }) {
+            for (boolean overridePublic : new boolean[] { true, false }) {
+                DeserializationConfig config = mapperBuilder()
+                        .configure(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS, canOverride)
+                        .configure(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS, overridePublic)
+                        .build().getDeserializationConfig();
+                // fresh `Method` copies, as each lookup returns
+                Method[] setters = {
+                    javax.naming.CompositeName.class.getMethod("add", String.class),
+                    PublicSetterBuilder.class.getMethod("withValue", int.class),
+                    ProtectedSetterBuilder.class.getDeclaredMethod("withValue", int.class),
+                };
+                for (Method setter : setters) {
+                    // as `BeanDeserializerBuilder` and `MethodProperty.fixAccess` do
+                    if (config.canOverrideAccessModifiers()) {
+                        ClassUtil.checkAndFixAccess(setter,
+                                config.isEnabled(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS));
+                    }
+                    assertEquals(setter.isAccessible(), BBDeserializerModifier.isMadeAccessible(config, setter),
+                            "canOverride=" + canOverride + ", overridePublic=" + overridePublic + ", " + setter);
+                }
+            }
         }
     }
 

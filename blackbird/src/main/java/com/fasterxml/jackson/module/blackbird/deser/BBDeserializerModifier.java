@@ -181,19 +181,23 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
                 return;
             }
             type = ((AnnotatedMethod) member).getRawParameterType(0);
-            // For an inherited protected setter the handle's receiver is narrowed to
-            // the lookup class, but calling it still names the declaring class
-            if (!ReflectionHack.canResolveClass(lookup, method.getDeclaringClass())) {
+            // Only these get a generated setter, so don't check (or load) anything for others
+            if (type.isPrimitive() && (type != Integer.TYPE) && (type != Long.TYPE) && (type != Boolean.TYPE)) {
+                return;
+            }
+            // For an inherited protected setter the handle's receiver is narrowed to the
+            // lookup class, but on Java 8 calling it still names the declaring class (which
+            // is otherwise the receiver, checked below). Newer JDKs don't load it, so
+            // neither may this check.
+            if ((setter.type().parameterType(0) != method.getDeclaringClass())
+                    && !ReflectionHack.isSameClassWithoutLoading(lookup, method.getDeclaringClass())) {
                 return;
             }
             // Builder setters used to go through reflection, which applies Java's
-            // access rules (modules included) unless Jackson made the setter accessible,
-            // as `ClassUtil.checkAndFixAccess` does only in this case; the generated
-            // setter ignores those rules, so it may only call what reflection could
-            boolean isPublic = Modifier.isPublic(method.getModifiers())
-                    && Modifier.isPublic(method.getDeclaringClass().getModifiers());
-            optimizeBuilderSetter = config.canOverrideAccessModifiers()
-                    && (!isPublic || config.isEnabled(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS));
+            // access rules (modules included) unless Jackson made the setter accessible;
+            // the generated setter ignores those rules, so it may only call what
+            // reflection could
+            optimizeBuilderSetter = isMadeAccessible(config, method);
         } else {
             return;
             //setter = lookup.unreflectGetter((Field) jdkMember);
@@ -247,6 +251,20 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
                     optimizeBuilderSetter ? thunk : null, receiverType));
             }
         }
+    }
+
+    // Whether Jackson makes the setter accessible, as `ClassUtil.checkAndFixAccess`
+    // does for properties (and only if allowed to override access modifiers)
+    static boolean isMadeAccessible(DeserializationConfig config, Method setter) {
+        if (!config.canOverrideAccessModifiers()) {
+            return false;
+        }
+        Class<?> declaringClass = setter.getDeclaringClass();
+        boolean isPublic = Modifier.isPublic(setter.getModifiers())
+                && Modifier.isPublic(declaringClass.getModifiers());
+        return !isPublic
+                || (config.isEnabled(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS)
+                        && !ClassUtil.isJDKClass(declaringClass));
     }
 
     // Returns null for void setters, which have nothing to return
