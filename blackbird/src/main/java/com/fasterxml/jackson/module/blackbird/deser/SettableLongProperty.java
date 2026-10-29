@@ -54,8 +54,8 @@ final class SettableLongProperty
     public Object deserializeSetAndReturn(JsonParser p,
             DeserializationContext ctxt, Object instance) throws IOException
     {
-        if (p.isExpectedNumberIntToken()) {
-            return _setAndReturn(instance, p.getLongValue());
+        if ((_optimizedSetterAndReturn != null) && p.isExpectedNumberIntToken()) {
+            return _setAndReturn(p, instance, p.getLongValue());
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
@@ -77,10 +77,10 @@ final class SettableLongProperty
             return delegate.setAndReturn(instance, value);
         }
         // not optimal (due to boxing), but better than using reflection:
-        return _setAndReturn(instance, ((Number) value).longValue());
+        return _setAndReturn(null, instance, ((Number) value).longValue());
     }
 
-    private Object _setAndReturn(Object instance, long v) throws IOException {
+    private Object _setAndReturn(JsonParser p, Object instance, long v) throws IOException {
         if (_optimizedSetterAndReturn == null) {
             return delegate.setAndReturn(instance, v);
         }
@@ -88,7 +88,7 @@ final class SettableLongProperty
             Object result = _optimizedSetterAndReturn.apply(instance, v);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(_optimizedSetterAndReturn, instance, v, e);
+            return _reportProblemAndReturn(p, _optimizedSetterAndReturn, instance, v, e);
         }
     }
 }

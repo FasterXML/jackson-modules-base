@@ -129,9 +129,12 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     /**
      * Like {@link #_reportProblem}, for {@link #setAndReturn}: an access failure of
      * the generated accessor falls back to the delegate, and anything the setter
-     * throws is reported the way {@code MethodProperty.setAndReturn} reports it.
+     * throws is reported the way {@code MethodProperty} reports it. The parser is
+     * only used for the error location, and is null outside of
+     * {@link #deserializeSetAndReturn}, as it is for {@code MethodProperty}.
      */
-    protected Object _reportProblemAndReturn(Object accessor, Object bean, Object value, Throwable e)
+    protected Object _reportProblemAndReturn(JsonParser p, Object accessor, Object bean, Object value,
+            Throwable e)
         throws IOException
     {
         if (_isAccessorAccessFailure(accessor, e)) {
@@ -140,7 +143,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         }
         // `Method.invoke` wraps whatever the setter throws, and `MethodProperty`
         // translates that wrapper; doing the same keeps type, message, cause and path
-        _throwAsIOE(new InvocationTargetException(e), value);
+        _throwAsIOE(p, new InvocationTargetException(e), value);
         return null; // never gets here
     }
 

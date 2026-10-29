@@ -63,6 +63,9 @@ final class SettableObjectProperty
     public Object deserializeSetAndReturn(JsonParser p,
             DeserializationContext ctxt, Object instance) throws IOException
     {
+        if (_optimizedSetterAndReturn == null) {
+            return delegate.deserializeSetAndReturn(p, ctxt, instance);
+        }
         Object value;
         if (p.hasToken(JsonToken.VALUE_NULL)) {
             if (_skipNulls) {
@@ -81,7 +84,7 @@ final class SettableObjectProperty
         } else {
             value = _valueDeserializer.deserializeWithType(p, ctxt, _valueTypeDeserializer);
         }
-        return setAndReturn(instance, value);
+        return _setAndReturn(p, instance, value);
     }
 
     @Override
@@ -98,6 +101,10 @@ final class SettableObjectProperty
         if (_optimizedSetterAndReturn == null) {
             return delegate.setAndReturn(instance, value);
         }
+        return _setAndReturn(null, instance, value);
+    }
+
+    private Object _setAndReturn(JsonParser p, Object instance, Object value) throws IOException {
         if ((value == null) && _skipNulls) {
             return instance;
         }
@@ -105,7 +112,7 @@ final class SettableObjectProperty
             Object result = _optimizedSetterAndReturn.apply(instance, value);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(_optimizedSetterAndReturn, instance, value, e);
+            return _reportProblemAndReturn(p, _optimizedSetterAndReturn, instance, value, e);
         }
     }
 }

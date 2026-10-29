@@ -48,8 +48,8 @@ final class SettableStringProperty
     @Override
     public Object deserializeSetAndReturn(JsonParser p, DeserializationContext ctxt, Object instance) throws IOException
     {
-        if (p.hasToken(JsonToken.VALUE_STRING)) {
-            return setAndReturn(instance, p.getText());
+        if ((_optimizedSetterAndReturn != null) && p.hasToken(JsonToken.VALUE_STRING)) {
+            return _setAndReturn(p, instance, p.getText());
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
@@ -68,6 +68,10 @@ final class SettableStringProperty
         if (_optimizedSetterAndReturn == null) {
             return delegate.setAndReturn(instance, value);
         }
+        return _setAndReturn(null, instance, value);
+    }
+
+    private Object _setAndReturn(JsonParser p, Object instance, Object value) throws IOException {
         if ((value == null) && _skipNulls) {
             return instance;
         }
@@ -75,7 +79,7 @@ final class SettableStringProperty
             Object result = _optimizedSetterAndReturn.apply(instance, value);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(_optimizedSetterAndReturn, instance, value, e);
+            return _reportProblemAndReturn(p, _optimizedSetterAndReturn, instance, value, e);
         }
     }
 }

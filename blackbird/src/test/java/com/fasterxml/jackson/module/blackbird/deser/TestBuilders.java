@@ -251,8 +251,24 @@ public class TestBuilders extends BlackbirdTestBase
             return fail();
         }
 
+        public ThrowingBuilder withList(List<String> v) throws Exception {
+            return fail();
+        }
+
         public ThrowingBuilder withI(int v) throws Exception {
             return fail();
+        }
+
+        public ThrowingBuilder withL(long v) throws Exception {
+            return fail();
+        }
+
+        public ThrowingBuilder withB(boolean v) throws Exception {
+            return fail();
+        }
+
+        public void withV(String v) throws Exception {
+            fail();
         }
 
         private static ThrowingBuilder fail() throws Exception {
@@ -466,13 +482,16 @@ public class TestBuilders extends BlackbirdTestBase
                 () -> new IllegalAccessError("thrown by setter"),
                 () -> savedSecurity,
                 () -> savedAccess);
+        // void setters still go through the delegate
+        String voidJson = a2q("{'v':'foo'}");
         for (boolean wrap : new boolean[] { true, false }) {
             ObjectMapper vanilla = JsonMapper.builder()
                     .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
             ObjectMapper blackbird = mapperBuilder()
                     .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
             for (Supplier<Throwable> failure : failures) {
-                for (String json : new String[] { a2q("{'str':'foo'}"), a2q("{'i':42}") }) {
+                for (String json : new String[] { a2q("{'str':'foo'}"), a2q("{'list':['a']}"),
+                        a2q("{'i':42}"), a2q("{'l':42}"), a2q("{'b':true}"), voidJson }) {
                     toThrow = failure;
                     setterCalls = 0;
                     Throwable expected = assertThrows(Throwable.class,
@@ -482,6 +501,9 @@ public class TestBuilders extends BlackbirdTestBase
                     String desc = "wrap=" + wrap + ", " + json + ", " + expected;
                     assertEquals(2, setterCalls, desc);
                     _assertSameFailure(desc, expected, actual);
+                    if (json.equals(voidJson)) {
+                        continue;
+                    }
                     // and the Blackbird failure came from the generated accessor
                     Throwable root = actual;
                     while (root.getCause() != null) {
@@ -501,6 +523,7 @@ public class TestBuilders extends BlackbirdTestBase
             JsonMappingException a = (JsonMappingException) actual;
             assertEquals(e.getOriginalMessage(), a.getOriginalMessage(), desc);
             assertEquals(e.getPathReference(), a.getPathReference(), desc);
+            assertEquals(e.getLocation(), a.getLocation(), desc);
         } else {
             assertEquals(expected.getMessage(), actual.getMessage(), desc);
         }

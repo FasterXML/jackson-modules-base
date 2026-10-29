@@ -56,12 +56,14 @@ final class SettableBooleanProperty
     public Object deserializeSetAndReturn(JsonParser p,
             DeserializationContext ctxt, Object instance) throws IOException
     {
-        JsonToken t = p.currentToken();
-        if (t == JsonToken.VALUE_TRUE) {
-            return _setAndReturn(instance, true);
-        }
-        if (t == JsonToken.VALUE_FALSE) {
-            return _setAndReturn(instance, false);
+        if (_optimizedSetterAndReturn != null) {
+            JsonToken t = p.currentToken();
+            if (t == JsonToken.VALUE_TRUE) {
+                return _setAndReturn(p, instance, true);
+            }
+            if (t == JsonToken.VALUE_FALSE) {
+                return _setAndReturn(p, instance, false);
+            }
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
@@ -83,10 +85,10 @@ final class SettableBooleanProperty
             return delegate.setAndReturn(instance, value);
         }
         // not optimal (due to boxing), but better than using reflection:
-        return _setAndReturn(instance, ((Boolean) value).booleanValue());
+        return _setAndReturn(null, instance, ((Boolean) value).booleanValue());
     }
 
-    private Object _setAndReturn(Object instance, boolean b) throws IOException {
+    private Object _setAndReturn(JsonParser p, Object instance, boolean b) throws IOException {
         if (_optimizedSetterAndReturn == null) {
             return delegate.setAndReturn(instance, b);
         }
@@ -94,7 +96,7 @@ final class SettableBooleanProperty
             Object result = _optimizedSetterAndReturn.apply(instance, b);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(_optimizedSetterAndReturn, instance, b, e);
+            return _reportProblemAndReturn(p, _optimizedSetterAndReturn, instance, b, e);
         }
     }
 }

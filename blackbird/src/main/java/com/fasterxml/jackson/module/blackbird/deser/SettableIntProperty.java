@@ -55,8 +55,8 @@ final class SettableIntProperty
             DeserializationContext ctxt, Object instance)
         throws IOException
     {
-        if (p.isExpectedNumberIntToken()) {
-            return _setAndReturn(instance, p.getIntValue());
+        if ((_optimizedSetterAndReturn != null) && p.isExpectedNumberIntToken()) {
+            return _setAndReturn(p, instance, p.getIntValue());
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
     }
@@ -78,10 +78,10 @@ final class SettableIntProperty
             return delegate.setAndReturn(instance, value);
         }
         // not optimal (due to boxing), but better than using reflection:
-        return _setAndReturn(instance, ((Number) value).intValue());
+        return _setAndReturn(null, instance, ((Number) value).intValue());
     }
 
-    private Object _setAndReturn(Object instance, int v) throws IOException {
+    private Object _setAndReturn(JsonParser p, Object instance, int v) throws IOException {
         if (_optimizedSetterAndReturn == null) {
             return delegate.setAndReturn(instance, v);
         }
@@ -89,7 +89,7 @@ final class SettableIntProperty
             Object result = _optimizedSetterAndReturn.apply(instance, v);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(_optimizedSetterAndReturn, instance, v, e);
+            return _reportProblemAndReturn(p, _optimizedSetterAndReturn, instance, v, e);
         }
     }
 }
