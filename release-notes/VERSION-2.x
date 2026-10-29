@@ -27,6 +27,8 @@ Active maintainers:
 
 #364: (blackbird) Use generated setters for Builder-based deserialization
  (contributed by Parker W)
+#366: (blackbird) Skip generated setters the accessor can't call
+ (contributed by Parker W)
 
 2.22.4 (17-Oct-2026)
 2.22.3 (21-Sep-2026)

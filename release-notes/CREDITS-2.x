@@ -171,3 +171,5 @@ Parker Winchester (@parker89)
 
 * Contributed #364: (blackbird) Use generated setters for Builder-based deserialization
  (2.23.0)
+* Contributed #366: (blackbird) Skip generated setters the accessor can't call
+ (2.23.0)
