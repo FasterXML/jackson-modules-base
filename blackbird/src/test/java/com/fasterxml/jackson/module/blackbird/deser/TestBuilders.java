@@ -1,6 +1,11 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -9,6 +14,7 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -17,11 +23,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
+import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.deser.impl.MethodProperty;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class TestBuilders extends BlackbirdTestBase
 {
@@ -316,6 +324,41 @@ public class TestBuilders extends BlackbirdTestBase
     @JsonDeserialize(builder=FlakyBuilder.class)
     static class FlakyBuilt { }
 
+    // The builder is a hidden subclass whose setter fails after doing its work. Hidden
+    // frames are left out of stack traces, as the generated accessor's are.
+    static Class<?> hiddenBuilderClass;
+    static int hiddenCalls;
+
+    static class HideableBuilder
+    {
+        @JsonCreator
+        public static HideableBuilder create() throws Exception {
+            return (HideableBuilder) hiddenBuilderClass.getConstructor().newInstance();
+        }
+
+        public HideableBuilder withStr(String v) {
+            return this;
+        }
+
+        public HideableBuilt build() {
+            return new HideableBuilt();
+        }
+    }
+
+    public static class HiddenBuilder extends HideableBuilder
+    {
+        public HiddenBuilder() { }
+
+        @Override
+        public HideableBuilder withStr(String v) {
+            hiddenCalls++;
+            throw new SecurityException("thrown by hidden setter");
+        }
+    }
+
+    @JsonDeserialize(builder=HideableBuilder.class)
+    static class HideableBuilt { }
+
     static class Values {
         final String str;
         final List<String> list;
@@ -433,7 +476,8 @@ public class TestBuilders extends BlackbirdTestBase
     }
 
     // Whether the setter creates the throwable or saved it earlier, it may already
-    // have done its work, so it must not run again
+    // have done its work, so it must not run again. That includes throwables with no
+    // stack trace, as with `-XX:-StackTraceInThrowable`.
     @Test
     public void testSetterFailureIsNotRetried() throws Exception
     {
@@ -443,7 +487,9 @@ public class TestBuilders extends BlackbirdTestBase
                 () -> new SecurityException("thrown by setter"),
                 () -> new IllegalAccessError("thrown by setter"),
                 () -> savedSecurity,
-                () -> savedAccess);
+                () -> savedAccess,
+                () -> _withoutStackTrace(new SecurityException("stackless")),
+                () -> _withoutStackTrace(new IllegalAccessError("stackless")));
         for (Supplier<Throwable> failure : failures) {
             flakyFailure = failure;
             flakyCalls = 0;
@@ -514,6 +560,60 @@ public class TestBuilders extends BlackbirdTestBase
                 }
             }
         }
+    }
+
+    // A setter in a hidden class looks like the generated accessor in a stack trace
+    // (both are left out), so its failure must not be mistaken for an accessor's
+    @Test
+    public void testHiddenClassSetterFailureIsNotRetried() throws Exception
+    {
+        Method define;
+        Object noOptions;
+        try {
+            Class<?> option = Class.forName("java.lang.invoke.MethodHandles$Lookup$ClassOption");
+            noOptions = Array.newInstance(option, 0);
+            define = MethodHandles.Lookup.class.getMethod("defineHiddenClass",
+                    byte[].class, boolean.class, noOptions.getClass());
+        } catch (ReflectiveOperationException e) {
+            assumeTrue(false, "hidden classes need Java 15+");
+            return;
+        }
+        byte[] bytes;
+        try (InputStream in = getClass().getResourceAsStream(
+                "/" + HiddenBuilder.class.getName().replace('.', '/') + ".class")) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int n;
+            while ((n = in.read(buffer)) != -1) {
+                out.write(buffer, 0, n);
+            }
+            bytes = out.toByteArray();
+        }
+        hiddenBuilderClass = ((MethodHandles.Lookup) define.invoke(MethodHandles.lookup(), bytes, true, noOptions))
+                .lookupClass();
+        assertTrue(_findProperty(MAPPER, HideableBuilt.class, "str") instanceof OptimizedSettableBeanProperty);
+
+        for (ObjectMapper mapper : new ObjectMapper[] { newVanillaJSONMapper(), MAPPER }) {
+            hiddenCalls = 0;
+            assertThrows(JsonMappingException.class,
+                    () -> mapper.readValue(a2q("{'str':'foo'}"), HideableBuilt.class));
+            assertEquals(1, hiddenCalls);
+        }
+    }
+
+    private static SettableBeanProperty _findProperty(ObjectMapper mapper, Class<?> type, String name)
+        throws Exception
+    {
+        DefaultDeserializationContext ctxt = ((DefaultDeserializationContext) mapper.getDeserializationContext())
+                .createInstance(mapper.getDeserializationConfig(), null, null);
+        BeanDeserializerBase deser = (BeanDeserializerBase) ctxt.findRootValueDeserializer(
+                mapper.constructType(type));
+        return deser.findProperty(name);
+    }
+
+    private static <T extends Throwable> T _withoutStackTrace(T t) {
+        t.setStackTrace(new StackTraceElement[0]);
+        return t;
     }
 
     private static void _assertSameFailure(String desc, Throwable expected, Throwable actual) {

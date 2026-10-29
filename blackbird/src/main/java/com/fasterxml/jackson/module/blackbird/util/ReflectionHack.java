@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,11 +28,91 @@ public class ReflectionHack {
         return Java8.privateLookupIn(lookup);
     }
 
+    /**
+     * Whether code defined with {@code lookup}, such as a lambda it spins, can use
+     * {@code type} where it must also access it, as in a cast. If not, that code
+     * fails when it runs, not when it is created.
+     */
+    public static boolean canAccessClass(Lookup lookup, Class<?> type) {
+        type = elementType(type);
+        if (type.isPrimitive()) {
+            return true;
+        }
+        try {
+            if (!resolvesTo(lookup, type)) {
+                return false;
+            }
+            if (Java9Up.ACCESS_CLASS != null) {
+                return Java9Up.canAccessClass(lookup, type);
+            }
+            return canAccessClassWithoutModules(lookup.lookupClass(), type);
+        } catch (SecurityException e) {
+            // e.g. a security manager denying `getClassLoader`
+            return false;
+        }
+    }
+
+    /**
+     * Like {@link #canAccessClass}, for a type that code only names, as in the
+     * descriptor of a method it calls: it must resolve to the same class, but
+     * need not be accessible.
+     */
+    public static boolean canResolveClass(Lookup lookup, Class<?> type) {
+        type = elementType(type);
+        if (type.isPrimitive()) {
+            return true;
+        }
+        try {
+            return resolvesTo(lookup, type);
+        } catch (SecurityException e) {
+            return false;
+        }
+    }
+
+    private static Class<?> elementType(Class<?> type) {
+        while (type.isArray()) {
+            type = type.getComponentType();
+        }
+        return type;
+    }
+
+    // That code refers to `type` by name, resolved by the lookup class's loader,
+    // which may find a different class of the same name (e.g. a child-first loader
+    // with its own copy) or none at all
+    private static boolean resolvesTo(Lookup lookup, Class<?> type) {
+        try {
+            return Class.forName(type.getName(), false, lookup.lookupClass().getClassLoader()) == type;
+        } catch (ClassNotFoundException | LinkageError e) {
+            return false;
+        }
+    }
+
+    // Without modules, public classes are accessible from anywhere, others only
+    // from the same runtime package (which includes the bean's own class, often
+    // package-private). `getModifiers` reports the declared modifiers of nested
+    // classes, so a protected one is (safely) treated as inaccessible from other
+    // packages, though the JVM would allow it.
+    static boolean canAccessClassWithoutModules(Class<?> lookupClass, Class<?> type) {
+        if (Modifier.isPublic(type.getModifiers())) {
+            return true;
+        }
+        return (type.getClassLoader() == lookupClass.getClassLoader())
+                && packageName(type).equals(packageName(lookupClass));
+    }
+
+    private static String packageName(Class<?> type) {
+        String name = type.getName();
+        int dot = name.lastIndexOf('.');
+        return (dot < 0) ? "" : name.substring(0, dot);
+    }
+
     static class Java9Up {
         static final MethodHandle FACTORY;
+        static final MethodHandle ACCESS_CLASS;
 
         static {
             FACTORY = init();
+            ACCESS_CLASS = (FACTORY == null) ? null : initAccessClass();
         }
 
         private static MethodHandle init() {
@@ -51,11 +132,33 @@ public class ReflectionHack {
             }
         }
 
+        private static MethodHandle initAccessClass() {
+            try {
+                return MethodHandles.lookup().findVirtual(
+                        MethodHandles.Lookup.class,
+                        "accessClass",
+                        MethodType.methodType(Class.class, Class.class));
+            } catch (ReflectiveOperationException e) {
+                return null;
+            }
+        }
+
         public static Lookup privateLookupIn(Class<?> lookup, Lookup orig) {
             try {
                 return (Lookup) FACTORY.invokeExact(lookup, orig);
             } catch (ReflectiveOperationException e) {
                 return orig;
+            } catch (Throwable t) {
+                throw Sneaky.throwAnyway(t);
+            }
+        }
+
+        public static boolean canAccessClass(Lookup lookup, Class<?> type) {
+            try {
+                Class<?> unused = (Class<?>) ACCESS_CLASS.invokeExact(lookup, type);
+                return true;
+            } catch (IllegalAccessException e) {
+                return false;
             } catch (Throwable t) {
                 throw Sneaky.throwAnyway(t);
             }

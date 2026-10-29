@@ -178,6 +178,19 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             return;
             //setter = lookup.unreflectGetter((Field) jdkMember);
         }
+        // The generated accessor casts to each type in the setter's signature, so
+        // one it can't access (like a package-private type from another package)
+        // would fail on every call; leave those to reflection
+        for (Class<?> paramType : setter.type().parameterArray()) {
+            if (!ReflectionHack.canAccessClass(lookup, paramType)) {
+                return;
+            }
+        }
+        // Calling the setter also names its return type, which nothing casts to, but
+        // the JVM still requires to be the same class from the accessor's loader
+        if (!ReflectionHack.canResolveClass(lookup, setter.type().returnType())) {
+            return;
+        }
 
         if (type.isPrimitive()) {
             if (type == Integer.TYPE) {

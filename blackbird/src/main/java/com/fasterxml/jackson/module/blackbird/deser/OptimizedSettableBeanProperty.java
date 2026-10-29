@@ -137,7 +137,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             Throwable e)
         throws IOException
     {
-        if (_isAccessorAccessFailure(accessor, e)) {
+        if (_isAccessorAccessFailure(accessor, bean, e)) {
             _logAccessProblem(bean, e);
             return delegate.setAndReturn(bean, value);
         }
@@ -152,16 +152,23 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     // on top of the stack (or, where generated frames are hidden from stack traces,
     // this property's frame that called it). A throwable created anywhere else,
     // such as one the setter saved and throws later, keeps its original failure.
-    private boolean _isAccessorAccessFailure(Object accessor, Throwable e) {
+    private boolean _isAccessorAccessFailure(Object accessor, Object bean, Throwable e) {
         if (!(e instanceof IllegalAccessError) && !(e instanceof SecurityException)) {
             return false;
         }
         StackTraceElement[] trace = e.getStackTrace();
+        // No trace (stack traces disabled, or a stackless throwable) is no evidence;
+        // setup already skips the accessors known to fail this way
         if (trace.length == 0) {
             return false;
         }
         String top = trace[0].getClassName();
-        return top.equals(accessor.getClass().getName()) || top.equals(getClass().getName());
+        if (top.equals(accessor.getClass().getName())) {
+            return true;
+        }
+        // A setter in a hidden class is left out of the trace too, which is only
+        // possible if the bean's own class is hidden (their names contain a '/')
+        return top.equals(getClass().getName()) && (bean.getClass().getName().indexOf('/') < 0);
     }
 
     private void _logAccessProblem(Object bean, Throwable e) {
