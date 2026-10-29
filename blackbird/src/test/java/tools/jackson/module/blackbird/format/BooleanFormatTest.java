@@ -32,6 +32,28 @@ public class BooleanFormatTest extends BlackbirdTestBase
         }
     }
 
+    // [databind#6342]: same but via getters
+    @JsonPropertyOrder({ "b1", "b2", "b3" })
+    static class BeanWithBooleanGetters
+    {
+        private final boolean _b1, _b3;
+        private final Boolean _b2;
+
+        public BeanWithBooleanGetters(boolean b1, Boolean b2, boolean b3) {
+            _b1 = b1;
+            _b2 = b2;
+            _b3 = b3;
+        }
+
+        @JsonFormat(shape=JsonFormat.Shape.NUMBER)
+        public boolean getB1() { return _b1; }
+
+        @JsonFormat(shape=JsonFormat.Shape.NUMBER)
+        public Boolean getB2() { return _b2; }
+
+        public boolean getB3() { return _b3; }
+    }
+
     protected static class BooleanWrapper {
         public Boolean b;
 
@@ -71,5 +93,13 @@ public class BooleanFormatTest extends BlackbirdTestBase
     {
         assertEquals(aposToQuotes("{'b1':1,'b2':0,'b3':true}"),
                 MAPPER.writeValueAsString(new BeanWithBoolean(true, false, true)));
+    }
+
+    // [databind#6342]
+    @Test
+    public void testShapeOnGetter() throws Exception
+    {
+        assertEquals(aposToQuotes("{'b1':1,'b2':0,'b3':true}"),
+                MAPPER.writeValueAsString(new BeanWithBooleanGetters(true, false, true)));
     }
 }
