@@ -82,9 +82,21 @@ public class TestSetterFailures extends BlackbirdTestBase
         final int id;
         String str = "default";
         List<String> list = Arrays.asList("keep");
+        int i = 7;
+        long l = 8L;
+        boolean b = true;
 
         @JsonCreator
         SkipNullsBean(@JsonProperty("id") int id) { this.id = id; }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public void setI(int value) { calls++; i = value; }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public void setL(long value) { calls++; l = value; }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public void setB(boolean value) { calls++; b = value; }
 
         @JsonSetter(nulls=Nulls.SKIP)
         public void setStr(String value) { calls++; str = value; }
@@ -246,7 +258,7 @@ public class TestSetterFailures extends BlackbirdTestBase
 
     @Test
     public void testSetSkipsNulls() throws Exception {
-        for (String name : new String[] { "str", "list" }) {
+        for (String name : new String[] { "str", "list", "i", "l", "b" }) {
             SettableBeanProperty property = property(newObjectMapper(), SkipNullsBean.class, name);
             assertTrue(property instanceof OptimizedSettableBeanProperty, name);
             SkipNullsBean bean = new SkipNullsBean(1);
@@ -255,14 +267,27 @@ public class TestSetterFailures extends BlackbirdTestBase
             assertEquals(0, calls, name);
         }
         // with the nulls before the creator property, so they're buffered
-        String json = a2q("{'str':null,'list':null,'id':1}");
+        String json = a2q("{'str':null,'list':null,'i':null,'l':null,'b':null,'id':1}");
         for (ObjectMapper mapper : new ObjectMapper[] { newVanillaJSONMapper(), newObjectMapper() }) {
             calls = 0;
             SkipNullsBean bean = mapper.readValue(json, SkipNullsBean.class);
             assertEquals("default", bean.str);
             assertEquals(Arrays.asList("keep"), bean.list);
+            assertEquals(7, bean.i);
+            assertEquals(8L, bean.l);
+            assertTrue(bean.b);
             assertEquals(0, calls);
         }
+        // and without skipping, a null for a primitive fails as it does through reflection
+        alwaysThrow = new IllegalStateException("not reached");
+        calls = 0;
+        Throwable expected = assertThrows(Throwable.class,
+                () -> property(newVanillaJSONMapper(), AlwaysFailingBean.class, "i").set(new AlwaysFailingBean(), null));
+        Throwable actual = assertThrows(Throwable.class,
+                () -> property(newObjectMapper(), AlwaysFailingBean.class, "i").set(new AlwaysFailingBean(), null));
+        assertEquals(expected.getClass(), actual.getClass());
+        assertEquals(expected.getMessage(), actual.getMessage());
+        assertEquals(0, calls);
     }
 
     @Test
