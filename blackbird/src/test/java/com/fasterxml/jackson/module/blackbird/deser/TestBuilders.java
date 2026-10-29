@@ -453,6 +453,36 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
+    // Public, so Jackson only makes it accessible with OVERRIDE_PUBLIC_ACCESS_MODIFIERS;
+    // otherwise reflection applies Java's access rules (and modules), as must Blackbird
+    public static final class PublicSetterBuilder
+    {
+        int value;
+        int reflectiveCalls;
+
+        public PublicSetterBuilder withValue(int v) {
+            reflectiveCalls += reflectiveCall();
+            value = v;
+            return this;
+        }
+
+        public PublicSetterBuilt build() {
+            return new PublicSetterBuilt(value, reflectiveCalls);
+        }
+    }
+
+    @JsonDeserialize(builder=PublicSetterBuilder.class)
+    public static final class PublicSetterBuilt
+    {
+        public final int value;
+        public final int reflectiveCalls;
+
+        PublicSetterBuilt(int value, int reflectiveCalls) {
+            this.value = value;
+            this.reflectiveCalls = reflectiveCalls;
+        }
+    }
+
     @JsonDeserialize(builder=ProtectedSetterBuilder.class)
     public static final class ProtectedSetterBuilt
     {
@@ -489,6 +519,8 @@ public class TestBuilders extends BlackbirdTestBase
     static class ChildBuilt { }
 
     // Overrides `getStackTrace`, which `MethodProperty` never calls
+    static Throwable traceFailure;
+
     @SuppressWarnings("serial")
     static class TraceFailingException extends SecurityException
     {
@@ -498,7 +530,10 @@ public class TestBuilders extends BlackbirdTestBase
 
         @Override
         public StackTraceElement[] getStackTrace() {
-            throw new IllegalStateException("no trace for you");
+            if (traceFailure instanceof Error) {
+                throw (Error) traceFailure;
+            }
+            throw (RuntimeException) traceFailure;
         }
     }
 
@@ -945,20 +980,35 @@ public class TestBuilders extends BlackbirdTestBase
     {
         String json = a2q("{'value':42}");
         for (boolean canOverride : new boolean[] { true, false }) {
-            ObjectMapper vanilla = JsonMapper.builder()
-                    .configure(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS, canOverride).build();
-            ObjectMapper blackbird = mapperBuilder()
-                    .configure(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS, canOverride).build();
-            if (canOverride) {
-                assertEquals(42, vanilla.readValue(json, ProtectedSetterBuilt.class).value);
-                assertEquals(42, blackbird.readValue(json, ProtectedSetterBuilt.class).value);
-                continue;
+            for (boolean overridePublic : new boolean[] { true, false }) {
+                String desc = "canOverride=" + canOverride + ", overridePublic=" + overridePublic;
+                ObjectMapper vanilla = JsonMapper.builder()
+                        .configure(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS, canOverride)
+                        .configure(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS, overridePublic).build();
+                ObjectMapper blackbird = mapperBuilder()
+                        .configure(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS, canOverride)
+                        .configure(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS, overridePublic).build();
+
+                // reflection can only call the protected setter if Jackson made it accessible
+                if (canOverride) {
+                    assertEquals(42, vanilla.readValue(json, ProtectedSetterBuilt.class).value, desc);
+                    assertEquals(42, blackbird.readValue(json, ProtectedSetterBuilt.class).value, desc);
+                } else {
+                    protectedCalls = 0;
+                    Throwable expected = assertThrows(Throwable.class,
+                            () -> vanilla.readValue(json, ProtectedSetterBuilt.class), desc);
+                    Throwable actual = assertThrows(Throwable.class,
+                            () -> blackbird.readValue(json, ProtectedSetterBuilt.class), desc);
+                    _assertSameFailure(desc + ", " + expected, expected, actual);
+                    assertEquals(0, protectedCalls, desc);
+                }
+
+                // the public one always works here, but only goes through the generated
+                // setter if Jackson would have made it accessible
+                PublicSetterBuilt result = blackbird.readValue(json, PublicSetterBuilt.class);
+                assertEquals(42, result.value, desc);
+                assertEquals((canOverride && overridePublic) ? 0 : 1, result.reflectiveCalls, desc);
             }
-            protectedCalls = 0;
-            Throwable expected = assertThrows(Throwable.class, () -> vanilla.readValue(json, ProtectedSetterBuilt.class));
-            Throwable actual = assertThrows(Throwable.class, () -> blackbird.readValue(json, ProtectedSetterBuilt.class));
-            _assertSameFailure(String.valueOf(expected), expected, actual);
-            assertEquals(0, protectedCalls);
         }
     }
 
@@ -976,11 +1026,14 @@ public class TestBuilders extends BlackbirdTestBase
     public void testFailingStackTraceKeepsSetterFailure() throws Exception
     {
         String json = a2q("{'x':1}");
-        Throwable expected = assertThrows(Throwable.class,
-                () -> newVanillaJSONMapper().readValue(json, TraceFailingBuilt.class));
-        Throwable actual = assertThrows(Throwable.class, () -> MAPPER.readValue(json, TraceFailingBuilt.class));
-        assertEquals(TraceFailingException.class, actual.getCause().getClass());
-        _assertSameFailure(String.valueOf(expected), expected, actual);
+        for (Throwable t : new Throwable[] { new IllegalStateException("no trace"), new AssertionError("no trace") }) {
+            traceFailure = t;
+            Throwable expected = assertThrows(Throwable.class,
+                    () -> newVanillaJSONMapper().readValue(json, TraceFailingBuilt.class));
+            Throwable actual = assertThrows(Throwable.class, () -> MAPPER.readValue(json, TraceFailingBuilt.class));
+            assertEquals(TraceFailingException.class, actual.getCause().getClass(), String.valueOf(t));
+            _assertSameFailure(t + ", " + expected, expected, actual);
+        }
     }
 
     // `TextNode(null)` reads as a VALUE_STRING whose text is null

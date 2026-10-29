@@ -186,12 +186,14 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             if (!ReflectionHack.canResolveClass(lookup, method.getDeclaringClass())) {
                 return;
             }
-            // Builder setters used to go through reflection, which without
-            // CAN_OVERRIDE_ACCESS_MODIFIERS can only call public setters of public
-            // classes; the generated one must not call any others
+            // Builder setters used to go through reflection, which applies Java's
+            // access rules (modules included) unless Jackson made the setter accessible,
+            // as `ClassUtil.checkAndFixAccess` does only in this case; the generated
+            // setter ignores those rules, so it may only call what reflection could
+            boolean isPublic = Modifier.isPublic(method.getModifiers())
+                    && Modifier.isPublic(method.getDeclaringClass().getModifiers());
             optimizeBuilderSetter = config.canOverrideAccessModifiers()
-                    || (Modifier.isPublic(method.getModifiers())
-                            && Modifier.isPublic(method.getDeclaringClass().getModifiers()));
+                    && (!isPublic || config.isEnabled(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS));
         } else {
             return;
             //setter = lookup.unreflectGetter((Field) jdkMember);

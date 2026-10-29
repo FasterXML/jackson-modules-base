@@ -191,9 +191,12 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         StackTraceElement[] trace;
         try {
             trace = e.getStackTrace();
-        } catch (RuntimeException traceFailure) {
+        } catch (Throwable traceFailure) {
             // a subclass can override it; that is no evidence either, and mustn't
-            // replace the setter's failure
+            // replace the setter's failure (unless the JVM itself is failing)
+            if (traceFailure instanceof VirtualMachineError) {
+                throw (VirtualMachineError) traceFailure;
+            }
             return false;
         }
         // No trace (stack traces disabled, or a stackless throwable) is no evidence;
