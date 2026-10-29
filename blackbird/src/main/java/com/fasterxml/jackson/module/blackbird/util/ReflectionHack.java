@@ -53,27 +53,10 @@ public class ReflectionHack {
     }
 
     /**
-     * Like {@link #canAccessClass}, for a type that code refers to and so resolves
-     * (as the owner of a method it calls), but need not be able to access: it must
-     * resolve to the same class.
-     */
-    public static boolean canResolveClass(Lookup lookup, Class<?> type) {
-        type = elementType(type);
-        if (type.isPrimitive()) {
-            return true;
-        }
-        try {
-            return resolvesTo(lookup, type);
-        } catch (SecurityException e) {
-            return false;
-        }
-    }
-
-    /**
      * Whether {@code type}, which code defined with {@code lookup} only names in a
      * descriptor (as a called method's return type) and so never loads itself, is
      * known to be the same class from the lookup class's loader. Unlike
-     * {@link #canResolveClass} this doesn't ask that loader, which could make it
+     * {@link #canAccessClass} this doesn't ask that loader, which could make it
      * define its own copy and break code that relies on it never doing so.
      */
     public static boolean isSameClassWithoutLoading(Lookup lookup, Class<?> type) {

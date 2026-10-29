@@ -180,9 +180,16 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
                 return;
             }
             type = ((AnnotatedMethod) member).getRawParameterType(0);
-            // For an inherited protected setter the handle's receiver is narrowed to
-            // the lookup class, but calling it still names the declaring class
-            if (!ReflectionHack.canResolveClass(lookup, method.getDeclaringClass())) {
+            // Only these get a generated setter, so don't check (or load) anything for others
+            if (type.isPrimitive() && (type != Integer.TYPE) && (type != Long.TYPE) && (type != Boolean.TYPE)) {
+                return;
+            }
+            // For an inherited protected setter the handle's receiver is narrowed to the
+            // lookup class, but on Java 8 calling it still names the declaring class (which
+            // is otherwise the receiver, checked below). Newer JDKs don't load it, so
+            // neither may this check.
+            if ((setter.type().parameterType(0) != method.getDeclaringClass())
+                    && !ReflectionHack.isSameClassWithoutLoading(lookup, method.getDeclaringClass())) {
                 return;
             }
         } else {

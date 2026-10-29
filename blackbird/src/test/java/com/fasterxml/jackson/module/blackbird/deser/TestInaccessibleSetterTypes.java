@@ -145,6 +145,29 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
         assertEquals(MethodProperty.class, _findProperty(mapper, bean, "value").getClass());
     }
 
+    // Nor may checking the declaring class load it, when the generated setter wouldn't
+    // (or wouldn't exist at all, as for a `double` setter)
+    @Test
+    public void testDeclaringClassIsNotLoaded() throws Exception
+    {
+        for (boolean beanLookup : new boolean[] { false, true }) {
+            ChildFirstLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                    Arrays.asList(OwnerBase.class, OwnerBean.class));
+            Class<?> bean = Class.forName(OwnerBean.class.getName(), true, loader);
+            ObjectMapper mapper = MAPPER;
+            if (beanLookup) {
+                MethodHandles.Lookup lookup = (MethodHandles.Lookup) bean.getMethod("lookup").invoke(null);
+                mapper = JsonMapper.builder()
+                        .addModule(new BlackbirdModule(c -> (c == bean) ? lookup : MethodHandles.lookup()))
+                        .build();
+            }
+            Object result = mapper.readValue(a2q("{'value':7,'ratio':0.5}"), bean);
+            assertEquals(7, bean.getMethod("value").invoke(result));
+            assertEquals(0.5, bean.getMethod("ratio").invoke(result));
+            assertFalse(loader.defined.contains(OwnerBase.class.getName()), "beanLookup=" + beanLookup);
+        }
+    }
+
     // A loader that fails (other than not finding the class) only stops the optimization
     @Test
     public void testFailingLoader() throws Exception
