@@ -20,6 +20,7 @@ import org.junit.jupiter.api.function.Executable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -90,6 +91,22 @@ public class TestSetterFailures extends BlackbirdTestBase
 
         @JsonSetter(nulls=Nulls.SKIP)
         public void setList(List<String> value) { calls++; list = value; }
+    }
+
+    @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, defaultImpl=Void.class)
+    static class Item {
+        public String name;
+    }
+
+    static class PolymorphicNullBean {
+        int calls;
+        Item value = new Item();
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public void setVoid(Item v) { calls++; value = v; }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public PolymorphicNullBean setFluent(Item v) { calls++; value = v; return this; }
     }
 
     static class NullTextBean {
@@ -245,6 +262,33 @@ public class TestSetterFailures extends BlackbirdTestBase
             assertEquals("default", bean.str);
             assertEquals(Arrays.asList("keep"), bean.list);
             assertEquals(0, calls);
+        }
+    }
+
+    @Test
+    public void testPolymorphicNullMatchesVanilla() throws Exception {
+        ObjectMapper blackbird = newObjectMapper();
+        for (String name : new String[] { "void", "fluent" }) {
+            SettableBeanProperty prop = property(blackbird, PolymorphicNullBean.class, name);
+            assertTrue(prop instanceof OptimizedSettableBeanProperty, name);
+
+            PolymorphicNullBean direct = new PolymorphicNullBean();
+            prop.set(direct, null);
+            assertEquals(0, direct.calls, name);
+            assertNotNull(direct.value, name);
+
+            for (ObjectMapper mapper : new ObjectMapper[] { newVanillaJSONMapper(), blackbird }) {
+                PolymorphicNullBean explicit = mapper.readValue(a2q("{'" + name + "':null}"), PolymorphicNullBean.class);
+                assertEquals(0, explicit.calls, name);
+                assertNotNull(explicit.value, name);
+
+                // MethodProperty passes a null from polymorphic deserialization to
+                // the setter, even with Nulls.SKIP.
+                PolymorphicNullBean polymorphic = mapper.readValue(
+                        a2q("{'" + name + "':{'@type':'Unknown'}}"), PolymorphicNullBean.class);
+                assertEquals(1, polymorphic.calls, name);
+                assertNull(polymorphic.value, name);
+            }
         }
     }
 

@@ -61,6 +61,8 @@ final class SettableObjectProperty
         } else {
             value = _valueDeserializer.deserializeWithType(p, ctxt, _valueTypeDeserializer);
         }
+        // Do not call set(): MethodProperty passes nulls returned by polymorphic
+        // deserialization to the setter, even with Nulls.SKIP.
         _set(p, bean, value);
     }
 
