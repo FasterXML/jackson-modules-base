@@ -5,7 +5,7 @@ import java.lang.invoke.MethodHandles.Lookup;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ModeBuilderBase;
+import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ModeBeanBase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,7 +22,7 @@ public class TestReflectionHack
         assertTrue(ReflectionHack.canAccessClass(LOOKUP, int.class));
         assertTrue(ReflectionHack.canAccessClass(LOOKUP, int[].class));
         assertTrue(ReflectionHack.canAccessClass(LOOKUP, String.class));
-        assertTrue(ReflectionHack.canAccessClass(LOOKUP, ModeBuilderBase.class));
+        assertTrue(ReflectionHack.canAccessClass(LOOKUP, ModeBeanBase.class));
         assertTrue(ReflectionHack.canAccessClass(LOOKUP, SamePackage[].class));
         assertFalse(ReflectionHack.canAccessClass(LOOKUP, mode));
         assertFalse(ReflectionHack.canAccessClass(LOOKUP, java.lang.reflect.Array.newInstance(mode, 0).getClass()));
@@ -34,7 +34,7 @@ public class TestReflectionHack
     {
         Class<?> self = getClass();
         assertTrue(ReflectionHack.canAccessClassWithoutModules(self, String.class));
-        assertTrue(ReflectionHack.canAccessClassWithoutModules(self, ModeBuilderBase.class));
+        assertTrue(ReflectionHack.canAccessClassWithoutModules(self, ModeBeanBase.class));
         assertTrue(ReflectionHack.canAccessClassWithoutModules(self, SamePackage.class));
         assertFalse(ReflectionHack.canAccessClassWithoutModules(self, _packagePrivateFromOtherPackage()));
     }
