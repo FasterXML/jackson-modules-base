@@ -278,16 +278,26 @@ public class TestSetterFailures extends BlackbirdTestBase
             assertTrue(bean.b);
             assertEquals(0, calls);
         }
-        // and without skipping, a null for a primitive fails as it does through reflection
-        alwaysThrow = new IllegalStateException("not reached");
-        calls = 0;
-        Throwable expected = assertThrows(Throwable.class,
-                () -> property(newVanillaJSONMapper(), AlwaysFailingBean.class, "i").set(new AlwaysFailingBean(), null));
-        Throwable actual = assertThrows(Throwable.class,
-                () -> property(newObjectMapper(), AlwaysFailingBean.class, "i").set(new AlwaysFailingBean(), null));
-        assertEquals(expected.getClass(), actual.getClass());
-        assertEquals(expected.getMessage(), actual.getMessage());
-        assertEquals(0, calls);
+    }
+
+    // Without skipping, a null for a primitive fails as it does through reflection
+    @Test
+    public void testSetNullPrimitiveWithoutSkipping() throws Exception {
+        ObjectMapper vanilla = newVanillaJSONMapper();
+        ObjectMapper blackbird = newObjectMapper();
+        for (String name : new String[] { "i", "l", "b" }) {
+            SettableBeanProperty expectedProperty = property(vanilla, VoidBean.class, name);
+            SettableBeanProperty actualProperty = property(blackbird, VoidBean.class, name);
+            assertTrue(actualProperty instanceof OptimizedSettableBeanProperty, name);
+            calls = 0;
+            JsonMappingException expected = assertThrows(JsonMappingException.class,
+                    () -> expectedProperty.set(new VoidBean(), null), name);
+            JsonMappingException actual = assertThrows(JsonMappingException.class,
+                    () -> actualProperty.set(new VoidBean(), null), name);
+            assertEquals(expected.getOriginalMessage(), actual.getOriginalMessage(), name);
+            assertEquals(expected.getCause().getClass(), actual.getCause().getClass(), name);
+            assertEquals(0, calls, name);
+        }
     }
 
     @Test
