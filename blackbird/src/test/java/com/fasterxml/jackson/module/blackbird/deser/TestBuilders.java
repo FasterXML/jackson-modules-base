@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -27,6 +28,8 @@ import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.deser.impl.MethodProperty;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ReplacingBuilderBase;
+import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ReplacingBuilt;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -359,6 +362,78 @@ public class TestBuilders extends BlackbirdTestBase
     @JsonDeserialize(builder=HideableBuilder.class)
     static class HideableBuilt { }
 
+    // Inherits protected `withX`, whose generated setter only takes this class, but
+    // `withFirst` replaces the builder with an instance of the base class
+    public static final class ReplacingBuilder extends ReplacingBuilderBase { }
+
+    // `withFirst` returns something that isn't a builder at all
+    static final class UnrelatedBuilder
+    {
+        public Object withFirst(int v) {
+            return "not a builder";
+        }
+
+        public UnrelatedBuilder withX(int v) {
+            return this;
+        }
+
+        public UnrelatedBuilt build() {
+            return new UnrelatedBuilt();
+        }
+    }
+
+    @JsonDeserialize(builder=UnrelatedBuilder.class)
+    static class UnrelatedBuilt { }
+
+    static final class NullCreatorBuilder
+    {
+        @JsonCreator
+        public static NullCreatorBuilder create() {
+            return null;
+        }
+
+        public NullCreatorBuilder withX(int v) {
+            return this;
+        }
+
+        public NullCreatorBuilt build() {
+            return new NullCreatorBuilt();
+        }
+    }
+
+    @JsonDeserialize(builder=NullCreatorBuilder.class)
+    static class NullCreatorBuilt { }
+
+    // An unknown type id gives null, which plain Jackson passes to the setter even
+    // with `Nulls.SKIP`
+    @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, defaultImpl=Void.class)
+    static class Item {
+        public String name;
+    }
+
+    static int itemCalls;
+
+    static final class ItemBuilder
+    {
+        @JsonSetter(nulls=Nulls.SKIP)
+        public ItemBuilder withFluent(Item i) {
+            itemCalls++;
+            return this;
+        }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public void withVoid(Item i) {
+            itemCalls++;
+        }
+
+        public ItemBuilt build() {
+            return new ItemBuilt();
+        }
+    }
+
+    @JsonDeserialize(builder=ItemBuilder.class)
+    static class ItemBuilt { }
+
     static class Values {
         final String str;
         final List<String> list;
@@ -468,7 +543,8 @@ public class TestBuilders extends BlackbirdTestBase
                     public Object apply(Object bean, Object v) {
                         throw new IllegalAccessError("simulated");
                     }
-                });
+                },
+                CopyingBuilder.class);
 
         CopyingBuilder result = (CopyingBuilder) prop.setAndReturn(new CopyingBuilder(), "foo");
         assertEquals("foo", result.str);
@@ -598,6 +674,56 @@ public class TestBuilders extends BlackbirdTestBase
             assertThrows(JsonMappingException.class,
                     () -> mapper.readValue(a2q("{'str':'foo'}"), HideableBuilt.class));
             assertEquals(1, hiddenCalls);
+        }
+    }
+
+    @Test
+    public void testReplacedBuilderOfBaseClass() throws Exception
+    {
+        String json = a2q("{'first':1,'x':2}");
+        ReplacingBuilt expected = newVanillaJSONMapper().readValue(json, ReplacingBuilt.class);
+        ReplacingBuilt actual = MAPPER.readValue(json, ReplacingBuilt.class);
+        assertEquals(1, expected.first);
+        assertEquals(2, expected.x);
+        assertEquals(expected.first, actual.first);
+        assertEquals(expected.x, actual.x);
+    }
+
+    // A builder that isn't an instance of the setter's class (or is null) must fail
+    // as reflection does, not as a setter failure from the generated cast
+    @Test
+    public void testUnusableBuilderInstanceMatchesVanilla() throws Exception
+    {
+        assertTrue(_findProperty(MAPPER, UnrelatedBuilt.class, "x") instanceof OptimizedSettableBeanProperty);
+        assertTrue(_findProperty(MAPPER, NullCreatorBuilt.class, "x") instanceof OptimizedSettableBeanProperty);
+        for (boolean wrap : new boolean[] { true, false }) {
+            ObjectMapper vanilla = JsonMapper.builder()
+                    .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
+            ObjectMapper blackbird = mapperBuilder()
+                    .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
+            for (Class<?> type : new Class<?>[] { UnrelatedBuilt.class, NullCreatorBuilt.class }) {
+                String json = a2q("{'first':1,'x':2}");
+                Throwable expected = assertThrows(Throwable.class, () -> vanilla.readValue(json, type));
+                Throwable actual = assertThrows(Throwable.class, () -> blackbird.readValue(json, type));
+                _assertSameFailure("wrap=" + wrap + ", " + type.getSimpleName() + ", " + expected,
+                        expected, actual);
+            }
+        }
+    }
+
+    @Test
+    public void testPolymorphicNullMatchesVanilla() throws Exception
+    {
+        assertTrue(_findProperty(MAPPER, ItemBuilt.class, "fluent") instanceof OptimizedSettableBeanProperty);
+        assertTrue(_findProperty(MAPPER, ItemBuilt.class, "void") instanceof OptimizedSettableBeanProperty);
+        for (String name : new String[] { "fluent", "void" }) {
+            String json = a2q("{'" + name + "':{'@type':'Unknown'}}");
+            itemCalls = 0;
+            newVanillaJSONMapper().readValue(json, ItemBuilt.class);
+            int expected = itemCalls;
+            itemCalls = 0;
+            MAPPER.readValue(json, ItemBuilt.class);
+            assertEquals(expected, itemCalls, name);
         }
     }
 

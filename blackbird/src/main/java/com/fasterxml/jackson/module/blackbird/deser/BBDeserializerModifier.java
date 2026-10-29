@@ -172,8 +172,19 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
         Class<?> type;
         if (jdkMember instanceof Method && prop instanceof MethodProperty) {
             final Method method = (Method) jdkMember;
-            setter = lookup.unreflect(method);
+            try {
+                setter = lookup.unreflect(method);
+            } catch (IllegalAccessException e) {
+                // e.g. an inherited protected setter, where the lookup class isn't the
+                // subclass (as with `CrossLoaderAccess` on some JDKs); reflection can still call it
+                return;
+            }
             type = ((AnnotatedMethod) member).getRawParameterType(0);
+            // For an inherited protected setter the handle's receiver is narrowed to
+            // the lookup class, but calling it still names the declaring class
+            if (!ReflectionHack.canResolveClass(lookup, method.getDeclaringClass())) {
+                return;
+            }
         } else {
             return;
             //setter = lookup.unreflectGetter((Field) jdkMember);
@@ -192,31 +203,35 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             return;
         }
 
+        final Class<?> receiverType = setter.type().parameterType(0);
+
         if (type.isPrimitive()) {
             if (type == Integer.TYPE) {
                 ObjIntBiFunction thunk = createThunk(lookup, ObjIntBiFunction.class, int.class, setter);
                 newProps.add(new SettableIntProperty(prop,
                     createSetter(lookup, ObjIntConsumer.class, ObjIntBiFunction.class,
-                        INT_TRAMPOLINE, int.class, setter, thunk), thunk));
+                        INT_TRAMPOLINE, int.class, setter, thunk), thunk, receiverType));
             } else if (type == Long.TYPE) {
                 ObjLongBiFunction thunk = createThunk(lookup, ObjLongBiFunction.class, long.class, setter);
                 newProps.add(new SettableLongProperty(prop,
                     createSetter(lookup, ObjLongConsumer.class, ObjLongBiFunction.class,
-                        LONG_TRAMPOLINE, long.class, setter, thunk), thunk));
+                        LONG_TRAMPOLINE, long.class, setter, thunk), thunk, receiverType));
             } else if (type == Boolean.TYPE) {
                 ObjBooleanBiFunction thunk = createThunk(lookup, ObjBooleanBiFunction.class, boolean.class, setter);
                 newProps.add(new SettableBooleanProperty(prop,
                     createSetter(lookup, ObjBooleanConsumer.class, ObjBooleanBiFunction.class,
-                        BOOLEAN_TRAMPOLINE, boolean.class, setter, thunk), thunk));
+                        BOOLEAN_TRAMPOLINE, boolean.class, setter, thunk), thunk, receiverType));
             }
         } else {
             BiFunction<Object, Object, Object> thunk = createThunk(lookup, BiFunction.class, Object.class, setter);
             if (type == String.class) {
                 newProps.add(new SettableStringProperty(prop,
-                    createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter, thunk), thunk));
+                    createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter, thunk),
+                    thunk, receiverType));
             } else {
                 newProps.add(new SettableObjectProperty(prop,
-                    createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter, thunk), thunk));
+                    createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter, thunk),
+                    thunk, receiverType));
             }
         }
     }

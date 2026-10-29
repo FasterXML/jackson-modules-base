@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
@@ -32,6 +34,9 @@ import com.fasterxml.jackson.module.blackbird.deser.shadowed.LevelBeanBase;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.LevelBuilder;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.LevelBuilderBase;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.LevelBuilt;
+import com.fasterxml.jackson.module.blackbird.deser.shadowed.OwnerBuilder;
+import com.fasterxml.jackson.module.blackbird.deser.shadowed.OwnerBuilt;
+import com.fasterxml.jackson.module.blackbird.deser.shadowed.owner.OwnerBase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -137,6 +142,30 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
         assertEquals(MethodProperty.class, _findProperty(built, "level").getClass());
     }
 
+    // And for the declaring class of an inherited protected setter, which isn't in the
+    // handle's type (its receiver is narrowed to the builder), but still named by the call
+    @Test
+    public void testShadowedDeclaringClass() throws Exception
+    {
+        ClassLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                Arrays.asList(OwnerBase.class, OwnerBuilder.class, OwnerBuilt.class));
+        Class<?> built = Class.forName(OwnerBuilt.class.getName(), true, loader);
+        Class<?> builder = Class.forName(OwnerBuilder.class.getName(), true, loader);
+        assertNotSame(OwnerBuilt.class, built);
+        assertNotSame(OwnerBase.class, Class.forName(OwnerBase.class.getName(), false, loader));
+        // a lookup in the builder itself, which the protected setter needs
+        MethodHandles.Lookup builderLookup = (MethodHandles.Lookup) builder.getMethod("lookup").invoke(null);
+        ObjectMapper mapper = JsonMapper.builder()
+                .addModule(new BlackbirdModule(c -> (c == builder) ? builderLookup : MethodHandles.lookup()))
+                .build();
+
+        OwnerBase.setterCalls = 0;
+        Object result = mapper.readValue(a2q("{'value':7}"), built);
+        assertEquals(7, built.getField("value").get(result));
+        assertEquals(1, OwnerBase.setterCalls);
+        assertEquals(MethodProperty.class, _findProperty(mapper, built, "value").getClass());
+    }
+
     // Setup skips this accessor, so build it the same way here to check that the
     // access error the JVM really raises (from a hidden frame on Java 9+) is
     // recognized as the accessor's, and falls back without running the setter twice
@@ -160,7 +189,8 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
                 .createInstance(vanilla.getDeserializationConfig(), null, null);
         BeanDeserializerBase deser = (BeanDeserializerBase) ctxt.findRootValueDeserializer(
                 vanilla.constructType(ModeBuilt.class));
-        SettableObjectProperty prop = new SettableObjectProperty(deser.findProperty("mode"), unused, thunk);
+        SettableObjectProperty prop = new SettableObjectProperty(deser.findProperty("mode"), unused, thunk,
+                setter.type().parameterType(0));
 
         Object fast = mode.getEnumConstants()[0];
         for (int i = 0; i < 2; i++) {
@@ -183,10 +213,16 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
 
     private SettableBeanProperty _findProperty(Class<?> type, String name) throws Exception
     {
-        DefaultDeserializationContext ctxt = ((DefaultDeserializationContext) MAPPER.getDeserializationContext())
-                .createInstance(MAPPER.getDeserializationConfig(), null, null);
+        return _findProperty(MAPPER, type, name);
+    }
+
+    private static SettableBeanProperty _findProperty(ObjectMapper mapper, Class<?> type, String name)
+        throws Exception
+    {
+        DefaultDeserializationContext ctxt = ((DefaultDeserializationContext) mapper.getDeserializationContext())
+                .createInstance(mapper.getDeserializationConfig(), null, null);
         BeanDeserializerBase deser = (BeanDeserializerBase) ctxt.findRootValueDeserializer(
-                MAPPER.constructType(type));
+                mapper.constructType(type));
         return deser.findProperty(name);
     }
 

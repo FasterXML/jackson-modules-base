@@ -15,16 +15,16 @@ final class SettableBooleanProperty
     private ObjBooleanBiFunction _optimizedSetterAndReturn;
 
     public SettableBooleanProperty(SettableBeanProperty src, ObjBooleanConsumer optimizedSetter,
-            ObjBooleanBiFunction optimizedSetterAndReturn)
+            ObjBooleanBiFunction optimizedSetterAndReturn, Class<?> receiverType)
     {
-        super(src);
+        super(src, receiverType);
         _optimizedSetter = optimizedSetter;
         _optimizedSetterAndReturn = optimizedSetterAndReturn;
     }
 
     @Override
     protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
-        return new SettableBooleanProperty(del, _optimizedSetter, _optimizedSetterAndReturn);
+        return new SettableBooleanProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType);
     }
 
     /*
@@ -56,7 +56,7 @@ final class SettableBooleanProperty
     public Object deserializeSetAndReturn(JsonParser p,
             DeserializationContext ctxt, Object instance) throws IOException
     {
-        if (_optimizedSetterAndReturn != null) {
+        if ((_optimizedSetterAndReturn != null) && _receiverType.isInstance(instance)) {
             JsonToken t = p.currentToken();
             if (t == JsonToken.VALUE_TRUE) {
                 return _setAndReturn(p, instance, true);
@@ -81,9 +81,9 @@ final class SettableBooleanProperty
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        // anything else (null, or another type that reflection may widen or reject)
-        // is left to the delegate
-        if (!(value instanceof Boolean)) {
+        // anything else (null, or another type that reflection may widen or reject),
+        // or an instance the generated setter can't take, is left to the delegate
+        if (!(value instanceof Boolean) || !_receiverType.isInstance(instance)) {
             return delegate.setAndReturn(instance, value);
         }
         // not optimal (due to boxing), but better than using reflection:

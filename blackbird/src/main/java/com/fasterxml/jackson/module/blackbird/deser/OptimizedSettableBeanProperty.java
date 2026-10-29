@@ -32,16 +32,24 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      */
     private volatile boolean broken = false;
 
+    /**
+     * Type the generated builder setter casts the instance to: the setter's declaring
+     * class, or the builder's own class for an inherited protected setter. A builder
+     * setter can return an instance of another type, which reflection may still accept.
+     */
+    protected final Class<?> _receiverType;
+
     /*
     /**********************************************************************
     /* Life-cycle
     /**********************************************************************
      */
 
-    protected OptimizedSettableBeanProperty(SettableBeanProperty src)
+    protected OptimizedSettableBeanProperty(SettableBeanProperty src, Class<?> receiverType)
     {
         super(src);
         _skipNulls = NullsConstantProvider.isSkipper(_nullProvider);
+        _receiverType = receiverType;
     }
 
     // Base impl of `withName()` fine as-is:

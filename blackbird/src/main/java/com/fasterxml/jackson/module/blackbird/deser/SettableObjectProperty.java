@@ -18,9 +18,9 @@ final class SettableObjectProperty
     private final Class<?> _setterValueType;
 
     public SettableObjectProperty(SettableBeanProperty src, BiConsumer<Object, Object> optimizedSetter,
-            BiFunction<Object, Object, Object> optimizedSetterAndReturn)
+            BiFunction<Object, Object, Object> optimizedSetterAndReturn, Class<?> receiverType)
     {
-        super(src);
+        super(src, receiverType);
         this._optimizedSetter = optimizedSetter;
         this._optimizedSetterAndReturn = optimizedSetterAndReturn;
         _setterValueType = (src.getMember() instanceof AnnotatedMethod)
@@ -30,7 +30,7 @@ final class SettableObjectProperty
 
     @Override
     protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
-        return new SettableObjectProperty(del, _optimizedSetter, _optimizedSetterAndReturn);
+        return new SettableObjectProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType);
     }
 
     /*
@@ -68,7 +68,7 @@ final class SettableObjectProperty
     public Object deserializeSetAndReturn(JsonParser p,
             DeserializationContext ctxt, Object instance) throws IOException
     {
-        if (_optimizedSetterAndReturn == null) {
+        if ((_optimizedSetterAndReturn == null) || !_receiverType.isInstance(instance)) {
             return delegate.deserializeSetAndReturn(p, ctxt, instance);
         }
         Object value;
@@ -103,18 +103,21 @@ final class SettableObjectProperty
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        // a value of another type is left to the delegate, which reports it
-        if ((_optimizedSetterAndReturn == null)
+        // a value of another type, or an instance the generated setter can't take,
+        // is left to the delegate, which reports it
+        if ((_optimizedSetterAndReturn == null) || !_receiverType.isInstance(instance)
                 || ((value != null) && !_setterValueType.isInstance(value))) {
             return delegate.setAndReturn(instance, value);
+        }
+        // as in `MethodProperty`, only here: `deserializeSetAndReturn` already skipped
+        // the nulls it should
+        if ((value == null) && _skipNulls) {
+            return instance;
         }
         return _setAndReturn(null, instance, value);
     }
 
     private Object _setAndReturn(JsonParser p, Object instance, Object value) throws IOException {
-        if ((value == null) && _skipNulls) {
-            return instance;
-        }
         try {
             Object result = _optimizedSetterAndReturn.apply(instance, value);
             return (result == null) ? instance : result;

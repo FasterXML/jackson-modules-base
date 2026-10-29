@@ -16,16 +16,16 @@ final class SettableIntProperty
     private ObjIntBiFunction _optimizedSetterAndReturn;
 
     public SettableIntProperty(SettableBeanProperty src, ObjIntConsumer<Object> optimizedSetter,
-            ObjIntBiFunction optimizedSetterAndReturn)
+            ObjIntBiFunction optimizedSetterAndReturn, Class<?> receiverType)
     {
-        super(src);
+        super(src, receiverType);
         _optimizedSetter = optimizedSetter;
         _optimizedSetterAndReturn = optimizedSetterAndReturn;
     }
 
     @Override
     protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
-        return new SettableIntProperty(del, _optimizedSetter, _optimizedSetterAndReturn);
+        return new SettableIntProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType);
     }
 
     /*
@@ -55,7 +55,8 @@ final class SettableIntProperty
             DeserializationContext ctxt, Object instance)
         throws IOException
     {
-        if ((_optimizedSetterAndReturn != null) && p.isExpectedNumberIntToken()) {
+        if ((_optimizedSetterAndReturn != null) && _receiverType.isInstance(instance)
+                && p.isExpectedNumberIntToken()) {
             return _setAndReturn(p, instance, p.getIntValue());
         }
         return delegate.deserializeSetAndReturn(p, ctxt, instance);
@@ -74,9 +75,9 @@ final class SettableIntProperty
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        // anything else (null, or another type that reflection may widen or reject)
-        // is left to the delegate
-        if (!(value instanceof Integer)) {
+        // anything else (null, or another type that reflection may widen or reject),
+        // or an instance the generated setter can't take, is left to the delegate
+        if (!(value instanceof Integer) || !_receiverType.isInstance(instance)) {
             return delegate.setAndReturn(instance, value);
         }
         // not optimal (due to boxing), but better than using reflection:
