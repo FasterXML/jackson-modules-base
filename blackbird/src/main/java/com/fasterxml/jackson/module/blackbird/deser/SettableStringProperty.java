@@ -38,11 +38,14 @@ final class SettableStringProperty
     @Override
     public void deserializeAndSet(JsonParser p, DeserializationContext ctxt, Object bean) throws IOException
     {
-        if (!p.hasToken(JsonToken.VALUE_STRING)) {
+        String text = p.hasToken(JsonToken.VALUE_STRING) ? p.getText() : null;
+        // some parsers give null text (e.g. for a `TextNode(null)`), which needs the
+        // delegate's null handling
+        if (text == null) {
             delegate.deserializeAndSet(p, ctxt, bean);
             return;
         }
-        set(bean, p.getText());
+        _set(p, bean, text);
     }
 
     @Override
@@ -62,10 +65,19 @@ final class SettableStringProperty
 
     @Override
     public void set(Object bean, Object value) throws IOException {
+        // as in `MethodProperty`, only here: `deserializeAndSet` already skipped the
+        // nulls it should
+        if ((value == null) && _skipNulls) {
+            return;
+        }
+        _set(null, bean, value);
+    }
+
+    private void _set(JsonParser p, Object bean, Object value) throws IOException {
         try {
             _optimizedSetter.accept(bean, (String) value);
         } catch (Throwable e) {
-            _reportProblem(_optimizedSetter, _optimizedSetterAndReturn, bean, value, e);
+            _reportProblem(p, _optimizedSetter, _optimizedSetterAndReturn, bean, value, e);
         }
     }
 

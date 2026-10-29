@@ -46,7 +46,7 @@ final class SettableLongProperty
         try {
            _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
-            _reportProblem(_optimizedSetter, _optimizedSetterAndReturn, bean, v, e);
+            _reportProblem(p, _optimizedSetter, _optimizedSetterAndReturn, bean, v, e);
         }
     }
 
@@ -68,7 +68,7 @@ final class SettableLongProperty
         try {
             _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
-            _reportProblem(_optimizedSetter, _optimizedSetterAndReturn, bean, v, e);
+            _reportProblem(null, _optimizedSetter, _optimizedSetterAndReturn, bean, v, e);
         }
     }
 

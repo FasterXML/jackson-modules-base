@@ -61,7 +61,7 @@ final class SettableObjectProperty
         } else {
             value = _valueDeserializer.deserializeWithType(p, ctxt, _valueTypeDeserializer);
         }
-        set(bean, value);
+        _set(p, bean, value);
     }
 
     @Override
@@ -99,10 +99,19 @@ final class SettableObjectProperty
 
     @Override
     public void set(Object bean, Object v) throws IOException {
+        // as in `MethodProperty`, only here: `deserializeAndSet` already skipped the
+        // nulls it should
+        if ((v == null) && _skipNulls) {
+            return;
+        }
+        _set(null, bean, v);
+    }
+
+    private void _set(JsonParser p, Object bean, Object v) throws IOException {
         try {
             _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
-            _reportProblem(_optimizedSetter, _optimizedSetterAndReturn, bean, v, e);
+            _reportProblem(p, _optimizedSetter, _optimizedSetterAndReturn, bean, v, e);
         }
     }
 

@@ -1,9 +1,12 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -14,15 +17,25 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 import com.fasterxml.jackson.module.blackbird.deser.access.InaccessibleSetterValue;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class TestSetterFailures extends BlackbirdTestBase
 {
@@ -44,6 +57,81 @@ public class TestSetterFailures extends BlackbirdTestBase
         public FluentBean setI(int value) { failOnce(); return this; }
         public FluentBean setL(long value) { failOnce(); return this; }
         public FluentBean setB(boolean value) { failOnce(); return this; }
+    }
+
+    // Always fail, so reporting can be compared with plain Jackson
+    private static Throwable alwaysThrow;
+
+    static class AlwaysFailingBean {
+        public void setStr(String value) { alwaysFail(); }
+        public void setI(int value) { alwaysFail(); }
+    }
+
+    private static void alwaysFail() {
+        calls++;
+        if (alwaysThrow instanceof Error) {
+            throw (Error) alwaysThrow;
+        }
+        throw (RuntimeException) alwaysThrow;
+    }
+
+    // `set()` skips nulls as `MethodProperty.set` does; properties before the creator's
+    // are buffered and assigned through it
+    static class SkipNullsBean {
+        final int id;
+        String str = "default";
+        List<String> list = Arrays.asList("keep");
+
+        @JsonCreator
+        SkipNullsBean(@JsonProperty("id") int id) { this.id = id; }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public void setStr(String value) { calls++; str = value; }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public void setList(List<String> value) { calls++; list = value; }
+    }
+
+    static class NullTextBean {
+        String skipped = "default";
+        String plain = "default";
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public void setSkipped(String value) { skipped = value; }
+
+        public void setPlain(String value) { plain = value; }
+    }
+
+    // The bean is a hidden subclass, whose setters are left out of stack traces as
+    // the generated accessors are
+    private static Class<?> hiddenVoid, hiddenFluent;
+
+    public static class HideableVoidBean {
+        @JsonCreator
+        public static HideableVoidBean create() throws Exception {
+            return (HideableVoidBean) hiddenVoid.getConstructor().newInstance();
+        }
+        public void setStr(String value) { }
+    }
+
+    public static class HiddenVoidBean extends HideableVoidBean {
+        public HiddenVoidBean() { }
+        @Override
+        public void setStr(String value) { calls++; throw new SecurityException("thrown by hidden setter"); }
+    }
+
+    public static class HideableFluentBean {
+        @JsonCreator
+        public static HideableFluentBean create() throws Exception {
+            return (HideableFluentBean) hiddenFluent.getConstructor().newInstance();
+        }
+        public HideableFluentBean setStr(String value) { return this; }
+    }
+
+    public static class HiddenFluentBean extends HideableFluentBean {
+        public HiddenFluentBean() { }
+        @Override
+        public HideableFluentBean setStr(String value) { calls++; throw new SecurityException("thrown by hidden setter"); }
     }
 
     // A retry would succeed and hide the original failure.
@@ -110,6 +198,106 @@ public class TestSetterFailures extends BlackbirdTestBase
                 }
             }
         }
+    }
+
+    // Not retried, these are still reported as `MethodProperty` reports them (as they
+    // were after the retry), not as the setter's raw `Error` or exception
+    @Test
+    public void testAccessErrorsAreReportedAsVanilla() throws Exception {
+        for (boolean wrap : new boolean[] { true, false }) {
+            ObjectMapper vanilla = JsonMapper.builder().configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
+            ObjectMapper blackbird = mapperBuilder().configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
+            for (Throwable t : new Throwable[] { new SecurityException("se"), new IllegalAccessError("iae") }) {
+                for (String json : new String[] { a2q("{'str':'foo'}"), a2q("{'i':42}") }) {
+                    String desc = "wrap=" + wrap + ", " + t + ", " + json;
+                    alwaysThrow = t;
+                    calls = 0;
+                    Throwable expected = assertThrows(Throwable.class, () -> vanilla.readValue(json, AlwaysFailingBean.class));
+                    Throwable actual = assertThrows(Throwable.class, () -> blackbird.readValue(json, AlwaysFailingBean.class));
+                    assertEquals(2, calls, desc);
+                    assertEquals(expected.getClass(), actual.getClass(), desc);
+                    JsonMappingException e = (JsonMappingException) expected;
+                    JsonMappingException a = (JsonMappingException) actual;
+                    assertEquals(e.getOriginalMessage(), a.getOriginalMessage(), desc);
+                    assertEquals(e.getPathReference(), a.getPathReference(), desc);
+                    assertEquals(e.getLocation(), a.getLocation(), desc);
+                    assertSame(t, a.getCause(), desc);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testSetSkipsNulls() throws Exception {
+        for (String name : new String[] { "str", "list" }) {
+            SettableBeanProperty property = property(newObjectMapper(), SkipNullsBean.class, name);
+            assertTrue(property instanceof OptimizedSettableBeanProperty, name);
+            SkipNullsBean bean = new SkipNullsBean(1);
+            calls = 0;
+            property.set(bean, null);
+            assertEquals(0, calls, name);
+        }
+        // with the nulls before the creator property, so they're buffered
+        String json = a2q("{'str':null,'list':null,'id':1}");
+        for (ObjectMapper mapper : new ObjectMapper[] { newVanillaJSONMapper(), newObjectMapper() }) {
+            calls = 0;
+            SkipNullsBean bean = mapper.readValue(json, SkipNullsBean.class);
+            assertEquals("default", bean.str);
+            assertEquals(Arrays.asList("keep"), bean.list);
+            assertEquals(0, calls);
+        }
+    }
+
+    // `TextNode(null)` reads as a VALUE_STRING whose text is null
+    @Test
+    public void testNullTextMatchesVanilla() throws Exception {
+        assertTrue(property(newObjectMapper(), NullTextBean.class, "skipped") instanceof OptimizedSettableBeanProperty);
+        ObjectNode tree = JsonNodeFactory.instance.objectNode();
+        tree.set("skipped", new TextNode(null));
+        tree.set("plain", new TextNode(null));
+        for (ObjectMapper mapper : new ObjectMapper[] { newVanillaJSONMapper(), newObjectMapper() }) {
+            NullTextBean bean = mapper.treeToValue(tree, NullTextBean.class);
+            assertEquals("default", bean.skipped);
+            assertNull(bean.plain);
+        }
+    }
+
+    @Test
+    public void testHiddenBeanSetterFailureIsNotRetried() throws Exception {
+        Method define;
+        Object noOptions;
+        try {
+            Class<?> option = Class.forName("java.lang.invoke.MethodHandles$Lookup$ClassOption");
+            noOptions = Array.newInstance(option, 0);
+            define = MethodHandles.Lookup.class.getMethod("defineHiddenClass",
+                    byte[].class, boolean.class, noOptions.getClass());
+        } catch (ReflectiveOperationException e) {
+            assumeTrue(false, "hidden classes need Java 15+");
+            return;
+        }
+        hiddenVoid = defineHidden(define, noOptions, HiddenVoidBean.class);
+        hiddenFluent = defineHidden(define, noOptions, HiddenFluentBean.class);
+        for (Class<?> type : new Class<?>[] { HideableVoidBean.class, HideableFluentBean.class }) {
+            assertTrue(property(newObjectMapper(), type, "str") instanceof OptimizedSettableBeanProperty);
+            for (ObjectMapper mapper : new ObjectMapper[] { newVanillaJSONMapper(), newObjectMapper() }) {
+                calls = 0;
+                assertThrows(JsonMappingException.class, () -> mapper.readValue(a2q("{'str':'foo'}"), type));
+                assertEquals(1, calls, type.getSimpleName());
+            }
+        }
+    }
+
+    private static Class<?> defineHidden(Method define, Object noOptions, Class<?> type) throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (InputStream in = type.getResourceAsStream("/" + type.getName().replace('.', '/') + ".class")) {
+            byte[] buffer = new byte[4096];
+            int n;
+            while ((n = in.read(buffer)) != -1) {
+                out.write(buffer, 0, n);
+            }
+        }
+        return ((MethodHandles.Lookup) define.invoke(MethodHandles.lookup(), out.toByteArray(), true, noOptions))
+                .lookupClass();
     }
 
     private void assertRunsOnce(Executable action, String description) {

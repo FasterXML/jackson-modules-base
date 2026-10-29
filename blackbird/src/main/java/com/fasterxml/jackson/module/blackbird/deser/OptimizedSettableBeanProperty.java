@@ -114,13 +114,20 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      *
      * @since 2.9
      */
-    protected void _reportProblem(Object accessor, Object thunk, Object bean, Object value, Throwable e)
+    protected void _reportProblem(JsonParser p, Object accessor, Object thunk, Object bean, Object value,
+            Throwable e)
         throws IOException
     {
         if (_isAccessorAccessFailure(accessor, thunk, bean, e)) {
             _logAccessProblem(bean, e);
             delegate.set(bean, value);
             return;
+        }
+        // These used to always be retried through reflection, which reported the
+        // setter's failure the way `MethodProperty` does (`p` is only for the location);
+        // keep that, rather than letting an `Error` escape unwrapped
+        if ((e instanceof IllegalAccessError) || (e instanceof SecurityException)) {
+            _throwAsIOE(p, new InvocationTargetException(e), value);
         }
         if (e instanceof IOException) {
             throw (IOException) e;
