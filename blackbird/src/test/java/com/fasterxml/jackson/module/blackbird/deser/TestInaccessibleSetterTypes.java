@@ -19,6 +19,10 @@ import com.fasterxml.jackson.databind.deser.impl.MethodProperty;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
+import com.fasterxml.jackson.module.blackbird.deser.isolated.Token;
+import com.fasterxml.jackson.module.blackbird.deser.isolated.TokenBean;
+import com.fasterxml.jackson.module.blackbird.deser.isolated.TokenBuilder;
+import com.fasterxml.jackson.module.blackbird.deser.isolated.TokenBuilt;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.HiddenSetterBeanBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ModeBeanBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ProtectedSetterBeanBase;
@@ -44,6 +48,20 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
     static final class ProtectedBean extends ProtectedSetterBeanBase { }
 
     static final class HiddenSetterBean extends HiddenSetterBeanBase { }
+
+    // Setters with JDK `java.*` signatures keep the generated setter; other types from
+    // other loaders, even JDK `javax.*` ones, can't be known to be the same class
+    static class CommonSignatures
+    {
+        String a;
+        List<String> b;
+        int c;
+
+        public Object setA(String v) { a = v; return this; }
+        public CharSequence setB(List<String> v) { b = v; return "x"; }
+        public Integer setC(int v) { c = v; return v; }
+        public javax.naming.Name setD(String v) { return null; }
+    }
 
     private final ObjectMapper MAPPER = newObjectMapper();
 
@@ -166,6 +184,44 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
             assertEquals(0.5, bean.getMethod("ratio").invoke(result));
             assertFalse(loader.defined.contains(OwnerBase.class.getName()), "beanLookup=" + beanLookup);
         }
+    }
+
+    // Nor may the parameter check load a type from another loader: the property falls
+    // back to reflection either way, but the copy it would define can't be undone, and
+    // the code relying on that loader then fails
+    @Test
+    public void testParameterTypeIsNotLoaded() throws Exception
+    {
+        for (ObjectMapper mapper : new ObjectMapper[] { newVanillaJSONMapper(), MAPPER }) {
+            ChildFirstLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                    Arrays.asList(Token.class, TokenBuilder.class, TokenBuilt.class));
+            Class<?> built = Class.forName(TokenBuilt.class.getName(), true, loader);
+            Object result = mapper.readValue(a2q("{'token':'YES'}"), built);
+            // the builder's own call to the inherited setter still works
+            assertEquals(2, built.getField("calls").get(result));
+            assertFalse(loader.defined.contains(Token.class.getName()));
+
+            loader = new ChildFirstLoader(getClass().getClassLoader(),
+                    Arrays.asList(Token.class, TokenBean.class));
+            Class<?> bean = Class.forName(TokenBean.class.getName(), true, loader);
+            // the bean's constructor calls the inherited method, with no setter called at all
+            mapper.readValue("{}", bean);
+            assertFalse(loader.defined.contains(Token.class.getName()));
+        }
+    }
+
+    @Test
+    public void testCommonSignaturesStayOptimized() throws Exception
+    {
+        for (String name : new String[] { "a", "b", "c" }) {
+            SettableBeanProperty prop = _findProperty(CommonSignatures.class, name);
+            assertTrue(prop instanceof OptimizedSettableBeanProperty, name);
+        }
+        assertEquals(MethodProperty.class, _findProperty(CommonSignatures.class, "d").getClass());
+        CommonSignatures result = MAPPER.readValue(a2q("{'a':'x','b':['y'],'c':3,'d':'z'}"), CommonSignatures.class);
+        assertEquals("x", result.a);
+        assertEquals(Arrays.asList("y"), result.b);
+        assertEquals(3, result.c);
     }
 
     // A loader that fails (other than not finding the class) only stops the optimization
