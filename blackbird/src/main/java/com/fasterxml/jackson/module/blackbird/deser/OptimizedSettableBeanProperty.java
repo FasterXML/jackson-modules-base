@@ -104,11 +104,10 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      *
      * @since 2.9
      */
-    protected void _reportProblem(Object bean, Object value, Throwable e)
+    protected void _reportProblem(Object accessor, Object thunk, Object bean, Object value, Throwable e)
         throws IOException
     {
-        if ((e instanceof IllegalAccessError)
-                || (e instanceof SecurityException)) {
+        if (_isAccessorAccessFailure(accessor, thunk, e)) {
             _logAccessProblem(bean, e);
             delegate.set(bean, value);
             return;
@@ -134,7 +133,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     protected Object _reportProblemAndReturn(Object accessor, Object bean, Object value, Throwable e)
         throws IOException
     {
-        if (_isAccessorAccessFailure(accessor, e)) {
+        if (_isAccessorAccessFailure(accessor, null, e)) {
             _logAccessProblem(bean, e);
             return delegate.setAndReturn(bean, value);
         }
@@ -149,7 +148,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     // on top of the stack (or, where generated frames are hidden from stack traces,
     // this property's frame that called it). A throwable created anywhere else,
     // such as one the setter saved and throws later, keeps its original failure.
-    private boolean _isAccessorAccessFailure(Object accessor, Throwable e) {
+    private boolean _isAccessorAccessFailure(Object accessor, Object thunk, Throwable e) {
         if (!(e instanceof IllegalAccessError) && !(e instanceof SecurityException)) {
             return false;
         }
@@ -158,7 +157,21 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
             return false;
         }
         String top = trace[0].getClassName();
-        return top.equals(accessor.getClass().getName()) || top.equals(getClass().getName());
+        if (top.equals(accessor.getClass().getName()) || top.equals(getClass().getName())) {
+            return true;
+        }
+        if (thunk == null) {
+            return false;
+        }
+        if (top.equals(thunk.getClass().getName())) {
+            return true;
+        }
+        // Regular fluent setters discard the result through a trampoline. When
+        // lambda frames are hidden, an access failure in the thunk points there.
+        String method = trace[0].getMethodName();
+        return top.equals(BBDeserializerModifier.class.getName())
+                && (method.equals("trampoline") || method.equals("intTrampoline")
+                        || method.equals("longTrampoline") || method.equals("booleanTrampoline"));
     }
 
     private void _logAccessProblem(Object bean, Throwable e) {

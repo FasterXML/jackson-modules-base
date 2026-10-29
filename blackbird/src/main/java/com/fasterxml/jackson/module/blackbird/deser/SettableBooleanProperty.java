@@ -48,7 +48,7 @@ final class SettableBooleanProperty
         try {
             _optimizedSetter.accept(bean, b);
         } catch (Throwable e) {
-            _reportProblem(bean, b, e);
+            _reportProblem(_optimizedSetter, _optimizedSetterAndReturn, bean, b, e);
         }
     }
 
@@ -73,7 +73,7 @@ final class SettableBooleanProperty
         try {
             _optimizedSetter.accept(bean, b);
         } catch (Throwable e) {
-            _reportProblem(bean, b, e);
+            _reportProblem(_optimizedSetter, _optimizedSetterAndReturn, bean, b, e);
         }
     }
 
