@@ -65,7 +65,8 @@ final class SettableStringProperty
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        if (_optimizedSetterAndReturn == null) {
+        // a value of another type is left to the delegate, which reports it
+        if ((_optimizedSetterAndReturn == null) || ((value != null) && !(value instanceof String))) {
             return delegate.setAndReturn(instance, value);
         }
         return _setAndReturn(null, instance, value);

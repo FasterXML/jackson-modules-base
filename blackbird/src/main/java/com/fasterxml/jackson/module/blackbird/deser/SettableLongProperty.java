@@ -73,11 +73,13 @@ final class SettableLongProperty
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        if (value == null) {
+        // anything else (null, or another type that reflection may widen or reject)
+        // is left to the delegate
+        if (!(value instanceof Long)) {
             return delegate.setAndReturn(instance, value);
         }
         // not optimal (due to boxing), but better than using reflection:
-        return _setAndReturn(null, instance, ((Number) value).longValue());
+        return _setAndReturn(null, instance, ((Long) value).longValue());
     }
 
     private Object _setAndReturn(JsonParser p, Object instance, long v) throws IOException {

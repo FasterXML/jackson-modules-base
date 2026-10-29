@@ -74,11 +74,13 @@ final class SettableIntProperty
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        if (value == null) {
+        // anything else (null, or another type that reflection may widen or reject)
+        // is left to the delegate
+        if (!(value instanceof Integer)) {
             return delegate.setAndReturn(instance, value);
         }
         // not optimal (due to boxing), but better than using reflection:
-        return _setAndReturn(null, instance, ((Number) value).intValue());
+        return _setAndReturn(null, instance, ((Integer) value).intValue());
     }
 
     private Object _setAndReturn(JsonParser p, Object instance, int v) throws IOException {

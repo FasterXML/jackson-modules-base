@@ -7,6 +7,7 @@ import java.util.function.BiFunction;
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 
 final class SettableObjectProperty
     extends OptimizedSettableBeanProperty<SettableObjectProperty>
@@ -14,6 +15,7 @@ final class SettableObjectProperty
     private static final long serialVersionUID = 1L;
     private BiConsumer<Object, Object> _optimizedSetter;
     private BiFunction<Object, Object, Object> _optimizedSetterAndReturn;
+    private final Class<?> _setterValueType;
 
     public SettableObjectProperty(SettableBeanProperty src, BiConsumer<Object, Object> optimizedSetter,
             BiFunction<Object, Object, Object> optimizedSetterAndReturn)
@@ -21,6 +23,9 @@ final class SettableObjectProperty
         super(src);
         this._optimizedSetter = optimizedSetter;
         this._optimizedSetterAndReturn = optimizedSetterAndReturn;
+        _setterValueType = (src.getMember() instanceof AnnotatedMethod)
+                ? ((AnnotatedMethod) src.getMember()).getRawParameterType(0)
+                : Object.class;
     }
 
     @Override
@@ -98,7 +103,9 @@ final class SettableObjectProperty
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        if (_optimizedSetterAndReturn == null) {
+        // a value of another type is left to the delegate, which reports it
+        if ((_optimizedSetterAndReturn == null)
+                || ((value != null) && !_setterValueType.isInstance(value))) {
             return delegate.setAndReturn(instance, value);
         }
         return _setAndReturn(null, instance, value);

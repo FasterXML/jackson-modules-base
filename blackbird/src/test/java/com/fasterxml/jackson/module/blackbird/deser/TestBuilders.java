@@ -601,6 +601,47 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
+    // `setAndReturn` can be given values its property's deserializer didn't produce,
+    // such as an object id from a generator. Reflection widens some and rejects
+    // others, and the generated setters must not cast or truncate them instead.
+    @Test
+    public void testSetAndReturnWithOtherValueTypes() throws Exception
+    {
+        Object[][] cases = {
+            { "i", 'A' }, { "i", (short) 7 }, { "i", 4294967297L }, { "i", 3.9 }, { "i", "x" },
+            { "l", 'A' }, { "l", 7 }, { "l", 3.9 },
+            { "b", 1 }, { "b", "true" },
+            { "str", 1 }, { "list", "x" },
+        };
+        ObjectMapper vanilla = newVanillaJSONMapper();
+        for (Object[] c : cases) {
+            String name = (String) c[0];
+            assertTrue(_findProperty(MAPPER, name) instanceof OptimizedSettableBeanProperty, name);
+            assertEquals(_setAndReturn(vanilla, name, c[1]), _setAndReturn(MAPPER, name, c[1]),
+                    name + "=" + c[1] + " (" + c[1].getClass().getSimpleName() + ")");
+        }
+        // while values of the setter's own type still use the generated setters
+        for (Object[] c : new Object[][] { { "i", 42 }, { "l", 42L }, { "b", true }, { "str", "x" },
+                { "list", Arrays.asList("x") } }) {
+            MutableBuilder b = (MutableBuilder) _findProperty(MAPPER, (String) c[0])
+                    .setAndReturn(new MutableBuilder(), c[1]);
+            assertEquals(0, b.reflectiveCalls, String.valueOf(c[0]));
+        }
+    }
+
+    private static String _setAndReturn(ObjectMapper mapper, String name, Object value) throws Exception {
+        try {
+            MutableBuilder b = (MutableBuilder) _findProperty(mapper, name).setAndReturn(new MutableBuilder(), value);
+            return "str=" + b.str + " list=" + b.list + " i=" + b.i + " l=" + b.l + " b=" + b.b;
+        } catch (Exception e) {
+            return e.getClass().getName() + ": " + e.getMessage();
+        }
+    }
+
+    private static SettableBeanProperty _findProperty(ObjectMapper mapper, String name) throws Exception {
+        return _findProperty(mapper, MutableBuilt.class, name);
+    }
+
     private static SettableBeanProperty _findProperty(ObjectMapper mapper, Class<?> type, String name)
         throws Exception
     {
