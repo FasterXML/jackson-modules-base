@@ -6,7 +6,9 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -30,6 +32,7 @@ import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.deser.impl.MethodProperty;
+import com.fasterxml.jackson.databind.deser.impl.NullsConstantProvider;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -617,6 +620,67 @@ public class TestBuilders extends BlackbirdTestBase
     @JsonDeserialize(builder=ItemBuilder.class)
     static class ItemBuilt { }
 
+    // Setters that return null keep the current builder, for every property type
+    static final class NullReturningAllBuilder
+    {
+        long l;
+        boolean b;
+        List<String> list;
+
+        public NullReturningAllBuilder withL(long v) { l = v; return null; }
+        public NullReturningAllBuilder withB(boolean v) { b = v; return null; }
+        public NullReturningAllBuilder withList(List<String> v) { list = v; return null; }
+
+        public NullReturningAllBuilt build() { return new NullReturningAllBuilt(l, b, list); }
+    }
+
+    @JsonDeserialize(builder=NullReturningAllBuilder.class)
+    static class NullReturningAllBuilt
+    {
+        final long l;
+        final boolean b;
+        final List<String> list;
+
+        NullReturningAllBuilt(long l, boolean b, List<String> list) {
+            this.l = l;
+            this.b = b;
+            this.list = list;
+        }
+    }
+
+    // The null handling `deserializeSetAndReturn` does for an Object setter, as
+    // `MethodProperty` does
+    static final class NullsBuilder
+    {
+        List<String> empty = Arrays.asList("unset");
+        List<String> skip = Arrays.asList("keep");
+        int calls;
+
+        @JsonSetter(nulls=Nulls.AS_EMPTY)
+        public NullsBuilder withEmpty(List<String> v) { calls++; empty = v; return this; }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public NullsBuilder withSkip(List<String> v) { calls++; skip = v; return this; }
+
+        public NullsBuilt build() { return new NullsBuilt(this); }
+    }
+
+    @JsonDeserialize(builder=NullsBuilder.class)
+    static class NullsBuilt
+    {
+        final String result;
+
+        NullsBuilt(NullsBuilder b) {
+            result = "empty=" + b.empty + " skip=" + b.skip + " calls=" + b.calls;
+        }
+    }
+
+    // A public setter of a non-public builder, which Jackson makes accessible
+    static final class PackagePrivateBuilder
+    {
+        public PackagePrivateBuilder withValue(int v) { return this; }
+    }
+
     static class Values {
         final String str;
         final List<String> list;
@@ -956,6 +1020,69 @@ public class TestBuilders extends BlackbirdTestBase
     // setters accessible, including leaving public JDK setters alone
     @SuppressWarnings("deprecation")
     @Test
+    public void testNullReturningBuilderForAllTypes() throws Exception
+    {
+        for (String name : new String[] { "l", "b", "list" }) {
+            assertTrue(_findProperty(MAPPER, NullReturningAllBuilt.class, name) instanceof OptimizedSettableBeanProperty,
+                    name);
+        }
+        NullReturningAllBuilt v = MAPPER.readValue(a2q("{'l':7,'b':true,'list':['x']}"), NullReturningAllBuilt.class);
+        assertEquals(7L, v.l);
+        assertTrue(v.b);
+        assertEquals(Arrays.asList("x"), v.list);
+        // and through setAndReturn
+        NullReturningAllBuilder builder = new NullReturningAllBuilder();
+        assertSame(builder, _findProperty(MAPPER, NullReturningAllBuilt.class, "l").setAndReturn(builder, 3L));
+        assertSame(builder, _findProperty(MAPPER, NullReturningAllBuilt.class, "b").setAndReturn(builder, true));
+        assertSame(builder, _findProperty(MAPPER, NullReturningAllBuilt.class, "list")
+                .setAndReturn(builder, Collections.singletonList("y")));
+    }
+
+    @Test
+    public void testBuilderNullHandlingMatchesVanilla() throws Exception
+    {
+        ObjectMapper vanilla = JsonMapper.builder()
+                .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT).build();
+        ObjectMapper blackbird = mapperBuilder()
+                .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT).build();
+        for (String name : new String[] { "empty", "skip" }) {
+            assertTrue(_findProperty(blackbird, NullsBuilt.class, name) instanceof OptimizedSettableBeanProperty, name);
+        }
+        // explicit nulls, and empty Strings the deserializer turns into nulls
+        for (String json : new String[] { a2q("{'empty':null,'skip':null}"), a2q("{'empty':'','skip':''}") }) {
+            String expected = vanilla.readValue(json, NullsBuilt.class).result;
+            assertEquals("empty=[] skip=[keep] calls=1", expected, json);
+            assertEquals(expected, blackbird.readValue(json, NullsBuilt.class).result, json);
+        }
+    }
+
+    // `setAndReturn` with a null primitive fails as reflection does, unless nulls are skipped
+    @Test
+    public void testSetAndReturnNullPrimitives() throws Exception
+    {
+        ObjectMapper vanilla = newVanillaJSONMapper();
+        for (String name : new String[] { "i", "l", "b" }) {
+            SettableBeanProperty expectedProperty = _findProperty(vanilla, name);
+            SettableBeanProperty actualProperty = _findProperty(MAPPER, name);
+            assertTrue(actualProperty instanceof OptimizedSettableBeanProperty, name);
+            MutableBuilder expectedBuilder = new MutableBuilder();
+            MutableBuilder actualBuilder = new MutableBuilder();
+            JsonMappingException expected = assertThrows(JsonMappingException.class,
+                    () -> expectedProperty.setAndReturn(expectedBuilder, null), name);
+            JsonMappingException actual = assertThrows(JsonMappingException.class,
+                    () -> actualProperty.setAndReturn(actualBuilder, null), name);
+            assertEquals(expected.getOriginalMessage(), actual.getOriginalMessage(), name);
+            assertEquals(expected.getCause().getClass(), actual.getCause().getClass(), name);
+            assertEquals(0, actualBuilder.reflectiveCalls, name);
+
+            SettableBeanProperty skipping = actualProperty.withNullProvider(NullsConstantProvider.skipper());
+            assertTrue(skipping instanceof OptimizedSettableBeanProperty, name);
+            assertSame(actualBuilder, skipping.setAndReturn(actualBuilder, null), name);
+            assertEquals(0, actualBuilder.reflectiveCalls, name);
+        }
+    }
+
+    @Test
     public void testIsMadeAccessibleMatchesJackson() throws Exception
     {
         for (boolean canOverride : new boolean[] { true, false }) {
@@ -969,6 +1096,7 @@ public class TestBuilders extends BlackbirdTestBase
                     javax.naming.CompositeName.class.getMethod("add", String.class),
                     PublicSetterBuilder.class.getMethod("withValue", int.class),
                     ProtectedSetterBuilder.class.getDeclaredMethod("withValue", int.class),
+                    PackagePrivateBuilder.class.getMethod("withValue", int.class),
                 };
                 for (Method setter : setters) {
                     // as `BeanDeserializerBuilder` and `MethodProperty.fixAccess` do

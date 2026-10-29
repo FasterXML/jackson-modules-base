@@ -30,8 +30,10 @@ public class ReflectionHack {
 
     /**
      * Whether code defined with {@code lookup}, such as a lambda it spins, can use
-     * {@code type} where it must also access it, as in a cast. If not, that code
-     * fails when it runs, not when it is created.
+     * {@code type} where it must also access it, as in a cast: it must be the same
+     * class from the lookup class's loader (see {@link #isSameClassWithoutLoading})
+     * and accessible from it. If not, that code fails when it runs, not when it is
+     * created.
      */
     public static boolean canAccessClass(Lookup lookup, Class<?> type) {
         type = elementType(type);
@@ -39,7 +41,7 @@ public class ReflectionHack {
             return true;
         }
         try {
-            if (!resolvesTo(lookup, type)) {
+            if (!isSameClassWithoutLoading(lookup, type)) {
                 return false;
             }
             if (Java9Up.ACCESS_CLASS != null) {
@@ -53,11 +55,12 @@ public class ReflectionHack {
     }
 
     /**
-     * Whether {@code type}, which code defined with {@code lookup} only names in a
-     * descriptor (as a called method's return type) and so never loads itself, is
-     * known to be the same class from the lookup class's loader. Unlike
-     * {@link #canAccessClass} this doesn't ask that loader, which could make it
-     * define its own copy and break code that relies on it never doing so.
+     * Whether {@code type}, as code defined with {@code lookup} refers to it, is known
+     * to be the same class from the lookup class's loader, without asking that loader.
+     * Asking could make it define its own copy, which can't be undone and breaks code
+     * that relies on it never doing so. So only a class that loader defined itself
+     * qualifies, or a {@code java.*} one (which only the JDK's loaders can define);
+     * types from other loaders, even JDK {@code javax.*} ones, don't.
      */
     public static boolean isSameClassWithoutLoading(Lookup lookup, Class<?> type) {
         type = elementType(type);
@@ -76,24 +79,6 @@ public class ReflectionHack {
             type = type.getComponentType();
         }
         return type;
-    }
-
-    // That code refers to `type` by name, resolved by the lookup class's loader,
-    // which may find a different class of the same name (e.g. a child-first loader
-    // with its own copy) or none at all
-    private static boolean resolvesTo(Lookup lookup, Class<?> type) {
-        ClassLoader loader = lookup.lookupClass().getClassLoader();
-        // a class its loader defined is what that loader resolves its name to,
-        // without asking it to load anything
-        if (type.getClassLoader() == loader) {
-            return true;
-        }
-        try {
-            return Class.forName(type.getName(), false, loader) == type;
-        } catch (ClassNotFoundException | LinkageError | RuntimeException e) {
-            // including whatever else a misbehaving or closed loader throws
-            return false;
-        }
     }
 
     // Without modules, public classes are accessible from anywhere, others only
