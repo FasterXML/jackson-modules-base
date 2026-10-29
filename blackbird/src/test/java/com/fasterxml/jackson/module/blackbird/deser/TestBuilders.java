@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -1016,9 +1015,6 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
-    // The rule the generated builder setters follow is the one Jackson uses to make
-    // setters accessible, including leaving public JDK setters alone
-    @SuppressWarnings("deprecation")
     @Test
     public void testNullReturningBuilderForAllTypes() throws Exception
     {
@@ -1082,6 +1078,9 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
+    // The rule the generated builder setters follow is the one Jackson uses to make
+    // setters accessible, including leaving public JDK setters alone
+    @SuppressWarnings("deprecation")
     @Test
     public void testIsMadeAccessibleMatchesJackson() throws Exception
     {
