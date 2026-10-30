@@ -19,7 +19,8 @@ abstract class BlackbirdInjectionTestBase
 {
     static {
         // Strict mode: a codec-generation failure fails the test instead of
-        // demoting to the stock path (see CodegenFallbacks).
+        // demoting to the stock path (see CodegenFallbacks). Surefire sets
+        // this for every test class; this covers runs outside Maven.
         System.setProperty("tools.jackson.module.blackbird.failOnCodegenError", "true");
     }
 

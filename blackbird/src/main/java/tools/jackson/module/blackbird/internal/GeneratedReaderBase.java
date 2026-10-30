@@ -199,8 +199,8 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
     // resolve against it, then the unknown properties replay. For a null one
     // (a creator or problem handler returned null), as stock
     // _handleNullFromPropsBasedCreator, the unknown properties are handled
-    // first, then a reference that resolved before construction is set on
-    // null and fails there.
+    // first, and a reference that resolved before construction is dropped
+    // ([databind#6325]).
     @SuppressWarnings("unchecked")
     protected final Object _recordFinish(DeserializationContext ctxt, Object bean,
             Object referrings, Object buffered) {
@@ -218,7 +218,8 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
         return handleUnknownProperties(ctxt, bean, (TokenBuffer) buffered);
     }
 
-    // The stock BeanDeserializer.BeanReferring, which is not accessible.
+    // The stock BeanDeserializer.BeanReferring, which is not accessible; keep
+    // in step with it (BBCodecStockChecksTest compares the two).
     private static final class RecordReferring extends ReadableObjectId.Referring {
         private final DeserializationContext _context;
         private final SettableBeanProperty _prop;
@@ -234,6 +235,12 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
 
         void setBean(Object bean) {
             _bean = bean;
+            // [databind#6325]: no bean (the creator returned null) to apply
+            // the reference to, so it is dropped.
+            if (bean == null) {
+                _resolvedValue = null;
+                return;
+            }
             if (_resolvedValue != null) {
                 _prop.set(_context, _bean, _resolvedValue);
                 _resolvedValue = null;

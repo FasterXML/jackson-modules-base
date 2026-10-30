@@ -152,6 +152,10 @@ classes. Not published.</description>
           <!-- The tests assert codec engagement through the generation trace. -->
           <systemPropertyVariables>
             <blackbird.debug.codegen>true</blackbird.debug.codegen>
+            <!-- Strict mode for every test class, whatever loads first: a
+                 codec-generation failure fails the test instead of demoting
+                 to the stock path (see CodegenFallbacks). -->
+            <tools.jackson.module.blackbird.failOnCodegenError>true</tools.jackson.module.blackbird.failOnCodegenError>
           </systemPropertyVariables>
         </configuration>
       </plugin>

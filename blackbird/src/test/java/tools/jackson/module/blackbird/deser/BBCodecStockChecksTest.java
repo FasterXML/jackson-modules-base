@@ -267,8 +267,8 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
     }
 
     // A problem handler replaces the failed construction with null after the
-    // forward reference has resolved: stock applies the resolved value to
-    // the null record and fails, it does not drop it.
+    // forward reference has resolved: with no record to apply it to, stock
+    // drops the resolved value ([databind#6325]).
     @Test
     public void testForwardReferenceResolvedBeforeNullRecord() throws Exception {
         DeserializationProblemHandler toNull = new DeserializationProblemHandler() {
@@ -282,10 +282,9 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
         ObjectMapper module = mapperBuilder().addHandler(toNull).build();
         String doc = "{\"ref\":1,\"items\":[{\"id\":1,\"name\":\"a\"}],\"tag\":-1}";
         assertGeneratedReader(module, RefPair.class);
-        assertThrows(Exception.class, () -> vanilla.readValue(doc, RefPair.class));
-        assertSameOutcome(vanilla, module, doc, RefPair.class, r -> r);
-        // With an unknown property too, stock reports that first, before the
-        // resolved reference fails on the null record.
+        assertNull(vanilla.readValue(doc, RefPair.class));
+        assertNull(module.readValue(doc, RefPair.class));
+        // With an unknown property too, stock reports that first.
         String unknown = doc.replace("{\"ref\"", "{\"extra\":true,\"ref\"");
         ObjectMapper strictVanilla = vanilla.rebuild()
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).build();

@@ -231,7 +231,8 @@ public abstract class BlackbirdTestBase
     static {
         // The suite runs strict: a codec-generation failure fails the test
         // instead of demoting to the stock path, so the lenient production
-        // fallback cannot mask a generator bug here.
+        // fallback cannot mask a generator bug here. Surefire sets this for
+        // every test class; this covers runs outside Maven (an IDE).
         System.setProperty(CodegenFallbacks.FAIL_ON_ERROR_PROPERTY, "true");
     }
 

@@ -187,6 +187,12 @@ that generates a deserializer and a serializer class per bean with the JDK Class
                classes take precedence), including the release-25
                generators, which no test references at compile time. -->
           <argLine>@{argLine} --patch-module tools.jackson.module.blackbird=${project.build.outputDirectory}</argLine>
+          <systemPropertyVariables>
+            <!-- Strict mode for every test class, whatever loads first: a
+                 codec-generation failure fails the test instead of demoting
+                 to the stock path (see CodegenFallbacks). -->
+            <tools.jackson.module.blackbird.failOnCodegenError>true</tools.jackson.module.blackbird.failOnCodegenError>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
       <!-- 29-Apr-2025, tatu: SBOM generation [JSTEP-14] -->
