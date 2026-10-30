@@ -17,15 +17,19 @@ public class TestAccessFallback extends BlackbirdTestBase
         }
     }
     
+    // Getter fails when called through the generated accessor, and works when
+    // called through reflection (the fallback writer)
     static class MyBean
     {
         private String e;
+
+        int optimizedCalls, reflectiveCalls;
 
         public MyBean() { }
 
         MyBean(String e)
         {
-            setE(e);
+            this.e = e;
         }
 
         public void setE(String e)
@@ -35,8 +39,14 @@ public class TestAccessFallback extends BlackbirdTestBase
 
         public String getE()
         {
+            // nearest of `Method.invoke` or a Blackbird frame tells which path called
             for (StackTraceElement elem : new Throwable().getStackTrace()) {
-                if (elem.getClassName().contains("Access4JacksonSerializer")) {
+                if (elem.getClassName().equals("java.lang.reflect.Method")) {
+                    ++reflectiveCalls;
+                    return e;
+                }
+                if (elem.getClassName().startsWith("com.fasterxml.jackson.module.blackbird.ser.")) {
+                    ++optimizedCalls;
                     throw new BogusTestError("boom!");
                 }
             }
@@ -50,10 +60,17 @@ public class TestAccessFallback extends BlackbirdTestBase
     public void testSerializeAccess() throws Exception
     {
         ObjectMapper abMapper = newObjectMapper();
-        assertEquals(BEAN_JSON, abMapper.writeValueAsString(new MyBean("a")));
+        MyBean bean = new MyBean("a");
+        assertEquals(BEAN_JSON, abMapper.writeValueAsString(bean));
+        // the generated getter failed, and the value was then written through reflection
+        assertEquals(1, bean.optimizedCalls);
+        assertEquals(1, bean.reflectiveCalls);
 
-        // actually try again, to ensure handling works reliably
-        assertEquals(BEAN_JSON, abMapper.writeValueAsString(new MyBean("a")));
+        // after that, the writer stays on reflection
+        MyBean bean2 = new MyBean("a");
+        assertEquals(BEAN_JSON, abMapper.writeValueAsString(bean2));
+        assertEquals(0, bean2.optimizedCalls);
+        assertEquals(1, bean2.reflectiveCalls);
     }
 
     @Test
