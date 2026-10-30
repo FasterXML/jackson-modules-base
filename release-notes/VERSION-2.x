@@ -32,7 +32,8 @@ Active maintainers:
  (contributed by Parker W)
 #366: (blackbird) Skip generated setters and getters the accessor can't call
  (contributed by Parker W)
-#367: (blackbird) Don't retry failed bean setters through reflection
+#367: (blackbird) Don't retry failed bean setters through reflection; report
+  anything a setter throws as `JsonMappingException`, as plain databind does
  (contributed by Parker W)
 
 2.22.4 (17-Oct-2026)

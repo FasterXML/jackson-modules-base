@@ -32,8 +32,8 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     protected final Class<?> _receiverType;
 
     /**
-     * Whether this is a property of a builder, for which {@link #set} leaves an
-     * instance the generated setter can't take to the delegate.
+     * Whether this is a property of a builder; if so, {@link #set} passes instances
+     * the generated setter can't accept (see {@link #_receiverType}) to the delegate.
      */
     protected final boolean _forBuilder;
 
@@ -107,7 +107,8 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      */
 
     /**
-     * Helper method called when an exception is thrown from mutator: anything the
+     * Helper method called when an exception is thrown from mutator, to be thrown
+     * by the caller (which keeps the compiler aware it never returns): anything the
      * generated setter throws is reported the way {@code MethodProperty} reports it,
      * and never retried. Telling a failure of the generated accessor itself from one
      * thrown by the setter would mean guessing from the stack trace, and a retry could
@@ -118,21 +119,12 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      *
      * @since 2.9
      */
-    protected void _reportProblem(JsonParser p, Throwable e)
-        throws IOException
-    {
-        _reportProblemAndReturn(p, e);
-    }
-
-    /**
-     * Like {@link #_reportProblem}, for callers that need a return value.
-     */
-    protected Object _reportProblemAndReturn(JsonParser p, Throwable e)
+    protected IOException _reportProblem(JsonParser p, Throwable e)
         throws IOException
     {
         // `Method.invoke` wraps whatever the setter throws, and `MethodProperty`
         // translates that wrapper; doing the same keeps type, message, cause and path
-        throw _throwAsIOE(p, new InvocationTargetException(e));
+        return _throwAsIOE(p, new InvocationTargetException(e));
     }
 
     /*

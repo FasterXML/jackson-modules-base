@@ -83,7 +83,7 @@ final class SettableStringProperty
         try {
             _optimizedSetter.accept(bean, (String) value);
         } catch (Throwable e) {
-            _reportProblem(p, e);
+            throw _reportProblem(p, e);
         }
     }
 
@@ -108,7 +108,7 @@ final class SettableStringProperty
             Object result = _optimizedSetterAndReturn.apply(instance, value);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(p, e);
+            throw _reportProblem(p, e);
         }
     }
 }

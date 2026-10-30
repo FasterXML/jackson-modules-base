@@ -46,7 +46,7 @@ final class SettableIntProperty
         try {
             _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
-            _reportProblem(p, e);
+            throw _reportProblem(p, e);
         }
     }
 
@@ -76,7 +76,7 @@ final class SettableIntProperty
         try {
             _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
-            _reportProblem(null, e);
+            throw _reportProblem(null, e);
         }
     }
 
@@ -98,7 +98,7 @@ final class SettableIntProperty
             Object result = _optimizedSetterAndReturn.apply(instance, v);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(p, e);
+            throw _reportProblem(p, e);
         }
     }
 }
