@@ -1,5 +1,6 @@
 package tools.jackson.module.blackbird.deser;
 
+import java.lang.invoke.LambdaConversionException;
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -86,7 +87,7 @@ public class CreatorOptimizer
         if (defaultCreator != null) {
             MethodHandle defaultCreatorHandle = directHandle(defaultCreator.getAnnotated());
             if (defaultCreatorHandle != null) {
-                optimizedFactory = Unchecked.supplier(() ->
+                optimizedFactory = refusedAsNull(Unchecked.supplier(() ->
                     (Supplier<?>) LambdaMetafactory.metafactory(
                             _lookup,
                             "get",
@@ -94,14 +95,27 @@ public class CreatorOptimizer
                             methodType(Object.class),
                             defaultCreatorHandle,
                             defaultCreatorHandle.type())
-                        .getTarget().invokeExact())
-                    .get();
+                        .getTarget().invokeExact()));
             }
         }
         if (optimizedArgsCreator != null || optimizedFactory != null) {
             return new OptimizedValueInstantiator(_originalInstantiator, optimizedFactory, optimizedArgsCreator);
         }
         return null;
+    }
+
+    // The metafactory refuses a handle it can't crack from the lookup, as for a bean
+    // in a module the lookup's module doesn't read (like a child loader's unnamed
+    // module, when Blackbird is a named module); reflection can still call it
+    private static <T> T refusedAsNull(Supplier<T> factory) {
+        try {
+            return factory.get();
+        } catch (Exception e) {
+            if (e instanceof LambdaConversionException) {
+                return null;
+            }
+            throw e;
+        }
     }
 
     private MethodHandle directHandle(AnnotatedElement element) {

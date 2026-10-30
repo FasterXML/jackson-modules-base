@@ -1,7 +1,9 @@
 package tools.jackson.module.blackbird;
 
+import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.function.Function;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -217,6 +219,13 @@ public abstract class BlackbirdTestBase
         return JsonMapper.builder()
                 .polymorphicTypeValidator(new NoCheckSubTypeValidator())
                 .addModule(new BlackbirdModule());
+    }
+
+    // for tests that need the module to use particular lookups
+    protected static JsonMapper.Builder mapperBuilder(Function<Class<?>, MethodHandles.Lookup> lookups) {
+        return JsonMapper.builder()
+                .polymorphicTypeValidator(new NoCheckSubTypeValidator())
+                .addModule(new BlackbirdModule(lookups));
     }
 
     protected static JsonMapper newVanillaJSONMapper() {

@@ -65,6 +65,12 @@ No changes since 3.2.0
 - Removed project Android SDK level overrides, use defaults (ASDK 34)
  (affects `android-records` module's verification; was validating ASDK 26)
 
+3.1.9 (not yet released)
+
+#366: Blackbird: skip generated setters and getters the accessor can't call
+  (also fixes beans from other class loaders, when Blackbird is a named module)
+ (fix by @parker89; 3.x port by @cowtowncoder, w/ Claude code)
+
 3.1.8 (17-Oct-2026)
 
 No changes since 3.1.7

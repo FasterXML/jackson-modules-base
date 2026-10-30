@@ -1,4 +1,4 @@
-package tools.jackson.module.blackbird.tofix;
+package tools.jackson.module.blackbird.ser;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
-import tools.jackson.module.blackbird.testutil.failure.JacksonTestFailureExpected;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,10 +17,10 @@ public class TestBBClassloaders extends BlackbirdTestBase
             (TestBBClassloaders.class.getName() + "$Data")
                 .replace('.', '/').concat(".class");
 
-    // Note: looks this test: passes on JDKs OTHER than 11 for Jackson 2.x,
-    // but fails for JDK 17+ for Jackson 3.x.
+    // Used to fail with Jackson 3.x: Blackbird, a named module, can't read the child
+    // loader's module, so its generated getter (in the parent loader) couldn't refer to
+    // the bean; it's now left to reflection
     @Test
-    @JacksonTestFailureExpected
     public void testLoadInChildClassloader() throws Exception
     {
         // 19-Jan-2025, tatu: only fails on JDK 11 specifically, not on JDK 17 or later
