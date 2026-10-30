@@ -18,9 +18,9 @@ final class SettableObjectProperty
     private final Class<?> _setterValueType;
 
     public SettableObjectProperty(SettableBeanProperty src, BiConsumer<Object, Object> optimizedSetter,
-            BiFunction<Object, Object, Object> optimizedSetterAndReturn, Class<?> receiverType)
+            BiFunction<Object, Object, Object> optimizedSetterAndReturn, Class<?> receiverType, boolean forBuilder)
     {
-        super(src, receiverType);
+        super(src, receiverType, forBuilder);
         this._optimizedSetter = optimizedSetter;
         this._optimizedSetterAndReturn = optimizedSetterAndReturn;
         _setterValueType = (src.getMember() instanceof AnnotatedMethod)
@@ -30,7 +30,7 @@ final class SettableObjectProperty
 
     @Override
     protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
-        return new SettableObjectProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType);
+        return new SettableObjectProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType, _forBuilder);
     }
 
     /*

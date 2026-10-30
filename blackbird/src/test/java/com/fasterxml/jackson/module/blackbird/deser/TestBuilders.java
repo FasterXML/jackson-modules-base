@@ -310,6 +310,46 @@ public class TestBuilders extends BlackbirdTestBase
     @JsonDeserialize(builder=ThrowingBuilder.class)
     static class ThrowingBuilt { }
 
+    // With a creator property, databind buffers the properties before it and calls
+    // `set()` instead of `setAndReturn()` for them
+    static final class CreatorThrowingBuilder
+    {
+        @JsonCreator
+        CreatorThrowingBuilder(@JsonProperty("id") String id) { }
+
+        public CreatorThrowingBuilder withStr(String v) throws Exception {
+            ThrowingBuilder.fail();
+            return this;
+        }
+
+        public CreatorThrowingBuilder withList(List<String> v) throws Exception {
+            ThrowingBuilder.fail();
+            return this;
+        }
+
+        public CreatorThrowingBuilder withI(int v) throws Exception {
+            ThrowingBuilder.fail();
+            return this;
+        }
+
+        public CreatorThrowingBuilder withL(long v) throws Exception {
+            ThrowingBuilder.fail();
+            return this;
+        }
+
+        public CreatorThrowingBuilder withB(boolean v) throws Exception {
+            ThrowingBuilder.fail();
+            return this;
+        }
+
+        public CreatorThrowingBuilt build() {
+            return new CreatorThrowingBuilt();
+        }
+    }
+
+    @JsonDeserialize(builder=CreatorThrowingBuilder.class)
+    static class CreatorThrowingBuilt { }
+
     // Fails on the first call only, so a retry would succeed
     static Supplier<Throwable> flakyFailure;
     static int flakyCalls;
@@ -493,6 +533,36 @@ public class TestBuilders extends BlackbirdTestBase
         public final int value;
 
         ProtectedSetterBuilt(int value) {
+            this.value = value;
+        }
+    }
+
+    // As above, but properties before the creator property go through `set()`
+    public static final class ProtectedCreatorSetterBuilder
+    {
+        int value;
+
+        @JsonCreator
+        public ProtectedCreatorSetterBuilder(@JsonProperty("id") int id) { }
+
+        @JsonProperty("value")
+        protected ProtectedCreatorSetterBuilder withValue(int v) {
+            protectedCalls++;
+            value = v;
+            return this;
+        }
+
+        public ProtectedCreatorSetterBuilt build() {
+            return new ProtectedCreatorSetterBuilt(value);
+        }
+    }
+
+    @JsonDeserialize(builder=ProtectedCreatorSetterBuilder.class)
+    public static final class ProtectedCreatorSetterBuilt
+    {
+        public final int value;
+
+        ProtectedCreatorSetterBuilt(int value) {
             this.value = value;
         }
     }
@@ -856,6 +926,42 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
+    // The same, for properties buffered before a creator property, in either order
+    @Test
+    public void testThrowingBufferedSetterMatchesVanilla() throws Exception
+    {
+        List<Supplier<Throwable>> failures = Arrays.asList(
+                () -> new IllegalStateException("unchecked"),
+                () -> new IOException("bad value"),
+                () -> new Exception("checked"),
+                () -> new AssertionError("error"),
+                () -> new SecurityException("thrown by setter"),
+                () -> new IllegalAccessError("thrown by setter"));
+        for (boolean wrap : new boolean[] { true, false }) {
+            ObjectMapper vanilla = JsonMapper.builder()
+                    .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
+            ObjectMapper blackbird = mapperBuilder()
+                    .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
+            for (Supplier<Throwable> failure : failures) {
+                for (String prop : new String[] { "'str':'foo'", "'list':['a']",
+                        "'i':42", "'l':42", "'b':true" }) {
+                    for (String json : new String[] { a2q("{" + prop + ",'id':'a'}"),
+                            a2q("{'id':'a'," + prop + "}") }) {
+                        toThrow = failure;
+                        setterCalls = 0;
+                        Throwable expected = assertThrows(Throwable.class,
+                                () -> vanilla.readValue(json, CreatorThrowingBuilt.class));
+                        Throwable actual = assertThrows(Throwable.class,
+                                () -> blackbird.readValue(json, CreatorThrowingBuilt.class));
+                        String desc = "wrap=" + wrap + ", " + json + ", " + expected;
+                        assertEquals(2, setterCalls, desc);
+                        _assertSameFailure(desc, expected, actual);
+                    }
+                }
+            }
+        }
+    }
+
     // A setter in a hidden class looks like the generated accessor in a stack trace
     // (both are left out), but it must still run only once
     @Test
@@ -959,7 +1065,7 @@ public class TestBuilders extends BlackbirdTestBase
                         throw failure;
                     }
                 },
-                ThrowingBuilder.class);
+                ThrowingBuilder.class, true);
         toThrow = () -> new IllegalStateException("thrown by setter");
         setterCalls = 0;
 
@@ -1134,6 +1240,20 @@ public class TestBuilders extends BlackbirdTestBase
                             () -> vanilla.readValue(json, ProtectedSetterBuilt.class), desc);
                     Throwable actual = assertThrows(Throwable.class,
                             () -> blackbird.readValue(json, ProtectedSetterBuilt.class), desc);
+                    _assertSameFailure(desc + ", " + expected, expected, actual);
+                    assertEquals(0, protectedCalls, desc);
+                }
+
+                // and the same for a property buffered before the creator property
+                String bufferedJson = a2q("{'value':42,'id':1}");
+                if (canOverride) {
+                    assertEquals(42, blackbird.readValue(bufferedJson, ProtectedCreatorSetterBuilt.class).value, desc);
+                } else {
+                    protectedCalls = 0;
+                    Throwable expected = assertThrows(Throwable.class,
+                            () -> vanilla.readValue(bufferedJson, ProtectedCreatorSetterBuilt.class), desc);
+                    Throwable actual = assertThrows(Throwable.class,
+                            () -> blackbird.readValue(bufferedJson, ProtectedCreatorSetterBuilt.class), desc);
                     _assertSameFailure(desc + ", " + expected, expected, actual);
                     assertEquals(0, protectedCalls, desc);
                 }
