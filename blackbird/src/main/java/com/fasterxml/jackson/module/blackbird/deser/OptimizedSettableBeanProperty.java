@@ -98,8 +98,8 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     /**********************************************************************
      */
 
-    // Setters that return a value use the generated accessor and keep the
-    // returned builder; void setters still go through the delegate.
+    // These use the generated accessor and keep the builder it returns (the same
+    // one for a void setter); setters only reflection may call go through the delegate.
 
     @Override
     public abstract Object deserializeSetAndReturn(JsonParser jp,

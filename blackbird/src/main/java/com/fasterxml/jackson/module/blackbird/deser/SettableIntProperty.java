@@ -80,8 +80,9 @@ final class SettableIntProperty
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        // a void setter, anything else (null, or another type that reflection may widen
-        // or reject), or an instance the generated setter can't take, is left to the delegate
+        // a setter only reflection may call, anything else (null, or another type that
+        // reflection may widen or reject), or an instance the generated setter can't take,
+        // is left to the delegate
         if ((_optimizedSetterAndReturn == null) || !(value instanceof Integer)
                 || !_receiverType.isInstance(instance)) {
             return delegate.setAndReturn(instance, value);

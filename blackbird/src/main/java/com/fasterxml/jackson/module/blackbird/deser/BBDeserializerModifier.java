@@ -210,44 +210,55 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
 
         final Class<?> receiverType = setter.type().parameterType(0);
 
-        // A setter that returns a value gets a generated thunk, which plain lambdas
-        // (one class each, shared by all properties) adapt to the consumer interface;
-        // a void setter gets a generated consumer instead
+        // A setter that returns a value gets a generated thunk, which a plain lambda
+        // (one class each, shared by all properties) adapts to the consumer interface;
+        // a void setter gets a generated consumer, which one adapts to a thunk that
+        // returns null, so the same builder is kept (as `MethodProperty` does)
         if (type.isPrimitive()) {
             if (type == Integer.TYPE) {
-                ObjIntBiFunction thunk = createThunk(lookup, ObjIntBiFunction.class, int.class, setter);
-                ObjIntConsumer<Object> consumer = (thunk == null)
+                ObjIntBiFunction returning = createThunk(lookup, ObjIntBiFunction.class, int.class, setter);
+                ObjIntConsumer<Object> consumer = (returning == null)
                         ? createConsumer(lookup, ObjIntConsumer.class, int.class, setter)
-                        : (bean, v) -> thunk.apply(bean, v);
+                        : (bean, v) -> returning.apply(bean, v);
+                ObjIntBiFunction thunk = (returning != null) ? returning
+                        : (bean, v) -> { consumer.accept(bean, v); return null; };
                 newProps.add(new SettableIntProperty(prop, consumer,
                     callableByReflection ? thunk : null, receiverType, forBuilder));
             } else if (type == Long.TYPE) {
-                ObjLongBiFunction thunk = createThunk(lookup, ObjLongBiFunction.class, long.class, setter);
-                ObjLongConsumer<Object> consumer = (thunk == null)
+                ObjLongBiFunction returning = createThunk(lookup, ObjLongBiFunction.class, long.class, setter);
+                ObjLongConsumer<Object> consumer = (returning == null)
                         ? createConsumer(lookup, ObjLongConsumer.class, long.class, setter)
-                        : (bean, v) -> thunk.apply(bean, v);
+                        : (bean, v) -> returning.apply(bean, v);
+                ObjLongBiFunction thunk = (returning != null) ? returning
+                        : (bean, v) -> { consumer.accept(bean, v); return null; };
                 newProps.add(new SettableLongProperty(prop, consumer,
                     callableByReflection ? thunk : null, receiverType, forBuilder));
             } else if (type == Boolean.TYPE) {
-                ObjBooleanBiFunction thunk = createThunk(lookup, ObjBooleanBiFunction.class, boolean.class, setter);
-                ObjBooleanConsumer consumer = (thunk == null)
+                ObjBooleanBiFunction returning = createThunk(lookup, ObjBooleanBiFunction.class, boolean.class, setter);
+                ObjBooleanConsumer consumer = (returning == null)
                         ? createConsumer(lookup, ObjBooleanConsumer.class, boolean.class, setter)
-                        : (bean, v) -> thunk.apply(bean, v);
+                        : (bean, v) -> returning.apply(bean, v);
+                ObjBooleanBiFunction thunk = (returning != null) ? returning
+                        : (bean, v) -> { consumer.accept(bean, v); return null; };
                 newProps.add(new SettableBooleanProperty(prop, consumer,
                     callableByReflection ? thunk : null, receiverType, forBuilder));
             }
         } else {
-            BiFunction<Object, Object, Object> thunk = createThunk(lookup, BiFunction.class, Object.class, setter);
+            BiFunction<Object, Object, Object> returning = createThunk(lookup, BiFunction.class, Object.class, setter);
             if (type == String.class) {
-                BiConsumer<Object, String> consumer = (thunk == null)
+                BiConsumer<Object, String> consumer = (returning == null)
                         ? createConsumer(lookup, BiConsumer.class, Object.class, setter)
-                        : (bean, v) -> thunk.apply(bean, v);
+                        : (bean, v) -> returning.apply(bean, v);
+                BiFunction<Object, Object, Object> thunk = (returning != null) ? returning
+                        : (bean, v) -> { consumer.accept(bean, (String) v); return null; };
                 newProps.add(new SettableStringProperty(prop, consumer,
                     callableByReflection ? thunk : null, receiverType, forBuilder));
             } else {
-                BiConsumer<Object, Object> consumer = (thunk == null)
+                BiConsumer<Object, Object> consumer = (returning == null)
                         ? createConsumer(lookup, BiConsumer.class, Object.class, setter)
-                        : (bean, v) -> thunk.apply(bean, v);
+                        : (bean, v) -> returning.apply(bean, v);
+                BiFunction<Object, Object, Object> thunk = (returning != null) ? returning
+                        : (bean, v) -> { consumer.accept(bean, v); return null; };
                 newProps.add(new SettableObjectProperty(prop, consumer,
                     callableByReflection ? thunk : null, receiverType, type, forBuilder));
             }

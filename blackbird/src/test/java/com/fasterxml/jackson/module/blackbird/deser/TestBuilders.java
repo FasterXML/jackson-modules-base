@@ -201,7 +201,7 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
-    // Void setters keep going through the delegate
+    // Void setters use the generated accessor too, and keep the same builder
     static final class VoidSetterBuilder
     {
         String str;
@@ -209,22 +209,23 @@ public class TestBuilders extends BlackbirdTestBase
         int i;
         long l;
         boolean b;
+        int reflectiveCalls;
 
-        public void withStr(String v) { str = v; }
-        public void withList(List<String> v) { list = v; }
-        public void withI(int v) { i = v; }
-        public void withL(long v) { l = v; }
-        public void withB(boolean v) { b = v; }
+        public void withStr(String v) { str = v; reflectiveCalls += reflectiveCall(); }
+        public void withList(List<String> v) { list = v; reflectiveCalls += reflectiveCall(); }
+        public void withI(int v) { i = v; reflectiveCalls += reflectiveCall(); }
+        public void withL(long v) { l = v; reflectiveCalls += reflectiveCall(); }
+        public void withB(boolean v) { b = v; reflectiveCalls += reflectiveCall(); }
 
         public VoidSetterBuilt build() {
-            return new VoidSetterBuilt(str, list, i, l, b);
+            return new VoidSetterBuilt(str, list, i, l, b, reflectiveCalls);
         }
     }
 
     @JsonDeserialize(builder=VoidSetterBuilder.class)
     static class VoidSetterBuilt extends Values {
-        VoidSetterBuilt(String str, List<String> list, int i, long l, boolean b) {
-            super(str, list, i, l, b, 0);
+        VoidSetterBuilt(String str, List<String> list, int i, long l, boolean b, int reflectiveCalls) {
+            super(str, list, i, l, b, reflectiveCalls);
         }
     }
 
@@ -881,7 +882,11 @@ public class TestBuilders extends BlackbirdTestBase
     @Test
     public void testVoidSetterBuilder() throws Exception
     {
-        _verifyValues(MAPPER.readValue(VALUES_JSON, VoidSetterBuilt.class));
+        Values v = MAPPER.readValue(VALUES_JSON, VoidSetterBuilt.class);
+        _verifyValues(v);
+        assertEquals(0, v.reflectiveCalls);
+        // as reflection would, with Jackson's own access rules
+        assertEquals(5, newVanillaJSONMapper().readValue(VALUES_JSON, VoidSetterBuilt.class).reflectiveCalls);
     }
 
     @Test
@@ -922,7 +927,6 @@ public class TestBuilders extends BlackbirdTestBase
                 () -> new IllegalAccessError("thrown by setter"),
                 () -> savedSecurity,
                 () -> savedAccess);
-        // void setters still go through the delegate
         String voidJson = a2q("{'v':'foo'}");
         for (boolean wrap : new boolean[] { true, false }) {
             ObjectMapper vanilla = JsonMapper.builder()
@@ -941,9 +945,6 @@ public class TestBuilders extends BlackbirdTestBase
                     String desc = "wrap=" + wrap + ", " + json + ", " + expected;
                     assertEquals(2, setterCalls, desc);
                     _assertSameFailure(desc, expected, actual);
-                    if (json.equals(voidJson)) {
-                        continue;
-                    }
                     // and the Blackbird failure came from the generated accessor
                     Throwable root = actual;
                     while (root.getCause() != null) {
