@@ -15,16 +15,16 @@ final class SettableBooleanProperty
     private ObjBooleanBiFunction _optimizedSetterAndReturn;
 
     public SettableBooleanProperty(SettableBeanProperty src, ObjBooleanConsumer optimizedSetter,
-            ObjBooleanBiFunction optimizedSetterAndReturn, Class<?> receiverType)
+            ObjBooleanBiFunction optimizedSetterAndReturn, Class<?> receiverType, boolean forBuilder)
     {
-        super(src, receiverType);
+        super(src, receiverType, forBuilder);
         _optimizedSetter = optimizedSetter;
         _optimizedSetterAndReturn = optimizedSetterAndReturn;
     }
 
     @Override
     protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
-        return new SettableBooleanProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType);
+        return new SettableBooleanProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType, _forBuilder);
     }
 
     /*
@@ -48,7 +48,7 @@ final class SettableBooleanProperty
         try {
             _optimizedSetter.accept(bean, b);
         } catch (Throwable e) {
-            _reportProblem(bean, b, e);
+            _reportProblem(p, bean, b, e);
         }
     }
 
@@ -75,15 +75,16 @@ final class SettableBooleanProperty
         try {
             _optimizedSetter.accept(bean, b);
         } catch (Throwable e) {
-            _reportProblem(bean, b, e);
+            _reportProblem(null, bean, b, e);
         }
     }
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        // anything else (null, or another type that reflection may widen or reject),
-        // or an instance the generated setter can't take, is left to the delegate
-        if (!(value instanceof Boolean) || !_receiverType.isInstance(instance)) {
+        // a void setter, anything else (null, or another type that reflection may widen
+        // or reject), or an instance the generated setter can't take, is left to the delegate
+        if ((_optimizedSetterAndReturn == null) || !(value instanceof Boolean)
+                || !_receiverType.isInstance(instance)) {
             return delegate.setAndReturn(instance, value);
         }
         // not optimal (due to boxing), but better than using reflection:
@@ -91,9 +92,6 @@ final class SettableBooleanProperty
     }
 
     private Object _setAndReturn(JsonParser p, Object instance, boolean b) throws IOException {
-        if (_optimizedSetterAndReturn == null) {
-            return delegate.setAndReturn(instance, b);
-        }
         try {
             Object result = _optimizedSetterAndReturn.apply(instance, b);
             return (result == null) ? instance : result;

@@ -16,16 +16,16 @@ final class SettableLongProperty
     private ObjLongBiFunction _optimizedSetterAndReturn;
 
     public SettableLongProperty(SettableBeanProperty src, ObjLongConsumer<Object> optimizedSetter,
-            ObjLongBiFunction optimizedSetterAndReturn, Class<?> receiverType)
+            ObjLongBiFunction optimizedSetterAndReturn, Class<?> receiverType, boolean forBuilder)
     {
-        super(src, receiverType);
+        super(src, receiverType, forBuilder);
         _optimizedSetter = optimizedSetter;
         _optimizedSetterAndReturn = optimizedSetterAndReturn;
     }
 
     @Override
     protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
-        return new SettableLongProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType);
+        return new SettableLongProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType, _forBuilder);
     }
 
     /*
@@ -46,7 +46,7 @@ final class SettableLongProperty
         try {
            _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
-            _reportProblem(bean, v, e);
+            _reportProblem(p, bean, v, e);
         }
     }
 
@@ -68,15 +68,16 @@ final class SettableLongProperty
         try {
             _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
-            _reportProblem(bean, v, e);
+            _reportProblem(null, bean, v, e);
         }
     }
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        // anything else (null, or another type that reflection may widen or reject),
-        // or an instance the generated setter can't take, is left to the delegate
-        if (!(value instanceof Long) || !_receiverType.isInstance(instance)) {
+        // a void setter, anything else (null, or another type that reflection may widen
+        // or reject), or an instance the generated setter can't take, is left to the delegate
+        if ((_optimizedSetterAndReturn == null) || !(value instanceof Long)
+                || !_receiverType.isInstance(instance)) {
             return delegate.setAndReturn(instance, value);
         }
         // not optimal (due to boxing), but better than using reflection:
@@ -84,9 +85,6 @@ final class SettableLongProperty
     }
 
     private Object _setAndReturn(JsonParser p, Object instance, long v) throws IOException {
-        if (_optimizedSetterAndReturn == null) {
-            return delegate.setAndReturn(instance, v);
-        }
         try {
             Object result = _optimizedSetterAndReturn.apply(instance, v);
             return (result == null) ? instance : result;

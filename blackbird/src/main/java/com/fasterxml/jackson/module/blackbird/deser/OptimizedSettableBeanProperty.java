@@ -41,17 +41,25 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      */
     protected final Class<?> _receiverType;
 
+    /**
+     * Whether this is a property of a builder, whose setter failures are reported
+     * by {@link #_reportProblemAndReturn} from every path, {@link #set} included.
+     */
+    protected final boolean _forBuilder;
+
     /*
     /**********************************************************************
     /* Life-cycle
     /**********************************************************************
      */
 
-    protected OptimizedSettableBeanProperty(SettableBeanProperty src, Class<?> receiverType)
+    protected OptimizedSettableBeanProperty(SettableBeanProperty src, Class<?> receiverType,
+            boolean forBuilder)
     {
         super(src);
         _skipNulls = NullsConstantProvider.isSkipper(_nullProvider);
         _receiverType = receiverType;
+        _forBuilder = forBuilder;
     }
 
     // Base impl of `withName()` fine as-is:
@@ -110,13 +118,21 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 
     /**
      * Helper method called when an exception is throw from mutator, to figure
-     * out what to do.
+     * out what to do. The parser is only used for a builder's error location, and
+     * is null when called from {@link #set}.
      *
      * @since 2.9
      */
-    protected void _reportProblem(Object bean, Object value, Throwable e)
+    protected void _reportProblem(JsonParser p, Object bean, Object value, Throwable e)
         throws IOException
     {
+        // databind calls `set()` on builders too (for properties buffered before a
+        // property-based creator, or external type ids), which must behave like
+        // `setAndReturn`, regardless of the order of properties in the JSON
+        if (_forBuilder) {
+            _reportProblemAndReturn(p, value, e);
+            return;
+        }
         if ((e instanceof IllegalAccessError)
                 || (e instanceof SecurityException)) {
             _logAccessProblem(bean, e);
@@ -137,13 +153,14 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     }
 
     /**
-     * Like {@link #_reportProblem}, for {@link #setAndReturn}: anything the generated
+     * Like {@link #_reportProblem}, for builders: anything the generated
      * setter throws is reported the way {@code MethodProperty} reports it, and never
      * retried. Telling a failure of the generated accessor itself from one thrown by
      * the setter would mean guessing from the stack trace, and a retry could run the
      * setter twice; setup instead leaves the setters it can't call to reflection.
      * The parser is only used for the error location, and is null outside of
-     * {@link #deserializeSetAndReturn}, as it is for {@code MethodProperty}.
+     * {@link #deserializeSetAndReturn} and {@link #deserializeAndSet}, as it is
+     * for {@code MethodProperty}.
      */
     protected Object _reportProblemAndReturn(JsonParser p, Object value, Throwable e)
         throws IOException

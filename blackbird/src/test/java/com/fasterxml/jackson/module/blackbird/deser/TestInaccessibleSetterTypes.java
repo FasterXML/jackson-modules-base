@@ -451,7 +451,7 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
         BeanDeserializerBase deser = (BeanDeserializerBase) ctxt.findRootValueDeserializer(
                 vanilla.constructType(ModeBuilt.class));
         SettableObjectProperty prop = new SettableObjectProperty(deser.findProperty("mode"), unused, thunk,
-                setter.type().parameterType(0));
+                setter.type().parameterType(0), true);
 
         Object fast = mode.getEnumConstants()[0];
         ModeBuilderBase.setterCalls = 0;

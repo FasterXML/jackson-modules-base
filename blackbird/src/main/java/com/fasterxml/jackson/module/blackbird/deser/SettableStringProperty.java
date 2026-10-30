@@ -16,16 +16,16 @@ final class SettableStringProperty
     private final BiFunction<Object, Object, Object> _optimizedSetterAndReturn;
 
     public SettableStringProperty(SettableBeanProperty src, BiConsumer<Object, String> optimizedSetter,
-            BiFunction<Object, Object, Object> optimizedSetterAndReturn, Class<?> receiverType)
+            BiFunction<Object, Object, Object> optimizedSetterAndReturn, Class<?> receiverType, boolean forBuilder)
     {
-        super(src, receiverType);
+        super(src, receiverType, forBuilder);
         _optimizedSetter = optimizedSetter;
         _optimizedSetterAndReturn = optimizedSetterAndReturn;
     }
 
     @Override
     protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
-        return new SettableStringProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType);
+        return new SettableStringProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType, _forBuilder);
     }
 
     /*
@@ -42,7 +42,7 @@ final class SettableStringProperty
             delegate.deserializeAndSet(p, ctxt, bean);
             return;
         }
-        set(bean, p.getText());
+        _set(p, bean, p.getText());
     }
 
     @Override
@@ -62,10 +62,14 @@ final class SettableStringProperty
 
     @Override
     public void set(Object bean, Object value) throws IOException {
+        _set(null, bean, value);
+    }
+
+    private void _set(JsonParser p, Object bean, Object value) throws IOException {
         try {
             _optimizedSetter.accept(bean, (String) value);
         } catch (Throwable e) {
-            _reportProblem(bean, value, e);
+            _reportProblem(p, bean, value, e);
         }
     }
 
