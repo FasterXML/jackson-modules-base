@@ -2,10 +2,8 @@ package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -436,13 +434,8 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
         Class<?> mode = Class.forName(ModeBuilderBase.class.getPackage().getName() + ".Mode");
         MethodHandle setter = MethodHandles.lookup().unreflect(
                 ModeBuilderBase.class.getMethod("withMode", mode));
-        @SuppressWarnings("unchecked")
-        BiFunction<Object, Object, Object> thunk = (BiFunction<Object, Object, Object>) LambdaMetafactory.metafactory(
-                MethodHandles.lookup(), "apply",
-                MethodType.methodType(BiFunction.class),
-                MethodType.methodType(Object.class, Object.class, Object.class),
-                setter, setter.type())
-            .getTarget().invoke();
+        BiFunction<Object, Object, Object> thunk = BBDeserializerModifier.createThunk(
+                MethodHandles.lookup(), BiFunction.class, Object.class, setter);
         BiConsumer<Object, Object> unused = (bean, value) -> fail("not a builder setter");
 
         ObjectMapper vanilla = newVanillaJSONMapper();
@@ -451,7 +444,7 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
         BeanDeserializerBase deser = (BeanDeserializerBase) ctxt.findRootValueDeserializer(
                 vanilla.constructType(ModeBuilt.class));
         SettableObjectProperty prop = new SettableObjectProperty(deser.findProperty("mode"), unused, thunk,
-                setter.type().parameterType(0), true);
+                setter.type().parameterType(0), mode, true);
 
         Object fast = mode.getEnumConstants()[0];
         ModeBuilderBase.setterCalls = 0;

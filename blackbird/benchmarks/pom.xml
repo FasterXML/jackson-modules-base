@@ -20,10 +20,14 @@
     <!-- do_not_remove: published-with-gradle-metadata -->
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- Not part of the build, so keep this in step with the root pom: Blackbird is
+         `${project.version}`, which must be installed (`./mvnw install -pl blackbird`)
+         to benchmark the current code -->
     <parent>
         <groupId>com.fasterxml.jackson.module</groupId>
         <artifactId>jackson-modules-base</artifactId>
-        <version>2.19.0</version>
+        <version>2.23.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>jackson-module-blackbird-benchmark</artifactId>

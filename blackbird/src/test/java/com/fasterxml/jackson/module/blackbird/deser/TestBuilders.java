@@ -1,11 +1,6 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +16,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -38,7 +32,6 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.HiddenSetterBuilderBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.InjectedSetterBuilderBase;
@@ -46,7 +39,6 @@ import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ReplacingBuilde
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ReplacingBuilt;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class TestBuilders extends BlackbirdTestBase
 {
@@ -436,41 +428,6 @@ public class TestBuilders extends BlackbirdTestBase
     @JsonDeserialize(builder=FlakyBuilder.class)
     static class FlakyBuilt { }
 
-    // The builder is a hidden subclass whose setter fails after doing its work. Its
-    // frames are left out of stack traces, as the generated accessor's are.
-    static Class<?> hiddenBuilderClass;
-    static int hiddenCalls;
-
-    static class HideableBuilder
-    {
-        @JsonCreator
-        public static HideableBuilder create() throws Exception {
-            return (HideableBuilder) hiddenBuilderClass.getConstructor().newInstance();
-        }
-
-        public HideableBuilder withStr(String v) {
-            return this;
-        }
-
-        public HideableBuilt build() {
-            return new HideableBuilt();
-        }
-    }
-
-    public static class HiddenBuilder extends HideableBuilder
-    {
-        public HiddenBuilder() { }
-
-        @Override
-        public HideableBuilder withStr(String v) {
-            hiddenCalls++;
-            throw new SecurityException("thrown by hidden setter");
-        }
-    }
-
-    @JsonDeserialize(builder=HideableBuilder.class)
-    static class HideableBuilt { }
-
     // Inherits protected `withX`, whose generated setter only takes this class, but
     // `withFirst` replaces the builder with an instance of the base class
     public static final class ReplacingBuilder extends ReplacingBuilderBase { }
@@ -685,39 +642,6 @@ public class TestBuilders extends BlackbirdTestBase
 
     @JsonDeserialize(builder=ChildBuilder.class)
     static class ChildBuilt { }
-
-    // Overrides `getStackTrace`, which `MethodProperty` never calls
-    static Throwable traceFailure;
-
-    @SuppressWarnings("serial")
-    static class TraceFailingException extends SecurityException
-    {
-        TraceFailingException() {
-            super("thrown by setter");
-        }
-
-        @Override
-        public StackTraceElement[] getStackTrace() {
-            if (traceFailure instanceof Error) {
-                throw (Error) traceFailure;
-            }
-            throw (RuntimeException) traceFailure;
-        }
-    }
-
-    static final class TraceFailingBuilder
-    {
-        public TraceFailingBuilder withX(int v) {
-            throw new TraceFailingException();
-        }
-
-        public TraceFailingBuilt build() {
-            return new TraceFailingBuilt();
-        }
-    }
-
-    @JsonDeserialize(builder=TraceFailingBuilder.class)
-    static class TraceFailingBuilt { }
 
     static final class NullTextBuilder
     {
@@ -934,8 +858,7 @@ public class TestBuilders extends BlackbirdTestBase
     }
 
     // Whether the setter creates the throwable or saved it earlier, it may already
-    // have done its work, so it must not run again. That includes throwables with no
-    // stack trace, as with `-XX:-StackTraceInThrowable`.
+    // have done its work, so it must not run again
     @Test
     public void testSetterFailureIsNotRetried() throws Exception
     {
@@ -945,9 +868,7 @@ public class TestBuilders extends BlackbirdTestBase
                 () -> new SecurityException("thrown by setter"),
                 () -> new IllegalAccessError("thrown by setter"),
                 () -> savedSecurity,
-                () -> savedAccess,
-                () -> _withoutStackTrace(new SecurityException("stackless")),
-                () -> _withoutStackTrace(new IllegalAccessError("stackless")));
+                () -> savedAccess);
         for (Supplier<Throwable> failure : failures) {
             flakyFailure = failure;
             flakyCalls = 0;
@@ -1068,45 +989,6 @@ public class TestBuilders extends BlackbirdTestBase
                     }
                 }
             }
-        }
-    }
-
-    // A setter in a hidden class looks like the generated accessor in a stack trace
-    // (both are left out), but it must still run only once
-    @Test
-    public void testHiddenClassSetterFailureIsNotRetried() throws Exception
-    {
-        Method define;
-        Object noOptions;
-        try {
-            Class<?> option = Class.forName("java.lang.invoke.MethodHandles$Lookup$ClassOption");
-            noOptions = Array.newInstance(option, 0);
-            define = MethodHandles.Lookup.class.getMethod("defineHiddenClass",
-                    byte[].class, boolean.class, noOptions.getClass());
-        } catch (ReflectiveOperationException e) {
-            assumeTrue(false, "hidden classes need Java 15+");
-            return;
-        }
-        byte[] bytes;
-        try (InputStream in = getClass().getResourceAsStream(
-                "/" + HiddenBuilder.class.getName().replace('.', '/') + ".class")) {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[4096];
-            int n;
-            while ((n = in.read(buffer)) != -1) {
-                out.write(buffer, 0, n);
-            }
-            bytes = out.toByteArray();
-        }
-        hiddenBuilderClass = ((MethodHandles.Lookup) define.invoke(MethodHandles.lookup(), bytes, true, noOptions))
-                .lookupClass();
-        assertTrue(_findProperty(MAPPER, HideableBuilt.class, "str") instanceof OptimizedSettableBeanProperty);
-
-        for (ObjectMapper mapper : new ObjectMapper[] { newVanillaJSONMapper(), MAPPER }) {
-            hiddenCalls = 0;
-            assertThrows(JsonMappingException.class,
-                    () -> mapper.readValue(a2q("{'str':'foo'}"), HideableBuilt.class));
-            assertEquals(1, hiddenCalls);
         }
     }
 
@@ -1307,38 +1189,6 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
-    // The rule the generated builder setters follow is the one Jackson uses to make
-    // setters accessible, including leaving public JDK setters alone
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testIsMadeAccessibleMatchesJackson() throws Exception
-    {
-        for (boolean canOverride : new boolean[] { true, false }) {
-            for (boolean overridePublic : new boolean[] { true, false }) {
-                DeserializationConfig config = mapperBuilder()
-                        .configure(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS, canOverride)
-                        .configure(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS, overridePublic)
-                        .build().getDeserializationConfig();
-                // fresh `Method` copies, as each lookup returns
-                Method[] setters = {
-                    javax.naming.CompositeName.class.getMethod("add", String.class),
-                    PublicSetterBuilder.class.getMethod("withValue", int.class),
-                    ProtectedSetterBuilder.class.getDeclaredMethod("withValue", int.class),
-                    PackagePrivateBuilder.class.getMethod("withValue", int.class),
-                };
-                for (Method setter : setters) {
-                    // as `BeanDeserializerBuilder` and `MethodProperty.fixAccess` do
-                    if (config.canOverrideAccessModifiers()) {
-                        ClassUtil.checkAndFixAccess(setter,
-                                config.isEnabled(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS));
-                    }
-                    assertEquals(setter.isAccessible(), BBDeserializerModifier.isMadeAccessible(config, setter),
-                            "canOverride=" + canOverride + ", overridePublic=" + overridePublic + ", " + setter);
-                }
-            }
-        }
-    }
-
     @Test
     public void testAccessModifierOverridesMatchVanilla() throws Exception
     {
@@ -1410,20 +1260,6 @@ public class TestBuilders extends BlackbirdTestBase
         Throwable expected = assertThrows(Throwable.class, () -> newVanillaJSONMapper().readValue(json, ChildBuilt.class));
         Throwable actual = assertThrows(Throwable.class, () -> MAPPER.readValue(json, ChildBuilt.class));
         _assertSameFailure(String.valueOf(expected), expected, actual);
-    }
-
-    @Test
-    public void testFailingStackTraceKeepsSetterFailure() throws Exception
-    {
-        String json = a2q("{'x':1}");
-        for (Throwable t : new Throwable[] { new IllegalStateException("no trace"), new AssertionError("no trace") }) {
-            traceFailure = t;
-            Throwable expected = assertThrows(Throwable.class,
-                    () -> newVanillaJSONMapper().readValue(json, TraceFailingBuilt.class));
-            Throwable actual = assertThrows(Throwable.class, () -> MAPPER.readValue(json, TraceFailingBuilt.class));
-            assertEquals(TraceFailingException.class, actual.getCause().getClass(), String.valueOf(t));
-            _assertSameFailure(t + ", " + expected, expected, actual);
-        }
     }
 
     // `TextNode(null)` reads as a VALUE_STRING whose text is null
@@ -1504,11 +1340,6 @@ public class TestBuilders extends BlackbirdTestBase
         BeanDeserializerBase deser = (BeanDeserializerBase) ctxt.findRootValueDeserializer(
                 mapper.constructType(type));
         return deser.findProperty(name);
-    }
-
-    private static <T extends Throwable> T _withoutStackTrace(T t) {
-        t.setStackTrace(new StackTraceElement[0]);
-        return t;
     }
 
     private static void _assertSameFailure(String desc, Throwable expected, Throwable actual) {

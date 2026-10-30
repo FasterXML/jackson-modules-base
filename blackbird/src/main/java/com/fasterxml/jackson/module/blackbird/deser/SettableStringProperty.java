@@ -98,7 +98,7 @@ final class SettableStringProperty
             Object result = _optimizedSetterAndReturn.apply(instance, value);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(p, value, e);
+            return _reportProblemAndReturn(p, e);
         }
     }
 }
