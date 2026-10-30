@@ -108,6 +108,12 @@ final class SettableObjectProperty
     }
 
     private void _set(JsonParser p, Object bean, Object v) throws IOException {
+        // a value of another type (see `deserializeSetAndReturn`), or an instance the
+        // generated setter can't take, is reported as reflection reports it
+        if (((v != null) && !_setterValueType.isInstance(v)) || !_receiverType.isInstance(bean)) {
+            _reflectiveSetAndReturn(p, bean, v);
+            return;
+        }
         try {
             _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
@@ -140,8 +146,9 @@ final class SettableObjectProperty
         }
     }
 
-    // Calls the setter the way `MethodProperty.deserializeSetAndReturn` does once it
-    // has the value, so a failure is reported the same way, with the parser's location
+    // Calls the setter the way `MethodProperty.deserializeSetAndReturn` (or
+    // `deserializeAndSet`) does once it has the value, so a failure is reported the
+    // same way, with the parser's location if there is one
     private Object _reflectiveSetAndReturn(JsonParser p, Object instance, Object value)
         throws IOException
     {

@@ -644,6 +644,24 @@ public class TestBuilders extends BlackbirdTestBase
     @JsonDeserialize(builder=ChildBuilder.class)
     static class ChildBuilt { }
 
+    // The same, buffered before a creator property, so databind calls `set()`
+    static final class CreatorChildBuilder
+    {
+        @JsonCreator
+        CreatorChildBuilder(@JsonProperty("id") int id) { }
+
+        public CreatorChildBuilder withChild(Child c) {
+            return this;
+        }
+
+        public CreatorChildBuilt build() {
+            return new CreatorChildBuilt();
+        }
+    }
+
+    @JsonDeserialize(builder=CreatorChildBuilder.class)
+    static class CreatorChildBuilt { }
+
     static final class NullTextBuilder
     {
         String skipped = "default";
@@ -1261,6 +1279,58 @@ public class TestBuilders extends BlackbirdTestBase
         Throwable expected = assertThrows(Throwable.class, () -> newVanillaJSONMapper().readValue(json, ChildBuilt.class));
         Throwable actual = assertThrows(Throwable.class, () -> MAPPER.readValue(json, ChildBuilt.class));
         _assertSameFailure(String.valueOf(expected), expected, actual);
+
+        String bufferedJson = a2q("{'child':{},'id':1}");
+        expected = assertThrows(Throwable.class,
+                () -> newVanillaJSONMapper().readValue(bufferedJson, CreatorChildBuilt.class));
+        actual = assertThrows(Throwable.class, () -> MAPPER.readValue(bufferedJson, CreatorChildBuilt.class));
+        _assertSameFailure(String.valueOf(expected), expected, actual);
+    }
+
+    // `set()` with a value the setter doesn't declare (which reflection may widen or
+    // reject), or an instance it doesn't take, behaves as with reflection
+    @Test
+    public void testSetWithValueOfAnotherTypeMatchesVanilla() throws Exception
+    {
+        ObjectMapper vanilla = newVanillaJSONMapper();
+        // name, a valid value, then others
+        Object[][] cases = {
+            { "str", "foo", 42, new Object() },
+            { "list", Arrays.asList("a"), "x", 42 },
+            { "i", 1, 42L, "x", true, (short) 3, 'c' },
+            { "l", 1L, "x", 2.5, 3, (byte) 4 },
+            { "b", true, "x", 1 },
+        };
+        for (Object[] c : cases) {
+            String name = (String) c[0];
+            SettableBeanProperty expectedProp = _findProperty(vanilla, VoidSetterBuilt.class, name);
+            SettableBeanProperty actualProp = _findProperty(MAPPER, VoidSetterBuilt.class, name);
+            assertTrue(actualProp instanceof OptimizedSettableBeanProperty, name);
+            for (int i = 2; i < c.length; i++) {
+                Object value = c[i];
+                String desc = name + " = " + value + " (" + value.getClass().getSimpleName() + ")";
+                VoidSetterBuilder expectedBuilder = new VoidSetterBuilder();
+                VoidSetterBuilder actualBuilder = new VoidSetterBuilder();
+                Throwable expected = null;
+                try {
+                    expectedProp.set(expectedBuilder, value);
+                } catch (Throwable t) {
+                    expected = t;
+                }
+                if (expected == null) {
+                    actualProp.set(actualBuilder, value);
+                    assertEquals(expectedBuilder.i, actualBuilder.i, desc);
+                    assertEquals(expectedBuilder.l, actualBuilder.l, desc);
+                } else {
+                    Throwable actual = assertThrows(Throwable.class, () -> actualProp.set(actualBuilder, value), desc);
+                    _assertSameFailure(desc + ", " + expected, expected, actual);
+                }
+            }
+            Object value = c[1];
+            Throwable expected = assertThrows(Throwable.class, () -> expectedProp.set("not a builder", value), name);
+            Throwable actual = assertThrows(Throwable.class, () -> actualProp.set("not a builder", value), name);
+            _assertSameFailure(name + ", " + expected, expected, actual);
+        }
     }
 
     // `TextNode(null)` reads as a VALUE_STRING whose text is null
