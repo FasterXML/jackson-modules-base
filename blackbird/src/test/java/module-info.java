@@ -23,6 +23,7 @@ module tools.jackson.module.blackbird
     opens tools.jackson.module.blackbird;
     opens tools.jackson.module.blackbird.codegen;
     opens tools.jackson.module.blackbird.deser;
+    opens tools.jackson.module.blackbird.deser.access;
     opens tools.jackson.module.blackbird.deser.convert;
     opens tools.jackson.module.blackbird.deser.filter;
     opens tools.jackson.module.blackbird.deser.inject;

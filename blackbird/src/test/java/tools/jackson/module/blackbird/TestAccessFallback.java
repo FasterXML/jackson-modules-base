@@ -15,36 +15,37 @@ public class TestAccessFallback extends BlackbirdTestBase
         }
     }
     
+    // Getter fails when called through the generated accessor, and works when
+    // called by the fallback writer
     public static class MyBean
     {
         private String e;
+
+        int optimizedCalls, fallbackCalls;
 
         public MyBean() { }
 
         MyBean(String e)
         {
-            setE(e);
+            this.e = e;
         }
 
         public void setE(String e)
         {
-            /* 07-Mar-2015, tatu: This is bit tricky, as the exact stack trace varies
-             *   depending on how code is generated. So right now we must get the call
-             *   immediately from constructed class.
-             */
-            
-            StackTraceElement[] elems = new Throwable().getStackTrace();
-            StackTraceElement prev = elems[1];
-            if (prev.getClassName().contains("Access4JacksonDeserializer")) {
-                throw new BogusTestError("boom!");
-            }
             this.e = e;
         }
 
         public String getE()
         {
+            // nearest of databind's `BeanPropertyWriter` (which calls the getter through
+            // a method handle) or a Blackbird frame tells which path called
             for (StackTraceElement elem : new Throwable().getStackTrace()) {
-                if (elem.getClassName().contains("Access4JacksonSerializer")) {
+                if (elem.getClassName().equals("tools.jackson.databind.ser.BeanPropertyWriter")) {
+                    ++fallbackCalls;
+                    return e;
+                }
+                if (elem.getClassName().startsWith("tools.jackson.module.blackbird.ser.")) {
+                    ++optimizedCalls;
                     throw new BogusTestError("boom!");
                 }
             }
@@ -58,22 +59,17 @@ public class TestAccessFallback extends BlackbirdTestBase
     public void testSerializeAccess() throws Exception
     {
         ObjectMapper abMapper = newObjectMapper();
-        assertEquals(BEAN_JSON, abMapper.writeValueAsString(new MyBean("a")));
+        MyBean bean = new MyBean("a");
+        assertEquals(BEAN_JSON, abMapper.writeValueAsString(bean));
+        // the generated getter failed, and the value was then written by the fallback writer
+        assertEquals(1, bean.optimizedCalls);
+        assertEquals(1, bean.fallbackCalls);
 
-        // actually try again, to ensure handling works reliably
-        assertEquals(BEAN_JSON, abMapper.writeValueAsString(new MyBean("a")));
-    }
-
-    @Test
-    public void testDeserializeAccess() throws Exception
-    {
-        ObjectMapper abMapper = newObjectMapper();
-        MyBean bean = abMapper.readValue(BEAN_JSON, MyBean.class);
-        assertEquals("a", bean.getE());
-
-        // actually try again, to ensure handling works reliably
-        MyBean bean2 = abMapper.readValue(BEAN_JSON, MyBean.class);
-        assertEquals("a", bean2.getE());
+        // after that, the fallback writer is used directly
+        MyBean bean2 = new MyBean("a");
+        assertEquals(BEAN_JSON, abMapper.writeValueAsString(bean2));
+        assertEquals(0, bean2.optimizedCalls);
+        assertEquals(1, bean2.fallbackCalls);
     }
 
     // 18-Jan-2025, tatu: Fails on JDK-17/JPMS, for reasons unknown.

@@ -28,11 +28,17 @@ No changes since 3.1
 
 3.1.9 (not yet released)
 
+#363: Blackbird: `@JsonSetter(nulls = Nulls.SKIP)` ignored for properties of
+  beans with a properties-based creator
+ (reported by @jkuipers; fix by @parker89; 3.x port by @cowtowncoder, w/ Claude code)
 #364: Blackbird: use generated setters for Builder-based deserialization
  (contributed by @parker89; 3.x port by @cowtowncoder, w/ Claude code)
 #366: Blackbird: skip generated setters and getters the accessor can't call
   (also fixes beans from other class loaders, when Blackbird is a named module)
  (fix by @parker89; 3.x port by @cowtowncoder, w/ Claude code)
+#367: Blackbird: don't retry failed bean setters through reflection; report
+  anything a setter throws as plain databind does
+ (contributed by @parker89; 3.x port by @cowtowncoder, w/ Claude code)
 
 3.1.8 (17-Oct-2026)
 

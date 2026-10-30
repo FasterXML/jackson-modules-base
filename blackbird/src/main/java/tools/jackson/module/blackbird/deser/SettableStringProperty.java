@@ -41,7 +41,7 @@ final class SettableStringProperty
             delegate.deserializeAndSet(p, ctxt, bean);
             return;
         }
-        _set(ctxt, p, bean, p.getString());
+        _set(p, bean, p.getString());
     }
 
     @Override
@@ -72,14 +72,14 @@ final class SettableStringProperty
             delegate.set(ctxt, bean, value);
             return;
         }
-        _set(ctxt, ctxt.getParser(), bean, value);
+        _set(ctxt.getParser(), bean, value);
     }
 
-    private void _set(DeserializationContext ctxt, JsonParser p, Object bean, Object value) throws JacksonException {
+    private void _set(JsonParser p, Object bean, Object value) throws JacksonException {
         try {
             _optimizedSetter.accept(bean, (String) value);
         } catch (Throwable e) {
-            _reportProblem(ctxt, p, bean, value, e);
+            throw _reportProblem(p, value, e);
         }
     }
 
@@ -104,7 +104,7 @@ final class SettableStringProperty
             Object result = _optimizedSetterAndReturn.apply(instance, value);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(p, value, e);
+            throw _reportProblem(p, value, e);
         }
     }
 }
