@@ -78,7 +78,9 @@ public class WideBeanTest extends DifferentialTestBase
 
     @Test
     public void generatedMethodsStayWithinTheLimit() throws Exception {
-        System.setProperty("blackbird.debug.dumpDir", dumpDir.toString());
+        // Restored afterwards, so a dump directory given to the whole run
+        // keeps working for later tests.
+        String oldDumpDir = System.setProperty("blackbird.debug.dumpDir", dumpDir.toString());
         List<String> readers = new ArrayList<>();
         int widestReader = 0;
         int largestReader = 0;
@@ -110,7 +112,11 @@ public class WideBeanTest extends DifferentialTestBase
                 }
             }
         } finally {
-            System.clearProperty("blackbird.debug.dumpDir");
+            if (oldDumpDir == null) {
+                System.clearProperty("blackbird.debug.dumpDir");
+            } else {
+                System.setProperty("blackbird.debug.dumpDir", oldDumpDir);
+            }
         }
         // Wide beans do generate, up to near the limit, and the widest ones
         // keep the stock reader.

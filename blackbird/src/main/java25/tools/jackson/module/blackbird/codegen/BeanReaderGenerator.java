@@ -350,6 +350,8 @@ final class BeanReaderGenerator
         final boolean inputNames = builderMode && plan.inputNames();
         final int inputNameSlot = 11;
         final int startObjectSlot = 12;
+        // POJO mode: set once a name has gone to unknown-name handling.
+        final int afterUnknownSlot = 13;
         final Names names = !builderMode ? null
                 : inputNames ? new Names(inputNameSlot, startObjectSlot) : Names.NONE;
         Label propHandler = cob.newLabel();
@@ -409,6 +411,9 @@ final class BeanReaderGenerator
                .invokevirtual(base, "_injectValues", MTD_INJECT);
         }
 
+        if (!builderMode) {
+            cob.iconst_0().istore(afterUnknownSlot);
+        }
         ldcData(cob, "matcher", CD_NAME_MATCHER);
         cob.astore(matcherSlot);
 
@@ -440,15 +445,19 @@ final class BeanReaderGenerator
             String stockName = plan.stockName()[i];
             switch (prop.kind()) {
                 case STRING -> emitScalar(cob, beanSlot, parser, ctxt, "getString",
-                        MTD_GET_STRING, CD_OBJECT, stockName, store, "VALUE_STRING");
+                        MTD_GET_STRING, CD_OBJECT, stockName, builderMode,
+                        store, "VALUE_STRING");
                 case INT -> emitScalar(cob, beanSlot, parser, ctxt, "getIntValue",
-                        MTD_GET_INT, ConstantDescs.CD_int, stockName, store, "VALUE_NUMBER_INT");
+                        MTD_GET_INT, ConstantDescs.CD_int, stockName, builderMode,
+                        store, "VALUE_NUMBER_INT");
                 case LONG -> emitScalar(cob, beanSlot, parser, ctxt, "getLongValue",
-                        MTD_GET_LONG, ConstantDescs.CD_long, stockName, store, "VALUE_NUMBER_INT");
+                        MTD_GET_LONG, ConstantDescs.CD_long, stockName, builderMode,
+                        store, "VALUE_NUMBER_INT");
                 case BOOLEAN -> emitScalar(cob, beanSlot, parser, ctxt, "getBooleanValue",
-                        MTD_GET_BOOLEAN, ConstantDescs.CD_boolean, stockName, store, null);
+                        MTD_GET_BOOLEAN, ConstantDescs.CD_boolean, stockName, builderMode,
+                        store, null);
                 case CHILD -> emitChildArm(cob, beanSlot, parser, ctxt, valueSlot,
-                        plan.childName()[i], stockName, store);
+                        plan.childName()[i], stockName, builderMode, store);
                 case STOCK ->
                     // The fused match left the value token current; the stock
                     // property consumes it.
@@ -470,12 +479,25 @@ final class BeanReaderGenerator
         }
 
         cob.labelBinding(unknown);
+        if (!builderMode) {
+            cob.iconst_1().istore(afterUnknownSlot);
+        }
         cob.aload(0).aload(parser).aload(ctxt).aload(beanSlot);
         cob.invokevirtual(base, "_handleUnknown", MTD_HANDLE_UNKNOWN);
         nextNameMatch(cob, parser, matcherSlot, ixSlot);
         cob.goto_(loop);
 
         cob.labelBinding(oddToken);
+        if (!builderMode) {
+            // Stock _vanillaDeserializeWithUnknown has its own answer once an
+            // unknown name has been seen.
+            Label beforeUnknown = cob.newLabel();
+            cob.iload(afterUnknownSlot).ifeq(beforeUnknown);
+            cob.aload(0).aload(parser).aload(ctxt).aload(beanSlot)
+               .invokevirtual(base, "_unexpectedAfterUnknown", MTD_UNEXPECTED)
+               .areturn();
+            cob.labelBinding(beforeUnknown);
+        }
         cob.aload(0).aload(parser).aload(ctxt).aload(beanSlot)
            .invokevirtual(base, "_unexpectedToken", MTD_UNEXPECTED)
            .areturn();
@@ -526,6 +548,10 @@ final class BeanReaderGenerator
             cob.localVariable(inputNameSlot, "inputName", ConstantDescs.CD_String,
                     scopeStart, scopeEnd);
             cob.localVariable(startObjectSlot, "startObject", ConstantDescs.CD_boolean,
+                    scopeStart, scopeEnd);
+        }
+        if (!builderMode) {
+            cob.localVariable(afterUnknownSlot, "afterUnknown", ConstantDescs.CD_boolean,
                     scopeStart, scopeEnd);
         }
     }
@@ -594,8 +620,11 @@ final class BeanReaderGenerator
     // keeps its stock arm whatever the token), only the stock call remains.
     private static void emitScalar(CodeBuilder cob, int receiverSlot, int parser, int ctxt,
             String getter, MethodTypeDesc getterType, ClassDesc erasedDesc,
-            String stockName, Store store, String expectedToken) {
-        boolean builderMode = (store != null) && store.builderMode();
+            String stockName, boolean builderMode, Store store, String expectedToken) {
+        if (store == null) {
+            emitStockSet(cob, parser, ctxt, receiverSlot, stockName, builderMode);
+            return;
+        }
         Label useStock = cob.newLabel();
         Label done = cob.newLabel();
         emitExpectedTokenCheck(cob, parser, expectedToken, useStock);
@@ -616,7 +645,12 @@ final class BeanReaderGenerator
     // stock deserializeAndSet gives it ([databind#2023]): skipped for a
     // skipping null provider, otherwise replaced by the provider's value.
     private static void emitChildArm(CodeBuilder cob, int receiverSlot, int parser, int ctxt,
-            int valueSlot, String childName, String stockName, Store store) {
+            int valueSlot, String childName, String stockName, boolean builderMode,
+            Store store) {
+        if (store == null) {
+            emitStockSet(cob, parser, ctxt, receiverSlot, stockName, builderMode);
+            return;
+        }
         Label childStock = cob.newLabel();
         Label childDone = cob.newLabel();
         Label haveValue = cob.newLabel();
@@ -639,7 +673,7 @@ final class BeanReaderGenerator
         emitStore(cob, store, receiverSlot, CD_OBJECT);
         cob.goto_(childDone);
         cob.labelBinding(childStock);
-        emitStockSet(cob, parser, ctxt, receiverSlot, stockName, store.builderMode());
+        emitStockSet(cob, parser, ctxt, receiverSlot, stockName, builderMode);
         cob.labelBinding(childDone);
     }
 
