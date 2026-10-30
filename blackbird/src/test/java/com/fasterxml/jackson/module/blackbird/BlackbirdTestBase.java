@@ -3,6 +3,7 @@ package com.fasterxml.jackson.module.blackbird;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
+import java.util.function.Function;
 
 import com.fasterxml.jackson.core.*;
 
@@ -192,6 +193,12 @@ public abstract class BlackbirdTestBase
     protected static JsonMapper.Builder mapperBuilder() {
         return JsonMapper.builder()
                 .addModule(new BlackbirdModule(MethodHandles::lookup));
+    }
+
+    // for tests that need the module to use particular lookups
+    protected static JsonMapper.Builder mapperBuilder(Function<Class<?>, MethodHandles.Lookup> lookups) {
+        return JsonMapper.builder()
+                .addModule(new BlackbirdModule(lookups));
     }
 
     protected static JsonMapper newVanillaJSONMapper() {

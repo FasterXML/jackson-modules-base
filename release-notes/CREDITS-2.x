@@ -166,3 +166,8 @@ Apoorva Manjunath (@apoorvam)
 * Reported, contributed fix for #285: `JacksonBlackbirdAccess` Class access
   exception with Groovy Script serialization using `BlackbirdModule`
  (2.19.0)
+
+Parker Winchester (@parker89)
+
+* Contributed #366: (blackbird) Skip generated setters and getters the accessor can't call
+ (2.23.0)
