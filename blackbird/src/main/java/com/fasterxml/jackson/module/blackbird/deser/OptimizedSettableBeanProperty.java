@@ -2,8 +2,6 @@ package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
 
 import com.fasterxml.jackson.core.*;
 
@@ -92,8 +90,8 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     /**********************************************************************
      */
 
-    // Setters that return a value use the generated accessor and keep the
-    // returned builder; void setters still go through the delegate.
+    // These use the generated accessor and keep the builder it returns (the same
+    // one for a void setter); setters only reflection may call go through the delegate.
 
     @Override
     public abstract Object deserializeSetAndReturn(JsonParser jp,
@@ -122,7 +120,7 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         // property-based creator, or external type ids), which must behave like
         // `setAndReturn`, regardless of the order of properties in the JSON
         if (_forBuilder) {
-            _reportProblemAndReturn(p, value, e);
+            _reportProblemAndReturn(p, e);
             return;
         }
         // Never retried, as the setter may already have run (see
@@ -156,35 +154,12 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      * {@link #deserializeSetAndReturn} and {@link #deserializeAndSet}, as it is
      * for {@code MethodProperty}.
      */
-    protected Object _reportProblemAndReturn(JsonParser p, Object value, Throwable e)
+    protected Object _reportProblemAndReturn(JsonParser p, Throwable e)
         throws IOException
     {
         // `Method.invoke` wraps whatever the setter throws, and `MethodProperty`
         // translates that wrapper; doing the same keeps type, message, cause and path
-        _throwAsIOE(p, new InvocationTargetException(e), value);
-        return null; // never gets here
-    }
-
-    /**
-     * Calls the setter the way {@code MethodProperty.deserializeSetAndReturn} does once
-     * it has the value, so a failure is reported the same way, with the parser's
-     * location if {@code p} isn't null. For a value or builder the generated setter
-     * can't take, once the value has been read.
-     */
-    protected Object _reflectiveSetAndReturn(JsonParser p, Object instance, Object value)
-        throws IOException
-    {
-        Member setter = getMember().getMember();
-        if (!(setter instanceof Method)) {
-            return delegate.setAndReturn(instance, value);
-        }
-        try {
-            Object result = ((Method) setter).invoke(instance, value);
-            return (result == null) ? instance : result;
-        } catch (Exception e) {
-            _throwAsIOE(p, e, value);
-            return null; // never gets here
-        }
+        throw _throwAsIOE(p, new InvocationTargetException(e));
     }
 
     /*

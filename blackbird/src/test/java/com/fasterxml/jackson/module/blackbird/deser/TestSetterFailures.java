@@ -397,7 +397,7 @@ public class TestSetterFailures extends BlackbirdTestBase
         BiConsumer<Object, Object> accessor = voidAccessor(setter);
         SettableObjectProperty property = new SettableObjectProperty(
                 property(newVanillaJSONMapper(), bean.getClass(), "voidValue"), accessor, null,
-                InaccessibleSetterValue.class, false);
+                InaccessibleSetterValue.class, setter.getParameterTypes()[0], false);
 
         // The generated accessor cannot cast to the package-private parameter type;
         // that is reported like the setter's failure, and the setter never runs
@@ -413,12 +413,12 @@ public class TestSetterFailures extends BlackbirdTestBase
         Object value = InaccessibleSetterValue.newValue();
         Method setter = InaccessibleSetterValue.class.getMethod("setFluentValue", value.getClass());
         BiFunction<Object, Object, Object> thunk = returningAccessor(setter);
-        BiConsumer<Object, Object> accessor = (instance, v) -> BBDeserializerModifier.trampoline(thunk, instance, v);
+        BiConsumer<Object, Object> accessor = (instance, v) -> thunk.apply(instance, v);
         SettableObjectProperty property = new SettableObjectProperty(
                 property(newVanillaJSONMapper(), bean.getClass(), "fluentValue"), accessor, thunk,
-                InaccessibleSetterValue.class, false);
+                InaccessibleSetterValue.class, setter.getParameterTypes()[0], false);
 
-        // the same through the trampoline that fluent setters on regular beans use
+        // the same through the wrapper that fluent setters on regular beans use
         assertThrows(IllegalAccessError.class, () -> accessor.accept(bean, value));
         JsonMappingException e = assertThrows(JsonMappingException.class, () -> property.set(bean, value));
         assertEquals(IllegalAccessError.class, e.getCause().getClass());

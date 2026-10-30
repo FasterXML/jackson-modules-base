@@ -1,13 +1,13 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 
 final class SettableObjectProperty
     extends OptimizedSettableBeanProperty<SettableObjectProperty>
@@ -18,19 +18,19 @@ final class SettableObjectProperty
     private final Class<?> _setterValueType;
 
     public SettableObjectProperty(SettableBeanProperty src, BiConsumer<Object, Object> optimizedSetter,
-            BiFunction<Object, Object, Object> optimizedSetterAndReturn, Class<?> receiverType, boolean forBuilder)
+            BiFunction<Object, Object, Object> optimizedSetterAndReturn, Class<?> receiverType,
+            Class<?> setterValueType, boolean forBuilder)
     {
         super(src, receiverType, forBuilder);
         this._optimizedSetter = optimizedSetter;
         this._optimizedSetterAndReturn = optimizedSetterAndReturn;
-        _setterValueType = (src.getMember() instanceof AnnotatedMethod)
-                ? ((AnnotatedMethod) src.getMember()).getRawParameterType(0)
-                : Object.class;
+        _setterValueType = setterValueType;
     }
 
     @Override
     protected SettableBeanProperty withDelegate(SettableBeanProperty del) {
-        return new SettableObjectProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType, _forBuilder);
+        return new SettableObjectProperty(del, _optimizedSetter, _optimizedSetterAndReturn, _receiverType,
+                _setterValueType, _forBuilder);
     }
 
     /*
@@ -101,8 +101,8 @@ final class SettableObjectProperty
 
     @Override
     public void set(Object bean, Object v) throws IOException {
-        // as in `MethodProperty`, only here: `deserializeAndSet` already skipped the
-        // nulls it should
+        // as in `MethodProperty`, only here: `deserializeAndSet` already skipped
+        // the nulls it should
         if ((v == null) && _skipNulls) {
             return;
         }
@@ -110,6 +110,13 @@ final class SettableObjectProperty
     }
 
     private void _set(JsonParser p, Object bean, Object v) throws IOException {
+        // a value of another type (see `deserializeSetAndReturn`), or a builder the
+        // generated setter can't take, is reported as reflection reports it
+        if (((v != null) && !_setterValueType.isInstance(v))
+                || (_forBuilder && !_receiverType.isInstance(bean))) {
+            _reflectiveSetAndReturn(p, bean, v);
+            return;
+        }
         try {
             _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
@@ -138,7 +145,22 @@ final class SettableObjectProperty
             Object result = _optimizedSetterAndReturn.apply(instance, value);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(p, value, e);
+            return _reportProblemAndReturn(p, e);
+        }
+    }
+
+    // Calls the setter the way `MethodProperty.deserializeSetAndReturn` (or
+    // `deserializeAndSet`) does once it has the value, so a failure is reported the
+    // same way, with the parser's location if there is one
+    private Object _reflectiveSetAndReturn(JsonParser p, Object instance, Object value)
+        throws IOException
+    {
+        try {
+            Object result = ((Method) getMember().getMember()).invoke(instance, value);
+            return (result == null) ? instance : result;
+        } catch (Exception e) {
+            _throwAsIOE(p, e, value);
+            return null; // never gets here
         }
     }
 }

@@ -65,9 +65,15 @@ final class SettableStringProperty
 
     @Override
     public void set(Object bean, Object value) throws IOException {
-        // as in `MethodProperty`, only here: `deserializeAndSet` already skipped the
-        // nulls it should
+        // as in `MethodProperty`
         if ((value == null) && _skipNulls) {
+            return;
+        }
+        // a value of another type, or a builder the generated setter can't take,
+        // is left to the delegate, which reports it
+        if (((value != null) && !(value instanceof String))
+                || (_forBuilder && !_receiverType.isInstance(bean))) {
+            delegate.set(bean, value);
             return;
         }
         _set(null, bean, value);
@@ -102,7 +108,7 @@ final class SettableStringProperty
             Object result = _optimizedSetterAndReturn.apply(instance, value);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(p, value, e);
+            return _reportProblemAndReturn(p, e);
         }
     }
 }

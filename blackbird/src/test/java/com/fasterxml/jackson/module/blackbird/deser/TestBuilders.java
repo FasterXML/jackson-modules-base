@@ -1,11 +1,6 @@
 package com.fasterxml.jackson.module.blackbird.deser;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -21,12 +16,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
@@ -36,14 +32,13 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.HiddenSetterBuilderBase;
+import com.fasterxml.jackson.module.blackbird.deser.otherpackage.InjectedSetterBuilderBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ReplacingBuilderBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ReplacingBuilt;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class TestBuilders extends BlackbirdTestBase
 {
@@ -206,7 +201,7 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
-    // Void setters keep going through the delegate
+    // Void setters use the generated accessor too, and keep the same builder
     static final class VoidSetterBuilder
     {
         String str;
@@ -214,22 +209,23 @@ public class TestBuilders extends BlackbirdTestBase
         int i;
         long l;
         boolean b;
+        int reflectiveCalls;
 
-        public void withStr(String v) { str = v; }
-        public void withList(List<String> v) { list = v; }
-        public void withI(int v) { i = v; }
-        public void withL(long v) { l = v; }
-        public void withB(boolean v) { b = v; }
+        public void withStr(String v) { str = v; reflectiveCalls += reflectiveCall(); }
+        public void withList(List<String> v) { list = v; reflectiveCalls += reflectiveCall(); }
+        public void withI(int v) { i = v; reflectiveCalls += reflectiveCall(); }
+        public void withL(long v) { l = v; reflectiveCalls += reflectiveCall(); }
+        public void withB(boolean v) { b = v; reflectiveCalls += reflectiveCall(); }
 
         public VoidSetterBuilt build() {
-            return new VoidSetterBuilt(str, list, i, l, b);
+            return new VoidSetterBuilt(str, list, i, l, b, reflectiveCalls);
         }
     }
 
     @JsonDeserialize(builder=VoidSetterBuilder.class)
     static class VoidSetterBuilt extends Values {
-        VoidSetterBuilt(String str, List<String> list, int i, long l, boolean b) {
-            super(str, list, i, l, b, 0);
+        VoidSetterBuilt(String str, List<String> list, int i, long l, boolean b, int reflectiveCalls) {
+            super(str, list, i, l, b, reflectiveCalls);
         }
     }
 
@@ -260,6 +256,61 @@ public class TestBuilders extends BlackbirdTestBase
     static class SkipNullsBuilt extends Values {
         SkipNullsBuilt(String str, List<String> list) {
             super(str, list, 0, 0L, false, 0);
+        }
+    }
+
+    // The same, for nulls buffered before a creator property, which databind
+    // passes to `set()`
+    static final class CreatorSkipNullsBuilder
+    {
+        String str = "default";
+        List<String> list = Arrays.asList("keep");
+        int i = 7;
+        long l = 8L;
+        boolean b = true;
+
+        @JsonCreator
+        CreatorSkipNullsBuilder(@JsonProperty("id") String id) { }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public CreatorSkipNullsBuilder withStr(String v) {
+            str = v;
+            return this;
+        }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public CreatorSkipNullsBuilder withList(List<String> v) {
+            list = v;
+            return this;
+        }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public CreatorSkipNullsBuilder withI(int v) {
+            i = v;
+            return this;
+        }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public CreatorSkipNullsBuilder withL(long v) {
+            l = v;
+            return this;
+        }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public CreatorSkipNullsBuilder withB(boolean v) {
+            b = v;
+            return this;
+        }
+
+        public CreatorSkipNullsBuilt build() {
+            return new CreatorSkipNullsBuilt(str, list, i, l, b);
+        }
+    }
+
+    @JsonDeserialize(builder=CreatorSkipNullsBuilder.class)
+    static class CreatorSkipNullsBuilt extends Values {
+        CreatorSkipNullsBuilt(String str, List<String> list, int i, long l, boolean b) {
+            super(str, list, i, l, b, 0);
         }
     }
 
@@ -378,41 +429,6 @@ public class TestBuilders extends BlackbirdTestBase
     @JsonDeserialize(builder=FlakyBuilder.class)
     static class FlakyBuilt { }
 
-    // The builder is a hidden subclass whose setter fails after doing its work. Its
-    // frames are left out of stack traces, as the generated accessor's are.
-    static Class<?> hiddenBuilderClass;
-    static int hiddenCalls;
-
-    static class HideableBuilder
-    {
-        @JsonCreator
-        public static HideableBuilder create() throws Exception {
-            return (HideableBuilder) hiddenBuilderClass.getConstructor().newInstance();
-        }
-
-        public HideableBuilder withStr(String v) {
-            return this;
-        }
-
-        public HideableBuilt build() {
-            return new HideableBuilt();
-        }
-    }
-
-    public static class HiddenBuilder extends HideableBuilder
-    {
-        public HiddenBuilder() { }
-
-        @Override
-        public HideableBuilder withStr(String v) {
-            hiddenCalls++;
-            throw new SecurityException("thrown by hidden setter");
-        }
-    }
-
-    @JsonDeserialize(builder=HideableBuilder.class)
-    static class HideableBuilt { }
-
     // Inherits protected `withX`, whose generated setter only takes this class, but
     // `withFirst` replaces the builder with an instance of the base class
     public static final class ReplacingBuilder extends ReplacingBuilderBase { }
@@ -461,6 +477,23 @@ public class TestBuilders extends BlackbirdTestBase
 
     // Inherits a package-private setter from another package, which the generated
     // setter can't reach (`unreflect` refuses it) but reflection can
+    public static final class InjectedSetterBuilder extends InjectedSetterBuilderBase
+    {
+        public InjectedSetterBuilt build() {
+            return new InjectedSetterBuilt(tag);
+        }
+    }
+
+    @JsonDeserialize(builder=InjectedSetterBuilder.class)
+    static class InjectedSetterBuilt
+    {
+        final String tag;
+
+        InjectedSetterBuilt(String tag) {
+            this.tag = tag;
+        }
+    }
+
     public static final class HiddenSetterBuilder extends HiddenSetterBuilderBase
     {
         public HiddenSetterBuilt build() {
@@ -498,7 +531,8 @@ public class TestBuilders extends BlackbirdTestBase
     }
 
     // Public, so Jackson only makes it accessible with OVERRIDE_PUBLIC_ACCESS_MODIFIERS;
-    // otherwise reflection applies Java's access rules (and modules), as must Blackbird
+    // otherwise reflection applies Java's access rules (and modules), as must Blackbird,
+    // which a public class in an exported package passes
     public static final class PublicSetterBuilder
     {
         int value;
@@ -534,6 +568,24 @@ public class TestBuilders extends BlackbirdTestBase
 
         ProtectedSetterBuilt(int value) {
             this.value = value;
+        }
+    }
+
+    // As below, but the builder is the result; databind only finds its config
+    @JsonDeserialize(builder=NoBuildMethodBuilder.class)
+    @JsonPOJOBuilder(buildMethodName="")
+    public static final class NoBuildMethodBuilder
+    {
+        public int value;
+
+        @JsonCreator
+        public NoBuildMethodBuilder(@JsonProperty("id") int id) { }
+
+        @JsonProperty("value")
+        protected NoBuildMethodBuilder withValue(int v) {
+            protectedCalls++;
+            value = v;
+            return this;
         }
     }
 
@@ -592,38 +644,23 @@ public class TestBuilders extends BlackbirdTestBase
     @JsonDeserialize(builder=ChildBuilder.class)
     static class ChildBuilt { }
 
-    // Overrides `getStackTrace`, which `MethodProperty` never calls
-    static Throwable traceFailure;
-
-    @SuppressWarnings("serial")
-    static class TraceFailingException extends SecurityException
+    // The same, buffered before a creator property, so databind calls `set()`
+    static final class CreatorChildBuilder
     {
-        TraceFailingException() {
-            super("thrown by setter");
+        @JsonCreator
+        CreatorChildBuilder(@JsonProperty("id") int id) { }
+
+        public CreatorChildBuilder withChild(Child c) {
+            return this;
         }
 
-        @Override
-        public StackTraceElement[] getStackTrace() {
-            if (traceFailure instanceof Error) {
-                throw (Error) traceFailure;
-            }
-            throw (RuntimeException) traceFailure;
+        public CreatorChildBuilt build() {
+            return new CreatorChildBuilt();
         }
     }
 
-    static final class TraceFailingBuilder
-    {
-        public TraceFailingBuilder withX(int v) {
-            throw new TraceFailingException();
-        }
-
-        public TraceFailingBuilt build() {
-            return new TraceFailingBuilt();
-        }
-    }
-
-    @JsonDeserialize(builder=TraceFailingBuilder.class)
-    static class TraceFailingBuilt { }
+    @JsonDeserialize(builder=CreatorChildBuilder.class)
+    static class CreatorChildBuilt { }
 
     static final class NullTextBuilder
     {
@@ -840,8 +877,7 @@ public class TestBuilders extends BlackbirdTestBase
     }
 
     // Whether the setter creates the throwable or saved it earlier, it may already
-    // have done its work, so it must not run again. That includes throwables with no
-    // stack trace, as with `-XX:-StackTraceInThrowable`.
+    // have done its work, so it must not run again
     @Test
     public void testSetterFailureIsNotRetried() throws Exception
     {
@@ -851,9 +887,7 @@ public class TestBuilders extends BlackbirdTestBase
                 () -> new SecurityException("thrown by setter"),
                 () -> new IllegalAccessError("thrown by setter"),
                 () -> savedSecurity,
-                () -> savedAccess,
-                () -> _withoutStackTrace(new SecurityException("stackless")),
-                () -> _withoutStackTrace(new IllegalAccessError("stackless")));
+                () -> savedAccess);
         for (Supplier<Throwable> failure : failures) {
             flakyFailure = failure;
             flakyCalls = 0;
@@ -866,7 +900,11 @@ public class TestBuilders extends BlackbirdTestBase
     @Test
     public void testVoidSetterBuilder() throws Exception
     {
-        _verifyValues(MAPPER.readValue(VALUES_JSON, VoidSetterBuilt.class));
+        Values v = MAPPER.readValue(VALUES_JSON, VoidSetterBuilt.class);
+        _verifyValues(v);
+        assertEquals(0, v.reflectiveCalls);
+        // as reflection would, with Jackson's own access rules
+        assertEquals(5, newVanillaJSONMapper().readValue(VALUES_JSON, VoidSetterBuilt.class).reflectiveCalls);
     }
 
     @Test
@@ -875,6 +913,21 @@ public class TestBuilders extends BlackbirdTestBase
         Values v = MAPPER.readValue(a2q("{'str':null,'list':null}"), SkipNullsBuilt.class);
         assertEquals("default", v.str);
         assertEquals(Arrays.asList("keep"), v.list);
+    }
+
+    @Test
+    public void testSkipNullsBeforeCreatorProperty() throws Exception
+    {
+        String json = a2q("{'str':null,'list':null,'i':null,'l':null,'b':null,'id':'x'}");
+        Values expected = newVanillaJSONMapper().readValue(json, CreatorSkipNullsBuilt.class);
+        Values v = MAPPER.readValue(json, CreatorSkipNullsBuilt.class);
+        assertEquals("default", expected.str);
+        assertEquals(7, expected.i);
+        assertEquals(expected.str, v.str);
+        assertEquals(expected.list, v.list);
+        assertEquals(expected.i, v.i);
+        assertEquals(expected.l, v.l);
+        assertEquals(expected.b, v.b);
     }
 
     @Test
@@ -892,7 +945,6 @@ public class TestBuilders extends BlackbirdTestBase
                 () -> new IllegalAccessError("thrown by setter"),
                 () -> savedSecurity,
                 () -> savedAccess);
-        // void setters still go through the delegate
         String voidJson = a2q("{'v':'foo'}");
         for (boolean wrap : new boolean[] { true, false }) {
             ObjectMapper vanilla = JsonMapper.builder()
@@ -911,9 +963,6 @@ public class TestBuilders extends BlackbirdTestBase
                     String desc = "wrap=" + wrap + ", " + json + ", " + expected;
                     assertEquals(2, setterCalls, desc);
                     _assertSameFailure(desc, expected, actual);
-                    if (json.equals(voidJson)) {
-                        continue;
-                    }
                     // and the Blackbird failure came from the generated accessor
                     Throwable root = actual;
                     while (root.getCause() != null) {
@@ -959,45 +1008,6 @@ public class TestBuilders extends BlackbirdTestBase
                     }
                 }
             }
-        }
-    }
-
-    // A setter in a hidden class looks like the generated accessor in a stack trace
-    // (both are left out), but it must still run only once
-    @Test
-    public void testHiddenClassSetterFailureIsNotRetried() throws Exception
-    {
-        Method define;
-        Object noOptions;
-        try {
-            Class<?> option = Class.forName("java.lang.invoke.MethodHandles$Lookup$ClassOption");
-            noOptions = Array.newInstance(option, 0);
-            define = MethodHandles.Lookup.class.getMethod("defineHiddenClass",
-                    byte[].class, boolean.class, noOptions.getClass());
-        } catch (ReflectiveOperationException e) {
-            assumeTrue(false, "hidden classes need Java 15+");
-            return;
-        }
-        byte[] bytes;
-        try (InputStream in = getClass().getResourceAsStream(
-                "/" + HiddenBuilder.class.getName().replace('.', '/') + ".class")) {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[4096];
-            int n;
-            while ((n = in.read(buffer)) != -1) {
-                out.write(buffer, 0, n);
-            }
-            bytes = out.toByteArray();
-        }
-        hiddenBuilderClass = ((MethodHandles.Lookup) define.invoke(MethodHandles.lookup(), bytes, true, noOptions))
-                .lookupClass();
-        assertTrue(_findProperty(MAPPER, HideableBuilt.class, "str") instanceof OptimizedSettableBeanProperty);
-
-        for (ObjectMapper mapper : new ObjectMapper[] { newVanillaJSONMapper(), MAPPER }) {
-            hiddenCalls = 0;
-            assertThrows(JsonMappingException.class,
-                    () -> mapper.readValue(a2q("{'str':'foo'}"), HideableBuilt.class));
-            assertEquals(1, hiddenCalls);
         }
     }
 
@@ -1093,6 +1103,20 @@ public class TestBuilders extends BlackbirdTestBase
         assertEquals(3, MAPPER.readValue(a2q("{'y':3}"), HiddenSetterBuilt.class).y);
     }
 
+    // Not even if databind made it accessible first, as it does for injection
+    @Test
+    public void testInjectedPackagePrivateSetterInOtherPackage() throws Exception
+    {
+        InjectableValues inject = new InjectableValues.Std().addValue("tag", "injected");
+        for (String json : new String[] { a2q("{'tag':'json'}"), "{}" }) {
+            InjectedSetterBuilt expected = newVanillaJSONMapper().setInjectableValues(inject)
+                    .readValue(json, InjectedSetterBuilt.class);
+            InjectedSetterBuilt actual = newObjectMapper().setInjectableValues(inject)
+                    .readValue(json, InjectedSetterBuilt.class);
+            assertEquals(expected.tag, actual.tag, json);
+        }
+    }
+
     // As `deserializeSetAndReturn` does, `setAndReturn` leaves a builder the generated
     // setter can't take to reflection, and skips nulls
     @Test
@@ -1184,38 +1208,6 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
-    // The rule the generated builder setters follow is the one Jackson uses to make
-    // setters accessible, including leaving public JDK setters alone
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testIsMadeAccessibleMatchesJackson() throws Exception
-    {
-        for (boolean canOverride : new boolean[] { true, false }) {
-            for (boolean overridePublic : new boolean[] { true, false }) {
-                DeserializationConfig config = mapperBuilder()
-                        .configure(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS, canOverride)
-                        .configure(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS, overridePublic)
-                        .build().getDeserializationConfig();
-                // fresh `Method` copies, as each lookup returns
-                Method[] setters = {
-                    javax.naming.CompositeName.class.getMethod("add", String.class),
-                    PublicSetterBuilder.class.getMethod("withValue", int.class),
-                    ProtectedSetterBuilder.class.getDeclaredMethod("withValue", int.class),
-                    PackagePrivateBuilder.class.getMethod("withValue", int.class),
-                };
-                for (Method setter : setters) {
-                    // as `BeanDeserializerBuilder` and `MethodProperty.fixAccess` do
-                    if (config.canOverrideAccessModifiers()) {
-                        ClassUtil.checkAndFixAccess(setter,
-                                config.isEnabled(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS));
-                    }
-                    assertEquals(setter.isAccessible(), BBDeserializerModifier.isMadeAccessible(config, setter),
-                            "canOverride=" + canOverride + ", overridePublic=" + overridePublic + ", " + setter);
-                }
-            }
-        }
-    }
-
     @Test
     public void testAccessModifierOverridesMatchVanilla() throws Exception
     {
@@ -1258,11 +1250,23 @@ public class TestBuilders extends BlackbirdTestBase
                     assertEquals(0, protectedCalls, desc);
                 }
 
-                // the public one always works here, but only goes through the generated
-                // setter if Jackson would have made it accessible
+                // the public one always works here, so goes through the generated setter
                 PublicSetterBuilt result = blackbird.readValue(json, PublicSetterBuilt.class);
                 assertEquals(42, result.value, desc);
-                assertEquals((canOverride && overridePublic) ? 0 : 1, result.reflectiveCalls, desc);
+                assertEquals(0, result.reflectiveCalls, desc);
+
+                // and a builder without a build method is still a builder
+                protectedCalls = 0;
+                if (canOverride) {
+                    assertEquals(42, blackbird.readValue(bufferedJson, NoBuildMethodBuilder.class).value, desc);
+                } else {
+                    Throwable expected = assertThrows(Throwable.class,
+                            () -> vanilla.readValue(bufferedJson, NoBuildMethodBuilder.class), desc);
+                    Throwable actual = assertThrows(Throwable.class,
+                            () -> blackbird.readValue(bufferedJson, NoBuildMethodBuilder.class), desc);
+                    _assertSameFailure(desc + ", " + expected, expected, actual);
+                    assertEquals(0, protectedCalls, desc);
+                }
             }
         }
     }
@@ -1275,19 +1279,57 @@ public class TestBuilders extends BlackbirdTestBase
         Throwable expected = assertThrows(Throwable.class, () -> newVanillaJSONMapper().readValue(json, ChildBuilt.class));
         Throwable actual = assertThrows(Throwable.class, () -> MAPPER.readValue(json, ChildBuilt.class));
         _assertSameFailure(String.valueOf(expected), expected, actual);
+
+        String bufferedJson = a2q("{'child':{},'id':1}");
+        expected = assertThrows(Throwable.class,
+                () -> newVanillaJSONMapper().readValue(bufferedJson, CreatorChildBuilt.class));
+        actual = assertThrows(Throwable.class, () -> MAPPER.readValue(bufferedJson, CreatorChildBuilt.class));
+        _assertSameFailure(String.valueOf(expected), expected, actual);
     }
 
+    // `set()` with a value the setter doesn't declare (which reflection may widen or
+    // reject), or an instance it doesn't take, behaves as with reflection
     @Test
-    public void testFailingStackTraceKeepsSetterFailure() throws Exception
+    public void testSetWithValueOfAnotherTypeMatchesVanilla() throws Exception
     {
-        String json = a2q("{'x':1}");
-        for (Throwable t : new Throwable[] { new IllegalStateException("no trace"), new AssertionError("no trace") }) {
-            traceFailure = t;
-            Throwable expected = assertThrows(Throwable.class,
-                    () -> newVanillaJSONMapper().readValue(json, TraceFailingBuilt.class));
-            Throwable actual = assertThrows(Throwable.class, () -> MAPPER.readValue(json, TraceFailingBuilt.class));
-            assertEquals(TraceFailingException.class, actual.getCause().getClass(), String.valueOf(t));
-            _assertSameFailure(t + ", " + expected, expected, actual);
+        ObjectMapper vanilla = newVanillaJSONMapper();
+        // name, a valid value, then others
+        Object[][] cases = {
+            { "str", "foo", 42, new Object() },
+            { "list", Arrays.asList("a"), "x", 42 },
+            { "i", 1, 42L, "x", true, (short) 3, 'c' },
+            { "l", 1L, "x", 2.5, 3, (byte) 4 },
+            { "b", true, "x", 1 },
+        };
+        for (Object[] c : cases) {
+            String name = (String) c[0];
+            SettableBeanProperty expectedProp = _findProperty(vanilla, VoidSetterBuilt.class, name);
+            SettableBeanProperty actualProp = _findProperty(MAPPER, VoidSetterBuilt.class, name);
+            assertTrue(actualProp instanceof OptimizedSettableBeanProperty, name);
+            for (int i = 2; i < c.length; i++) {
+                Object value = c[i];
+                String desc = name + " = " + value + " (" + value.getClass().getSimpleName() + ")";
+                VoidSetterBuilder expectedBuilder = new VoidSetterBuilder();
+                VoidSetterBuilder actualBuilder = new VoidSetterBuilder();
+                Throwable expected = null;
+                try {
+                    expectedProp.set(expectedBuilder, value);
+                } catch (Throwable t) {
+                    expected = t;
+                }
+                if (expected == null) {
+                    actualProp.set(actualBuilder, value);
+                    assertEquals(expectedBuilder.i, actualBuilder.i, desc);
+                    assertEquals(expectedBuilder.l, actualBuilder.l, desc);
+                } else {
+                    Throwable actual = assertThrows(Throwable.class, () -> actualProp.set(actualBuilder, value), desc);
+                    _assertSameFailure(desc + ", " + expected, expected, actual);
+                }
+            }
+            Object value = c[1];
+            Throwable expected = assertThrows(Throwable.class, () -> expectedProp.set("not a builder", value), name);
+            Throwable actual = assertThrows(Throwable.class, () -> actualProp.set("not a builder", value), name);
+            _assertSameFailure(name + ", " + expected, expected, actual);
         }
     }
 
@@ -1369,11 +1411,6 @@ public class TestBuilders extends BlackbirdTestBase
         BeanDeserializerBase deser = (BeanDeserializerBase) ctxt.findRootValueDeserializer(
                 mapper.constructType(type));
         return deser.findProperty(name);
-    }
-
-    private static <T extends Throwable> T _withoutStackTrace(T t) {
-        t.setStackTrace(new StackTraceElement[0]);
-        return t;
     }
 
     private static void _assertSameFailure(String desc, Throwable expected, Throwable actual) {

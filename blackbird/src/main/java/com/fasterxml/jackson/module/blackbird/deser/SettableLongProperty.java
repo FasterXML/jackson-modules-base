@@ -63,8 +63,10 @@ final class SettableLongProperty
 
     @Override
     public void set(Object bean, Object value) throws IOException {
-        // the delegate skips them, or reports them, as `MethodProperty.set` does
-        if (value == null) {
+        // the delegate skips a null, or reports it; and anything else (another type,
+        // which reflection may widen or reject) or a builder the generated setter
+        // can't take is reported, or set, as reflection does
+        if (!(value instanceof Long) || (_forBuilder && !_receiverType.isInstance(bean))) {
             delegate.set(bean, value);
             return;
         }
@@ -79,8 +81,9 @@ final class SettableLongProperty
 
     @Override
     public Object setAndReturn(Object instance, Object value) throws IOException {
-        // a void setter, anything else (null, or another type that reflection may widen
-        // or reject), or an instance the generated setter can't take, is left to the delegate
+        // a setter only reflection may call, anything else (null, or another type that
+        // reflection may widen or reject), or an instance the generated setter can't take,
+        // is left to the delegate
         if ((_optimizedSetterAndReturn == null) || !(value instanceof Long)
                 || !_receiverType.isInstance(instance)) {
             return delegate.setAndReturn(instance, value);
@@ -94,7 +97,7 @@ final class SettableLongProperty
             Object result = _optimizedSetterAndReturn.apply(instance, v);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(p, v, e);
+            return _reportProblemAndReturn(p, e);
         }
     }
 }

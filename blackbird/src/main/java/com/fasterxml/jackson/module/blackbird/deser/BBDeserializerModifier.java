@@ -33,22 +33,6 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
 
     private static final Logger LOG = Logger.getLogger(BBDeserializerModifier.class.getName());
 
-    private static final MethodHandle TRAMPOLINE, BOOLEAN_TRAMPOLINE, LONG_TRAMPOLINE, INT_TRAMPOLINE;
-
-    static {
-        try {
-            TRAMPOLINE = MethodHandles.lookup().findStatic(BBDeserializerModifier.class, "trampoline",
-                    MethodType.methodType(void.class, BiFunction.class, Object.class, Object.class));
-            BOOLEAN_TRAMPOLINE = MethodHandles.lookup().findStatic(BBDeserializerModifier.class, "booleanTrampoline",
-                MethodType.methodType(void.class, ObjBooleanBiFunction.class, Object.class, boolean.class));
-            LONG_TRAMPOLINE = MethodHandles.lookup().findStatic(BBDeserializerModifier.class, "longTrampoline",
-                    MethodType.methodType(void.class, ObjLongBiFunction.class, Object.class, long.class));
-            INT_TRAMPOLINE = MethodHandles.lookup().findStatic(BBDeserializerModifier.class, "intTrampoline",
-                    MethodType.methodType(void.class, ObjIntBiFunction.class, Object.class, int.class));
-        } catch (Exception e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
     private final Function<Class<?>, Lookup> _lookups;
     private final UnaryOperator<Lookup> _accessGrant;
 
@@ -86,10 +70,13 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             return builder;
         }
         lookup = _accessGrant.apply(lookup);
-        // databind sets the build method of a builder's deserializer before this
-        final boolean forBuilder = (builder.getBuildMethod() != null);
-        List<OptimizedSettableBeanProperty<?>> newProps = findOptimizableProperties(
-                lookup, config, builder.getProperties(), forBuilder);
+        // databind sets these for a builder's deserializer before this; a builder
+        // without a build method (`buildMethodName=""`) has the config
+        final boolean forBuilder = (builder.getBuildMethod() != null)
+                || (builder.getBuilderConfig() != null);
+        List<OptimizedSettableBeanProperty<?>> newProps = forBuilder
+                ? findOptimizableProperties(lookup, config, builder.getProperties(), true)
+                : findOptimizableProperties(lookup, config, builder.getProperties());
         // and if we found any, create mutator proxy, replace property objects
         if (!newProps.isEmpty()) {
             for (OptimizedSettableBeanProperty<?> prop : newProps) {
@@ -183,12 +170,11 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
 
         MethodHandle setter;
         Class<?> type;
-        boolean optimizeBuilderSetter;
         if (jdkMember instanceof Method && prop instanceof MethodProperty) {
             final Method method = (Method) jdkMember;
             try {
-                setter = lookup.unreflect(method);
-            } catch (IllegalAccessException e) {
+                setter = lookup.unreflect(_withoutAccessOverride(method));
+            } catch (IllegalAccessException | NoSuchMethodException | SecurityException e) {
                 // e.g. an inherited protected setter, where the lookup class isn't the
                 // subclass (as with `CrossLoaderAccess` on some JDKs); reflection can still call it
                 _logSkipped(method, lookup, e);
@@ -208,10 +194,11 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             // Builder setters used to go through reflection, which applies Java's
             // access rules (modules included) unless Jackson made the setter accessible;
             // the generated setter ignores those rules, so it may only call what
-            // reflection could. A builder's setter is left to reflection altogether,
-            // as databind also calls `set()` on builders
-            optimizeBuilderSetter = isMadeAccessible(config, method);
-            if (forBuilder && !optimizeBuilderSetter) {
+            // reflection could. Other builder setters are left to reflection altogether,
+            // as databind also calls `set()` on builders.
+            if (forBuilder && !isMadeAccessible(config, prop, method)
+                    && !(Modifier.isPublic(method.getModifiers())
+                            && ReflectionHack.isPubliclyAccessible(method.getDeclaringClass()))) {
                 return;
             }
         } else {
@@ -221,56 +208,82 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
 
         final Class<?> receiverType = setter.type().parameterType(0);
 
+        // A setter that returns a value gets a generated thunk, which a plain lambda
+        // (one class each, shared by all properties) adapts to the consumer interface;
+        // a void setter gets a generated consumer, which one adapts to a thunk that
+        // returns null, so the same builder is kept (as `MethodProperty` does). Only
+        // builders use the thunk (for `setAndReturn`); others leave that to reflection.
         if (type.isPrimitive()) {
             if (type == Integer.TYPE) {
-                ObjIntBiFunction thunk = createThunk(lookup, ObjIntBiFunction.class, int.class, setter);
-                newProps.add(new SettableIntProperty(prop,
-                    createSetter(lookup, ObjIntConsumer.class, ObjIntBiFunction.class,
-                        INT_TRAMPOLINE, int.class, setter, thunk),
-                    optimizeBuilderSetter ? thunk : null, receiverType, forBuilder));
+                ObjIntBiFunction returning = createThunk(lookup, ObjIntBiFunction.class, int.class, setter);
+                ObjIntConsumer<Object> consumer = (returning == null)
+                        ? createConsumer(lookup, ObjIntConsumer.class, int.class, setter)
+                        : (bean, v) -> returning.apply(bean, v);
+                ObjIntBiFunction thunk = !forBuilder ? null : (returning != null) ? returning
+                        : (bean, v) -> { consumer.accept(bean, v); return null; };
+                newProps.add(new SettableIntProperty(prop, consumer,
+                    thunk, receiverType, forBuilder));
             } else if (type == Long.TYPE) {
-                ObjLongBiFunction thunk = createThunk(lookup, ObjLongBiFunction.class, long.class, setter);
-                newProps.add(new SettableLongProperty(prop,
-                    createSetter(lookup, ObjLongConsumer.class, ObjLongBiFunction.class,
-                        LONG_TRAMPOLINE, long.class, setter, thunk),
-                    optimizeBuilderSetter ? thunk : null, receiverType, forBuilder));
+                ObjLongBiFunction returning = createThunk(lookup, ObjLongBiFunction.class, long.class, setter);
+                ObjLongConsumer<Object> consumer = (returning == null)
+                        ? createConsumer(lookup, ObjLongConsumer.class, long.class, setter)
+                        : (bean, v) -> returning.apply(bean, v);
+                ObjLongBiFunction thunk = !forBuilder ? null : (returning != null) ? returning
+                        : (bean, v) -> { consumer.accept(bean, v); return null; };
+                newProps.add(new SettableLongProperty(prop, consumer,
+                    thunk, receiverType, forBuilder));
             } else if (type == Boolean.TYPE) {
-                ObjBooleanBiFunction thunk = createThunk(lookup, ObjBooleanBiFunction.class, boolean.class, setter);
-                newProps.add(new SettableBooleanProperty(prop,
-                    createSetter(lookup, ObjBooleanConsumer.class, ObjBooleanBiFunction.class,
-                        BOOLEAN_TRAMPOLINE, boolean.class, setter, thunk),
-                    optimizeBuilderSetter ? thunk : null, receiverType, forBuilder));
+                ObjBooleanBiFunction returning = createThunk(lookup, ObjBooleanBiFunction.class, boolean.class, setter);
+                ObjBooleanConsumer consumer = (returning == null)
+                        ? createConsumer(lookup, ObjBooleanConsumer.class, boolean.class, setter)
+                        : (bean, v) -> returning.apply(bean, v);
+                ObjBooleanBiFunction thunk = !forBuilder ? null : (returning != null) ? returning
+                        : (bean, v) -> { consumer.accept(bean, v); return null; };
+                newProps.add(new SettableBooleanProperty(prop, consumer,
+                    thunk, receiverType, forBuilder));
             }
         } else {
-            BiFunction<Object, Object, Object> thunk = createThunk(lookup, BiFunction.class, Object.class, setter);
+            BiFunction<Object, Object, Object> returning = createThunk(lookup, BiFunction.class, Object.class, setter);
             if (type == String.class) {
-                newProps.add(new SettableStringProperty(prop,
-                    createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter, thunk),
-                    optimizeBuilderSetter ? thunk : null, receiverType, forBuilder));
+                BiConsumer<Object, String> consumer = (returning == null)
+                        ? createConsumer(lookup, BiConsumer.class, Object.class, setter)
+                        : (bean, v) -> returning.apply(bean, v);
+                BiFunction<Object, Object, Object> thunk = !forBuilder ? null : (returning != null) ? returning
+                        : (bean, v) -> { consumer.accept(bean, (String) v); return null; };
+                newProps.add(new SettableStringProperty(prop, consumer,
+                    thunk, receiverType, forBuilder));
             } else {
-                newProps.add(new SettableObjectProperty(prop,
-                    createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter, thunk),
-                    optimizeBuilderSetter ? thunk : null, receiverType, forBuilder));
+                BiConsumer<Object, Object> consumer = (returning == null)
+                        ? createConsumer(lookup, BiConsumer.class, Object.class, setter)
+                        : (bean, v) -> returning.apply(bean, v);
+                BiFunction<Object, Object, Object> thunk = !forBuilder ? null : (returning != null) ? returning
+                        : (bean, v) -> { consumer.accept(bean, v); return null; };
+                newProps.add(new SettableObjectProperty(prop, consumer,
+                    thunk, receiverType, type, forBuilder));
             }
         }
     }
 
-    // Whether Jackson makes the setter accessible, as `ClassUtil.checkAndFixAccess`
-    // does for properties (and only if allowed to override access modifiers)
-    static boolean isMadeAccessible(DeserializationConfig config, Method setter) {
+    // Whether Jackson makes the setter accessible: `BeanDeserializerBuilder` has the
+    // property fix its access when building the deserializer (only if allowed to
+    // override access modifiers), so ask it to do so now
+    @SuppressWarnings("deprecation")
+    private static boolean isMadeAccessible(DeserializationConfig config,
+            SettableBeanProperty prop, Method setter) {
         if (!config.canOverrideAccessModifiers()) {
             return false;
         }
-        Class<?> declaringClass = setter.getDeclaringClass();
-        boolean isPublic = Modifier.isPublic(setter.getModifiers())
-                && Modifier.isPublic(declaringClass.getModifiers());
-        return !isPublic
-                || (config.isEnabled(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS)
-                        && !ClassUtil.isJDKClass(declaringClass));
+        try {
+            prop.fixAccess(config);
+        } catch (IllegalArgumentException e) {
+            // databind reports this when building the deserializer
+            return false;
+        }
+        return setter.isAccessible();
     }
 
     // Returns null for void setters, which have nothing to return
-    private <T> T createThunk(Lookup lookup, Class<T> thunkType, Class<?> valueType, MethodHandle setter)
+    static <T> T createThunk(Lookup lookup, Class<T> thunkType, Class<?> valueType, MethodHandle setter)
             throws Throwable, LambdaConversionException {
         if (setter.type().returnType() == void.class) {
             return null;
@@ -285,27 +298,29 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             .getTarget().invoke());
     }
 
-    private <T> T createSetter(Lookup lookup, Class<T> iface, Class<?> thunkType, MethodHandle trampoline, Class<?> valueType, MethodHandle setter,
-            Object builtThunk)
+    // Only for void setters, which can implement the consumer directly
+    @SuppressWarnings("unchecked")
+    private static <T> T createConsumer(Lookup lookup, Class<?> iface, Class<?> valueType, MethodHandle setter)
             throws Throwable, LambdaConversionException {
-        if (setter.type().returnType() == void.class) {
-            return iface.cast(LambdaMetafactory.metafactory(
-                    lookup,
-                    "accept",
-                    MethodType.methodType(iface),
-                    MethodType.methodType(void.class, Object.class, valueType),
-                    setter,
-                    setter.type())
-                    .getTarget().invoke());
-        }
-        return iface.cast(LambdaMetafactory.metafactory(
-                MethodHandles.lookup(),
+        return (T) iface.cast(LambdaMetafactory.metafactory(
+                lookup,
                 "accept",
-                MethodType.methodType(iface, thunkType),
+                MethodType.methodType(iface),
                 MethodType.methodType(void.class, Object.class, valueType),
-                trampoline,
-                MethodType.methodType(void.class, Object.class, valueType))
-            .getTarget().invoke(builtThunk));
+                setter,
+                setter.type())
+                .getTarget().invoke());
+    }
+
+    // `unreflect` skips its access checks for a method made accessible (as databind
+    // does early for injection or back references), but the generated accessor
+    // can't skip them, so check a copy that isn't
+    @SuppressWarnings("deprecation")
+    private static Method _withoutAccessOverride(Method method) throws NoSuchMethodException {
+        if (!method.isAccessible()) {
+            return method;
+        }
+        return method.getDeclaringClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
     }
 
     private static void _logSkipped(Method setter, Lookup lookup, Throwable cause) {
@@ -329,8 +344,7 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
 
     }
 
-    // These trampolines adapt BiFunction-like setters (i.e. returns a value)
-    // to BiConsumer style through a generated thunk lambda.
+    // Generated thunks for setters that return a value (such as builder setters)
 
     @FunctionalInterface
     public interface ObjIntBiFunction {
@@ -345,21 +359,5 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
     @FunctionalInterface
     public interface ObjBooleanBiFunction {
         Object apply(Object bean, boolean value);
-    }
-
-    static void intTrampoline(ObjIntBiFunction thunk, Object bean, int value) {
-        thunk.apply(bean, value);
-    }
-
-    static void longTrampoline(ObjLongBiFunction thunk, Object bean, long value) {
-        thunk.apply(bean, value);
-    }
-
-    static void booleanTrampoline(ObjBooleanBiFunction thunk, Object bean, boolean value) {
-        thunk.apply(bean, value);
-    }
-
-    static void trampoline(BiFunction<Object, Object, Object> thunk, Object bean, Object value) {
-        thunk.apply(bean, value);
     }
 }
