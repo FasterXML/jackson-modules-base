@@ -27,10 +27,11 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     final protected boolean _skipNulls;
 
     /**
-     * Marker that we set if mutator turns out to be broken in a systematic
-     * way that we can handle by redirecting it back to standard one.
+     * Marker that we set once we have logged an access problem with the generated
+     * mutator, so it's only logged once; the mutator itself is still used, falling
+     * back to the standard one on each such problem.
      */
-    private volatile boolean broken = false;
+    private volatile boolean loggedAccessProblem = false;
 
     /**
      * Type the generated builder setter casts the instance to: the setter's declaring
@@ -172,9 +173,9 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         synchronized (this) {
             // yes, double-locking, so not guaranteed; but all we want here is to reduce likelihood
             // of multiple logging of same underlying problem. Not guaranteed, just improved.
-            if (!broken) {
-                broken = true;
-                String msg = String.format("Disabling Blackbird deserialization for %s (field %s; mutator %s), due to access error (type %s, message=%s)%n",
+            if (!loggedAccessProblem) {
+                loggedAccessProblem = true;
+                String msg = String.format("Blackbird deserialization for %s (field %s; mutator %s) falling back to reflection, due to access error (type %s, message=%s); further such errors are not logged%n",
                         bean.getClass(), _propName, getClass().getName(),
                         e.getClass().getName(), e.getMessage());
                 Logger.getLogger(getClass().getName()).log(Level.WARNING, msg, e);
