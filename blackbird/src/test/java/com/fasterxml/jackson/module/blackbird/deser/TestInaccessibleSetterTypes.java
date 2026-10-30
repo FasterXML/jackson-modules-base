@@ -29,6 +29,7 @@ import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ProtectedSetter
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.Chain;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.ChainBean;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.ChainBeanBase;
+import com.fasterxml.jackson.module.blackbird.deser.shadowed.DirectLevelBean;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.Level;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.LevelBean;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.LevelBeanBase;
@@ -49,8 +50,9 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
 
     static final class HiddenSetterBean extends HiddenSetterBeanBase { }
 
-    // Setters with JDK `java.*` signatures keep the generated setter; other types from
-    // other loaders, even JDK `javax.*` ones, can't be known to be the same class
+    // Setters with JDK `java.*` signatures keep the generated setter, as do those with
+    // other types from other loaders (like JDK `javax.*` ones) when declared by a class
+    // from the lookup class's loader, which resolved them through that loader
     static class CommonSignatures
     {
         String a;
@@ -213,15 +215,31 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
     @Test
     public void testCommonSignaturesStayOptimized() throws Exception
     {
-        for (String name : new String[] { "a", "b", "c" }) {
+        for (String name : new String[] { "a", "b", "c", "d" }) {
             SettableBeanProperty prop = _findProperty(CommonSignatures.class, name);
             assertTrue(prop instanceof OptimizedSettableBeanProperty, name);
         }
-        assertEquals(MethodProperty.class, _findProperty(CommonSignatures.class, "d").getClass());
         CommonSignatures result = MAPPER.readValue(a2q("{'a':'x','b':['y'],'c':3,'d':'z'}"), CommonSignatures.class);
         assertEquals("x", result.a);
         assertEquals(Arrays.asList("y"), result.b);
         assertEquals(3, result.c);
+    }
+
+    // A setter declared by the bean itself, in a child loader, taking a type from the
+    // parent: the bean's loader resolved it, as the generated setter will
+    @Test
+    public void testParentLoaderParameterTypeStaysOptimized() throws Exception
+    {
+        ClassLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                Arrays.asList(DirectLevelBean.class));
+        Class<?> bean = Class.forName(DirectLevelBean.class.getName(), true, loader);
+        assertNotSame(DirectLevelBean.class, bean);
+        assertSame(Level.class, Class.forName(Level.class.getName(), false, loader));
+
+        SettableBeanProperty prop = _findProperty(bean, "level");
+        assertTrue(prop instanceof OptimizedSettableBeanProperty, prop.getClass().getName());
+        Object result = MAPPER.readValue(a2q("{'level':'HIGH'}"), bean);
+        assertEquals(Level.HIGH, bean.getMethod("level").invoke(result));
     }
 
     // A loader that fails (other than not finding the class) only stops the optimization
@@ -256,13 +274,13 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
 
     // Defines its own copies of the given classes, delegating everything else, and
     // fails for the names it's told to
-    static final class ChildFirstLoader extends ClassLoader
+    public static final class ChildFirstLoader extends ClassLoader
     {
         private final List<Class<?>> _copied;
         private final Set<String> _failing;
-        final Set<String> defined = Collections.synchronizedSet(new HashSet<>());
+        public final Set<String> defined = Collections.synchronizedSet(new HashSet<>());
 
-        ChildFirstLoader(ClassLoader parent, List<Class<?>> copied) {
+        public ChildFirstLoader(ClassLoader parent, List<Class<?>> copied) {
             this(parent, copied, Collections.emptySet());
         }
 

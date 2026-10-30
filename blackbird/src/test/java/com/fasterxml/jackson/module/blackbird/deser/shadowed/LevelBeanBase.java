@@ -12,4 +12,8 @@ public class LevelBeanBase
     }
 
     public String level() { return level; }
+
+    public Level getLevel() {
+        return (level == null) ? null : Level.valueOf(level);
+    }
 }

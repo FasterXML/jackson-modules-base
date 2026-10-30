@@ -101,14 +101,27 @@ public class BBSerializerModifier extends BeanSerializerModifier
 
         Class<?> type = bpw.getMember().getRawType();
         MethodHandle getter;
+        Method method;
         if (member instanceof AnnotatedMethod) {
-            getter = lookup.unreflect((Method) member.getMember());
+            method = (Method) member.getMember();
+            try {
+                getter = lookup.unreflect(method);
+            } catch (IllegalAccessException e) {
+                // e.g. an inherited protected getter, where the lookup class isn't the
+                // subclass (as with `CrossLoaderAccess` on some JDKs); reflection can still call it
+                return;
+            }
         } else {
             // TODO: currently VarHandles aren't considered direct MH
             return;
             //getter = lookup.unreflectGetter((Field) member.getMember());
         }
         lookup = _accessGrant.apply(lookup);
+        // A generated getter that would fail on every call (like one whose return
+        // type the bean's loader shadows) is left to reflection
+        if (!ReflectionHack.canLinkAccessor(lookup, method, getter)) {
+            return;
+        }
 
         if (type.isPrimitive()) {
             if (type == Integer.TYPE) {

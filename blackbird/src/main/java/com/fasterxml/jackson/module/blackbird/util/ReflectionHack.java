@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,6 +30,53 @@ public class ReflectionHack {
     }
 
     /**
+     * Whether an accessor spun with {@code lookup} can call {@code handle}, unreflected
+     * from {@code method}, without failing on every call. It casts to each parameter
+     * type (including the receiver), so those must be accessible from the lookup
+     * class; and the call names every type in the method's signature, so those must
+     * also be the same classes from the lookup class's loader (see
+     * {@link #isSameClassWithoutLoading}).
+     */
+    public static boolean canLinkAccessor(Lookup lookup, Method method, MethodHandle handle) {
+        final MethodType type = handle.type();
+        final Class<?> declaringClass = method.getDeclaringClass();
+        final boolean sameLoader;
+        try {
+            sameLoader = (declaringClass.getClassLoader() == lookup.lookupClass().getClassLoader());
+        } catch (SecurityException e) {
+            return false;
+        }
+        // Reflection resolved the method's signature through its declaring class's
+        // loader; if that's the lookup class's loader, the accessor resolves the same
+        // classes, so only access needs checking
+        if (sameLoader) {
+            for (Class<?> paramType : type.parameterArray()) {
+                if (!isAccessible(lookup, paramType)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        // For an inherited protected method the handle's receiver is narrowed to the
+        // lookup class, but on Java 8 calling it still names the declaring class (which
+        // is otherwise the receiver, checked below). Newer JDKs don't load it, so
+        // neither may this check.
+        if ((type.parameterCount() > 0) && (type.parameterType(0) != declaringClass)
+                && !isSameClassWithoutLoading(lookup, declaringClass)) {
+            return false;
+        }
+        for (Class<?> paramType : type.parameterArray()) {
+            if (!canAccessClass(lookup, paramType)) {
+                return false;
+            }
+        }
+        // The return type isn't cast to, but the JVM still requires it to be the same
+        // class from the accessor's loader. The accessor never loads it, so neither
+        // may this check.
+        return isSameClassWithoutLoading(lookup, type.returnType());
+    }
+
+    /**
      * Whether code defined with {@code lookup}, such as a lambda it spins, can use
      * {@code type} where it must also access it, as in a cast: it must be the same
      * class from the lookup class's loader (see {@link #isSameClassWithoutLoading})
@@ -36,14 +84,16 @@ public class ReflectionHack {
      * created.
      */
     public static boolean canAccessClass(Lookup lookup, Class<?> type) {
+        return isSameClassWithoutLoading(lookup, type) && isAccessible(lookup, type);
+    }
+
+    // Whether `type` is accessible from the lookup class, wherever it was loaded
+    private static boolean isAccessible(Lookup lookup, Class<?> type) {
         type = elementType(type);
         if (type.isPrimitive()) {
             return true;
         }
         try {
-            if (!isSameClassWithoutLoading(lookup, type)) {
-                return false;
-            }
             if (Java9Up.ACCESS_CLASS != null) {
                 return Java9Up.canAccessClass(lookup, type);
             }

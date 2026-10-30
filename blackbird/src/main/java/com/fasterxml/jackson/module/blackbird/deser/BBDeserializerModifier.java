@@ -184,31 +184,14 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             if (type.isPrimitive() && (type != Integer.TYPE) && (type != Long.TYPE) && (type != Boolean.TYPE)) {
                 return;
             }
-            // For an inherited protected setter the handle's receiver is narrowed to the
-            // lookup class, but on Java 8 calling it still names the declaring class (which
-            // is otherwise the receiver, checked below). Newer JDKs don't load it, so
-            // neither may this check.
-            if ((setter.type().parameterType(0) != method.getDeclaringClass())
-                    && !ReflectionHack.isSameClassWithoutLoading(lookup, method.getDeclaringClass())) {
+            // A generated setter that would fail on every call (like one taking a
+            // package-private type from another package) is left to reflection
+            if (!ReflectionHack.canLinkAccessor(lookup, method, setter)) {
                 return;
             }
         } else {
             return;
             //setter = lookup.unreflectGetter((Field) jdkMember);
-        }
-        // The generated accessor casts to each type in the setter's signature, so
-        // one it can't access (like a package-private type from another package)
-        // would fail on every call; leave those to reflection
-        for (Class<?> paramType : setter.type().parameterArray()) {
-            if (!ReflectionHack.canAccessClass(lookup, paramType)) {
-                return;
-            }
-        }
-        // Calling the setter also names its return type, which nothing casts to, but
-        // the JVM still requires to be the same class from the accessor's loader.
-        // The accessor never loads it, so neither may this check.
-        if (!ReflectionHack.isSameClassWithoutLoading(lookup, setter.type().returnType())) {
-            return;
         }
 
         if (type.isPrimitive()) {
