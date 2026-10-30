@@ -25,10 +25,24 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     final protected boolean _skipNulls;
 
     /**
-     * Marker that we set if mutator turns out to be broken in a systematic
-     * way that we can handle by redirecting it back to standard one.
+     * Marker that we set once we have logged an access problem with the generated
+     * mutator, so it's only logged once; the mutator itself is still used, falling
+     * back to the standard one on each such problem.
      */
-    private volatile boolean broken = false;
+    private volatile boolean loggedAccessProblem = false;
+
+    /**
+     * Type the generated builder setter casts the instance to: the setter's declaring
+     * class, or the builder's own class for an inherited protected setter. A builder
+     * setter can return an instance of another type, which reflection may still accept.
+     */
+    protected final Class<?> _receiverType;
+
+    /**
+     * Whether this is a property of a builder, whose setter failures are reported
+     * by {@link #_reportProblemAndReturn} from every path, {@link #set} included.
+     */
+    protected final boolean _forBuilder;
 
     /*
     /**********************************************************************
@@ -36,10 +50,13 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     /**********************************************************************
      */
 
-    protected OptimizedSettableBeanProperty(SettableBeanProperty src)
+    protected OptimizedSettableBeanProperty(SettableBeanProperty src, Class<?> receiverType,
+            boolean forBuilder)
     {
         super(src);
         _skipNulls = NullsConstantProvider.isSkipper(_nullProvider);
+        _receiverType = receiverType;
+        _forBuilder = forBuilder;
     }
 
     // Base impl of `withName()` fine as-is:
@@ -80,26 +97,16 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
     /**********************************************************************
      */
 
-    /* !!! 19-Feb-2012, tatu:
-     *
-     * We do not yet generate code for these methods: it would not be hugely
-     * difficult to add them, but let's first see if anyone needs them...
-     * (it is non-trivial, adds code etc, so not without cost).
-     *
-     * That is: we'll use Reflection fallback for Builder-based deserialization,
-     * so it will not be significantly faster.
-     */
+    // These use the generated accessor and keep the builder it returns (the same
+    // one for a void setter); setters only reflection may call go through the delegate.
 
     @Override
     public abstract Object deserializeSetAndReturn(JsonParser p,
             DeserializationContext ctxt, Object instance)
         throws JacksonException;
 
-
     @Override
-    public Object setAndReturn(DeserializationContext ctxt, Object instance, Object value) {
-        return delegate.setAndReturn(ctxt, instance, value);
-    }
+    public abstract Object setAndReturn(DeserializationContext ctxt, Object instance, Object value);
 
     /*
     /**********************************************************************
@@ -109,24 +116,23 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
 
     /**
      * Helper method called when an exception is throw from mutator, to figure
-     * out what to do.
+     * out what to do. The parser is only used for a builder's error location; it is
+     * the context's parser when called from {@link #set}, as for {@code MethodProperty}.
      */
-    protected void _reportProblem(DeserializationContext ctxt, Object bean, Object value, Throwable e)
+    protected void _reportProblem(DeserializationContext ctxt, JsonParser p,
+            Object bean, Object value, Throwable e)
         throws JacksonException
     {
+        // databind calls `set()` on builders too (for properties buffered before a
+        // property-based creator, or external type ids), which must behave like
+        // `setAndReturn`, regardless of the order of properties in the JSON
+        if (_forBuilder) {
+            _reportProblemAndReturn(p, value, e);
+            return;
+        }
         if ((e instanceof IllegalAccessError)
                 || (e instanceof SecurityException)) {
-            synchronized (this) {
-                // yes, double-locking, so not guaranteed; but all we want here is to reduce likelihood
-                // of multiple logging of same underlying problem. Not guaranteed, just improved.
-                if (!broken) {
-                    broken = true;
-                    String msg = String.format("Disabling Blackbird deserialization for %s (field %s; mutator %s), due to access error (type %s, message=%s)%n",
-                            bean.getClass(), _propName, getClass().getName(),
-                            e.getClass().getName(), e.getMessage());
-                    Logger.getLogger(getClass().getName()).log(Level.WARNING, msg, e);
-                }
-            }
+            _logAccessProblem(bean, e);
             delegate.set(ctxt, bean, value);
             return;
         }
@@ -141,6 +147,40 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
         }
         // how could this ever happen?
         throw new RuntimeException(e);
+    }
+
+    /**
+     * Like {@link #_reportProblem}, for builders: anything the generated
+     * setter throws is reported the way {@code MethodProperty} reports it, and never
+     * retried. Telling a failure of the generated accessor itself from one thrown by
+     * the setter would mean guessing from the stack trace, and a retry could run the
+     * setter twice; setup instead leaves the setters it can't call to reflection.
+     * The parser is only used for the error location: the context's parser outside of
+     * {@link #deserializeSetAndReturn} and {@link #deserializeAndSet}, as it is
+     * for {@code MethodProperty}.
+     */
+    protected Object _reportProblemAndReturn(JsonParser p, Object value, Throwable e)
+        throws JacksonException
+    {
+        // `MethodProperty` calls the setter through a method handle, which throws
+        // whatever the setter throws, and translates that; doing the same keeps type,
+        // message, cause and path
+        _throwAsJacksonE(p, e, value);
+        return null; // never gets here
+    }
+
+    private void _logAccessProblem(Object bean, Throwable e) {
+        synchronized (this) {
+            // yes, double-locking, so not guaranteed; but all we want here is to reduce likelihood
+            // of multiple logging of same underlying problem. Not guaranteed, just improved.
+            if (!loggedAccessProblem) {
+                loggedAccessProblem = true;
+                String msg = String.format("Blackbird deserialization for %s (field %s; mutator %s) falling back to reflection, due to access error (type %s, message=%s); further such errors are not logged%n",
+                        bean.getClass(), _propName, getClass().getName(),
+                        e.getClass().getName(), e.getMessage());
+                Logger.getLogger(getClass().getName()).log(Level.WARNING, msg, e);
+            }
+        }
     }
 
     /*
