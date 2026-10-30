@@ -2,19 +2,24 @@ package com.fasterxml.jackson.module.blackbird.deser;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
@@ -26,15 +31,24 @@ import com.fasterxml.jackson.module.blackbird.deser.isolated.TokenBuilder;
 import com.fasterxml.jackson.module.blackbird.deser.isolated.TokenBuilt;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.HiddenSetterBeanBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ModeBeanBase;
+import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ModeBuilderBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ProtectedSetterBeanBase;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.Chain;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.ChainBean;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.ChainBeanBase;
+import com.fasterxml.jackson.module.blackbird.deser.shadowed.ChainBuilder;
+import com.fasterxml.jackson.module.blackbird.deser.shadowed.ChainBuilderBase;
+import com.fasterxml.jackson.module.blackbird.deser.shadowed.ChainBuilt;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.DirectLevelBean;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.Level;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.LevelBean;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.LevelBeanBase;
+import com.fasterxml.jackson.module.blackbird.deser.shadowed.LevelBuilder;
+import com.fasterxml.jackson.module.blackbird.deser.shadowed.LevelBuilderBase;
+import com.fasterxml.jackson.module.blackbird.deser.shadowed.LevelBuilt;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.OwnerBean;
+import com.fasterxml.jackson.module.blackbird.deser.shadowed.OwnerBuilder;
+import com.fasterxml.jackson.module.blackbird.deser.shadowed.OwnerBuilt;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.owner.OwnerBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,6 +59,27 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
 {
     // `setMode` and `setModes` take a type that is package-private in another
     // package, which reflection can pass but a generated accessor can't refer to
+    static final class ModeBuilder extends ModeBuilderBase<ModeBuilder>
+    {
+        public ModeBuilt build() {
+            return new ModeBuilt(mode, modes, name);
+        }
+    }
+
+    @JsonDeserialize(builder=ModeBuilder.class)
+    static class ModeBuilt
+    {
+        final String mode;
+        final String modes;
+        final String name;
+
+        ModeBuilt(String mode, String modes, String name) {
+            this.mode = mode;
+            this.modes = modes;
+            this.name = name;
+        }
+    }
+
     static final class ModeBean extends ModeBeanBase { }
 
     static final class ProtectedBean extends ProtectedSetterBeanBase { }
@@ -279,6 +314,145 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
         assertEquals("HIGH", result.level());
         assertEquals(1, LevelBeanBase.setterCalls);
         assertEquals(MethodProperty.class, _findProperty(bean, "level").getClass());
+    }
+
+    /*
+    /**********************************************************************
+    /* Builders, whose setters used to always go through reflection
+    /**********************************************************************
+     */
+
+    @Test
+    public void testInaccessibleParameterTypeOnBuilder() throws Exception
+    {
+        ModeBuilderBase.setterCalls = 0;
+        ModeBuilt result = MAPPER.readValue(a2q("{'mode':'FAST','modes':['SAFE'],'name':'foo'}"),
+                ModeBuilt.class);
+        assertEquals("FAST", result.mode);
+        assertEquals("[SAFE]", result.modes);
+        assertEquals("foo", result.name);
+        assertEquals(2, ModeBuilderBase.setterCalls);
+        assertEquals(MethodProperty.class, _findProperty(ModeBuilt.class, "mode").getClass());
+        assertEquals(MethodProperty.class, _findProperty(ModeBuilt.class, "modes").getClass());
+        SettableBeanProperty name = _findProperty(ModeBuilt.class, "name");
+        assertTrue(name instanceof OptimizedSettableBeanProperty, name.getClass().getName());
+    }
+
+    @Test
+    public void testShadowedParameterTypeOnBuilder() throws Exception
+    {
+        ClassLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                Arrays.asList(Level.class, LevelBuilder.class, LevelBuilt.class));
+        Class<?> built = Class.forName(LevelBuilt.class.getName(), true, loader);
+        assertNotSame(LevelBuilt.class, built);
+
+        LevelBuilderBase.setterCalls = 0;
+        Object result = MAPPER.readValue(a2q("{'level':'HIGH'}"), built);
+        assertEquals("HIGH", built.getField("level").get(result));
+        assertEquals(1, LevelBuilderBase.setterCalls);
+        assertEquals(MethodProperty.class, _findProperty(built, "level").getClass());
+    }
+
+    @Test
+    public void testShadowedReturnTypeOnBuilder() throws Exception
+    {
+        ClassLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                Arrays.asList(Chain.class, ChainBuilder.class, ChainBuilt.class));
+        Class<?> built = Class.forName(ChainBuilt.class.getName(), true, loader);
+        assertNotSame(ChainBuilt.class, built);
+        // the builder's loader has its own `Chain`, as it would once anything there used it
+        assertNotSame(Chain.class, Class.forName(Chain.class.getName(), false, loader));
+
+        ChainBuilderBase.setterCalls = 0;
+        Object result = MAPPER.readValue(a2q("{'level':'HIGH'}"), built);
+        assertEquals("HIGH", built.getField("level").get(result));
+        assertEquals(1, ChainBuilderBase.setterCalls);
+        assertEquals(MethodProperty.class, _findProperty(built, "level").getClass());
+    }
+
+    @Test
+    public void testReturnTypeIsNotLoadedOnBuilder() throws Exception
+    {
+        ChildFirstLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                Arrays.asList(Chain.class, ChainBuilder.class, ChainBuilt.class));
+        Class<?> built = Class.forName(ChainBuilt.class.getName(), true, loader);
+
+        ChainBuilderBase.setterCalls = 0;
+        Object result = MAPPER.readValue(a2q("{'level':'HIGH'}"), built);
+        assertEquals("HIGH", built.getField("level").get(result));
+        assertEquals(1, ChainBuilderBase.setterCalls);
+        assertFalse(loader.defined.contains(Chain.class.getName()));
+    }
+
+    @Test
+    public void testShadowedDeclaringClassOnBuilder() throws Exception
+    {
+        ClassLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                Arrays.asList(OwnerBase.class, OwnerBuilder.class, OwnerBuilt.class));
+        Class<?> built = Class.forName(OwnerBuilt.class.getName(), true, loader);
+        Class<?> builder = Class.forName(OwnerBuilder.class.getName(), true, loader);
+        assertNotSame(OwnerBuilt.class, built);
+        assertNotSame(OwnerBase.class, Class.forName(OwnerBase.class.getName(), false, loader));
+        // a lookup in the builder itself, which the protected setter needs
+        ObjectMapper mapper = _mapperWithLookupIn(builder);
+
+        OwnerBase.setterCalls = 0;
+        Object result = mapper.readValue(a2q("{'value':7}"), built);
+        assertEquals(7, built.getField("value").get(result));
+        assertEquals(1, OwnerBase.setterCalls);
+        // (as for beans, see `testShadowedDeclaringClass`)
+        SettableBeanProperty prop = _findProperty(mapper, built, "value");
+        int version = _javaVersion();
+        if (version == 8) {
+            assertEquals(MethodProperty.class, prop.getClass());
+        } else if (version >= 14) {
+            assertTrue(prop instanceof OptimizedSettableBeanProperty, prop.getClass().getName());
+        }
+    }
+
+    @Test
+    public void testFailingLoaderOnBuilder() throws Exception
+    {
+        ChildFirstLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                Arrays.asList(LevelBuilder.class, LevelBuilt.class),
+                Collections.singleton(Level.class.getName()));
+        Class<?> built = Class.forName(LevelBuilt.class.getName(), true, loader);
+
+        LevelBuilderBase.setterCalls = 0;
+        Object result = MAPPER.readValue(a2q("{'level':'HIGH'}"), built);
+        assertEquals("HIGH", built.getField("level").get(result));
+        assertEquals(1, LevelBuilderBase.setterCalls);
+        assertEquals(MethodProperty.class, _findProperty(built, "level").getClass());
+    }
+
+
+    // Setup skips this accessor, so build it the same way here: the access error the
+    // JVM really raises is reported like a setter failure, and the setter never runs
+    @Test
+    public void testRealAccessorFailureIsNotRetried() throws Throwable
+    {
+        Class<?> mode = Class.forName(ModeBuilderBase.class.getPackage().getName() + ".Mode");
+        MethodHandle setter = MethodHandles.lookup().unreflect(
+                ModeBuilderBase.class.getMethod("withMode", mode));
+        BiFunction<Object, Object, Object> thunk = BBDeserializerModifier.createThunk(
+                MethodHandles.lookup(), BiFunction.class, Object.class, setter);
+        BiConsumer<Object, Object> unused = (bean, value) -> fail("not a builder setter");
+
+        ObjectMapper vanilla = newVanillaJSONMapper();
+        DefaultDeserializationContext ctxt = ((DefaultDeserializationContext) vanilla.getDeserializationContext())
+                .createInstance(vanilla.getDeserializationConfig(), null, null);
+        BeanDeserializerBase deser = (BeanDeserializerBase) ctxt.findRootValueDeserializer(
+                vanilla.constructType(ModeBuilt.class));
+        SettableObjectProperty prop = new SettableObjectProperty(deser.findProperty("mode"), unused, thunk,
+                setter.type().parameterType(0), mode, true);
+
+        Object fast = mode.getEnumConstants()[0];
+        ModeBuilderBase.setterCalls = 0;
+        ModeBuilder builder = new ModeBuilder();
+        assertThrows(IllegalAccessError.class, () -> thunk.apply(builder, fast));
+        JsonMappingException e = assertThrows(JsonMappingException.class, () -> prop.setAndReturn(builder, fast));
+        assertEquals(IllegalAccessError.class, e.getCause().getClass());
+        assertEquals(0, ModeBuilderBase.setterCalls);
     }
 
     // Uses a lookup in the bean itself (from its static `lookup()`), as protected

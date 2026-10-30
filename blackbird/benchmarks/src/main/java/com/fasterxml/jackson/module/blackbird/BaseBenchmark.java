@@ -89,6 +89,11 @@ public abstract class BaseBenchmark {
     }
 
     @Benchmark
+    public BeanWithBuilder[] builderArrayDeser() throws Exception {
+        return mapper.readValue(beansBytes, BeanWithBuilder[].class);
+    }
+
+    @Benchmark
     public void classicMediaItemSer(final Blackhole bh) throws Exception {
         mediaItemWriter.writeValue(new NopOutputStream(bh), MediaItem.SAMPLE);
     }

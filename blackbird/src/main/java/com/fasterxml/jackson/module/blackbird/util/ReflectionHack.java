@@ -78,6 +78,24 @@ public class ReflectionHack {
     }
 
     /**
+     * Whether any code, reflection included, can access {@code type} without being
+     * granted access: it is public and, with modules, in a package exported to all.
+     */
+    public static boolean isPubliclyAccessible(Class<?> type) {
+        if (!Modifier.isPublic(type.getModifiers())) {
+            return false;
+        }
+        if (Java9Up.ACCESS_CLASS == null) {
+            return true;
+        }
+        try {
+            return Java9Up.canAccessClass(MethodHandles.publicLookup(), type);
+        } catch (SecurityException e) {
+            return false;
+        }
+    }
+
+    /**
      * Whether code defined with {@code lookup}, such as a lambda it spins, can use
      * {@code type} where it must also access it, as in a cast: it must be the same
      * class from the lookup class's loader (see {@link #isSameClassWithoutLoading})
