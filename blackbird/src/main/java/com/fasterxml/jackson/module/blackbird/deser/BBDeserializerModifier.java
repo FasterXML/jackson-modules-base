@@ -16,6 +16,8 @@ import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.ObjLongConsumer;
 import java.util.function.UnaryOperator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.*;
@@ -28,6 +30,8 @@ import com.fasterxml.jackson.module.blackbird.util.ReflectionHack;
 public class BBDeserializerModifier extends BeanDeserializerModifier
 {
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOG = Logger.getLogger(BBDeserializerModifier.class.getName());
 
     private static final MethodHandle TRAMPOLINE, BOOLEAN_TRAMPOLINE, LONG_TRAMPOLINE, INT_TRAMPOLINE;
 
@@ -178,6 +182,7 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             } catch (IllegalAccessException e) {
                 // e.g. an inherited protected setter, where the lookup class isn't the
                 // subclass (as with `CrossLoaderAccess` on some JDKs); reflection can still call it
+                _logSkipped(method, lookup, e);
                 return;
             }
             type = ((AnnotatedMethod) member).getRawParameterType(0);
@@ -185,12 +190,10 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             if (type.isPrimitive() && (type != Integer.TYPE) && (type != Long.TYPE) && (type != Boolean.TYPE)) {
                 return;
             }
-            // For an inherited protected setter the handle's receiver is narrowed to the
-            // lookup class, but on Java 8 calling it still names the declaring class (which
-            // is otherwise the receiver, checked below). Newer JDKs don't load it, so
-            // neither may this check.
-            if ((setter.type().parameterType(0) != method.getDeclaringClass())
-                    && !ReflectionHack.isSameClassWithoutLoading(lookup, method.getDeclaringClass())) {
+            // A generated setter that would fail on every call (like one taking a
+            // package-private type from another package) is left to reflection
+            if (!ReflectionHack.canLinkAccessor(lookup, method, setter)) {
+                _logSkipped(method, lookup, null);
                 return;
             }
             // Builder setters used to go through reflection, which applies Java's
@@ -201,20 +204,6 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
         } else {
             return;
             //setter = lookup.unreflectGetter((Field) jdkMember);
-        }
-        // The generated accessor casts to each type in the setter's signature, so
-        // one it can't access (like a package-private type from another package)
-        // would fail on every call; leave those to reflection
-        for (Class<?> paramType : setter.type().parameterArray()) {
-            if (!ReflectionHack.canAccessClass(lookup, paramType)) {
-                return;
-            }
-        }
-        // Calling the setter also names its return type, which nothing casts to, but
-        // the JVM still requires to be the same class from the accessor's loader.
-        // The accessor never loads it, so neither may this check.
-        if (!ReflectionHack.isSameClassWithoutLoading(lookup, setter.type().returnType())) {
-            return;
         }
 
         final Class<?> receiverType = setter.type().parameterType(0);
@@ -304,6 +293,15 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
                 trampoline,
                 MethodType.methodType(void.class, Object.class, valueType))
             .getTarget().invoke(builtThunk));
+    }
+
+    private static void _logSkipped(Method setter, Lookup lookup, Throwable cause) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, String.format(
+                    "Not optimizing setter %s: a generated accessor in %s %s; using reflection",
+                    setter, lookup.lookupClass().getName(),
+                    (cause == null) ? "couldn't link to it" : "can't access it"), cause);
+        }
     }
 
     /**
