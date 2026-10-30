@@ -27,7 +27,7 @@ Active maintainers:
 
 #363: (blackbird) `@JsonSetter(nulls = Nulls.SKIP)` ignored for properties of
   beans with a properties-based creator
- (reported by @jkuipers, fix contributed by Parker W)
+ (reported by @jkuipers, contributed by Parker W)
 #364: (blackbird) Use generated setters for Builder-based deserialization
  (contributed by Parker W)
 #366: (blackbird) Skip generated setters and getters the accessor can't call
