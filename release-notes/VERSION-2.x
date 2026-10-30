@@ -25,7 +25,8 @@ Active maintainers:
 
 2.23.0 (not yet released)
 
-No changes since 2.22
+#366: (blackbird) Skip generated setters and getters the accessor can't call
+ (contributed by Parker W)
 
 2.22.4 (17-Oct-2026)
 2.22.3 (21-Sep-2026)

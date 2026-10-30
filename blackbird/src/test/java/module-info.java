@@ -26,9 +26,13 @@ module tools.jackson.module.blackbird
     opens tools.jackson.module.blackbird.deser.convert;
     opens tools.jackson.module.blackbird.deser.filter;
     opens tools.jackson.module.blackbird.deser.inject;
+    opens tools.jackson.module.blackbird.deser.isolated;
     opens tools.jackson.module.blackbird.deser.java8;
     opens tools.jackson.module.blackbird.deser.jdk;
     opens tools.jackson.module.blackbird.deser.merge;
+    opens tools.jackson.module.blackbird.deser.otherpackage;
+    opens tools.jackson.module.blackbird.deser.shadowed;
+    opens tools.jackson.module.blackbird.deser.shadowed.owner;
     opens tools.jackson.module.blackbird.deser.struct;
     opens tools.jackson.module.blackbird.format;
     opens tools.jackson.module.blackbird.misc;
@@ -36,9 +40,10 @@ module tools.jackson.module.blackbird
     opens tools.jackson.module.blackbird.roundtrip;
     opens tools.jackson.module.blackbird.ser;
     opens tools.jackson.module.blackbird.ser.filter;
-    opens tools.jackson.module.blackbird.tofix;
+    opens tools.jackson.module.blackbird.ser.otherpackage;
     opens tools.jackson.module.blackbird.testutil;
     opens tools.jackson.module.blackbird.testutil.failure;
+    opens tools.jackson.module.blackbird.util;
 
     provides tools.jackson.databind.JacksonModule with
         tools.jackson.module.blackbird.BlackbirdModule;
