@@ -15,38 +15,33 @@ public class TestAccessFallback extends BlackbirdTestBase
         }
     }
     
+    // Getter that fails on request, counting its calls. Generated writers are
+    // hidden classes, left out of stack traces, so the calls can't tell which
+    // path made them; `assertGeneratedWriter` checks that instead.
     public static class MyBean
     {
         private String e;
+
+        boolean fail;
+        int calls;
 
         public MyBean() { }
 
         MyBean(String e)
         {
-            setE(e);
+            this.e = e;
         }
 
         public void setE(String e)
         {
-            /* 07-Mar-2015, tatu: This is bit tricky, as the exact stack trace varies
-             *   depending on how code is generated. So right now we must get the call
-             *   immediately from constructed class.
-             */
-            
-            StackTraceElement[] elems = new Throwable().getStackTrace();
-            StackTraceElement prev = elems[1];
-            if (prev.getClassName().contains("Access4JacksonDeserializer")) {
-                throw new BogusTestError("boom!");
-            }
             this.e = e;
         }
 
         public String getE()
         {
-            for (StackTraceElement elem : new Throwable().getStackTrace()) {
-                if (elem.getClassName().contains("Access4JacksonSerializer")) {
-                    throw new BogusTestError("boom!");
-                }
+            ++calls;
+            if (fail) {
+                throw new BogusTestError("boom!");
             }
             return e;
         }
@@ -58,22 +53,35 @@ public class TestAccessFallback extends BlackbirdTestBase
     public void testSerializeAccess() throws Exception
     {
         ObjectMapper abMapper = newObjectMapper();
-        assertEquals(BEAN_JSON, abMapper.writeValueAsString(new MyBean("a")));
-
-        // actually try again, to ensure handling works reliably
-        assertEquals(BEAN_JSON, abMapper.writeValueAsString(new MyBean("a")));
+        assertGeneratedWriter(abMapper, MyBean.class);
+        MyBean bean = new MyBean("a");
+        assertEquals(BEAN_JSON, abMapper.writeValueAsString(bean));
+        assertEquals(1, bean.calls);
     }
 
+    // A failing getter is called once, not retried through the stock writer,
+    // and its failure is reported as plain databind reports it
     @Test
-    public void testDeserializeAccess() throws Exception
+    public void testFailingGetterIsNotRetried() throws Exception
     {
-        ObjectMapper abMapper = newObjectMapper();
-        MyBean bean = abMapper.readValue(BEAN_JSON, MyBean.class);
-        assertEquals("a", bean.getE());
+        MyBean expectedBean = new MyBean("a");
+        expectedBean.fail = true;
+        Throwable expected = assertThrows(Throwable.class,
+                () -> newVanillaJSONMapper().writeValueAsString(expectedBean));
+        assertEquals(1, expectedBean.calls);
 
-        // actually try again, to ensure handling works reliably
-        MyBean bean2 = abMapper.readValue(BEAN_JSON, MyBean.class);
-        assertEquals("a", bean2.getE());
+        ObjectMapper abMapper = newObjectMapper();
+        // twice, as a failure must not change how later writes go
+        for (int i = 0; i < 2; ++i) {
+            MyBean bean = new MyBean("a");
+            bean.fail = true;
+            Throwable actual = assertThrows(Throwable.class, () -> abMapper.writeValueAsString(bean));
+            assertEquals(1, bean.calls);
+            assertEquals(expected.getClass(), actual.getClass());
+            assertEquals(expected.getMessage(), actual.getMessage());
+            assertEquals(String.valueOf(expected.getCause()), String.valueOf(actual.getCause()));
+        }
+        assertEquals(BEAN_JSON, abMapper.writeValueAsString(new MyBean("a")));
     }
 
     // 18-Jan-2025, tatu: Fails on JDK-17/JPMS, for reasons unknown.
