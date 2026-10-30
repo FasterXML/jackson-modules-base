@@ -64,6 +64,11 @@ final class SettableIntProperty
 
     @Override
     public void set(Object bean, Object value) throws IOException {
+        // the delegate skips a null, or reports it
+        if (value == null) {
+            delegate.set(bean, value);
+            return;
+        }
         // not optimal (due to boxing), but better than using reflection:
         int v = ((Number) value).intValue();
         try {

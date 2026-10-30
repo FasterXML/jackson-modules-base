@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
@@ -260,6 +261,61 @@ public class TestBuilders extends BlackbirdTestBase
     static class SkipNullsBuilt extends Values {
         SkipNullsBuilt(String str, List<String> list) {
             super(str, list, 0, 0L, false, 0);
+        }
+    }
+
+    // The same, for nulls buffered before a creator property, which databind
+    // passes to `set()`
+    static final class CreatorSkipNullsBuilder
+    {
+        String str = "default";
+        List<String> list = Arrays.asList("keep");
+        int i = 7;
+        long l = 8L;
+        boolean b = true;
+
+        @JsonCreator
+        CreatorSkipNullsBuilder(@JsonProperty("id") String id) { }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public CreatorSkipNullsBuilder withStr(String v) {
+            str = v;
+            return this;
+        }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public CreatorSkipNullsBuilder withList(List<String> v) {
+            list = v;
+            return this;
+        }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public CreatorSkipNullsBuilder withI(int v) {
+            i = v;
+            return this;
+        }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public CreatorSkipNullsBuilder withL(long v) {
+            l = v;
+            return this;
+        }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public CreatorSkipNullsBuilder withB(boolean v) {
+            b = v;
+            return this;
+        }
+
+        public CreatorSkipNullsBuilt build() {
+            return new CreatorSkipNullsBuilt(str, list, i, l, b);
+        }
+    }
+
+    @JsonDeserialize(builder=CreatorSkipNullsBuilder.class)
+    static class CreatorSkipNullsBuilt extends Values {
+        CreatorSkipNullsBuilt(String str, List<String> list, int i, long l, boolean b) {
+            super(str, list, i, l, b, 0);
         }
     }
 
@@ -498,7 +554,8 @@ public class TestBuilders extends BlackbirdTestBase
     }
 
     // Public, so Jackson only makes it accessible with OVERRIDE_PUBLIC_ACCESS_MODIFIERS;
-    // otherwise reflection applies Java's access rules (and modules), as must Blackbird
+    // otherwise reflection applies Java's access rules (and modules), as must Blackbird,
+    // which a public class in an exported package passes
     public static final class PublicSetterBuilder
     {
         int value;
@@ -534,6 +591,24 @@ public class TestBuilders extends BlackbirdTestBase
 
         ProtectedSetterBuilt(int value) {
             this.value = value;
+        }
+    }
+
+    // As below, but the builder is the result; databind only finds its config
+    @JsonDeserialize(builder=NoBuildMethodBuilder.class)
+    @JsonPOJOBuilder(buildMethodName="")
+    public static final class NoBuildMethodBuilder
+    {
+        public int value;
+
+        @JsonCreator
+        public NoBuildMethodBuilder(@JsonProperty("id") int id) { }
+
+        @JsonProperty("value")
+        protected NoBuildMethodBuilder withValue(int v) {
+            protectedCalls++;
+            value = v;
+            return this;
         }
     }
 
@@ -875,6 +950,21 @@ public class TestBuilders extends BlackbirdTestBase
         Values v = MAPPER.readValue(a2q("{'str':null,'list':null}"), SkipNullsBuilt.class);
         assertEquals("default", v.str);
         assertEquals(Arrays.asList("keep"), v.list);
+    }
+
+    @Test
+    public void testSkipNullsBeforeCreatorProperty() throws Exception
+    {
+        String json = a2q("{'str':null,'list':null,'i':null,'l':null,'b':null,'id':'x'}");
+        Values expected = newVanillaJSONMapper().readValue(json, CreatorSkipNullsBuilt.class);
+        Values v = MAPPER.readValue(json, CreatorSkipNullsBuilt.class);
+        assertEquals("default", expected.str);
+        assertEquals(7, expected.i);
+        assertEquals(expected.str, v.str);
+        assertEquals(expected.list, v.list);
+        assertEquals(expected.i, v.i);
+        assertEquals(expected.l, v.l);
+        assertEquals(expected.b, v.b);
     }
 
     @Test
@@ -1258,11 +1348,23 @@ public class TestBuilders extends BlackbirdTestBase
                     assertEquals(0, protectedCalls, desc);
                 }
 
-                // the public one always works here, but only goes through the generated
-                // setter if Jackson would have made it accessible
+                // the public one always works here, so goes through the generated setter
                 PublicSetterBuilt result = blackbird.readValue(json, PublicSetterBuilt.class);
                 assertEquals(42, result.value, desc);
-                assertEquals((canOverride && overridePublic) ? 0 : 1, result.reflectiveCalls, desc);
+                assertEquals(0, result.reflectiveCalls, desc);
+
+                // and a builder without a build method is still a builder
+                protectedCalls = 0;
+                if (canOverride) {
+                    assertEquals(42, blackbird.readValue(bufferedJson, NoBuildMethodBuilder.class).value, desc);
+                } else {
+                    Throwable expected = assertThrows(Throwable.class,
+                            () -> vanilla.readValue(bufferedJson, NoBuildMethodBuilder.class), desc);
+                    Throwable actual = assertThrows(Throwable.class,
+                            () -> blackbird.readValue(bufferedJson, NoBuildMethodBuilder.class), desc);
+                    _assertSameFailure(desc + ", " + expected, expected, actual);
+                    assertEquals(0, protectedCalls, desc);
+                }
             }
         }
     }

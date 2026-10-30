@@ -70,6 +70,11 @@ final class SettableBooleanProperty
 
     @Override
     public void set(Object bean, Object value) throws IOException {
+        // the delegate skips a null, or reports it
+        if (value == null) {
+            delegate.set(bean, value);
+            return;
+        }
         // not optimal (due to boxing), but better than using reflection:
         final boolean b = ((Boolean) value).booleanValue();
         try {

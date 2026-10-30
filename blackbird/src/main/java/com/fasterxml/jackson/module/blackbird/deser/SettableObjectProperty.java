@@ -99,6 +99,11 @@ final class SettableObjectProperty
 
     @Override
     public void set(Object bean, Object v) throws IOException {
+        // as in `MethodProperty`, only here: `deserializeAndSet` already skipped
+        // the nulls it should
+        if ((v == null) && _skipNulls) {
+            return;
+        }
         _set(null, bean, v);
     }
 

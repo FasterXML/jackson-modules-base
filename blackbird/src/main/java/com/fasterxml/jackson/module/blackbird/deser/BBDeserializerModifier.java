@@ -86,10 +86,13 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             return builder;
         }
         lookup = _accessGrant.apply(lookup);
-        // databind sets the build method of a builder's deserializer before this
-        final boolean forBuilder = (builder.getBuildMethod() != null);
-        List<OptimizedSettableBeanProperty<?>> newProps = findOptimizableProperties(
-                lookup, config, builder.getProperties(), forBuilder);
+        // databind sets these for a builder's deserializer before this; a builder
+        // without a build method (`buildMethodName=""`) has the config
+        final boolean forBuilder = (builder.getBuildMethod() != null)
+                || (builder.getBuilderConfig() != null);
+        List<OptimizedSettableBeanProperty<?>> newProps = forBuilder
+                ? findOptimizableProperties(lookup, config, builder.getProperties(), true)
+                : findOptimizableProperties(lookup, config, builder.getProperties());
         // and if we found any, create mutator proxy, replace property objects
         if (!newProps.isEmpty()) {
             for (OptimizedSettableBeanProperty<?> prop : newProps) {
@@ -183,7 +186,7 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
 
         MethodHandle setter;
         Class<?> type;
-        boolean optimizeBuilderSetter;
+        boolean callableByReflection;
         if (jdkMember instanceof Method && prop instanceof MethodProperty) {
             final Method method = (Method) jdkMember;
             try {
@@ -208,10 +211,12 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             // Builder setters used to go through reflection, which applies Java's
             // access rules (modules included) unless Jackson made the setter accessible;
             // the generated setter ignores those rules, so it may only call what
-            // reflection could. A builder's setter is left to reflection altogether,
-            // as databind also calls `set()` on builders
-            optimizeBuilderSetter = isMadeAccessible(config, method);
-            if (forBuilder && !optimizeBuilderSetter) {
+            // reflection could. `setAndReturn` is otherwise left to reflection, and a
+            // builder's setter altogether, as databind also calls `set()` on builders
+            callableByReflection = isMadeAccessible(config, method)
+                    || (Modifier.isPublic(method.getModifiers())
+                            && ReflectionHack.isPubliclyAccessible(method.getDeclaringClass()));
+            if (forBuilder && !callableByReflection) {
                 return;
             }
         } else {
@@ -227,30 +232,30 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
                 newProps.add(new SettableIntProperty(prop,
                     createSetter(lookup, ObjIntConsumer.class, ObjIntBiFunction.class,
                         INT_TRAMPOLINE, int.class, setter, thunk),
-                    optimizeBuilderSetter ? thunk : null, receiverType, forBuilder));
+                    callableByReflection ? thunk : null, receiverType, forBuilder));
             } else if (type == Long.TYPE) {
                 ObjLongBiFunction thunk = createThunk(lookup, ObjLongBiFunction.class, long.class, setter);
                 newProps.add(new SettableLongProperty(prop,
                     createSetter(lookup, ObjLongConsumer.class, ObjLongBiFunction.class,
                         LONG_TRAMPOLINE, long.class, setter, thunk),
-                    optimizeBuilderSetter ? thunk : null, receiverType, forBuilder));
+                    callableByReflection ? thunk : null, receiverType, forBuilder));
             } else if (type == Boolean.TYPE) {
                 ObjBooleanBiFunction thunk = createThunk(lookup, ObjBooleanBiFunction.class, boolean.class, setter);
                 newProps.add(new SettableBooleanProperty(prop,
                     createSetter(lookup, ObjBooleanConsumer.class, ObjBooleanBiFunction.class,
                         BOOLEAN_TRAMPOLINE, boolean.class, setter, thunk),
-                    optimizeBuilderSetter ? thunk : null, receiverType, forBuilder));
+                    callableByReflection ? thunk : null, receiverType, forBuilder));
             }
         } else {
             BiFunction<Object, Object, Object> thunk = createThunk(lookup, BiFunction.class, Object.class, setter);
             if (type == String.class) {
                 newProps.add(new SettableStringProperty(prop,
                     createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter, thunk),
-                    optimizeBuilderSetter ? thunk : null, receiverType, forBuilder));
+                    callableByReflection ? thunk : null, receiverType, forBuilder));
             } else {
                 newProps.add(new SettableObjectProperty(prop,
                     createSetter(lookup, BiConsumer.class, BiFunction.class, TRAMPOLINE, Object.class, setter, thunk),
-                    optimizeBuilderSetter ? thunk : null, receiverType, forBuilder));
+                    callableByReflection ? thunk : null, receiverType, forBuilder));
             }
         }
     }

@@ -62,6 +62,10 @@ final class SettableStringProperty
 
     @Override
     public void set(Object bean, Object value) throws IOException {
+        // as in `MethodProperty`
+        if ((value == null) && _skipNulls) {
+            return;
+        }
         _set(null, bean, value);
     }
 
