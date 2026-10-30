@@ -59,9 +59,10 @@ public class ReflectionHack {
         }
         // For an inherited protected method the handle's receiver is narrowed to the
         // lookup class, but on Java 8 calling it still names the declaring class (which
-        // is otherwise the receiver, checked below). Newer JDKs don't load it, so
-        // neither may this check.
-        if ((type.parameterCount() > 0) && (type.parameterType(0) != declaringClass)
+        // is otherwise the receiver, checked below). Newer JDKs don't name or load it,
+        // so only check it there, and without loading it.
+        if ((Java9Up.FACTORY == null)
+                && (type.parameterCount() > 0) && (type.parameterType(0) != declaringClass)
                 && !isSameClassWithoutLoading(lookup, declaringClass)) {
             return false;
         }

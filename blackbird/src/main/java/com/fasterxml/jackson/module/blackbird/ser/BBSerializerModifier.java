@@ -12,6 +12,8 @@ import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.function.UnaryOperator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JacksonStdImpl;
@@ -27,6 +29,8 @@ import static java.lang.invoke.MethodType.*;
 public class BBSerializerModifier extends BeanSerializerModifier
 {
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOG = Logger.getLogger(BBSerializerModifier.class.getName());
 
     private final Function<Class<?>, Lookup> _lookups;
     private final UnaryOperator<Lookup> _accessGrant;
@@ -109,6 +113,7 @@ public class BBSerializerModifier extends BeanSerializerModifier
             } catch (IllegalAccessException e) {
                 // e.g. an inherited protected getter, where the lookup class isn't the
                 // subclass (as with `CrossLoaderAccess` on some JDKs); reflection can still call it
+                _logSkipped(method, lookup, e);
                 return;
             }
         } else {
@@ -120,6 +125,7 @@ public class BBSerializerModifier extends BeanSerializerModifier
         // A generated getter that would fail on every call (like one whose return
         // type the bean's loader shadows) is left to reflection
         if (!ReflectionHack.canLinkAccessor(lookup, method, getter)) {
+            _logSkipped(method, lookup, null);
             return;
         }
 
@@ -177,6 +183,15 @@ public class BBSerializerModifier extends BeanSerializerModifier
                     .getTarget().invokeExact();
                 it.set(new ObjectPropertyWriter(bpw, accessor, null));
             }
+        }
+    }
+
+    private static void _logSkipped(Method getter, Lookup lookup, Throwable cause) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, String.format(
+                    "Not optimizing getter %s: a generated accessor in %s %s; using reflection",
+                    getter, lookup.lookupClass().getName(),
+                    (cause == null) ? "couldn't link to it" : "can't access it"), cause);
         }
     }
 }

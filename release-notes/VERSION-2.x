@@ -25,7 +25,7 @@ Active maintainers:
 
 2.23.0 (not yet released)
 
-#366: (blackbird) Skip generated setters the accessor can't call
+#366: (blackbird) Skip generated setters and getters the accessor can't call
  (contributed by Parker W)
 
 2.22.4 (17-Oct-2026)
