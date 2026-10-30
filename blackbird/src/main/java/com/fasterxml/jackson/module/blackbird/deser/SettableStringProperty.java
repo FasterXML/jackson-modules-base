@@ -66,9 +66,10 @@ final class SettableStringProperty
         if ((value == null) && _skipNulls) {
             return;
         }
-        // a value of another type, or an instance the generated setter can't take,
+        // a value of another type, or a builder the generated setter can't take,
         // is left to the delegate, which reports it
-        if (((value != null) && !(value instanceof String)) || !_receiverType.isInstance(bean)) {
+        if (((value != null) && !(value instanceof String))
+                || (_forBuilder && !_receiverType.isInstance(bean))) {
             delegate.set(bean, value);
             return;
         }

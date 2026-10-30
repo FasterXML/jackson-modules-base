@@ -64,9 +64,9 @@ final class SettableLongProperty
     @Override
     public void set(Object bean, Object value) throws IOException {
         // the delegate skips a null, or reports it; and anything else (another type,
-        // which reflection may widen or reject) or an instance the generated setter
+        // which reflection may widen or reject) or a builder the generated setter
         // can't take is reported, or set, as reflection does
-        if (!(value instanceof Long) || !_receiverType.isInstance(bean)) {
+        if (!(value instanceof Long) || (_forBuilder && !_receiverType.isInstance(bean))) {
             delegate.set(bean, value);
             return;
         }

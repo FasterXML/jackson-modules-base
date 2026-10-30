@@ -108,9 +108,10 @@ final class SettableObjectProperty
     }
 
     private void _set(JsonParser p, Object bean, Object v) throws IOException {
-        // a value of another type (see `deserializeSetAndReturn`), or an instance the
+        // a value of another type (see `deserializeSetAndReturn`), or a builder the
         // generated setter can't take, is reported as reflection reports it
-        if (((v != null) && !_setterValueType.isInstance(v)) || !_receiverType.isInstance(bean)) {
+        if (((v != null) && !_setterValueType.isInstance(v))
+                || (_forBuilder && !_receiverType.isInstance(bean))) {
             _reflectiveSetAndReturn(p, bean, v);
             return;
         }
