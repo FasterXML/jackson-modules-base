@@ -34,15 +34,28 @@ public final class ClassFileEmitters
     private static final MethodHandle WRITE_HELPERS = find("BeanWriterGenerator",
             "emitWriteHelpers", MethodType.methodType(byte[].class));
 
+    private static final LinkageError INIT_FAILURE = initialize(READER, WRITER, WRITE_HELPERS);
+
     private ClassFileEmitters() {}
 
     /**
-     * Whether this runtime sees the release-25 emitters: false on Java 17 to
-     * 24, and on any Java version when the jar was repackaged without its
-     * {@code META-INF/versions/25} entries.
+     * Whether this runtime can use the release-25 emitters: false on Java 17
+     * to 24, on any Java version when the jar was repackaged without its
+     * {@code META-INF/versions/25} entries, and when an emitter class failed
+     * to initialize (see {@link #initFailure()}).
      */
     public static boolean available() {
-        return (READER != null) && (WRITER != null) && (WRITE_HELPERS != null);
+        return (READER != null) && (WRITER != null) && (WRITE_HELPERS != null)
+                && (INIT_FAILURE == null);
+    }
+
+    /**
+     * The error that the initialization of an emitter class threw, for
+     * example a {@link NoClassDefFoundError} for a class that a jackson-core
+     * or jackson-databind of another version does not have; or null.
+     */
+    public static LinkageError initFailure() {
+        return INIT_FAILURE;
     }
 
     // Both return null when a generated method is over MAX_METHOD_BYTES.
@@ -60,9 +73,9 @@ public final class ClassFileEmitters
     }
 
     private static byte[] invoke(MethodHandle emitter, Object... args) {
-        if (emitter == null) {
+        if (!available()) {
             throw new IllegalStateException("Blackbird class-file emitters are not available"
-                    + " on this runtime");
+                    + " on this runtime", INIT_FAILURE);
         }
         try {
             return (byte[]) emitter.invokeWithArguments(args);
@@ -76,28 +89,37 @@ public final class ClassFileEmitters
     // A class from META-INF/versions/25 is absent on Java 17-24
     // (ClassNotFoundException); if a repackaged jar moved it to the base
     // directory, loading it there fails with UnsupportedClassVersionError.
-    // A found emitter is initialized here, on the shallow stack of
-    // BlackbirdModule.setupModule (the first use of this class), not inside
-    // the first generation: a throwable there (say, a StackOverflowError deep
-    // in a recursive resolution) would leave the emitter class unusable for
-    // the rest of the JVM. An initializer failure is a bug and is not caught,
-    // so it is not reported as an old runtime.
     private static MethodHandle find(String simpleName, String method, MethodType type) {
         MethodHandles.Lookup lookup = MethodHandles.lookup();
-        Class<?> emitter;
-        MethodHandle handle;
         try {
-            emitter = lookup.findClass(
+            Class<?> emitter = lookup.findClass(
                     ClassFileEmitters.class.getPackageName() + "." + simpleName);
-            handle = lookup.findStatic(emitter, method, type);
+            return lookup.findStatic(emitter, method, type);
         } catch (ReflectiveOperationException | LinkageError e) {
             return null;
         }
+    }
+
+    // Found emitters are initialized here, on the shallow stack of module
+    // registration (the first use of this class), not inside the first
+    // generation: a throwable there (say, a StackOverflowError deep in a
+    // recursive resolution) would leave the emitter class unusable for the
+    // rest of the JVM. A LinkageError makes Blackbird unavailable, so that it
+    // cannot fail module discovery for every other module; a
+    // VirtualMachineError propagates.
+    private static LinkageError initialize(MethodHandle... emitters) {
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
         try {
-            lookup.ensureInitialized(emitter);
+            for (MethodHandle emitter : emitters) {
+                if (emitter != null) {
+                    lookup.ensureInitialized(lookup.revealDirect(emitter).getDeclaringClass());
+                }
+            }
+            return null;
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e);
+        } catch (LinkageError e) {
+            return e;
         }
-        return handle;
     }
 }

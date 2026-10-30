@@ -16,6 +16,10 @@ deserializer loop. The current engine replaces the loop itself. Blackbird
 ## Requirements
 
 - Jackson 3.x, with `jackson-core` and `jackson-databind` of the same version.
+  If the release-25 classes fail to initialize, for example because a
+  `jackson-core` or `jackson-databind` of another version does not have a
+  class that they need, Blackbird behaves as on Java 24. The warning or the
+  exception names the error.
 - Java 25 or later at run time. The code generators use the ClassFile API
   (final in Java 24) and compile at release 25, the current LTS release. The
   jar is a multi-release jar: the generators are under

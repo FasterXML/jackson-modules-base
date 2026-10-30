@@ -27,9 +27,11 @@ import tools.jackson.module.blackbird.ser.BBSerializerModifier;
  * module setup no longer calls them.
  *<p>
  * Code generation needs Java 25 or later: the generators use the ClassFile
- * API (final in Java 24) and compile at release 25. On Java 17 to 24, module
- * discovery ({@code MapperBuilder.findAndAddModules()}) skips this module with
- * one logged warning, so that discovery still registers every other module.
+ * API (final in Java 24) and compile at release 25. On Java 17 to 24, and
+ * where the generators fail to initialize (for example with a jackson-core or
+ * jackson-databind of another version), module discovery
+ * ({@code MapperBuilder.findAndAddModules()}) skips this module with one
+ * logged warning, so that discovery still registers every other module.
  * An explicit registration fails with an {@link IllegalStateException},
  * whether or not discovery runs too.
  */
@@ -138,19 +140,27 @@ public class BlackbirdModule extends JacksonModule
                     System.getLogger("tools.jackson.module.blackbird").log(
                             System.Logger.Level.WARNING,
                             "jackson-module-blackbird, found through module discovery, is inactive: "
-                                    + _unavailableReason() + ". Mappers work without it.");
+                                    + _unavailableReason() + ". Mappers work without it.",
+                            ClassFileEmitters.initFailure());
                 }
                 return;
             }
             throw new IllegalStateException("Cannot register BlackbirdModule: "
                     + _unavailableReason() + ". Remove the registration on this runtime"
-                    + " (jackson-module-afterburner supports Java 17 and later).");
+                    + " (jackson-module-afterburner supports Java 17 and later).",
+                    ClassFileEmitters.initFailure());
         }
         context.addDeserializerModifier(new BBDeserializerModifier());
         context.addSerializerModifier(new BBSerializerModifier());
     }
 
     private static String _unavailableReason() {
+        LinkageError initFailure = ClassFileEmitters.initFailure();
+        if (initFailure != null) {
+            return "its Java 25 classes failed to initialize (" + initFailure
+                    + "); jackson-core or jackson-databind probably does not match its version, "
+                    + PackageVersion.VERSION;
+        }
         Runtime.Version version = Runtime.version();
         if (version.feature() < 25) {
             return "it requires Java 25 or later, and this runtime is Java " + version;

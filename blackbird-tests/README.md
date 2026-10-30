@@ -31,7 +31,9 @@ JDKs.
   listed in `-Dblackbird.test.oldJdks=<home>[,<home>]`: module discovery on the
   class path and module path, with a second module provider on the path, and
   explicit registration with discovery before it, after it and without it.
-  Without that property, the old-JDK cases are skipped. `PackagingTest`
+  Without that property, the old-JDK cases are skipped. On the build JDK it
+  also runs discovery and explicit registration with a `jackson-core` that
+  does not have a class the generators load. `PackagingTest`
   checks the module descriptor, the OSGi exports and the release guard of the
   root POM. `IsolatedLoaderTest` loads Jackson and Blackbird in a class loader
   that the system class loader cannot see, as an application server or OSGi

@@ -7,10 +7,11 @@ import tools.jackson.module.blackbird.codegen.ClassFileEmitters;
  * The service provider that module discovery instantiates
  * ({@code MapperBuilder.findAndAddModules()}, or any other reader of
  * {@code META-INF/services/tools.jackson.databind.JacksonModule}). On a
- * runtime where Blackbird cannot generate codecs (Java 17 to 24), this
- * instance registers nothing and logs one warning, so discovery keeps working
- * for every other module; an explicitly registered {@link BlackbirdModule}
- * fails instead. Not API: register {@code new BlackbirdModule()}.
+ * runtime where Blackbird cannot generate codecs (for example Java 17 to
+ * 24), this instance registers nothing and logs one warning, so discovery
+ * keeps working for every other module; an explicitly registered
+ * {@link BlackbirdModule} fails instead. Not API: register
+ * {@code new BlackbirdModule()}.
  */
 public final class DiscoveredBlackbirdModule extends BlackbirdModule
 {

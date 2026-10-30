@@ -58,6 +58,13 @@ public class JdkCompatibilityTest
     private static final String INACTIVE_WARNING =
             "found through module discovery, is inactive";
 
+    // The one class that the emitters' initializers load and stock databind
+    // does not load for the probe's beans.
+    private static final String MISSING_CORE_CLASS = "tools/jackson/core/type/WritableTypeId";
+
+    private static final String MISSING_CORE_CLASS_ERROR =
+            "java.lang.NoClassDefFoundError: " + MISSING_CORE_CLASS;
+
     private static final String PROBE = """
             import java.util.ArrayList;
             import java.util.Collections;
@@ -249,7 +256,33 @@ public class JdkCompatibilityTest
         }
     }
 
+    // A jackson-core without a class that the emitters need stands for a
+    // jackson-core or jackson-databind of another version. The emitters then
+    // fail to initialize, and Blackbird must behave as on Java 24.
+    @Test
+    public void discoveryWithMismatchedJacksonCore() throws Exception {
+        Result r = run(Path.of(System.getProperty("java.home")), false, "discover",
+                mismatchedJacksonCore());
+        assertDiscovery(r, false);
+        assertTrue(r.stderr.stream().anyMatch(l -> l.contains(INACTIVE_WARNING)
+                && l.contains(MISSING_CORE_CLASS_ERROR)), r.toString());
+    }
+
+    @Test
+    public void explicitRegistrationWithMismatchedJacksonCore() throws Exception {
+        Result r = run(Path.of(System.getProperty("java.home")), false, "explicit",
+                mismatchedJacksonCore());
+        assertEquals(0, r.exitCode, r.toString());
+        assertEquals(2, r.stdout.size(), r.toString());
+        assertTrue(r.stdout.get(1).startsWith("rejected Cannot register BlackbirdModule: its Java 25"
+                + " classes failed to initialize (" + MISSING_CORE_CLASS_ERROR + ")"), r.toString());
+    }
+
     private static void assertDiscovery(Result r) {
+        assertDiscovery(r, r.feature >= 25);
+    }
+
+    private static void assertDiscovery(Result r, boolean active) {
         assertEquals(0, r.exitCode, r.toString());
         String discovered = "discovered true modules [BlackbirdModule, " + OTHER_MODULE_NAME
                 + "] roundtrip {\"s\":\"a\",\"x\":1}";
@@ -257,7 +290,7 @@ public class JdkCompatibilityTest
         long warnings = r.stderr.stream().filter(l -> l.contains(INACTIVE_WARNING)).count();
         boolean engaged = r.stderr.stream().anyMatch(l -> l.contains("BBReader_BlackbirdProbe"))
                 && r.stderr.stream().anyMatch(l -> l.contains("BBWriter_BlackbirdProbe"));
-        if (r.feature >= 25) {
+        if (active) {
             assertEquals(0, warnings, r.toString());
             assertTrue(engaged, "expected generated codecs: " + r);
         } else {
@@ -281,12 +314,17 @@ public class JdkCompatibilityTest
 
     private static Result run(Path javaHome, boolean modulePath, String mode)
             throws IOException, InterruptedException, URISyntaxException {
+        return run(javaHome, modulePath, mode, codeSource(JsonParser.class));
+    }
+
+    private static Result run(Path javaHome, boolean modulePath, String mode, Path jacksonCore)
+            throws IOException, InterruptedException, URISyntaxException {
         Path probe = probeDir.resolve("BlackbirdProbe.java");
         if (!Files.exists(probe)) {
             Files.writeString(probe, PROBE);
         }
         String path = Stream.of(blackbirdJar(), otherModuleJar(), codeSource(ObjectMapper.class),
-                        codeSource(JsonParser.class), codeSource(JsonProperty.class))
+                        jacksonCore, codeSource(JsonProperty.class))
                 .map(Path::toString)
                 .collect(Collectors.joining(java.io.File.pathSeparator));
         List<String> cmd = new ArrayList<>();
@@ -350,6 +388,27 @@ public class JdkCompatibilityTest
             out.putNextEntry(new JarEntry("META-INF/services/" + JacksonModule.class.getName()));
             out.write("probe.other.OtherProbeModule\n".getBytes(StandardCharsets.UTF_8));
             out.closeEntry();
+        }
+        return jar;
+    }
+
+    private static Path mismatchedJacksonCore() throws IOException, URISyntaxException {
+        Path jar = probeDir.resolve("jackson-core-mismatched.jar");
+        if (Files.exists(jar)) {
+            return jar;
+        }
+        try (JarFile in = new JarFile(codeSource(JsonParser.class).toFile());
+                JarOutputStream out = new JarOutputStream(Files.newOutputStream(jar))) {
+            for (JarEntry e : in.stream().toList()) {
+                if (e.getName().startsWith(MISSING_CORE_CLASS)) {
+                    continue;
+                }
+                out.putNextEntry(new JarEntry(e.getName()));
+                try (InputStream data = in.getInputStream(e)) {
+                    data.transferTo(out);
+                }
+                out.closeEntry();
+            }
         }
         return jar;
     }
