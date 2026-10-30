@@ -233,14 +233,15 @@ public class TestSetterFailures extends BlackbirdTestBase
         }
     }
 
-    // Not retried, these are still reported as `MethodProperty` reports them (as they
-    // were after the retry), not as the setter's raw `Error` or exception
+    // Not retried, and reported as `MethodProperty` reports them, not as the setter's
+    // raw `Error` or exception
     @Test
-    public void testAccessErrorsAreReportedAsVanilla() throws Exception {
+    public void testSetterFailuresAreReportedAsVanilla() throws Exception {
         for (boolean wrap : new boolean[] { true, false }) {
             ObjectMapper vanilla = JsonMapper.builder().configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
             ObjectMapper blackbird = mapperBuilder().configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
-            for (Throwable t : new Throwable[] { new SecurityException("se"), new IllegalAccessError("iae") }) {
+            for (Throwable t : new Throwable[] { new SecurityException("se"), new IllegalAccessError("iae"),
+                    new IllegalStateException("ise"), new NoClassDefFoundError("ncdfe"), new AssertionError("ae") }) {
                 for (String json : new String[] { a2q("{'str':'foo'}"), a2q("{'i':42}") }) {
                     String desc = "wrap=" + wrap + ", " + t + ", " + json;
                     alwaysThrow = t;
