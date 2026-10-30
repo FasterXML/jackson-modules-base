@@ -120,7 +120,7 @@ final class SettableObjectProperty
         try {
             _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
-            _reportProblem(p, v, e);
+            _reportProblem(p, e);
         }
     }
 

@@ -16,6 +16,8 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -38,6 +40,8 @@ import com.fasterxml.jackson.module.blackbird.deser.access.InaccessibleSetterVal
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+// The beans record calls and failures in static fields, so tests must not run concurrently
+@Execution(ExecutionMode.SAME_THREAD)
 public class TestSetterFailures extends BlackbirdTestBase
 {
     private static Supplier<Throwable> failure;

@@ -113,23 +113,20 @@ abstract class OptimizedSettableBeanProperty<T extends OptimizedSettableBeanProp
      *
      * @since 2.9
      */
-    protected void _reportProblem(JsonParser p, Object value, Throwable e)
+    protected void _reportProblem(JsonParser p, Throwable e)
         throws IOException
     {
         // databind calls `set()` on builders too (for properties buffered before a
         // property-based creator, or external type ids), which must behave like
-        // `setAndReturn`, regardless of the order of properties in the JSON
-        if (_forBuilder) {
+        // `setAndReturn`, regardless of the order of properties in the JSON.
+        // Access failures are never retried either, as the setter may already have
+        // run (see `_reportProblemAndReturn`). These used to be retried through
+        // reflection, which reported the setter's failure the way `MethodProperty`
+        // does; keep that, rather than letting an `Error` escape unwrapped
+        if (_forBuilder
+                || (e instanceof IllegalAccessError) || (e instanceof SecurityException)) {
             _reportProblemAndReturn(p, e);
             return;
-        }
-        // Never retried, as the setter may already have run (see
-        // `_reportProblemAndReturn`). These used to be retried through reflection,
-        // which reported the setter's failure the way `MethodProperty` does (`p` is
-        // only for the location); keep that, rather than letting an `Error` escape
-        // unwrapped
-        if ((e instanceof IllegalAccessError) || (e instanceof SecurityException)) {
-            _throwAsIOE(p, new InvocationTargetException(e), value);
         }
         if (e instanceof IOException) {
             throw (IOException) e;

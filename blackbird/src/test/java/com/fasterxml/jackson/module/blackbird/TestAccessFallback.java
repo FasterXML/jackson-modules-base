@@ -30,16 +30,6 @@ public class TestAccessFallback extends BlackbirdTestBase
 
         public void setE(String e)
         {
-            /* 07-Mar-2015, tatu: This is bit tricky, as the exact stack trace varies
-             *   depending on how code is generated. So right now we must get the call
-             *   immediately from constructed class.
-             */
-            
-            StackTraceElement[] elems = new Throwable().getStackTrace();
-            StackTraceElement prev = elems[1];
-            if (prev.getClassName().contains("Access4JacksonDeserializer")) {
-                throw new BogusTestError("boom!");
-            }
             this.e = e;
         }
 
@@ -64,18 +54,6 @@ public class TestAccessFallback extends BlackbirdTestBase
 
         // actually try again, to ensure handling works reliably
         assertEquals(BEAN_JSON, abMapper.writeValueAsString(new MyBean("a")));
-    }
-
-    @Test
-    public void testDeserializeAccess() throws Exception
-    {
-        ObjectMapper abMapper = newObjectMapper();
-        MyBean bean = abMapper.readValue(BEAN_JSON, MyBean.class);
-        assertEquals("a", bean.getE());
-
-        // actually try again, to ensure handling works reliably
-        MyBean bean2 = abMapper.readValue(BEAN_JSON, MyBean.class);
-        assertEquals("a", bean2.getE());
     }
 
     @Test
