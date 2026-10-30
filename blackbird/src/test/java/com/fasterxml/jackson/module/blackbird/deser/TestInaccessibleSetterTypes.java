@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import org.junit.jupiter.api.Test;
 
@@ -23,8 +26,6 @@ import com.fasterxml.jackson.databind.deser.BeanDeserializerBase;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.deser.impl.MethodProperty;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 import com.fasterxml.jackson.module.blackbird.deser.isolated.Token;
 import com.fasterxml.jackson.module.blackbird.deser.isolated.TokenBean;
@@ -40,6 +41,7 @@ import com.fasterxml.jackson.module.blackbird.deser.shadowed.ChainBeanBase;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.ChainBuilder;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.ChainBuilderBase;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.ChainBuilt;
+import com.fasterxml.jackson.module.blackbird.deser.shadowed.DirectLevelBean;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.Level;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.LevelBean;
 import com.fasterxml.jackson.module.blackbird.deser.shadowed.LevelBeanBase;
@@ -86,8 +88,9 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
 
     static final class HiddenSetterBean extends HiddenSetterBeanBase { }
 
-    // Setters with JDK `java.*` signatures keep the generated setter; other types from
-    // other loaders, even JDK `javax.*` ones, can't be known to be the same class
+    // Setters with JDK `java.*` signatures keep the generated setter, as do those with
+    // other types from other loaders (like JDK `javax.*` ones) when declared by a class
+    // from the lookup class's loader, which resolved them through that loader
     static class CommonSignatures
     {
         String a;
@@ -116,6 +119,31 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
         assertEquals(MethodProperty.class, _findProperty(ModeBean.class, "modes").getClass());
         SettableBeanProperty name = _findProperty(ModeBean.class, "name");
         assertTrue(name instanceof OptimizedSettableBeanProperty, name.getClass().getName());
+    }
+
+    // so it's possible to find out why a property isn't optimized
+    @Test
+    public void testSkippedSetterIsLogged() throws Exception
+    {
+        Logger logger = Logger.getLogger(BBDeserializerModifier.class.getName());
+        List<LogRecord> records = Collections.synchronizedList(new java.util.ArrayList<>());
+        Handler handler = new Handler() {
+            @Override public void publish(LogRecord r) { records.add(r); }
+            @Override public void flush() { }
+            @Override public void close() { }
+        };
+        java.util.logging.Level oldLevel = logger.getLevel();
+        logger.setLevel(java.util.logging.Level.FINE);
+        logger.addHandler(handler);
+        try {
+            _findProperty(newObjectMapper(), ModeBean.class, "mode");
+        } finally {
+            logger.removeHandler(handler);
+            logger.setLevel(oldLevel);
+        }
+        assertTrue(records.stream().anyMatch(r -> r.getMessage().contains("setMode")
+                && r.getMessage().contains("couldn't link")), records.toString());
+        assertFalse(records.stream().anyMatch(r -> r.getMessage().contains("setName")));
     }
 
     // `unreflect` refuses some inherited setters that reflection can call; these used
@@ -178,8 +206,9 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
         assertFalse(loader.defined.contains(Chain.class.getName()));
     }
 
-    // And for the declaring class of an inherited protected setter, which isn't in the
-    // handle's type (its receiver is narrowed to the bean), but still named by the call
+    // And on Java 8 for the declaring class of an inherited protected setter, which isn't
+    // in the handle's type (its receiver is narrowed to the bean), but still named by the
+    // call; newer JDKs don't name it, so keep the generated setter there
     @Test
     public void testShadowedDeclaringClass() throws Exception
     {
@@ -187,17 +216,20 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
                 Arrays.asList(OwnerBase.class, OwnerBean.class));
         Class<?> bean = Class.forName(OwnerBean.class.getName(), true, loader);
         assertNotSame(OwnerBase.class, Class.forName(OwnerBase.class.getName(), false, loader));
-        // a lookup in the bean itself, which the protected setter needs
-        MethodHandles.Lookup beanLookup = (MethodHandles.Lookup) bean.getMethod("lookup").invoke(null);
-        ObjectMapper mapper = JsonMapper.builder()
-                .addModule(new BlackbirdModule(c -> (c == bean) ? beanLookup : MethodHandles.lookup()))
-                .build();
+        ObjectMapper mapper = _mapperWithLookupIn(bean);
 
         OwnerBase.setterCalls = 0;
         Object result = mapper.readValue(a2q("{'value':7}"), bean);
         assertEquals(7, bean.getMethod("value").invoke(result));
         assertEquals(1, OwnerBase.setterCalls);
-        assertEquals(MethodProperty.class, _findProperty(mapper, bean, "value").getClass());
+        SettableBeanProperty prop = _findProperty(mapper, bean, "value");
+        int version = _javaVersion();
+        if (version == 8) {
+            assertEquals(MethodProperty.class, prop.getClass());
+        } else if (version >= 14) {
+            // (JDK 9 to 13 always use an access class, for which `unreflect` refuses the setter)
+            assertTrue(prop instanceof OptimizedSettableBeanProperty, prop.getClass().getName());
+        }
     }
 
     // Nor may checking the declaring class load it, when the generated setter wouldn't
@@ -209,13 +241,7 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
             ChildFirstLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
                     Arrays.asList(OwnerBase.class, OwnerBean.class));
             Class<?> bean = Class.forName(OwnerBean.class.getName(), true, loader);
-            ObjectMapper mapper = MAPPER;
-            if (beanLookup) {
-                MethodHandles.Lookup lookup = (MethodHandles.Lookup) bean.getMethod("lookup").invoke(null);
-                mapper = JsonMapper.builder()
-                        .addModule(new BlackbirdModule(c -> (c == bean) ? lookup : MethodHandles.lookup()))
-                        .build();
-            }
+            ObjectMapper mapper = beanLookup ? _mapperWithLookupIn(bean) : MAPPER;
             Object result = mapper.readValue(a2q("{'value':7,'ratio':0.5}"), bean);
             assertEquals(7, bean.getMethod("value").invoke(result));
             assertEquals(0.5, bean.getMethod("ratio").invoke(result));
@@ -250,15 +276,31 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
     @Test
     public void testCommonSignaturesStayOptimized() throws Exception
     {
-        for (String name : new String[] { "a", "b", "c" }) {
+        for (String name : new String[] { "a", "b", "c", "d" }) {
             SettableBeanProperty prop = _findProperty(CommonSignatures.class, name);
             assertTrue(prop instanceof OptimizedSettableBeanProperty, name);
         }
-        assertEquals(MethodProperty.class, _findProperty(CommonSignatures.class, "d").getClass());
         CommonSignatures result = MAPPER.readValue(a2q("{'a':'x','b':['y'],'c':3,'d':'z'}"), CommonSignatures.class);
         assertEquals("x", result.a);
         assertEquals(Arrays.asList("y"), result.b);
         assertEquals(3, result.c);
+    }
+
+    // A setter declared by the bean itself, in a child loader, taking a type from the
+    // parent: the bean's loader resolved it, as the generated setter will
+    @Test
+    public void testParentLoaderParameterTypeStaysOptimized() throws Exception
+    {
+        ClassLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                Arrays.asList(DirectLevelBean.class));
+        Class<?> bean = Class.forName(DirectLevelBean.class.getName(), true, loader);
+        assertNotSame(DirectLevelBean.class, bean);
+        assertSame(Level.class, Class.forName(Level.class.getName(), false, loader));
+
+        SettableBeanProperty prop = _findProperty(bean, "level");
+        assertTrue(prop instanceof OptimizedSettableBeanProperty, prop.getClass().getName());
+        Object result = MAPPER.readValue(a2q("{'level':'HIGH'}"), bean);
+        assertEquals(Level.HIGH, bean.getMethod("level").invoke(result));
     }
 
     // A loader that fails (other than not finding the class) only stops the optimization
@@ -354,16 +396,20 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
         assertNotSame(OwnerBuilt.class, built);
         assertNotSame(OwnerBase.class, Class.forName(OwnerBase.class.getName(), false, loader));
         // a lookup in the builder itself, which the protected setter needs
-        MethodHandles.Lookup builderLookup = (MethodHandles.Lookup) builder.getMethod("lookup").invoke(null);
-        ObjectMapper mapper = JsonMapper.builder()
-                .addModule(new BlackbirdModule(c -> (c == builder) ? builderLookup : MethodHandles.lookup()))
-                .build();
+        ObjectMapper mapper = _mapperWithLookupIn(builder);
 
         OwnerBase.setterCalls = 0;
         Object result = mapper.readValue(a2q("{'value':7}"), built);
         assertEquals(7, built.getField("value").get(result));
         assertEquals(1, OwnerBase.setterCalls);
-        assertEquals(MethodProperty.class, _findProperty(mapper, built, "value").getClass());
+        // (as for beans, see `testShadowedDeclaringClass`)
+        SettableBeanProperty prop = _findProperty(mapper, built, "value");
+        int version = _javaVersion();
+        if (version == 8) {
+            assertEquals(MethodProperty.class, prop.getClass());
+        } else if (version >= 14) {
+            assertTrue(prop instanceof OptimizedSettableBeanProperty, prop.getClass().getName());
+        }
     }
 
     @Test
@@ -416,6 +462,18 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
         assertEquals(0, ModeBuilderBase.setterCalls);
     }
 
+    // Uses a lookup in the bean itself (from its static `lookup()`), as protected
+    // setters inherited from another package need
+    private static ObjectMapper _mapperWithLookupIn(Class<?> bean) throws Exception {
+        MethodHandles.Lookup beanLookup = (MethodHandles.Lookup) bean.getMethod("lookup").invoke(null);
+        return mapperBuilder(c -> (c == bean) ? beanLookup : MethodHandles.lookup()).build();
+    }
+
+    private static int _javaVersion() {
+        String version = System.getProperty("java.specification.version");
+        return Integer.parseInt(version.startsWith("1.") ? version.substring(2) : version);
+    }
+
     private SettableBeanProperty _findProperty(Class<?> type, String name) throws Exception
     {
         return _findProperty(MAPPER, type, name);
@@ -433,13 +491,13 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
 
     // Defines its own copies of the given classes, delegating everything else, and
     // fails for the names it's told to
-    static final class ChildFirstLoader extends ClassLoader
+    public static final class ChildFirstLoader extends ClassLoader
     {
         private final List<Class<?>> _copied;
         private final Set<String> _failing;
-        final Set<String> defined = Collections.synchronizedSet(new HashSet<>());
+        public final Set<String> defined = Collections.synchronizedSet(new HashSet<>());
 
-        ChildFirstLoader(ClassLoader parent, List<Class<?>> copied) {
+        public ChildFirstLoader(ClassLoader parent, List<Class<?>> copied) {
             this(parent, copied, Collections.emptySet());
         }
 
