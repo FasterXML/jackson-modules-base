@@ -1,5 +1,6 @@
 package tools.jackson.module.blackbird.deser;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
@@ -22,6 +25,7 @@ import tools.jackson.databind.deser.DeserializationProblemHandler;
 import tools.jackson.databind.exc.UnrecognizedPropertyException;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
+import tools.jackson.module.blackbird.internal.GeneratedBuilderBase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -92,6 +96,40 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
             }
 
             public Aliased build() { return new Aliased(v); }
+        }
+    }
+
+    // A polymorphic builder subtype with an alias: a type id after the
+    // first property makes the codec run on the buffered property, then on
+    // the live stream.
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY,
+            property = "type")
+    @JsonSubTypes(@JsonSubTypes.Type(value = AliasedSub.class, name = "sub"))
+    public interface AliasedBase { }
+
+    @JsonDeserialize(builder = AliasedSub.Builder.class)
+    public static class AliasedSub implements AliasedBase {
+        final String a;
+        final int z;
+
+        AliasedSub(String a, int z) { this.a = a; this.z = z; }
+
+        public static class Builder {
+            String a;
+            int z;
+
+            @JsonAlias("aa")
+            public Builder withA(String a) { this.a = a; return this; }
+
+            public Builder withZ(int z) {
+                if (z < 0) {
+                    throw new IllegalArgumentException("negative");
+                }
+                this.z = z;
+                return this;
+            }
+
+            public AliasedSub build() { return new AliasedSub(a, z); }
         }
     }
 
@@ -278,5 +316,26 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
         Exception e = assertThrows(Exception.class,
                 () -> MODULE.readValue("{\"alt\":-1}", Aliased.class));
         assertTrue(e.getMessage().contains("[\"alt\"]"), e.getMessage());
+    }
+
+    // The same after a type id that follows a buffered property: the
+    // failing property is read from the live stream, past the buffer.
+    @Test
+    public void testBuilderFailureNameAfterBufferedTypeId() throws Exception {
+        String doc = "{\"aa\":\"x\",\"type\":\"sub\",\"z\":-1}";
+        Exception expected = assertThrows(Exception.class,
+                () -> VANILLA.readValue(doc, AliasedBase.class));
+        Exception actual = assertThrows(Exception.class,
+                () -> MODULE.readValue(doc, AliasedBase.class));
+        // The subtype reader sits behind the type deserializer: the
+        // generated codec's failure helper shows that it reported this.
+        assertTrue(Arrays.stream(actual.getStackTrace()).anyMatch(
+                f -> f.getClassName().equals(GeneratedBuilderBase.class.getName())),
+                "failure should come from the generated builder codec");
+        assertEquals(expected.getClass(), actual.getClass());
+        assertEquals(expected.getMessage(), actual.getMessage());
+        assertTrue(actual.getMessage().contains("[\"z\"]"), actual.getMessage());
+        assertSameOutcome(VANILLA, MODULE, doc.replace("-1", "2"), AliasedBase.class,
+                b -> ((AliasedSub) b).a + "/" + ((AliasedSub) b).z);
     }
 }

@@ -95,10 +95,13 @@ public final class ReaderCodegen
      * arm can have several names, aliases, or none, an ignored record
      * component); localNames are the record component names (record mode
      * only), which name the component locals in the debug table.
+     * inputNames tells whether a matched name can differ from the
+     * property's own name (aliases, case-insensitive matching), which
+     * builder-mode error messages then need.
      */
     record Plan(String className, List<GenProp> props, String[] stockName,
             String[] childName, String[] handleName, Mode mode, boolean injectables,
-            ViewStrategy views, int[] matchArms, String[] localNames) {}
+            ViewStrategy views, int[] matchArms, String[] localNames, boolean inputNames) {}
 
     private ReaderCodegen() {}
 
@@ -151,7 +154,8 @@ public final class ReaderCodegen
         String className = definer.lookupClass().getPackageName()
                 + ".BBReader_" + codecName(beanClass);
         byte[] bytes = ClassFileEmitters.emit(new Plan(className, props, stockName, childName,
-                handleName, mode, injectables, views, matchArms, localNames));
+                handleName, mode, injectables, views, matchArms, localNames,
+                beanProps.hasAliases() || beanProps.isCaseInsensitive()));
         if (bytes == null) {
             CodegenDebug.log(() -> "reader gate: a generated method is over "
                     + ClassFileEmitters.MAX_METHOD_BYTES + " bytes");

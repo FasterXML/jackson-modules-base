@@ -1,7 +1,6 @@
 package tools.jackson.module.blackbird.internal;
 
 import tools.jackson.core.JsonParser;
-import tools.jackson.core.TokenStreamContext;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.bean.BeanPropertyMap;
@@ -62,36 +61,33 @@ public abstract class GeneratedBuilderBase extends BuilderBasedDeserializer
 
     // The property name that stock reports for a failing property: its
     // general loop (deserializeFromObject) reports the name as written in
-    // the input (an alias, or another case), its vanilla loop and view loop
-    // the property's own name. Called once at entry, on the entry token:
-    // null selects the property's own name, otherwise the object's parse
-    // context, whose current name at failure time is the input name.
-    protected final TokenStreamContext _nameContext(JsonParser p, DeserializationContext ctxt) {
-        if (_vanillaProcessing && p.isExpectedStartObjectToken()) {
-            return null;
+    // the input (an alias, another case), its vanilla loop and view loop
+    // the property's own name. inputName is the name the generated arm read,
+    // or null for a bean without aliases or case-insensitive matching, where
+    // the two always agree; startObject tells whether the call entered on
+    // START_OBJECT (the stock vanilla loop's entry) or on a property name.
+    // Resolved here, on the failure path, so the entry pays nothing for it.
+    private String _failedName(SettableBeanProperty prop, String inputName,
+            boolean startObject, DeserializationContext ctxt) {
+        if ((inputName == null)
+                || (_vanillaProcessing && startObject)
+                || (_needViewProcesing && ctxt.getActiveView() != null)) {
+            return prop.getName();
         }
-        if (_needViewProcesing && ctxt.getActiveView() != null) {
-            return null;
-        }
-        return p.streamReadContext();
-    }
-
-    private static String _failedName(SettableBeanProperty prop, TokenStreamContext nameContext) {
-        String name = (nameContext == null) ? null : nameContext.currentName();
-        return (name == null) ? prop.getName() : name;
+        return inputName;
     }
 
     protected final RuntimeException _propertyException(Throwable t, Object builder,
-            SettableBeanProperty prop, TokenStreamContext nameContext,
+            SettableBeanProperty prop, String inputName, boolean startObject,
             DeserializationContext ctxt) {
-        throw wrapAndThrow(t, builder, _failedName(prop, nameContext), ctxt);
+        throw wrapAndThrow(t, builder, _failedName(prop, inputName, startObject, ctxt), ctxt);
     }
 
     protected final RuntimeException _storeFailure(Throwable t, Object builder,
             Object childValue, SettableBeanProperty prop, JsonParser p,
-            TokenStreamContext nameContext, DeserializationContext ctxt) {
+            String inputName, boolean startObject, DeserializationContext ctxt) {
         throw wrapAndThrow(ReaderSupport.storeException(t, childValue, prop, p), builder,
-                _failedName(prop, nameContext), ctxt);
+                _failedName(prop, inputName, startObject, ctxt), ctxt);
     }
 
     protected final void _injectValues(DeserializationContext ctxt, Object builder) {
