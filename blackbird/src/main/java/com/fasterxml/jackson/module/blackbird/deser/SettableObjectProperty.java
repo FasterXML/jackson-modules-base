@@ -61,6 +61,8 @@ final class SettableObjectProperty
         } else {
             value = _valueDeserializer.deserializeWithType(p, ctxt, _valueTypeDeserializer);
         }
+        // Do not call set(): MethodProperty passes nulls returned by polymorphic
+        // deserialization to the setter, even with Nulls.SKIP.
         _set(p, bean, value);
     }
 
@@ -118,7 +120,7 @@ final class SettableObjectProperty
         try {
             _optimizedSetter.accept(bean, v);
         } catch (Throwable e) {
-            _reportProblem(p, bean, v, e);
+            throw _reportProblem(p, e);
         }
     }
 
@@ -143,7 +145,7 @@ final class SettableObjectProperty
             Object result = _optimizedSetterAndReturn.apply(instance, value);
             return (result == null) ? instance : result;
         } catch (Throwable e) {
-            return _reportProblemAndReturn(p, e);
+            throw _reportProblem(p, e);
         }
     }
 
