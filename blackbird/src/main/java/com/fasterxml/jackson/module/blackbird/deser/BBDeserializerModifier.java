@@ -190,8 +190,8 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
         if (jdkMember instanceof Method && prop instanceof MethodProperty) {
             final Method method = (Method) jdkMember;
             try {
-                setter = lookup.unreflect(method);
-            } catch (IllegalAccessException e) {
+                setter = lookup.unreflect(_withoutAccessOverride(method));
+            } catch (IllegalAccessException | NoSuchMethodException | SecurityException e) {
                 // e.g. an inherited protected setter, where the lookup class isn't the
                 // subclass (as with `CrossLoaderAccess` on some JDKs); reflection can still call it
                 _logSkipped(method, lookup, e);
@@ -311,6 +311,17 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
                 trampoline,
                 MethodType.methodType(void.class, Object.class, valueType))
             .getTarget().invoke(builtThunk));
+    }
+
+    // `unreflect` skips its access checks for a method made accessible (as databind
+    // does early for injection or back references), but the generated accessor
+    // can't skip them, so check a copy that isn't
+    @SuppressWarnings("deprecation")
+    private static Method _withoutAccessOverride(Method method) throws NoSuchMethodException {
+        if (!method.isAccessible()) {
+            return method;
+        }
+        return method.getDeclaringClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
     }
 
     private static void _logSkipped(Method setter, Lookup lookup, Throwable cause) {

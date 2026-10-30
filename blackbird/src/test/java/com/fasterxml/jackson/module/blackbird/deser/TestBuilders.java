@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +41,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.module.blackbird.BlackbirdTestBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.HiddenSetterBuilderBase;
+import com.fasterxml.jackson.module.blackbird.deser.otherpackage.InjectedSetterBuilderBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ReplacingBuilderBase;
 import com.fasterxml.jackson.module.blackbird.deser.otherpackage.ReplacingBuilt;
 
@@ -517,6 +519,23 @@ public class TestBuilders extends BlackbirdTestBase
 
     // Inherits a package-private setter from another package, which the generated
     // setter can't reach (`unreflect` refuses it) but reflection can
+    public static final class InjectedSetterBuilder extends InjectedSetterBuilderBase
+    {
+        public InjectedSetterBuilt build() {
+            return new InjectedSetterBuilt(tag);
+        }
+    }
+
+    @JsonDeserialize(builder=InjectedSetterBuilder.class)
+    static class InjectedSetterBuilt
+    {
+        final String tag;
+
+        InjectedSetterBuilt(String tag) {
+            this.tag = tag;
+        }
+    }
+
     public static final class HiddenSetterBuilder extends HiddenSetterBuilderBase
     {
         public HiddenSetterBuilt build() {
@@ -1181,6 +1200,20 @@ public class TestBuilders extends BlackbirdTestBase
     {
         assertEquals(3, newVanillaJSONMapper().readValue(a2q("{'y':3}"), HiddenSetterBuilt.class).y);
         assertEquals(3, MAPPER.readValue(a2q("{'y':3}"), HiddenSetterBuilt.class).y);
+    }
+
+    // Not even if databind made it accessible first, as it does for injection
+    @Test
+    public void testInjectedPackagePrivateSetterInOtherPackage() throws Exception
+    {
+        InjectableValues inject = new InjectableValues.Std().addValue("tag", "injected");
+        for (String json : new String[] { a2q("{'tag':'json'}"), "{}" }) {
+            InjectedSetterBuilt expected = newVanillaJSONMapper().setInjectableValues(inject)
+                    .readValue(json, InjectedSetterBuilt.class);
+            InjectedSetterBuilt actual = newObjectMapper().setInjectableValues(inject)
+                    .readValue(json, InjectedSetterBuilt.class);
+            assertEquals(expected.tag, actual.tag, json);
+        }
     }
 
     // As `deserializeSetAndReturn` does, `setAndReturn` leaves a builder the generated
