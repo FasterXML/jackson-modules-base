@@ -16,6 +16,8 @@ import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.ObjLongConsumer;
 import java.util.function.UnaryOperator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.deser.*;
@@ -28,6 +30,8 @@ import tools.jackson.module.blackbird.util.ReflectionHack;
 public class BBDeserializerModifier extends ValueDeserializerModifier
 {
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOG = Logger.getLogger(BBDeserializerModifier.class.getName());
 
     private static final MethodHandle TRAMPOLINE, BOOLEAN_TRAMPOLINE, LONG_TRAMPOLINE, INT_TRAMPOLINE;
 
@@ -172,8 +176,25 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
         Class<?> type;
         if (jdkMember instanceof Method && prop instanceof MethodProperty) {
             final Method method = (Method) jdkMember;
-            setter = lookup.unreflect(method);
+            try {
+                setter = lookup.unreflect(method);
+            } catch (IllegalAccessException e) {
+                // e.g. an inherited protected setter, where the lookup class isn't the
+                // subclass (as with `CrossLoaderAccess` on some JDKs); reflection can still call it
+                _logSkipped(method, lookup, e);
+                return;
+            }
             type = ((AnnotatedMethod) member).getRawParameterType(0);
+            // Only these get a generated setter, so don't check (or load) anything for others
+            if (type.isPrimitive() && (type != Integer.TYPE) && (type != Long.TYPE) && (type != Boolean.TYPE)) {
+                return;
+            }
+            // A generated setter that would fail on every call (like one taking a
+            // package-private type from another package) is left to reflection
+            if (!ReflectionHack.canLinkAccessor(lookup, method, setter)) {
+                _logSkipped(method, lookup, null);
+                return;
+            }
         } else {
             return;
             //setter = lookup.unreflectGetter((Field) jdkMember);
@@ -232,6 +253,15 @@ public class BBDeserializerModifier extends ValueDeserializerModifier
                 trampoline,
                 MethodType.methodType(void.class, Object.class, valueType))
             .getTarget().invoke(builtThunk));
+    }
+
+    private static void _logSkipped(Method setter, Lookup lookup, Throwable cause) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, String.format(
+                    "Not optimizing setter %s: a generated accessor in %s %s; using reflection",
+                    setter, lookup.lookupClass().getName(),
+                    (cause == null) ? "couldn't link to it" : "can't access it"), cause);
+        }
     }
 
     /**

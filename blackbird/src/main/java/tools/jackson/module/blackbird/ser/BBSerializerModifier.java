@@ -12,6 +12,8 @@ import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.function.UnaryOperator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import tools.jackson.databind.*;
 import tools.jackson.databind.annotation.JacksonStdImpl;
@@ -26,6 +28,8 @@ import static java.lang.invoke.MethodType.*;
 public class BBSerializerModifier extends ValueSerializerModifier
 {
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOG = Logger.getLogger(BBSerializerModifier.class.getName());
 
     private final Function<Class<?>, Lookup> _lookups;
     private final UnaryOperator<Lookup> _accessGrant;
@@ -100,14 +104,29 @@ public class BBSerializerModifier extends ValueSerializerModifier
 
         Class<?> type = bpw.getMember().getRawType();
         MethodHandle getter;
+        Method method;
         if (member instanceof AnnotatedMethod) {
-            getter = lookup.unreflect((Method) member.getMember());
+            method = (Method) member.getMember();
+            try {
+                getter = lookup.unreflect(method);
+            } catch (IllegalAccessException e) {
+                // e.g. an inherited protected getter, where the lookup class isn't the
+                // subclass (as with `CrossLoaderAccess` on some JDKs); reflection can still call it
+                _logSkipped(method, lookup, e);
+                return;
+            }
         } else {
             // TODO: currently VarHandles aren't considered direct MH
             return;
             //getter = lookup.unreflectGetter((Field) member.getMember());
         }
         lookup = _accessGrant.apply(lookup);
+        // A generated getter that would fail on every call (like one whose return
+        // type the bean's loader shadows) is left to reflection
+        if (!ReflectionHack.canLinkAccessor(lookup, method, getter)) {
+            _logSkipped(method, lookup, null);
+            return;
+        }
 
         if (type.isPrimitive()) {
             if (type == Integer.TYPE) {
@@ -163,6 +182,15 @@ public class BBSerializerModifier extends ValueSerializerModifier
                     .getTarget().invokeExact();
                 it.set(new ObjectPropertyWriter(bpw, accessor, null));
             }
+        }
+    }
+
+    private static void _logSkipped(Method getter, Lookup lookup, Throwable cause) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, String.format(
+                    "Not optimizing getter %s: a generated accessor in %s %s; using reflection",
+                    getter, lookup.lookupClass().getName(),
+                    (cause == null) ? "couldn't link to it" : "can't access it"), cause);
         }
     }
 }
