@@ -24,7 +24,7 @@ import tools.jackson.databind.ObjectWriter;
 
 /**
  * Setter POJOs: arrays of 1000 small beans, the same beans through a
- * property-based creator, and the media item bean.
+ * property-based creator and a builder, and the media item bean.
  */
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
@@ -81,6 +81,11 @@ public class PojoBenchmark
     @Benchmark
     public BeanWithPropertyConstructor[] constructorArrayDeser() {
         return mapper.readValue(beansJson, BeanWithPropertyConstructor[].class);
+    }
+
+    @Benchmark
+    public BeanWithBuilder[] builderArrayDeser() {
+        return mapper.readValue(beansJson, BeanWithBuilder[].class);
     }
 
     @Benchmark

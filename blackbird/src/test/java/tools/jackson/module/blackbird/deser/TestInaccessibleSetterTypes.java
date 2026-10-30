@@ -11,6 +11,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 import tools.jackson.module.blackbird.deser.isolated.Token;
@@ -19,15 +20,24 @@ import tools.jackson.module.blackbird.deser.isolated.TokenBuilder;
 import tools.jackson.module.blackbird.deser.isolated.TokenBuilt;
 import tools.jackson.module.blackbird.deser.otherpackage.HiddenSetterBeanBase;
 import tools.jackson.module.blackbird.deser.otherpackage.ModeBeanBase;
+import tools.jackson.module.blackbird.deser.otherpackage.ModeBuilderBase;
 import tools.jackson.module.blackbird.deser.otherpackage.ProtectedSetterBeanBase;
 import tools.jackson.module.blackbird.deser.shadowed.Chain;
 import tools.jackson.module.blackbird.deser.shadowed.ChainBean;
 import tools.jackson.module.blackbird.deser.shadowed.ChainBeanBase;
+import tools.jackson.module.blackbird.deser.shadowed.ChainBuilder;
+import tools.jackson.module.blackbird.deser.shadowed.ChainBuilderBase;
+import tools.jackson.module.blackbird.deser.shadowed.ChainBuilt;
 import tools.jackson.module.blackbird.deser.shadowed.DirectLevelBean;
 import tools.jackson.module.blackbird.deser.shadowed.Level;
 import tools.jackson.module.blackbird.deser.shadowed.LevelBean;
 import tools.jackson.module.blackbird.deser.shadowed.LevelBeanBase;
+import tools.jackson.module.blackbird.deser.shadowed.LevelBuilder;
+import tools.jackson.module.blackbird.deser.shadowed.LevelBuilderBase;
+import tools.jackson.module.blackbird.deser.shadowed.LevelBuilt;
 import tools.jackson.module.blackbird.deser.shadowed.OwnerBean;
+import tools.jackson.module.blackbird.deser.shadowed.OwnerBuilder;
+import tools.jackson.module.blackbird.deser.shadowed.OwnerBuilt;
 import tools.jackson.module.blackbird.deser.shadowed.owner.OwnerBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,6 +50,27 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
 {
     // `setMode` and `setModes` take a type that is package-private in another
     // package, which reflection can pass but generated code can't name
+    static final class ModeBuilder extends ModeBuilderBase<ModeBuilder>
+    {
+        public ModeBuilt build() {
+            return new ModeBuilt(mode, modes, name);
+        }
+    }
+
+    @JsonDeserialize(builder=ModeBuilder.class)
+    static class ModeBuilt
+    {
+        final String mode;
+        final String modes;
+        final String name;
+
+        ModeBuilt(String mode, String modes, String name) {
+            this.mode = mode;
+            this.modes = modes;
+            this.name = name;
+        }
+    }
+
     static final class ModeBean extends ModeBeanBase { }
 
     static final class ProtectedBean extends ProtectedSetterBeanBase { }
@@ -240,6 +271,113 @@ public class TestInaccessibleSetterTypes extends BlackbirdTestBase
             assertEquals("HIGH", result.level());
             assertEquals(1, LevelBeanBase.setterCalls);
             assertGeneratedReader(MAPPER, bean);
+        }
+    }
+
+    /*
+    /**********************************************************************
+    /* Builders, the same cases through builder setters
+    /**********************************************************************
+     */
+
+    @Test
+    public void testInaccessibleParameterTypeOnBuilder() throws Exception
+    {
+        ModeBuilderBase.setterCalls = 0;
+        ModeBuilt result = MAPPER.readValue(a2q("{'mode':'FAST','modes':['SAFE'],'name':'foo'}"),
+                ModeBuilt.class);
+        assertEquals("FAST", result.mode);
+        assertEquals("[SAFE]", result.modes);
+        assertEquals("foo", result.name);
+        assertEquals(2, ModeBuilderBase.setterCalls);
+        assertGeneratedReader(MAPPER, ModeBuilt.class);
+    }
+
+    @Test
+    public void testShadowedParameterTypeOnBuilder() throws Exception
+    {
+        for (boolean reads : READS) {
+            ClassLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                    Arrays.asList(Level.class, LevelBuilder.class, LevelBuilt.class));
+            Class<?> built = load(loader, LevelBuilt.class, reads);
+            assertNotSame(LevelBuilt.class, built);
+
+            LevelBuilderBase.setterCalls = 0;
+            Object result = MAPPER.readValue(a2q("{'level':'HIGH'}"), built);
+            assertEquals("HIGH", built.getField("level").get(result));
+            assertEquals(1, LevelBuilderBase.setterCalls);
+            assertGeneratedReader(MAPPER, built);
+        }
+    }
+
+    @Test
+    public void testShadowedReturnTypeOnBuilder() throws Exception
+    {
+        for (boolean reads : READS) {
+            ClassLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                    Arrays.asList(Chain.class, ChainBuilder.class, ChainBuilt.class));
+            Class<?> built = load(loader, ChainBuilt.class, reads);
+            assertNotSame(ChainBuilt.class, built);
+            // the builder's loader has its own `Chain`, as it would once anything there used it
+            assertNotSame(Chain.class, Class.forName(Chain.class.getName(), false, loader));
+
+            ChainBuilderBase.setterCalls = 0;
+            Object result = MAPPER.readValue(a2q("{'level':'HIGH'}"), built);
+            assertEquals("HIGH", built.getField("level").get(result));
+            assertEquals(1, ChainBuilderBase.setterCalls);
+            assertGeneratedReader(MAPPER, built);
+        }
+    }
+
+    @Test
+    public void testReturnTypeIsNotLoadedOnBuilder() throws Exception
+    {
+        for (boolean reads : READS) {
+            ChildFirstLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                    Arrays.asList(Chain.class, ChainBuilder.class, ChainBuilt.class));
+            Class<?> built = load(loader, ChainBuilt.class, reads);
+
+            ChainBuilderBase.setterCalls = 0;
+            Object result = MAPPER.readValue(a2q("{'level':'HIGH'}"), built);
+            assertEquals("HIGH", built.getField("level").get(result));
+            assertEquals(1, ChainBuilderBase.setterCalls);
+            assertFalse(loader.defined.contains(Chain.class.getName()), "reads=" + reads);
+        }
+    }
+
+    // The builder is in another package than the protected setter's declaring class
+    @Test
+    public void testShadowedDeclaringClassOnBuilder() throws Exception
+    {
+        for (boolean reads : READS) {
+            ClassLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                    Arrays.asList(OwnerBase.class, OwnerBuilder.class, OwnerBuilt.class));
+            Class<?> built = load(loader, OwnerBuilt.class, reads);
+            assertNotSame(OwnerBuilt.class, built);
+            assertNotSame(OwnerBase.class, Class.forName(OwnerBase.class.getName(), false, loader));
+
+            OwnerBase.setterCalls = 0;
+            Object result = MAPPER.readValue(a2q("{'value':7}"), built);
+            assertEquals(7, built.getField("value").get(result));
+            assertEquals(1, OwnerBase.setterCalls);
+            assertGeneratedReader(MAPPER, built);
+        }
+    }
+
+    @Test
+    public void testFailingLoaderOnBuilder() throws Exception
+    {
+        for (boolean reads : READS) {
+            ClassLoader loader = new ChildFirstLoader(getClass().getClassLoader(),
+                    Arrays.asList(LevelBuilder.class, LevelBuilt.class),
+                    Collections.singleton(Level.class.getName()));
+            Class<?> built = load(loader, LevelBuilt.class, reads);
+
+            LevelBuilderBase.setterCalls = 0;
+            Object result = MAPPER.readValue(a2q("{'level':'HIGH'}"), built);
+            assertEquals("HIGH", built.getField("level").get(result));
+            assertEquals(1, LevelBuilderBase.setterCalls);
+            assertGeneratedReader(MAPPER, built);
         }
     }
 
