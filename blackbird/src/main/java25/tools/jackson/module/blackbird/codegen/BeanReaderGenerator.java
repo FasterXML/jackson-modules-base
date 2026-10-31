@@ -442,8 +442,9 @@ final class BeanReaderGenerator
             }
             Label armEnd = beginArm(cob, plan.stockName()[i], propSlot, propHandler);
             GenProp prop = props.get(i);
+            // Null exactly for STOCK arms (see ReaderCodegen.generate).
             Store store = (prop.handle() == null) ? null
-                    : new Store(plan.handleName()[i], storeStart[i], storeEnd[i], builderMode);
+                    : new Store(plan.handleName()[i], storeStart[i], storeEnd[i]);
             String stockName = plan.stockName()[i];
             switch (prop.kind()) {
                 case STRING -> emitScalar(cob, beanSlot, parser, ctxt, "getString",
@@ -589,12 +590,12 @@ final class BeanReaderGenerator
     // A generated store: the class-data name of its (Object, eV)void handle
     // ((Object, eV)Object in builder mode, whose non-null result becomes the
     // new receiver) and the labels of its exception region.
-    private record Store(String handleName, Label start, Label end, boolean builderMode) {}
+    private record Store(String handleName, Label start, Label end) {}
 
     private static void emitStore(CodeBuilder cob, Store store, int receiverSlot,
-            ClassDesc erasedDesc) {
+            ClassDesc erasedDesc, boolean builderMode) {
         cob.labelBinding(store.start());
-        if (store.builderMode()) {
+        if (builderMode) {
             cob.invokevirtual(ConstantDescs.CD_MethodHandle, "invokeExact", MethodTypeDesc.of(
                     CD_OBJECT, CD_OBJECT, erasedDesc));
             cob.labelBinding(store.end());
@@ -616,22 +617,17 @@ final class BeanReaderGenerator
 
     // The null branch (and any other unexpected token) enters the stock
     // property with the parser on that token, which is the position its
-    // deserializeAndSet expects. Without a generated store (the property
-    // keeps its stock arm whatever the token), only the stock call remains.
+    // deserializeAndSet expects.
     private static void emitScalar(CodeBuilder cob, int receiverSlot, int parser, int ctxt,
             String getter, MethodTypeDesc getterType, ClassDesc erasedDesc,
             String stockName, boolean builderMode, Store store, String expectedToken) {
-        if (store == null) {
-            emitStockSet(cob, parser, ctxt, receiverSlot, stockName, builderMode);
-            return;
-        }
         Label useStock = cob.newLabel();
         Label done = cob.newLabel();
         emitExpectedTokenCheck(cob, parser, expectedToken, useStock);
         ldcData(cob, store.handleName(), ConstantDescs.CD_MethodHandle);
         cob.aload(receiverSlot);
         cob.aload(parser).invokevirtual(CD_JSON_PARSER, getter, getterType);
-        emitStore(cob, store, receiverSlot, erasedDesc);
+        emitStore(cob, store, receiverSlot, erasedDesc, builderMode);
         cob.goto_(done);
         cob.labelBinding(useStock);
         emitStockSet(cob, parser, ctxt, receiverSlot, stockName, builderMode);
@@ -647,10 +643,6 @@ final class BeanReaderGenerator
     private static void emitChildArm(CodeBuilder cob, int receiverSlot, int parser, int ctxt,
             int valueSlot, String childName, String stockName, boolean builderMode,
             Store store) {
-        if (store == null) {
-            emitStockSet(cob, parser, ctxt, receiverSlot, stockName, builderMode);
-            return;
-        }
         Label childStock = cob.newLabel();
         Label childDone = cob.newLabel();
         Label haveValue = cob.newLabel();
@@ -670,7 +662,7 @@ final class BeanReaderGenerator
         ldcData(cob, store.handleName(), ConstantDescs.CD_MethodHandle);
         cob.aload(receiverSlot);
         cob.aload(valueSlot);
-        emitStore(cob, store, receiverSlot, CD_OBJECT);
+        emitStore(cob, store, receiverSlot, CD_OBJECT, builderMode);
         cob.goto_(childDone);
         cob.labelBinding(childStock);
         emitStockSet(cob, parser, ctxt, receiverSlot, stockName, builderMode);

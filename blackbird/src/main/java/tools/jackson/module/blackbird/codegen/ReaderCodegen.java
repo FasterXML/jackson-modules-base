@@ -128,8 +128,16 @@ public final class ReaderCodegen
         String[] childName = new String[props.size()];
         String[] handleName = new String[props.size()];
         StringJoiner layout = new StringJoiner(",");
+        Mode mode = construction.mode();
         for (int i = 0; i < props.size(); i++) {
             GenProp gp = props.get(i);
+            // Outside record mode only STOCK arms go without a store; the
+            // emitter relies on it, and a factory slip fails generation
+            // (a test failure in strict mode) instead of quietly going stock.
+            if (mode != Mode.RECORD && gp.kind() != Kind.STOCK && gp.handle() == null) {
+                throw new IllegalStateException("no store handle for " + gp.kind()
+                        + " property '" + gp.name() + "' of " + beanClass.getName());
+            }
             layout.add(gp.name() + "=" + gp.kind());
             stockName[i] = dataName(classData, gp.name() + "Prop");
             classData.put(stockName[i], gp.stock());
@@ -142,7 +150,6 @@ public final class ReaderCodegen
                 classData.put(handleName[i], gp.handle());
             }
         }
-        Mode mode = construction.mode();
         switch (mode) {
             case CONSTRUCTOR, RECORD -> classData.put("constructor", construction.handle());
             case INSTANTIATOR -> classData.put("instantiator", construction.instantiator());
