@@ -57,17 +57,21 @@ final class BBWriterFactory
     static ValueSerializer<Object> tryGenerate(BeanSerializerBase delegate,
             BeanPropertyWriter[] props, BeanPropertyWriter[] filtered, boolean hasTypeId,
             boolean asArray, SerializationContext ctxt) {
+        ValueSerializer<Object> codec;
         try {
-            ValueSerializer<Object> codec = generate(delegate, props, filtered, hasTypeId,
+            codec = generate(delegate, props, filtered, hasTypeId,
                     asArray, ctxt);
-            CodegenDebug.log(() -> "writer tryGenerate " + delegate.handledType().getName()
-                    + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
-            return codec;
         } catch (StackOverflowError e) {
             // Generation ran out of stack deep in a recursive resolution: not
             // a generator bug, and the stock path, which needs no generation,
             // can still complete the call. Nothing more (not even logging)
-            // runs on the nearly exhausted stack.
+            // runs on the nearly exhausted stack. In strict mode (the test
+            // suites) it more likely is unbounded recursion in the
+            // generator, so it fails the test; the property name is a
+            // constant, so the check initializes no Blackbird class.
+            if (Boolean.getBoolean(CodegenFallbacks.FAIL_ON_ERROR_PROPERTY)) {
+                throw e;
+            }
             return null;
         } catch (VirtualMachineError e) {
             // Out of memory or a broken JVM, not a generator bug: never demote
@@ -80,6 +84,11 @@ final class BBWriterFactory
             CodegenFallbacks.generationFailure(delegate.handledType(), t);
             return null;
         }
+        // Outside the try: tracing must not turn into a demotion of a codec
+        // that generated fine.
+        CodegenDebug.log(() -> "writer tryGenerate " + delegate.handledType().getName()
+                + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
+        return codec;
     }
 
     private static ValueSerializer<Object> generate(BeanSerializerBase delegate,
