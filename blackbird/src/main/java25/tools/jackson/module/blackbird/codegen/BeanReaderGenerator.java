@@ -350,7 +350,9 @@ final class BeanReaderGenerator
         final boolean inputNames = builderMode && plan.inputNames();
         final int inputNameSlot = 11;
         final int startObjectSlot = 12;
-        // POJO mode: set once a name has gone to unknown-name handling.
+        // Set once a name has gone to unknown-name handling; tracked only
+        // where stock reads with its vanilla loop.
+        final boolean trackUnknown = plan.vanillaLoop();
         final int afterUnknownSlot = 13;
         final Names names = !builderMode ? null
                 : inputNames ? new Names(inputNameSlot, startObjectSlot) : Names.NONE;
@@ -411,7 +413,7 @@ final class BeanReaderGenerator
                .invokevirtual(base, "_injectValues", MTD_INJECT);
         }
 
-        if (!builderMode) {
+        if (trackUnknown) {
             cob.iconst_0().istore(afterUnknownSlot);
         }
         ldcData(cob, "matcher", CD_NAME_MATCHER);
@@ -479,7 +481,7 @@ final class BeanReaderGenerator
         }
 
         cob.labelBinding(unknown);
-        if (!builderMode) {
+        if (trackUnknown) {
             cob.iconst_1().istore(afterUnknownSlot);
         }
         cob.aload(0).aload(parser).aload(ctxt).aload(beanSlot);
@@ -488,14 +490,12 @@ final class BeanReaderGenerator
         cob.goto_(loop);
 
         cob.labelBinding(oddToken);
-        if (!builderMode) {
-            // Stock _vanillaDeserializeWithUnknown has its own answer once an
-            // unknown name has been seen.
+        if (trackUnknown) {
+            // Once an unknown name has been seen, stock's vanilla loop
+            // (_vanillaDeserializeWithUnknown) returns the bean as it is.
             Label beforeUnknown = cob.newLabel();
             cob.iload(afterUnknownSlot).ifeq(beforeUnknown);
-            cob.aload(0).aload(parser).aload(ctxt).aload(beanSlot)
-               .invokevirtual(base, "_unexpectedAfterUnknown", MTD_UNEXPECTED)
-               .areturn();
+            cob.aload(beanSlot).areturn();
             cob.labelBinding(beforeUnknown);
         }
         cob.aload(0).aload(parser).aload(ctxt).aload(beanSlot)
@@ -550,7 +550,7 @@ final class BeanReaderGenerator
             cob.localVariable(startObjectSlot, "startObject", ConstantDescs.CD_boolean,
                     scopeStart, scopeEnd);
         }
-        if (!builderMode) {
+        if (trackUnknown) {
             cob.localVariable(afterUnknownSlot, "afterUnknown", ConstantDescs.CD_boolean,
                     scopeStart, scopeEnd);
         }
@@ -982,10 +982,10 @@ final class BeanReaderGenerator
         nextNameMatch(cob, parser, matcherSlot, ixSlot);
         cob.goto_(loop);
 
+        // Stock's property-based loop runs only while it sees names: any
+        // other token ends it, and the record builds as at END_OBJECT.
         cob.labelBinding(oddToken);
-        cob.aload(0).aload(parser).aload(ctxt).aconst_null()
-           .invokevirtual(base, "_unexpectedToken", MTD_UNEXPECTED)
-           .areturn();
+        cob.goto_(endObject);
 
         emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, -1, null);
         emitDelegateTail(cob, base, parser, ctxt, delegate);

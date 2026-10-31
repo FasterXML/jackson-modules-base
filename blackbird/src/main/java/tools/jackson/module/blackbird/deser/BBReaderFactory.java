@@ -69,10 +69,11 @@ final class BBReaderFactory
     /**
      * The resolved stock state a codec is generated from, read by the
      * placeholder (a stock deserializer subclass) from its own fields.
-     * buildMethod is non-null exactly for builder-based beans.
+     * buildMethod is non-null exactly for builder-based beans. vanilla is
+     * the resolved _vanillaProcessing: whether stock takes its vanilla loop.
      */
     record Source(BeanDeserializerBase deser, SettableAnyProperty anySetter,
-            boolean injectables, BeanPropertyMap beanProperties, PropertyBasedCreator creator,
+            boolean injectables, boolean vanilla, BeanPropertyMap beanProperties, PropertyBasedCreator creator,
             boolean nonStandardCreation, boolean hasDelegateCreator, boolean hasExternalTypeId,
             boolean hasUnwrapped, AnnotatedMethod buildMethod) {}
 
@@ -220,6 +221,7 @@ final class BBReaderFactory
         }
         return ReaderCodegen.generate(beanClass, props, beanProps.getNameMatcher(), matchArms,
                 delegate, beanProps, construction, stock.injectables(),
+                (builderClass == null) && stock.vanilla(),
                 viewStrategy(ctxt, delegate, props, declaresViews), null);
     }
 
@@ -362,7 +364,7 @@ final class BBReaderFactory
         beanProps.initMatcher(ctxt.tokenStreamFactory());
         RecordNames names = recordNames(ctxt, creator, beanProps, props);
         return ReaderCodegen.generate(beanClass, props, names.matcher(), names.matchArms(),
-                delegate, beanProps, Construction.record(recordCtor), false,
+                delegate, beanProps, Construction.record(recordCtor), false, false,
                 viewStrategy(ctxt, delegate, props, declaresViews), localNames);
     }
 

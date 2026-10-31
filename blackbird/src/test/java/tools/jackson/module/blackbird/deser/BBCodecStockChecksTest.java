@@ -282,8 +282,7 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
         ObjectMapper module = mapperBuilder().addHandler(toNull).build();
         String doc = "{\"ref\":1,\"items\":[{\"id\":1,\"name\":\"a\"}],\"tag\":-1}";
         assertGeneratedReader(module, RefPair.class);
-        assertNull(vanilla.readValue(doc, RefPair.class));
-        assertNull(module.readValue(doc, RefPair.class));
+        assertSameOutcome(vanilla, module, doc, RefPair.class, r -> r);
         // With an unknown property too, stock reports that first.
         String unknown = doc.replace("{\"ref\"", "{\"extra\":true,\"ref\"");
         ObjectMapper strictVanilla = vanilla.rebuild()

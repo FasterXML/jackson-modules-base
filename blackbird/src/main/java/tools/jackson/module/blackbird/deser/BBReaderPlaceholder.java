@@ -48,7 +48,7 @@ final class BBReaderPlaceholder extends BeanDeserializer
         CodegenDebug.log(() -> "reader resolve " + handledType().getName());
         super.resolve(ctxt);
         ValueDeserializer<Object> codec = BBReaderFactory.tryGenerate(new BBReaderFactory.Source(this, _anySetter,
-                _injectables != null, _beanProperties, _propertyBasedCreator,
+                _injectables != null, _vanillaProcessing, _beanProperties, _propertyBasedCreator,
                 _nonStandardCreation,
                 (_delegateDeserializer != null) || (_arrayDelegateDeserializer != null),
                 _externalTypeIdHandler != null, _unwrappedPropertyHandler != null, null),

@@ -139,14 +139,6 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
         return _handleUnexpectedWithin(p, ctxt, bean);
     }
 
-    // The same after a name went to unknown-name handling: stock's vanilla
-    // loop (_vanillaDeserializeWithUnknown) then returns the bean as it is;
-    // its general loop has no such case.
-    protected final Object _unexpectedAfterUnknown(JsonParser p, DeserializationContext ctxt,
-            Object bean) {
-        return _vanillaProcessing ? bean : _handleUnexpectedWithin(p, ctxt, bean);
-    }
-
     /*
     /**********************************************************************
     /* Record loop helpers
