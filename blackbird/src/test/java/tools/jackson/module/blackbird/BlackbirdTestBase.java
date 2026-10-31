@@ -1,18 +1,31 @@
 package tools.jackson.module.blackbird;
 
-import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.function.Function;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import tools.jackson.core.*;
 
+import tools.jackson.databind.BeanDescription;
+import tools.jackson.databind.DeserializationConfig;
+import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationConfig;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.ValueSerializerModifier;
 
 import tools.jackson.module.blackbird.testutil.NoCheckSubTypeValidator;
+import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
+import tools.jackson.module.blackbird.internal.GeneratedBuilderBase;
+import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
+import tools.jackson.module.blackbird.internal.GeneratedWriterBase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -215,21 +228,146 @@ public abstract class BlackbirdTestBase
         return mapperBuilder();
     }
 
+    static {
+        // The suite runs strict: a codec-generation failure fails the test
+        // instead of demoting to the stock path, so the lenient production
+        // fallback cannot mask a generator bug here. Surefire sets this for
+        // every test class; this covers runs outside Maven (an IDE).
+        System.setProperty(CodegenFallbacks.FAIL_ON_ERROR_PROPERTY, "true");
+    }
+
     protected static JsonMapper.Builder mapperBuilder() {
         return JsonMapper.builder()
                 .polymorphicTypeValidator(new NoCheckSubTypeValidator())
                 .addModule(new BlackbirdModule());
     }
 
-    // for tests that need the module to use particular lookups
-    protected static JsonMapper.Builder mapperBuilder(Function<Class<?>, MethodHandles.Lookup> lookups) {
-        return JsonMapper.builder()
-                .polymorphicTypeValidator(new NoCheckSubTypeValidator())
-                .addModule(new BlackbirdModule(lookups));
-    }
-
     protected static JsonMapper newVanillaJSONMapper() {
         return new JsonMapper();
+    }
+
+    /**
+     * Builder for a Blackbird mapper that records, per bean class, what
+     * Blackbird's modifiers installed: the placeholder, or the stock
+     * (de)serializer when a gate skipped the bean. Either map may be null.
+     * Modifiers run in reverse registration order, so the capture module
+     * registers before Blackbird to observe its result.
+     */
+    protected static JsonMapper.Builder capturingMapperBuilder(
+            Map<Class<?>, ValueDeserializer<?>> desers, Map<Class<?>, ValueSerializer<?>> sers) {
+        return capturingMapperBuilder(new BlackbirdModule(), desers, sers);
+    }
+
+    /** As {@link #capturingMapperBuilder(Map, Map)}, with the given Blackbird module. */
+    protected static JsonMapper.Builder capturingMapperBuilder(BlackbirdModule blackbird,
+            Map<Class<?>, ValueDeserializer<?>> desers, Map<Class<?>, ValueSerializer<?>> sers) {
+        SimpleModule capture = new SimpleModule("capture");
+        if (desers != null) {
+            capture.setDeserializerModifier(new ValueDeserializerModifier() {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public ValueDeserializer<?> modifyDeserializer(DeserializationConfig cfg,
+                        BeanDescription.Supplier ref, ValueDeserializer<?> d) {
+                    desers.put(ref.getBeanClass(), d);
+                    return d;
+                }
+            });
+        }
+        if (sers != null) {
+            capture.setSerializerModifier(new ValueSerializerModifier() {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public ValueSerializer<?> modifySerializer(SerializationConfig cfg,
+                        BeanDescription.Supplier ref, ValueSerializer<?> s) {
+                    sers.put(ref.getBeanClass(), s);
+                    return s;
+                }
+            });
+        }
+        return JsonMapper.builder()
+                .addModule(capture)
+                .addModule(blackbird);
+    }
+
+    /** Blackbird mapper recording installed deserializers; see {@link #capturingMapperBuilder}. */
+    protected static ObjectMapper capturingMapper(Map<Class<?>, ValueDeserializer<?>> desers) {
+        return capturingMapperBuilder(desers, null).build();
+    }
+
+    /** Blackbird mapper recording installed serializers; see {@link #capturingMapperBuilder}. */
+    protected static ObjectMapper capturingWriterMapper(Map<Class<?>, ValueSerializer<?>> sers) {
+        return capturingMapperBuilder(null, sers).build();
+    }
+
+    /*
+    /**********************************************************
+    /* Helper methods; codec engagement
+    /**********************************************************
+     */
+
+    /** The (contextualized) deserializer the mapper uses for a root value of the type. */
+    protected static ValueDeserializer<Object> rootReader(ObjectMapper mapper, Class<?> type) {
+        DeserializationContext ctxt = mapper._deserializationContext();
+        return ctxt.findRootValueDeserializer(ctxt.constructType(type));
+    }
+
+    /** The (contextualized) serializer the mapper uses for a root value of the type. */
+    protected static ValueSerializer<Object> rootWriter(ObjectMapper mapper, Class<?> type) {
+        SerializationContext ctxt = mapper._serializationContext();
+        return ctxt.handleRootContextualization(ctxt.findValueSerializer(type));
+    }
+
+    /**
+     * Whether a (de)serializer that a modifier captured resolved to a
+     * generated codec. The modifier captures the placeholder either way, and
+     * only its codec field tells a generated bean from a gated one;
+     * contextualization (rootReader/rootWriter) hands out the codec or, for
+     * a gated bean, a stock (de)serializer instead.
+     */
+    protected static boolean hasGeneratedCodec(Object captured) {
+        try {
+            java.lang.reflect.Field codec = captured.getClass().getDeclaredField("_codec");
+            codec.setAccessible(true);
+            return codec.get(captured) != null;
+        } catch (NoSuchFieldException e) {
+            return false;
+        } catch (IllegalAccessException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    /** Asserts that the generated reader handles the type, and returns its arm layout. */
+    protected static String assertGeneratedReader(ObjectMapper mapper, Class<?> type) {
+        ValueDeserializer<Object> d = rootReader(mapper, type);
+        if (d instanceof GeneratedReaderBase r) {
+            return r.codecLayout();
+        }
+        if (d instanceof GeneratedBuilderBase b) {
+            return b.codecLayout();
+        }
+        return fail(type.getSimpleName() + " should use a generated reader, uses " + d);
+    }
+
+    /** Asserts that the stock deserializer handles the type. */
+    protected static void assertStockReader(ObjectMapper mapper, Class<?> type) {
+        ValueDeserializer<Object> d = rootReader(mapper, type);
+        assertFalse(d instanceof GeneratedReaderBase || d instanceof GeneratedBuilderBase,
+                type.getSimpleName() + " should keep the stock deserializer, uses " + d);
+    }
+
+    /** Asserts that the generated writer handles the type, and returns its layout. */
+    protected static String assertGeneratedWriter(ObjectMapper mapper, Class<?> type) {
+        ValueSerializer<Object> s = rootWriter(mapper, type);
+        assertTrue(s instanceof GeneratedWriterBase,
+                type.getSimpleName() + " should use a generated writer, uses " + s);
+        return ((GeneratedWriterBase) s).codecLayout();
+    }
+
+    /** Asserts that the stock serializer handles the type. */
+    protected static void assertStockWriter(ObjectMapper mapper, Class<?> type) {
+        ValueSerializer<Object> s = rootWriter(mapper, type);
+        assertFalse(s instanceof GeneratedWriterBase,
+                type.getSimpleName() + " should keep the stock serializer, uses " + s);
     }
 
     /*

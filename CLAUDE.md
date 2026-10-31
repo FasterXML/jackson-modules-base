@@ -10,7 +10,9 @@ Jackson modules-base is a multi-module Maven project containing 11 foundational 
 
 (paranamer is not part of 3.x — it only appears commented out in the root `pom.xml`.)
 
-There are also two test-only, never-published modules: `afterburner-tests` and `blackbird-tests`. They have no `module-info.java`, so their test POJOs live in the unnamed module and exercise the bytecode-generation paths that are disabled for beans in named JPMS modules (see each module's `README.md`).
+There are also three test-only, never-published modules: `afterburner-tests` and `blackbird-tests` have no `module-info.java`, so their test POJOs live in the unnamed module, as in most applications (see each module's `README.md`). For Afterburner this covers the bytecode-generation paths it disables for beans in named JPMS modules; Blackbird's in-tree tests run inside Blackbird's own named module, and `blackbird-tests` also holds the tests that need the packaged jar or other JDKs; `blackbird-jpms-tests` is a foreign named module that requires blackbird and runs on the module path.
+
+**Blackbird builds only on JDK 25+:** `blackbird`, `blackbird-tests` and `blackbird-jpms-tests` are in the root pom's `blackbird-jdk25` profile (activated on JDK 25+). On an older JDK the full build silently leaves them out, and `-pl blackbird` fails with "Could not find the selected project in the reactor"; use a JDK 25 (`JAVA_HOME=... ./mvnw ...`) for Blackbird work.
 
 Maven coordinates: groupId `tools.jackson.module`, parent `tools.jackson:jackson-base`; depends on `tools.jackson.core:jackson-databind`.
 
@@ -27,7 +29,10 @@ Maven coordinates: groupId `tools.jackson.module`, parent `tools.jackson:jackson
 ./mvnw -B -ff -ntp test
 
 # Run tests for a single module
-./mvnw -B -ff -ntp test -pl blackbird
+./mvnw -B -ff -ntp test -pl mrbean
+
+# Blackbird modules need JDK 25+ (not in the reactor on older JDKs)
+JAVA_HOME=/path/to/jdk25 ./mvnw -B -ff -ntp test -pl blackbird
 
 # Run a single test class
 ./mvnw -B -ff -ntp test -pl afterburner -Dtest=TestSimpleSerialize
@@ -36,7 +41,7 @@ Maven coordinates: groupId `tools.jackson.module`, parent `tools.jackson:jackson
 ./mvnw -B -ff -ntp test -pl afterburner -Dtest=BasicDeserializeTest#testIntMethod
 ```
 
-Java 17 is the minimum (`javac.src.version` 17); CI tests against 17, 21, 24, 25. osgi and afterburner-tests add `--add-opens java.base/java.lang=ALL-UNNAMED` to their test `argLine`.
+Java 17 is the minimum (`javac.src.version` 17); CI (`main.yml`) tests against 17, 21, 24, 25; Blackbird builds only in the 25 job, which also runs its runtime tests on 17 and 21 through `-Dblackbird.test.oldJdks`. The databind-push rebuild (`dep_build_v3.yml`) builds all other modules on 17 and 21 and only the Blackbird modules on 25, with the same old-JDK tests; keep the old-JDK wiring of the two workflows in sync. osgi and afterburner-tests add `--add-opens java.base/java.lang=ALL-UNNAMED` to their test `argLine`.
 
 ## Architecture
 
@@ -44,12 +49,12 @@ Every module follows the same pattern:
 - A `*Module` class (e.g., `AfterburnerModule`, `BlackbirdModule`) extends Jackson's `tools.jackson.databind.JacksonModule`, registered on a mapper builder (e.g., `JsonMapper.builder().addModule(...)`)
 - Package: `tools.jackson.module.<name>` (hyphens dropped or turned into sub-packages: `androidrecord`, `noctordeser`, `spisubtypes`, `jakarta.xmlbind`)
 - `PackageVersion.java` is generated from `PackageVersion.java.in` by the replacer Maven plugin — do not edit manually
-- JPMS module descriptors are real sources: `<module>/src/main/java/module-info.java` (and `src/test/java/module-info.java` for tests). Moditect is no longer used; stray `src/moditect/` dirs in blackbird and android-record are leftovers
+- JPMS module descriptors are real sources: `<module>/src/main/java/module-info.java` (and `src/test/java/module-info.java` for tests). Moditect is no longer used; the stray `src/moditect/` dir in android-record is a leftover
 - SPI registration: `src/main/resources/META-INF/services/tools.jackson.databind.JacksonModule` (all modules except guice, guice7, osgi)
 
 ### Key module categories
 
-- **Performance (bytecode generation):** afterburner (Byte Buddy-based), blackbird (LambdaMetafactory-based, modern replacement) — both disable themselves automatically in GraalVM native images via `NativeImageUtil.isInNativeImage()` check in `setupModule`
+- **Performance (bytecode generation):** afterburner (Byte Buddy-based), blackbird (generated per-bean codecs through the JDK ClassFile API; a multi-release jar that builds on JDK 25+ and is active only on 25+; on Java 17-24 module discovery skips it and explicit `addModule` throws `IllegalStateException`, see `blackbird/README.md`) — both disable themselves automatically in GraalVM native images via `NativeImageUtil.isInNativeImage()` check in `setupModule`
 - **DI integration:** guice (javax.inject), guice7 (jakarta.inject) — note: guice's `ObjectMapperModule` implements Guice's `com.google.inject.Module`, not Jackson's `JacksonModule`
 - **Type materialization:** mrbean (generates implementations for interfaces/abstract classes, Byte Buddy-based)
 - **Annotation support:** jaxb (javax.xml.bind), jakarta-xmlbind (jakarta.xml.bind)

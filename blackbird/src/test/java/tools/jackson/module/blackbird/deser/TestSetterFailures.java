@@ -2,15 +2,9 @@ package tools.jackson.module.blackbird.deser;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
@@ -32,7 +26,6 @@ import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
-import tools.jackson.module.blackbird.deser.access.InaccessibleSetterValue;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -210,9 +203,9 @@ public class TestSetterFailures extends BlackbirdTestBase
         List<Supplier<Object>> beans = Arrays.asList(VoidBean::new, FluentBean::new);
         for (Supplier<Object> newBean : beans) {
             Class<?> beanType = newBean.get().getClass();
+            assertGeneratedReader(mapper, beanType);
             for (int i = 0; i < names.length; i++) {
                 SettableBeanProperty property = property(mapper, beanType, names[i]);
-                assertTrue(property instanceof OptimizedSettableBeanProperty, names[i]);
                 Object value = values[i];
                 for (Supplier<Throwable> nextFailure : failures()) {
                     failure = nextFailure;
@@ -259,7 +252,6 @@ public class TestSetterFailures extends BlackbirdTestBase
     public void testSetSkipsNulls() throws Exception {
         for (String name : new String[] { "str", "list", "i", "l", "b" }) {
             SettableBeanProperty property = property(newObjectMapper(), SkipNullsBean.class, name);
-            assertTrue(property instanceof OptimizedSettableBeanProperty, name);
             SkipNullsBean bean = new SkipNullsBean(1);
             calls = 0;
             property.set(CTXT, bean, null);
@@ -287,7 +279,6 @@ public class TestSetterFailures extends BlackbirdTestBase
         for (String name : new String[] { "i", "l", "b" }) {
             SettableBeanProperty expectedProperty = property(vanilla, VoidBean.class, name);
             SettableBeanProperty actualProperty = property(blackbird, VoidBean.class, name);
-            assertTrue(actualProperty instanceof OptimizedSettableBeanProperty, name);
             calls = 0;
             Throwable expected = assertThrows(Throwable.class,
                     () -> expectedProperty.set(CTXT, new VoidBean(), null), name);
@@ -302,9 +293,9 @@ public class TestSetterFailures extends BlackbirdTestBase
     @Test
     public void testPolymorphicNullMatchesVanilla() throws Exception {
         ObjectMapper blackbird = newObjectMapper();
+        assertGeneratedReader(blackbird, PolymorphicNullBean.class);
         for (String name : new String[] { "void", "fluent" }) {
             SettableBeanProperty prop = property(blackbird, PolymorphicNullBean.class, name);
-            assertTrue(prop instanceof OptimizedSettableBeanProperty, name);
 
             PolymorphicNullBean direct = new PolymorphicNullBean();
             prop.set(CTXT, direct, null);
@@ -331,7 +322,7 @@ public class TestSetterFailures extends BlackbirdTestBase
         hiddenVoid = defineHidden(HiddenVoidBean.class);
         hiddenFluent = defineHidden(HiddenFluentBean.class);
         for (Class<?> type : new Class<?>[] { HideableVoidBean.class, HideableFluentBean.class }) {
-            assertTrue(property(newObjectMapper(), type, "str") instanceof OptimizedSettableBeanProperty);
+            assertGeneratedReader(newObjectMapper(), type);
             for (ObjectMapper mapper : new ObjectMapper[] { newVanillaJSONMapper(), newObjectMapper() }) {
                 calls = 0;
                 assertThrows(DatabindException.class, () -> mapper.readValue(a2q("{'str':'foo'}"), type));
@@ -362,62 +353,9 @@ public class TestSetterFailures extends BlackbirdTestBase
         assertSame(lastFailure, thrown, description);
     }
 
-    @Test
-    public void testVoidAccessorAccessFailureIsNotRetried() throws Throwable {
-        InaccessibleSetterValue bean = new InaccessibleSetterValue();
-        Object value = InaccessibleSetterValue.newValue();
-        Method setter = InaccessibleSetterValue.class.getMethod("setVoidValue", value.getClass());
-        BiConsumer<Object, Object> accessor = voidAccessor(setter);
-        SettableObjectProperty property = new SettableObjectProperty(
-                property(newVanillaJSONMapper(), bean.getClass(), "voidValue"), accessor, null,
-                InaccessibleSetterValue.class, setter.getParameterTypes()[0], false);
-
-        // The generated accessor cannot cast to the package-private parameter type;
-        // that is reported like the setter's failure (rethrown as is), and the setter
-        // never runs
-        assertThrows(IllegalAccessError.class, () -> accessor.accept(bean, value));
-        assertThrows(IllegalAccessError.class, () -> property.set(CTXT, bean, value));
-        assertEquals(0, bean.calls);
-    }
-
-    @Test
-    public void testFluentAccessorAccessFailureIsNotRetried() throws Throwable {
-        InaccessibleSetterValue bean = new InaccessibleSetterValue();
-        Object value = InaccessibleSetterValue.newValue();
-        Method setter = InaccessibleSetterValue.class.getMethod("setFluentValue", value.getClass());
-        BiFunction<Object, Object, Object> thunk = returningAccessor(setter);
-        BiConsumer<Object, Object> accessor = (instance, v) -> thunk.apply(instance, v);
-        SettableObjectProperty property = new SettableObjectProperty(
-                property(newVanillaJSONMapper(), bean.getClass(), "fluentValue"), accessor, thunk,
-                InaccessibleSetterValue.class, setter.getParameterTypes()[0], false);
-
-        // the same through the wrapper that fluent setters on regular beans use
-        assertThrows(IllegalAccessError.class, () -> accessor.accept(bean, value));
-        assertThrows(IllegalAccessError.class, () -> property.set(CTXT, bean, value));
-        assertEquals(0, bean.calls);
-    }
-
     private static SettableBeanProperty property(ObjectMapper mapper, Class<?> beanType, String name) throws Exception {
         BeanDeserializerBase deserializer = (BeanDeserializerBase) mapper._deserializationContext()
                 .findRootValueDeserializer(mapper.constructType(beanType));
         return deserializer.findProperty(PropertyName.construct(name));
-    }
-
-    @SuppressWarnings("unchecked")
-    private BiConsumer<Object, Object> voidAccessor(Method setter) throws Throwable {
-        MethodHandle handle = MethodHandles.lookup().unreflect(setter);
-        return (BiConsumer<Object, Object>) LambdaMetafactory.metafactory(
-                MethodHandles.lookup(), "accept", MethodType.methodType(BiConsumer.class),
-                MethodType.methodType(void.class, Object.class, Object.class), handle, handle.type())
-                .getTarget().invoke();
-    }
-
-    @SuppressWarnings("unchecked")
-    private BiFunction<Object, Object, Object> returningAccessor(Method setter) throws Throwable {
-        MethodHandle handle = MethodHandles.lookup().unreflect(setter);
-        return (BiFunction<Object, Object, Object>) LambdaMetafactory.metafactory(
-                MethodHandles.lookup(), "apply", MethodType.methodType(BiFunction.class),
-                MethodType.methodType(Object.class, Object.class, Object.class), handle, handle.type())
-                .getTarget().invoke();
     }
 }

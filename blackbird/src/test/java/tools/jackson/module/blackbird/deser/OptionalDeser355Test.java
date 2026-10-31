@@ -10,16 +10,12 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.*;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.deser.SettableBeanProperty;
-import tools.jackson.databind.deser.ValueDeserializerModifier;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.deser.impl.MethodProperty;
 import tools.jackson.databind.ext.jdk8.Jdk8OptionalDeserializer;
-import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.jsontype.TypeDeserializer;
-import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.type.TypeFactory;
 
-import tools.jackson.module.blackbird.BlackbirdModule;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -99,48 +95,38 @@ public class OptionalDeser355Test extends BlackbirdTestBase
         }
     }
 
-    static class DeserializerCapture extends ValueDeserializerModifier {
-        private static final long serialVersionUID = 1L;
-
+    static class DeserializerCapture {
         private final Map<Class<?>, ValueDeserializer<?>> deserializers =
                 new ConcurrentHashMap<>();
 
-        @Override
-        public ValueDeserializer<?> modifyDeserializer(DeserializationConfig config,
-                BeanDescription.Supplier beanDescRef, ValueDeserializer<?> deserializer) {
-            deserializers.put(beanDescRef.getBeanClass(), deserializer);
-            return deserializer;
-        }
-
-        public SettableBeanProperty propertyFor(Class<?> beanType, String propertyName) {
+        public ValueDeserializer<?> deserializerFor(Class<?> beanType) {
             ValueDeserializer<?> deserializer = deserializers.get(beanType);
-            BeanDeserializerBase beanDeserializer = assertInstanceOf(
-                    BeanDeserializerBase.class, deserializer);
-            Iterator<SettableBeanProperty> properties = beanDeserializer.properties();
-            while (properties.hasNext()) {
-                SettableBeanProperty property = properties.next();
-                if (property.getName().equals(propertyName)) {
-                    return property;
-                }
-            }
-            return fail("No property '"+propertyName+"' found for "+beanType.getName());
+            assertNotNull(deserializer, "No deserializer captured for " + beanType.getName());
+            return deserializer;
         }
     }
 
+    // The new engine never swaps individual properties: eligible beans -
+    // these package-private ones included - get a whole generated codec, and
+    // every Optional-typed property rides its stock SettableBeanProperty
+    // inside it (the issue-355 revert cannot recur by construction). The
+    // original per-property assertions named the old engine's classes; their
+    // equivalent here is codec engagement plus behavior.
     @Test
-    public void testKeepsOptimizedPropertyForBuiltInOptionalDeserializer() throws Exception {
+    public void testOptionalPropertyWithBuiltInDeserializer() throws Exception {
         DeserializerCapture capture = new DeserializerCapture();
         ObjectMapper mapper = mapperWithCapture(capture);
 
         OptionalBean bean = mapper.readValue("{\"value\":\"test\"}", OptionalBean.class);
 
         assertEquals(Optional.of("test"), bean.getValue());
-        assertInstanceOf(SettableObjectProperty.class,
-                capture.propertyFor(OptionalBean.class, "value"));
+        assertTrue(hasGeneratedCodec(capture.deserializerFor(OptionalBean.class)));
+        assertEquals(Optional.empty(),
+                mapper.readValue("{\"value\":null}", OptionalBean.class).getValue());
     }
 
     @Test
-    public void testFallsBackForCustomOptionalDeserializer() throws Exception {
+    public void testOptionalPropertyWithCustomDeserializer() throws Exception {
         DeserializerCapture capture = new DeserializerCapture();
         ObjectMapper mapper = mapperWithCapture(capture);
 
@@ -149,18 +135,11 @@ public class OptionalDeser355Test extends BlackbirdTestBase
 
         assertEquals(Optional.of("test"), bean.getValue());
         assertEquals(Optional.of(42), bean.getNumber());
-        assertInstanceOf(MethodProperty.class,
-                capture.propertyFor(CustomOptionalBean.class, "value"));
-        assertInstanceOf(MethodProperty.class,
-                capture.propertyFor(CustomOptionalBean.class, "number"));
+        // The custom-deserializer properties ride the codec's stock arms.
+        assertTrue(hasGeneratedCodec(capture.deserializerFor(CustomOptionalBean.class)));
     }
 
     private ObjectMapper mapperWithCapture(DeserializerCapture capture) {
-        SimpleModule captureModule = new SimpleModule()
-                .setDeserializerModifier(capture);
-        return JsonMapper.builder()
-                .addModule(new BlackbirdModule())
-                .addModule(captureModule)
-                .build();
+        return capturingMapper(capture.deserializers);
     }
 }
