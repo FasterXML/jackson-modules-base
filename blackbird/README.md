@@ -154,7 +154,11 @@ bytes to that directory as `<bean-class-name>-reader.class` or
 
 When code generation fails for a bean, the bean keeps the stock path, and
 the module logs the failure at `DEBUG` (`FINE` in java.util.logging) through
-the `System.Logger` named `tools.jackson.module.blackbird`.
+the `System.Logger` named `tools.jackson.module.blackbird`. One case is not
+reported anywhere: when generation runs out of stack, deep in the resolution
+of a deeply nested type, the bean keeps the stock path silently (logging on
+that stack could fail again). The codegen trace then shows the bean's
+`reader resolve` or `writer resolve` line with no outcome after it.
 
 ## Performance
 

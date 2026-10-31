@@ -12,6 +12,9 @@ import java.lang.System.Logger.Level;
  * {@code tools.jackson.module.blackbird.failOnCodegenError} system property
  * set, generation failures are rethrown instead of demoted, which the
  * Blackbird test suites enable so a masked generation bug fails the build.
+ * A generation that runs out of stack is not reported here: the factories
+ * demote it silently (rethrow it in strict mode), since nothing more can
+ * safely run on that stack.
  */
 public final class CodegenFallbacks
 {
