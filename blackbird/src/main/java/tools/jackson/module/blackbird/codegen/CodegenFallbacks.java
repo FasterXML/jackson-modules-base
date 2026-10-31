@@ -24,23 +24,23 @@ public final class CodegenFallbacks
     private CodegenFallbacks() {}
 
     public static void gateFailure(Class<?> beanClass, Throwable cause) {
-        LOGGER.log(Level.DEBUG, "Blackbird gate check failed for " + beanClass.getName()
-                + "; the stock (de)serializer stays in place", cause);
+        if (LOGGER.isLoggable(Level.DEBUG)) {
+            LOGGER.log(Level.DEBUG, "Blackbird gate check failed for " + beanClass.getName()
+                    + "; the stock (de)serializer stays in place", cause);
+        }
     }
 
-    // Generation ran out of stack deep in a recursive resolution: not a
-    // generator bug, so never rethrown. Called once the error has unwound to
-    // the caller of generation, but that caller can itself be deep, so a
-    // second overflow while logging is dropped.
+    // A generation of beanClass ran out of stack deep in a recursive
+    // resolution: not a generator bug, so never rethrown. Reported late, by
+    // the next generation, from a stack with room to log.
     public static void stackExhausted(String kind, Class<?> beanClass) {
-        try {
-            CodegenDebug.log(kind + " tryGenerate " + beanClass.getName()
-                    + " ran out of stack");
+        if (CodegenDebug.ENABLED) {
+            CodegenDebug.log(kind + " tryGenerate " + beanClass.getName() + " ran out of stack");
+        }
+        if (LOGGER.isLoggable(Level.DEBUG)) {
             LOGGER.log(Level.DEBUG, "Blackbird " + kind + " generation ran out of stack for "
                     + beanClass.getName() + "; the stock (de)serializer stays in place"
                     + " for this mapper");
-        } catch (StackOverflowError e) {
-            // Nothing more can run here.
         }
     }
 
@@ -55,8 +55,10 @@ public final class CodegenFallbacks
             throw new IllegalStateException(
                     "Blackbird codec generation failed for " + beanClass.getName(), cause);
         }
-        LOGGER.log(Level.DEBUG, "Blackbird codec generation failed for "
-                + beanClass.getName() + "; the stock (de)serializer stays in place."
-                + " This is likely a jackson-module-blackbird bug; please report it.", cause);
+        if (LOGGER.isLoggable(Level.DEBUG)) {
+            LOGGER.log(Level.DEBUG, "Blackbird codec generation failed for "
+                    + beanClass.getName() + "; the stock (de)serializer stays in place."
+                    + " This is likely a jackson-module-blackbird bug; please report it.", cause);
+        }
     }
 }

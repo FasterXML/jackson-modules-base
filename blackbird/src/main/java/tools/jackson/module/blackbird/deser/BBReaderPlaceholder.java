@@ -49,19 +49,13 @@ final class BBReaderPlaceholder extends BeanDeserializer
     public void resolve(DeserializationContext ctxt) {
         CodegenDebug.log(() -> "reader resolve " + handledType().getName());
         super.resolve(ctxt);
-        ValueDeserializer<Object> codec = null;
-        // An array-shaped bean contextualizes to the stock as-array
-        // deserializer, which never calls a codec.
-        if (_serializationShape == JsonFormat.Shape.ARRAY) {
-            CodegenDebug.log("reader gate: array shape");
-        } else {
-            codec = BBReaderFactory.tryGenerate(new BBReaderFactory.Source(this, _anySetter,
-                    _injectables != null, _vanillaProcessing, _beanProperties,
-                    _propertyBasedCreator, _nonStandardCreation,
-                    (_delegateDeserializer != null) || (_arrayDelegateDeserializer != null),
-                    _externalTypeIdHandler != null, _unwrappedPropertyHandler != null, null),
-                    ctxt, _declaresViews);
-        }
+        ValueDeserializer<Object> codec = BBReaderFactory.tryGenerate(new BBReaderFactory.Source(
+                this, _anySetter, _injectables != null, _vanillaProcessing, _beanProperties,
+                _propertyBasedCreator, _nonStandardCreation,
+                (_delegateDeserializer != null) || (_arrayDelegateDeserializer != null),
+                _externalTypeIdHandler != null, _unwrappedPropertyHandler != null,
+                _serializationShape == JsonFormat.Shape.ARRAY, null),
+                ctxt, _declaresViews);
         _codec = codec;
         _demoted = (codec == null);
     }

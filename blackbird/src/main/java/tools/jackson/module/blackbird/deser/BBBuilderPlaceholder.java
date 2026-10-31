@@ -39,18 +39,15 @@ final class BBBuilderPlaceholder extends BuilderBasedDeserializer
         CodegenDebug.log(() -> "reader resolve " + handledType().getName());
         super.resolve(ctxt);
         // A builder without a build method (the builder is the value) keeps
-        // the stock path, and so does an array-shaped bean (see
-        // BBReaderPlaceholder).
+        // the stock path.
         ValueDeserializer<Object> codec = null;
-        if (_serializationShape == JsonFormat.Shape.ARRAY) {
-            CodegenDebug.log("reader gate: array shape");
-        } else if (_buildMethod != null) {
+        if (_buildMethod != null) {
             codec = BBReaderFactory.tryGenerate(new BBReaderFactory.Source(this, _anySetter,
                     _injectables != null, _vanillaProcessing, _beanProperties, _propertyBasedCreator,
                     _nonStandardCreation,
                     (_delegateDeserializer != null) || (_arrayDelegateDeserializer != null),
                     _externalTypeIdHandler != null, _unwrappedPropertyHandler != null,
-                    _buildMethod),
+                    _serializationShape == JsonFormat.Shape.ARRAY, _buildMethod),
                     ctxt, _declaresViews);
         }
         _codec = codec;

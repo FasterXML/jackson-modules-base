@@ -52,13 +52,23 @@ final class BBWriterFactory
 
     private BBWriterFactory() {}
 
+    // A generation that ran out of stack, reported by the next one (see
+    // tryGenerate). Holds the serializer until then.
+    private static volatile BeanSerializerBase stackExhausted;
+
     // props and filtered: the resolved _props and _filteredProps of delegate,
-    // which are protected.
+    // which are protected. asArray: the bean's own shape is ARRAY.
     static ValueSerializer<Object> tryGenerate(BeanSerializerBase delegate,
             BeanPropertyWriter[] props, BeanPropertyWriter[] filtered, boolean hasTypeId,
-            SerializationContext ctxt) {
+            boolean asArray, SerializationContext ctxt) {
+        BeanSerializerBase exhausted = stackExhausted;
+        if (exhausted != null) {
+            stackExhausted = null;
+            CodegenFallbacks.stackExhausted("writer", exhausted.handledType());
+        }
         try {
-            ValueSerializer<Object> codec = generate(delegate, props, filtered, hasTypeId, ctxt);
+            ValueSerializer<Object> codec = generate(delegate, props, filtered, hasTypeId,
+                    asArray, ctxt);
             CodegenDebug.log(() -> "writer tryGenerate " + delegate.handledType().getName()
                     + " -> " + (codec == null ? "null (gated)" : codec.getClass().getName()));
             return codec;
@@ -66,8 +76,10 @@ final class BBWriterFactory
             // Generation ran out of stack deep in a recursive resolution: not
             // a generator bug, and the stock path, which needs no generation,
             // can still complete the call. The type keeps the stock path for
-            // the life of the mapper, so it is at least logged.
-            CodegenFallbacks.stackExhausted("writer", delegate.handledType());
+            // the life of the mapper, so it is logged, but not here: on the
+            // nearly exhausted stack only a field store is safe (logging
+            // could overflow again, even inside a class initializer).
+            stackExhausted = delegate;
             return null;
         } catch (VirtualMachineError e) {
             // Out of memory or a broken JVM, not a generator bug: never demote
@@ -84,8 +96,16 @@ final class BBWriterFactory
 
     private static ValueSerializer<Object> generate(BeanSerializerBase delegate,
             BeanPropertyWriter[] beanProps, BeanPropertyWriter[] filtered, boolean hasTypeId,
-            SerializationContext ctxt)
+            boolean asArray, SerializationContext ctxt)
             throws ReflectiveOperationException {
+        // Stock contextualizes an array-shaped bean to its as-array
+        // serializer, which writes with its own loop and calls back into the
+        // placeholder only on stock paths (unwrapping, copies), never into a
+        // writer codec.
+        if (asArray) {
+            CodegenDebug.log("writer gate: array shape");
+            return null;
+        }
         if (delegate.usesObjectId() || delegate.getFilterId() != null) {
             CodegenDebug.log("writer gate: object id or filter id");
             return null;

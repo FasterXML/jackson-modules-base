@@ -71,14 +71,24 @@ final class BBReaderFactory
      * placeholder (a stock deserializer subclass) from its own fields.
      * buildMethod is non-null exactly for builder-based beans. vanilla is
      * the resolved _vanillaProcessing: whether stock takes its vanilla loop.
+     * asArray: the bean's own shape is ARRAY.
      */
     record Source(BeanDeserializerBase deser, SettableAnyProperty anySetter,
             boolean injectables, boolean vanilla, BeanPropertyMap beanProperties, PropertyBasedCreator creator,
             boolean nonStandardCreation, boolean hasDelegateCreator, boolean hasExternalTypeId,
-            boolean hasUnwrapped, AnnotatedMethod buildMethod) {}
+            boolean hasUnwrapped, boolean asArray, AnnotatedMethod buildMethod) {}
+
+    // A generation that ran out of stack, reported by the next one (see
+    // tryGenerate). Holds the deserializer until then.
+    private static volatile BeanDeserializerBase stackExhausted;
 
     static ValueDeserializer<Object> tryGenerate(Source stock, DeserializationContext ctxt,
             boolean declaresViews) {
+        BeanDeserializerBase exhausted = stackExhausted;
+        if (exhausted != null) {
+            stackExhausted = null;
+            CodegenFallbacks.stackExhausted("reader", exhausted.handledType());
+        }
         BeanDeserializerBase delegate = stock.deser();
         try {
             ValueDeserializer<Object> codec = generate(stock, ctxt, declaresViews);
@@ -89,8 +99,10 @@ final class BBReaderFactory
             // Generation ran out of stack deep in a recursive resolution: not
             // a generator bug, and the stock path, which needs no generation,
             // can still complete the call. The type keeps the stock path for
-            // the life of the mapper, so it is at least logged.
-            CodegenFallbacks.stackExhausted("reader", delegate.handledType());
+            // the life of the mapper, so it is logged, but not here: on the
+            // nearly exhausted stack only a field store is safe (logging
+            // could overflow again, even inside a class initializer).
+            stackExhausted = delegate;
             return null;
         } catch (VirtualMachineError e) {
             // Out of memory or a broken JVM, not a generator bug: never demote
@@ -118,6 +130,13 @@ final class BBReaderFactory
         // DEFAULT_VIEW_INCLUSION by default, which marks every bean as needing
         // view processing; the generated codec instead checks
         // ctxt.getActiveView() per call and delegates when a view is active.
+        // Stock contextualizes an array-shaped bean to its as-array
+        // deserializer, which reads with its own loop and calls back into
+        // the placeholder only on stock paths (unwrapping, copies, the
+        // builder update overload), never into a codec.
+        if (stock.asArray()) {
+            return gate("array shape");
+        }
         if (delegate.getObjectIdReader(ctxt) != null) {
             return gate("object id");
         }
