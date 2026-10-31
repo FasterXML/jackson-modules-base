@@ -24,6 +24,13 @@ public final class CodegenDebug
         }
     }
 
+    // A constant message: nothing to defer.
+    public static void log(String message) {
+        if (ENABLED) {
+            System.err.println("bbdebug " + message);
+        }
+    }
+
     /**
      * Traces a whole-bean demotion. The modifiers see every type the mapper
      * resolves, and the great majority are scalars, collections and other JDK

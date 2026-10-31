@@ -65,6 +65,29 @@ public class BBCodecEngagementTest extends BlackbirdTestBase
         }
     }
 
+    // The common shape: a private static nested builder. The codec never
+    // names the builder class, so it engages like a public one.
+    @JsonDeserialize(builder = PrivateBuilderBean.Builder.class)
+    public static class PrivateBuilderBean {
+        final String name;
+        final int count;
+
+        private PrivateBuilderBean(String name, int count) {
+            this.name = name;
+            this.count = count;
+        }
+
+        @JsonPOJOBuilder(withPrefix = "")
+        private static class Builder {
+            private String name;
+            private int count;
+
+            private Builder name(String name) { this.name = name; return this; }
+            private Builder count(int count) { this.count = count; return this; }
+            private PrivateBuilderBean build() { return new PrivateBuilderBean(name, count); }
+        }
+    }
+
     public static class PublicParent {
         private String label;
         private PublicBean child;
@@ -200,4 +223,25 @@ public class BBCodecEngagementTest extends BlackbirdTestBase
                 () -> newVanillaJSONMapper().readValue("{\"count\":null}", PublicBean.class));
     }
 
+    @Test
+    public void testPrivateBuilderGenerates() throws Exception {
+        assertGeneratedReader(MAPPER, PrivateBuilderBean.class);
+        ObjectMapper vanilla = newVanillaJSONMapper();
+        for (String doc : new String[] { "{\"name\":\"a\",\"count\":3}", "{\"count\":\"x\"}",
+                "{\"name\":null,\"junk\":[1],\"count\":4}" }) {
+            PrivateBuilderBean expected;
+            try {
+                expected = vanilla.readValue(doc, PrivateBuilderBean.class);
+            } catch (Exception e) {
+                Exception actual = assertThrows(Exception.class,
+                        () -> MAPPER.readValue(doc, PrivateBuilderBean.class), doc);
+                assertEquals(e.getClass(), actual.getClass(), doc);
+                assertEquals(e.getMessage(), actual.getMessage(), doc);
+                continue;
+            }
+            PrivateBuilderBean actual = MAPPER.readValue(doc, PrivateBuilderBean.class);
+            assertEquals(expected.name, actual.name, doc);
+            assertEquals(expected.count, actual.count, doc);
+        }
+    }
 }

@@ -65,8 +65,9 @@ final class BBWriterFactory
         } catch (StackOverflowError e) {
             // Generation ran out of stack deep in a recursive resolution: not
             // a generator bug, and the stock path, which needs no generation,
-            // can still complete the call. Nothing more (not even logging)
-            // runs on the nearly exhausted stack.
+            // can still complete the call. The type keeps the stock path for
+            // the life of the mapper, so it is at least logged.
+            CodegenFallbacks.stackExhausted("writer", delegate.handledType());
             return null;
         } catch (VirtualMachineError e) {
             // Out of memory or a broken JVM, not a generator bug: never demote
@@ -86,7 +87,7 @@ final class BBWriterFactory
             SerializationContext ctxt)
             throws ReflectiveOperationException {
         if (delegate.usesObjectId() || delegate.getFilterId() != null) {
-            CodegenDebug.log(() -> "writer gate: object id or filter id");
+            CodegenDebug.log("writer gate: object id or filter id");
             return null;
         }
         Class<?> beanClass = delegate.handledType();
@@ -96,7 +97,7 @@ final class BBWriterFactory
             props.add(classify(writer));
         }
         if (props.isEmpty()) {
-            CodegenDebug.log(() -> "writer gate: no props");
+            CodegenDebug.log("writer gate: no props");
             return null;
         }
         boolean includeByDefault = ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION);
@@ -130,7 +131,7 @@ final class BBWriterFactory
             return ViewStrategy.NONE;
         }
         if (!isStockViewArray(beanProps, filtered, includeByDefault)) {
-            CodegenDebug.log(() -> "writer views: non-stock filtered writers, delegating");
+            CodegenDebug.log("writer views: non-stock filtered writers, delegating");
             return ViewStrategy.DELEGATE;
         }
         boolean viewsFound = false;

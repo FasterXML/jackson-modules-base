@@ -167,7 +167,7 @@ public final class ReaderCodegen
                 handleName, mode, injectables, vanillaLoop, views, matchArms, localNames,
                 beanProps.hasAliases() || beanProps.isCaseInsensitive()));
         if (bytes == null) {
-            CodegenDebug.log(() -> "reader gate: a generated method is over "
+            CodegenDebug.log("reader gate: a generated method is over "
                     + ClassFileEmitters.MAX_METHOD_BYTES + " bytes");
             return null;
         }

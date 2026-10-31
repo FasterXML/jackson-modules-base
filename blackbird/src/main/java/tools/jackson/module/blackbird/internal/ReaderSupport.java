@@ -18,34 +18,42 @@ final class ReaderSupport
 
     /**
      * The exception that the stock MethodProperty throws when its setter or
-     * field store throws t (SettableBeanProperty._throwAsJacksonE). A scalar
-     * arm no longer has its value, but the message needs only the value's
-     * class, which the property type fixes; a child arm passes its value.
+     * field store throws t: SettableBeanProperty._throwAsJacksonE itself,
+     * called through a probe. A scalar arm no longer has its value, but the
+     * message needs only the value's class (ClassUtil.classNameOf takes a
+     * Class as is), which the property type fixes; a child arm passes its
+     * value.
      */
     static Throwable storeException(Throwable t, Object childValue, SettableBeanProperty prop,
             JsonParser p) {
-        if (t instanceof IllegalArgumentException) {
-            Class<?> raw = prop.getType().getRawClass();
-            Object value = raw.isPrimitive() ? ClassUtil.wrapperType(raw)
-                    : (raw == String.class) ? String.class : childValue;
-            StringBuilder msg = new StringBuilder("Problem deserializing property '")
-                    .append(prop.getName())
-                    .append("' (expected type: ")
-                    .append(prop.getType())
-                    .append("; actual type: ")
-                    .append(ClassUtil.classNameOf(value)).append(")");
-            String origMsg = ClassUtil.exceptionMessage(t);
-            if (origMsg != null) {
-                msg.append(", problem: ").append(origMsg);
-            } else {
-                msg.append(" (no error message provided)");
+        Class<?> raw = prop.getType().getRawClass();
+        Object value = raw.isPrimitive() ? ClassUtil.wrapperType(raw)
+                : (raw == String.class) ? String.class : childValue;
+        return PropertyProbe.storeException(prop, p, t, value);
+    }
+
+    // SettableBeanProperty._throwAsJacksonE is protected; the delegating
+    // copy carries the property's name and type into this probe.
+    private static final class PropertyProbe extends SettableBeanProperty.Delegating {
+        private PropertyProbe(SettableBeanProperty src) {
+            super(src);
+        }
+
+        @Override
+        protected SettableBeanProperty withDelegate(SettableBeanProperty d) {
+            return new PropertyProbe(d);
+        }
+
+        static Throwable storeException(SettableBeanProperty prop, JsonParser p, Throwable t,
+                Object value) {
+            try {
+                new PropertyProbe(prop)._throwAsJacksonE(p, t, value);
+            } catch (RuntimeException | Error e) {
+                return e;
             }
-            return DatabindException.from(p, msg.toString(), t);
+            // _throwAsJacksonE always throws
+            return new IllegalStateException(t);
         }
-        if (t instanceof RuntimeException) {
-            return t;
-        }
-        return DatabindException.from(p, ClassUtil.exceptionMessage(t), t);
     }
 
     /**

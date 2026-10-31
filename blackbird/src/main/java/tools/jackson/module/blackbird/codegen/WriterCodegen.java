@@ -102,7 +102,7 @@ public final class WriterCodegen
         byte[] bytes = ClassFileEmitters.emit(new Plan(className, props, stockName, nameName,
                 childName, selfName, handleName, views, includeByDefault, nativePolyWrites));
         if (bytes == null) {
-            CodegenDebug.log(() -> "writer gate: a generated method is over "
+            CodegenDebug.log("writer gate: a generated method is over "
                     + ClassFileEmitters.MAX_METHOD_BYTES + " bytes");
             return null;
         }

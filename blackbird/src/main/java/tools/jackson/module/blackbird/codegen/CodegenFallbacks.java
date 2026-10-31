@@ -24,8 +24,24 @@ public final class CodegenFallbacks
     private CodegenFallbacks() {}
 
     public static void gateFailure(Class<?> beanClass, Throwable cause) {
-        LOGGER.log(Level.DEBUG, () -> "Blackbird gate check failed for " + beanClass.getName()
+        LOGGER.log(Level.DEBUG, "Blackbird gate check failed for " + beanClass.getName()
                 + "; the stock (de)serializer stays in place", cause);
+    }
+
+    // Generation ran out of stack deep in a recursive resolution: not a
+    // generator bug, so never rethrown. Called once the error has unwound to
+    // the caller of generation, but that caller can itself be deep, so a
+    // second overflow while logging is dropped.
+    public static void stackExhausted(String kind, Class<?> beanClass) {
+        try {
+            CodegenDebug.log(kind + " tryGenerate " + beanClass.getName()
+                    + " ran out of stack");
+            LOGGER.log(Level.DEBUG, "Blackbird " + kind + " generation ran out of stack for "
+                    + beanClass.getName() + "; the stock (de)serializer stays in place"
+                    + " for this mapper");
+        } catch (StackOverflowError e) {
+            // Nothing more can run here.
+        }
     }
 
     public static void generationFailure(Class<?> beanClass, Throwable cause) {
@@ -39,7 +55,7 @@ public final class CodegenFallbacks
             throw new IllegalStateException(
                     "Blackbird codec generation failed for " + beanClass.getName(), cause);
         }
-        LOGGER.log(Level.DEBUG, () -> "Blackbird codec generation failed for "
+        LOGGER.log(Level.DEBUG, "Blackbird codec generation failed for "
                 + beanClass.getName() + "; the stock (de)serializer stays in place."
                 + " This is likely a jackson-module-blackbird bug; please report it.", cause);
     }

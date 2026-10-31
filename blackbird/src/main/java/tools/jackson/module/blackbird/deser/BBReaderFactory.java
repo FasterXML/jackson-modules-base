@@ -88,8 +88,9 @@ final class BBReaderFactory
         } catch (StackOverflowError e) {
             // Generation ran out of stack deep in a recursive resolution: not
             // a generator bug, and the stock path, which needs no generation,
-            // can still complete the call. Nothing more (not even logging)
-            // runs on the nearly exhausted stack.
+            // can still complete the call. The type keeps the stock path for
+            // the life of the mapper, so it is at least logged.
+            CodegenFallbacks.stackExhausted("reader", delegate.handledType());
             return null;
         } catch (VirtualMachineError e) {
             // Out of memory or a broken JVM, not a generator bug: never demote
@@ -153,7 +154,7 @@ final class BBReaderFactory
                 construction = Construction.constructor(
                         MemberHandles.defaultConstructor(ac.getAnnotated()));
             } catch (IllegalAccessException e) {
-                CodegenDebug.log(() -> "reader demote: ctor access, instantiator mode");
+                CodegenDebug.log("reader demote: ctor access, instantiator mode");
             }
         }
         return generateWithStockMatcher(delegate, ctxt, beanClass, stock, construction,
@@ -175,7 +176,9 @@ final class BBReaderFactory
         if (build == null) {
             return gate("builder without build method");
         }
-        if (Modifier.isPrivate(builderClass.getModifiers()) || build.getParameterCount() != 0) {
+        // The builder class itself may be private: the codec never names it
+        // (the instantiator creates it, and the handles are erased).
+        if (build.getParameterCount() != 0) {
             return gate("builder shape");
         }
         MethodHandle buildMH;
