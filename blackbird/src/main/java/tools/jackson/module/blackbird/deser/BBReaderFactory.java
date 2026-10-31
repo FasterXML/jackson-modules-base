@@ -78,17 +78,8 @@ final class BBReaderFactory
             boolean nonStandardCreation, boolean hasDelegateCreator, boolean hasExternalTypeId,
             boolean hasUnwrapped, boolean asArray, AnnotatedMethod buildMethod) {}
 
-    // A generation that ran out of stack, reported by the next one (see
-    // tryGenerate). Holds the deserializer until then.
-    private static volatile BeanDeserializerBase stackExhausted;
-
     static ValueDeserializer<Object> tryGenerate(Source stock, DeserializationContext ctxt,
             boolean declaresViews) {
-        BeanDeserializerBase exhausted = stackExhausted;
-        if (exhausted != null) {
-            stackExhausted = null;
-            CodegenFallbacks.stackExhausted("reader", exhausted.handledType());
-        }
         BeanDeserializerBase delegate = stock.deser();
         try {
             ValueDeserializer<Object> codec = generate(stock, ctxt, declaresViews);
@@ -98,11 +89,8 @@ final class BBReaderFactory
         } catch (StackOverflowError e) {
             // Generation ran out of stack deep in a recursive resolution: not
             // a generator bug, and the stock path, which needs no generation,
-            // can still complete the call. The type keeps the stock path for
-            // the life of the mapper, so it is logged, but not here: on the
-            // nearly exhausted stack only a field store is safe (logging
-            // could overflow again, even inside a class initializer).
-            stackExhausted = delegate;
+            // can still complete the call. Nothing more (not even logging)
+            // runs on the nearly exhausted stack.
             return null;
         } catch (VirtualMachineError e) {
             // Out of memory or a broken JVM, not a generator bug: never demote

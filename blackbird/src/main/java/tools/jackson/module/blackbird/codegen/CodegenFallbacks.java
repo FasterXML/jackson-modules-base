@@ -30,20 +30,6 @@ public final class CodegenFallbacks
         }
     }
 
-    // A generation of beanClass ran out of stack deep in a recursive
-    // resolution: not a generator bug, so never rethrown. Reported late, by
-    // the next generation, from a stack with room to log.
-    public static void stackExhausted(String kind, Class<?> beanClass) {
-        if (CodegenDebug.ENABLED) {
-            CodegenDebug.log(kind + " tryGenerate " + beanClass.getName() + " ran out of stack");
-        }
-        if (LOGGER.isLoggable(Level.DEBUG)) {
-            LOGGER.log(Level.DEBUG, "Blackbird " + kind + " generation ran out of stack for "
-                    + beanClass.getName() + "; the stock (de)serializer stays in place"
-                    + " for this mapper");
-        }
-    }
-
     public static void generationFailure(Class<?> beanClass, Throwable cause) {
         if (Boolean.getBoolean(FAIL_ON_ERROR_PROPERTY)) {
             if (cause instanceof RuntimeException re) {
