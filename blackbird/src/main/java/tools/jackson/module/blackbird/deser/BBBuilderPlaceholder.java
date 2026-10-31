@@ -41,7 +41,9 @@ final class BBBuilderPlaceholder extends BuilderBasedDeserializer
         // A builder without a build method (the builder is the value) keeps
         // the stock path.
         ValueDeserializer<Object> codec = null;
-        if (_buildMethod != null) {
+        if (_buildMethod == null) {
+            CodegenDebug.log("reader gate: builder without build method");
+        } else {
             codec = BBReaderFactory.tryGenerate(new BBReaderFactory.Source(this, _anySetter,
                     _injectables != null, _vanillaProcessing, _beanProperties, _propertyBasedCreator,
                     _nonStandardCreation,

@@ -135,7 +135,10 @@ non-default null serializer, an applied view, or value suppression. A bean
 keeps the stock deserializer or serializer when it has Object Ids, a
 delegating or property-based creator (other than the canonical constructor
 of a record), an external type id, unwrapped or merging properties, or, for
-records, an any-setter or injectable values. A bean also keeps the stock code
+records, an any-setter or injectable values. A bean whose own shape is
+`@JsonFormat(shape = JsonFormat.Shape.ARRAY)` (by annotation or config
+override) keeps the stock deserializer and serializer: stock reads and
+writes it with its own as-array code. A bean also keeps the stock code
 when one of its generated methods would be larger than 7000 bytes of
 bytecode: HotSpot does not compile methods over 8000 bytes.
 

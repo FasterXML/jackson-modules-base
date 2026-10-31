@@ -91,6 +91,11 @@ final class BBWriterFactory
         return codec;
     }
 
+    private static ValueSerializer<Object> gate(String reason) {
+        CodegenDebug.log(() -> "writer gate: " + reason);
+        return null;
+    }
+
     private static ValueSerializer<Object> generate(BeanSerializerBase delegate,
             BeanPropertyWriter[] beanProps, BeanPropertyWriter[] filtered, boolean hasTypeId,
             boolean asArray, SerializationContext ctxt)
@@ -100,12 +105,10 @@ final class BBWriterFactory
         // placeholder only on stock paths (unwrapping, copies), never into a
         // writer codec.
         if (asArray) {
-            CodegenDebug.log("writer gate: array shape");
-            return null;
+            return gate("array shape");
         }
         if (delegate.usesObjectId() || delegate.getFilterId() != null) {
-            CodegenDebug.log("writer gate: object id or filter id");
-            return null;
+            return gate("object id or filter id");
         }
         Class<?> beanClass = delegate.handledType();
         List<GenWProp> props = new ArrayList<>();
@@ -114,8 +117,7 @@ final class BBWriterFactory
             props.add(classify(writer));
         }
         if (props.isEmpty()) {
-            CodegenDebug.log("writer gate: no props");
-            return null;
+            return gate("no props");
         }
         boolean includeByDefault = ctxt.isEnabled(MapperFeature.DEFAULT_VIEW_INCLUSION);
         // A @JsonTypeId property replaces the resolver-computed type id, which
