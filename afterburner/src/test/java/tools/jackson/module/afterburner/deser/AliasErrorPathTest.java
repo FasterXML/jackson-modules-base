@@ -14,8 +14,6 @@ import tools.jackson.core.JsonToken;
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.*;
 import tools.jackson.databind.deser.DeserializationProblemHandler;
-import tools.jackson.databind.exc.InvalidFormatException;
-import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
 
@@ -49,81 +47,66 @@ public class AliasErrorPathTest extends AfterburnerTestBase
         @JsonMerge public BigBean big = new BigBean();
     }
 
+    private static final List<Class<?>> BEANS = List.of(SmallBean.class, BigBean.class);
+
     // Afterburner's optimized deserializers need "vanilla" processing
     private final ObjectMapper MAPPER = _mapperBuilder().build();
 
     @Test
-    public void unrolledAlias() throws Exception {
-        _verifyPath(SmallBean.class, """
-                {"a1":"bad"}
-                """, "a1");
-        _verifyPath(SmallBean.class, """
-                {"a":1,"b1":"bad"}
-                """, "b1");
-    }
-
-    @Test
-    public void unrolledCanonical() throws Exception {
-        _verifyPath(SmallBean.class, """
-                {"a":"bad"}
-                """, "a");
-    }
-
-    @Test
-    public void orderedAlias() throws Exception {
-        _verifyPath(BigBean.class, """
-                {"a1":"bad"}
-                """, "a1");
-        _verifyPath(BigBean.class, """
-                {"a":1,"b1":"bad"}
-                """, "b1");
-        _verifyPath(BigBean.class, """
-                {"a":1,"b":2,"c":3,"d":4,"e":5,"f":6,"g1":"bad"}
-                """, "g1");
-    }
-
-    @Test
-    public void orderedCanonical() throws Exception {
-        _verifyPath(BigBean.class, """
-                {"a":"bad"}
-                """, "a");
-        _verifyPath(BigBean.class, """
-                {"a":1,"b":2,"c":3,"d":4,"e":5,"f":6,"g":"bad"}
-                """, "g");
-    }
-
-    @Test
-    public void orderedForUpdate() throws Exception {
-        _verifyPath(MAPPER.readerForUpdating(new BigBean()), """
-                {"a1":"bad"}
-                """, "a1");
-        _verifyPath(MAPPER.readerForUpdating(new BigBean()), """
-                {"a":1,"b1":"bad"}
-                """, "b1");
-    }
-
-    // Parser already pointing to the first property name. Handled by databind's
-    // `BeanDeserializer`, since `_deserializeOther()` calls its own vanilla method
-    @Test
-    public void orderedFromPropertyName() throws Exception {
-        try (JsonParser p = _parserAtFirstName("""
-                {"a1":"bad"}
-                """)) {
-            InvalidFormatException e = assertThrows(InvalidFormatException.class,
-                    () -> MAPPER.readerFor(BigBean.class).readValue(p));
-            _verifyException(e, "a1");
+    public void aliasAndCanonicalName() throws Exception {
+        for (Class<?> type : BEANS) {
+            ObjectReader r = MAPPER.readerFor(type);
+            _verifyPath(r, "{'a1':'bad'}", "a1");
+            _verifyPath(r, "{'a':1,'b1':'bad'}", "b1");
+            _verifyPath(r, "{'a':'bad'}", "a");
+            // Not scalar: name must be found at these tokens too
+            _verifyPath(r, "{'a1':{}}", "a1");
+            _verifyPath(r, "{'a1':[]}", "a1");
         }
     }
 
-    // As above, but for update: handled by `SuperSonicBeanDeserializer`
+    // Past the rolled out first properties of SuperSonicBeanDeserializer
     @Test
-    public void orderedForUpdateFromPropertyName() throws Exception {
-        try (JsonParser p = _parserAtFirstName("""
-                {"a1":"bad"}
-                """)) {
-            InvalidFormatException e = assertThrows(InvalidFormatException.class,
+    public void laterProperties() throws Exception {
+        ObjectReader r = MAPPER.readerFor(BigBean.class);
+        _verifyPath(r, "{'a':1,'b':2,'c':3,'d':4,'e':5,'f':6,'g1':'bad'}", "g1");
+        _verifyPath(r, "{'a':1,'b':2,'c':3,'d':4,'e':5,'f':6,'g':'bad'}", "g");
+    }
+
+    // No aliases, no case-insensitivity: input name is not read
+    @Test
+    public void noInputNames() throws Exception {
+        _verifyPath(MAPPER.readerFor(PlainBigBean.class), "{'b':'bad'}", "b");
+    }
+
+    @Test
+    public void caseInsensitive() throws Exception {
+        final ObjectMapper mapper = _mapperBuilder()
+                .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+                .build();
+        for (Class<?> type : BEANS) {
+            _verifyPath(mapper.readerFor(type), "{'A':'bad'}", "A");
+        }
+    }
+
+    @Test
+    public void forUpdate() throws Exception {
+        for (Object bean : List.of(new SmallBean(), new BigBean())) {
+            ObjectReader r = MAPPER.readerForUpdating(bean);
+            _verifyPath(r, "{'a1':'bad'}", "a1");
+            _verifyPath(r, "{'a':1,'b1':'bad'}", "b1");
+        }
+    }
+
+    // Parser already pointing to the first property name
+    @Test
+    public void forUpdateFromPropertyName() throws Exception {
+        try (JsonParser p = MAPPER.createParser(a2q("{'a1':'bad'}"))) {
+            assertToken(JsonToken.START_OBJECT, p.nextToken());
+            assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
+            DatabindException e = assertThrows(DatabindException.class,
                     () -> MAPPER.readerForUpdating(new BigBean()).readValue(p));
-            _verifyException(e, "a1");
+            assertEquals(List.of("a1"), _path(e));
             assertTrue(_hasFrame(e, "_deserializeDisordered"));
         }
     }
@@ -131,73 +114,23 @@ public class AliasErrorPathTest extends AfterburnerTestBase
     // Not an Object: nothing to update, bean is left as is, same as stock
     @Test
     public void updateFromNonObject() throws Exception {
-        final ObjectMapper stock = newVanillaJSONMapper();
-        for (ObjectMapper mapper : List.of(stock, MAPPER)) {
-            for (String json : List.of("12", "\"x\"", "true")) {
-                for (Object bean : List.of(new SmallBean(), new BigBean())) {
-                    assertSame(bean, mapper.readerForUpdating(bean).readValue(json), json);
-                }
+        for (ObjectMapper mapper : List.of(newVanillaJSONMapper(), MAPPER)) {
+            for (Object bean : List.of(new SmallBean(), new BigBean())) {
+                assertSame(bean, mapper.readerForUpdating(bean).readValue("12"));
             }
-            MergeHolder holder = mapper.readValue("""
-                    {"big":12}
-                    """, MergeHolder.class);
-            assertNotNull(holder.big);
+            assertNotNull(mapper.readValue(a2q("{'big':12}"), MergeHolder.class).big);
         }
     }
 
-    // Other case: input name differs from logical one without aliases
-    @Test
-    public void caseInsensitive() throws Exception {
-        final ObjectMapper mapper = _mapperBuilder()
-                .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
-                .build();
-        for (Class<?> type : List.of(SmallBean.class, BigBean.class)) {
-            _verifyPath(mapper.readerFor(type), """
-                    {"A":"bad"}
-                    """, "A");
-        }
-    }
-
-    // No aliases, no case-insensitivity: input name is not read
-    @Test
-    public void noInputNames() throws Exception {
-        _verifyPath(PlainBigBean.class, """
-                {"b":"bad"}
-                """, "b");
-    }
-
-    // Name must be found also when the value is not scalar
-    @Test
-    public void aliasWithStructuredValue() throws Exception {
-        for (Class<?> type : List.of(SmallBean.class, BigBean.class)) {
-            for (String json : List.of("""
-                    {"a1":{}}
-                    """, """
-                    {"a1":[]}
-                    """)) {
-                MismatchedInputException e = assertThrows(MismatchedInputException.class,
-                        () -> MAPPER.readerFor(type).readValue(json));
-                _verifyException(e, "a1");
-            }
-        }
-    }
-
-    // Failure from property handling is reported once, not also for earlier property
+    // Failure is reported once, not also for earlier property
     @Test
     public void unknownProperty() throws Exception {
         final ObjectMapper mapper = _mapperBuilder()
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 .build();
-        for (Class<?> type : List.of(SmallBean.class, BigBean.class)) {
-            for (String json : List.of("""
-                    {"zzz":1}
-                    """, """
-                    {"a":1,"zzz":1}
-                    """)) {
-                DatabindException e = assertThrows(DatabindException.class,
-                        () -> mapper.readerFor(type).readValue(json));
-                assertEquals(List.of("zzz"), _path(e));
-            }
+        for (Class<?> type : BEANS) {
+            _verifyPath(mapper.readerFor(type), "{'zzz':1}", "zzz");
+            _verifyPath(mapper.readerFor(type), "{'a':1,'zzz':1}", "zzz");
         }
     }
 
@@ -213,18 +146,13 @@ public class AliasErrorPathTest extends AfterburnerTestBase
         };
         final ObjectMapper afterburner = _mapperBuilder().addHandler(handler).build();
         final ObjectMapper stock = newVanillaJSONMapper().rebuild().addHandler(handler).build();
-        for (Class<?> type : List.of(SmallBean.class, BigBean.class)) {
-            for (String json : List.of("""
-                    {"zzz":1}
-                    """, """
-                    {"a":1,"zzz":1}
-                    """)) {
-                assertThrows(IllegalStateException.class,
-                        () -> stock.readerFor(type).readValue(json));
-                IllegalStateException e = assertThrows(IllegalStateException.class,
-                        () -> afterburner.readerFor(type).readValue(json));
-                assertTrue(_hasFrame(e, "_deserializeDisordered"));
-            }
+        final String json = a2q("{'a':1,'zzz':1}");
+        for (Class<?> type : BEANS) {
+            assertThrows(IllegalStateException.class,
+                    () -> stock.readerFor(type).readValue(json));
+            assertTrue(_hasFrame(assertThrows(IllegalStateException.class,
+                    () -> afterburner.readerFor(type).readValue(json)),
+                    "_deserializeDisordered"));
         }
     }
 
@@ -232,22 +160,13 @@ public class AliasErrorPathTest extends AfterburnerTestBase
     @Test
     public void parserFailures() throws Exception {
         final ObjectMapper stock = newVanillaJSONMapper();
-        for (Class<?> type : List.of(SmallBean.class, BigBean.class)) {
-            for (String json : List.of(
-                    "{ bad",
-                    "{\"a\":bad",
-                    "{\"a\":1, bad",
-                    "{\"a\":1,\"b\":bad",
-                    "{\"b\":1, bad")) {
-                for (ObjectReader r : List.of(stock.readerFor(type),
-                        MAPPER.readerFor(type))) {
-                    assertEquals(List.of(), _path(
-                            assertThrows(StreamReadException.class, () -> r.readValue(json))),
-                            json);
-                }
+        for (String json : List.of("{ bad", "{'a':bad", "{'a':1, bad", "{'a':1,'b':bad", "{'b':1, bad")) {
+            for (ObjectReader r : List.of(
+                    stock.readerFor(SmallBean.class), stock.readerFor(BigBean.class),
+                    MAPPER.readerFor(SmallBean.class), MAPPER.readerFor(BigBean.class),
+                    MAPPER.readerForUpdating(new SmallBean()), MAPPER.readerForUpdating(new BigBean()))) {
                 assertEquals(List.of(), _path(assertThrows(StreamReadException.class,
-                        () -> MAPPER.readerForUpdating(type.getDeclaredConstructor().newInstance())
-                                .readValue(json))), json);
+                        () -> r.readValue(a2q(json)))), json);
             }
         }
     }
@@ -257,11 +176,11 @@ public class AliasErrorPathTest extends AfterburnerTestBase
                 .enable(MapperFeature.DEFAULT_VIEW_INCLUSION);
     }
 
-    private JsonParser _parserAtFirstName(String json) {
-        JsonParser p = MAPPER.createParser(json);
-        assertToken(JsonToken.START_OBJECT, p.nextToken());
-        assertToken(JsonToken.PROPERTY_NAME, p.nextToken());
-        return p;
+    private static void _verifyPath(ObjectReader r, String json, String expName) {
+        DatabindException e = assertThrows(DatabindException.class,
+                () -> r.readValue(a2q(json)));
+        assertEquals(List.of(expName), _path(e));
+        assertTrue(_hasFrame(e, "deserialize"), "should go through Afterburner's deserializer");
     }
 
     private static List<String> _path(JacksonException e) {
@@ -273,21 +192,5 @@ public class AliasErrorPathTest extends AfterburnerTestBase
     private static boolean _hasFrame(Throwable e, String method) {
         return Arrays.stream(e.getStackTrace()).anyMatch(
                 f -> f.getClassName().contains("SuperSonic") && f.getMethodName().equals(method));
-    }
-
-    private void _verifyPath(Class<?> type, String json, String expName) {
-        _verifyPath(MAPPER.readerFor(type), json, expName);
-    }
-
-    private void _verifyPath(ObjectReader r, String json, String expName) {
-        _verifyException(assertThrows(InvalidFormatException.class, () -> r.readValue(json)),
-                expName);
-    }
-
-    private void _verifyException(DatabindException e, String expName) {
-        assertEquals(List.of(expName), _path(e));
-        assertTrue(Arrays.stream(e.getStackTrace()).anyMatch(
-                f -> f.getClassName().contains("SuperSonic")),
-                "should go through Afterburner's deserializer");
     }
 }

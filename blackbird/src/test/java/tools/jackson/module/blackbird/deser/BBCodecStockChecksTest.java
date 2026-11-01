@@ -384,37 +384,32 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
 
     @Test
     public void testFailureNameWithStructuredValue() throws Exception {
-        assertGeneratedReader(MODULE, AliasedStructured.class);
-        assertGeneratedReader(MODULE, AliasedStructuredRecord.class);
         for (Class<?> type : List.of(AliasedStructured.class, AliasedStructuredRecord.class)) {
-            // Failures at the structured value itself: read at the child, stock read
-            _assertSameFailure(VANILLA, MODULE, "{\"c1\":[]}", type, "c1");
-            _assertSameFailure(VANILLA, MODULE, "{\"l1\":{}}", type, "l1");
-            // Failures within: first name stays, and later ones do not replace it
-            _assertSameFailure(VANILLA, MODULE, "{\"c1\":{\"n\":\"x\"}}", type, "c1");
-            _assertSameFailure(VANILLA, MODULE, "{\"l1\":[\"x\"]}", type, "l1");
-            _assertSameFailure(VANILLA, MODULE, "{\"c1\":{\"n\":1},\"l1\":{}}", type, "l1");
-            // Canonical name
-            _assertSameFailure(VANILLA, MODULE, "{\"child\":[]}", type, "child");
+            assertGeneratedReader(MODULE, type);
+            _assertSameFailure(VANILLA, MODULE, a2q("{'c1':[]}"), type, "c1");
+            _assertSameFailure(VANILLA, MODULE, a2q("{'l1':{}}"), type, "l1");
+            // Failures within: names within do not replace this name
+            _assertSameFailure(VANILLA, MODULE, a2q("{'c1':{'n':'x'}}"), type, "c1");
+            _assertSameFailure(VANILLA, MODULE, a2q("{'l1':['x']}"), type, "l1");
+            _assertSameFailure(VANILLA, MODULE, a2q("{'c1':{'n':1},'l1':{}}"), type, "l1");
+            _assertSameFailure(VANILLA, MODULE, a2q("{'child':[]}"), type, "child");
         }
-        // Field, scalar value
-        _assertSameFailure(VANILLA, MODULE, "{\"f1\":\"x\"}", AliasedStructured.class, "f1");
-        // Setter fails after child has been read: name was read before that
-        _assertSameFailure(VANILLA, MODULE, "{\"t1\":{\"n\":1}}", AliasedStructured.class, "t1");
+        _assertSameFailure(VANILLA, MODULE, a2q("{'f1':'x'}"), AliasedStructured.class, "f1");
+        // Setter fails after child has been read
+        _assertSameFailure(VANILLA, MODULE, a2q("{'t1':{'n':1}}"), AliasedStructured.class, "t1");
     }
 
     @Test
     public void testFailureNameUnderActiveView() throws Exception {
-        assertGeneratedReader(MODULE, AliasedViews.class);
-        assertGeneratedReader(MODULE, AliasedViewsRecord.class);
         for (Class<?> type : List.of(AliasedViews.class, AliasedViewsRecord.class)) {
+            assertGeneratedReader(MODULE, type);
             final ObjectReader vanilla = VANILLA.readerFor(type).withView(ViewA.class);
             final ObjectReader module = MODULE.readerFor(type).withView(ViewA.class);
-            _assertSameFailure(vanilla, module, "{\"a1\":\"x\"}", "a1");
-            _assertSameFailure(vanilla, module, "{\"c1\":[]}", "c1");
+            _assertSameFailure(vanilla, module, a2q("{'a1':'x'}"), "a1");
+            _assertSameFailure(vanilla, module, a2q("{'c1':[]}"), "c1");
             // Past a property hidden by the view, with invalid value that gets skipped
-            _assertSameFailure(vanilla, module, "{\"b1\":\"x\",\"a1\":\"y\"}", "a1");
-            _assertSameFailure(vanilla, module, "{\"b1\":{\"z\":1},\"c1\":[]}", "c1");
+            _assertSameFailure(vanilla, module, a2q("{'b1':'x','a1':'y'}"), "a1");
+            _assertSameFailure(vanilla, module, a2q("{'b1':{'z':1},'c1':[]}"), "c1");
         }
     }
 
@@ -437,17 +432,9 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
     @Test
     public void testBuilderFailureReportsInputName() throws Exception {
         assertGeneratedReader(MODULE, Aliased.class);
-        for (String doc : new String[] { "{\"alt\":\"x\"}", "{\"alt\":-1}", "{\"v\":-1}" }) {
-            Exception expected = assertThrows(Exception.class,
-                    () -> VANILLA.readValue(doc, Aliased.class));
-            Exception actual = assertThrows(Exception.class,
-                    () -> MODULE.readValue(doc, Aliased.class));
-            assertEquals(expected.getClass(), actual.getClass(), doc);
-            assertEquals(expected.getMessage(), actual.getMessage(), doc);
-        }
-        Exception e = assertThrows(Exception.class,
-                () -> MODULE.readValue("{\"alt\":-1}", Aliased.class));
-        assertTrue(e.getMessage().contains("[\"alt\"]"), e.getMessage());
+        _assertSameFailure(VANILLA, MODULE, "{\"alt\":\"x\"}", Aliased.class, "alt");
+        _assertSameFailure(VANILLA, MODULE, "{\"alt\":-1}", Aliased.class, "alt");
+        _assertSameFailure(VANILLA, MODULE, "{\"v\":-1}", Aliased.class, "v");
     }
 
     // The same after a type id that follows a buffered property: the

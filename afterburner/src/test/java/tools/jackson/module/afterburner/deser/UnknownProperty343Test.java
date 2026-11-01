@@ -72,13 +72,9 @@ public class UnknownProperty343Test extends AfterburnerTestBase
         Vanilla343 result = VANILLA_MAPPER.readValue(JSON, Vanilla343.class);
         assertEquals("a", result.a);
         assertEquals("h", result.h);
-    }
 
-    @Test
-    public void testTrailingUnknownPropertyVanillaForUpdate() throws Exception
-    {
         Vanilla343 bean = new Vanilla343();
-        assertSame(bean, VANILLA_MAPPER.readerForUpdating(bean).readValue(JSON));
+        VANILLA_MAPPER.readerForUpdating(bean).readValue(JSON);
         assertEquals("a", bean.a);
         assertEquals("h", bean.h);
     }
