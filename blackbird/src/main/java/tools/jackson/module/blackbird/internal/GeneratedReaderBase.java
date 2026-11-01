@@ -3,6 +3,7 @@ package tools.jackson.module.blackbird.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
@@ -134,6 +135,23 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
         String name = p.currentName();
         p.nextToken();
         handleUnknownVanilla(p, ctxt, bean, name);
+    }
+
+    // Non-Jackson exceptions (like ones from a DeserializationProblemHandler) get
+    // the property as their path; stock lets them through as they are. All routes
+    // to unknown-property handling come here, including those of stock code the
+    // codec inherits, and buffered unknown properties of records.
+    @Override
+    protected void handleUnknownProperty(JsonParser p, DeserializationContext ctxt,
+            Object beanOrClass, String propName) {
+        try {
+            super.handleUnknownProperty(p, ctxt, beanOrClass, propName);
+        } catch (JacksonException e) { // has its path already
+            throw e;
+        } catch (Exception e) {
+            throw wrapAndThrow(e, (beanOrClass == null) ? handledType() : beanOrClass,
+                    propName, ctxt);
+        }
     }
 
     // Neither a name nor the end of the object where a name was expected.

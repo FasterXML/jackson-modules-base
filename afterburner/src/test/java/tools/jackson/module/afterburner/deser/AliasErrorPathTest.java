@@ -6,7 +6,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonMerge;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
@@ -42,6 +44,15 @@ public class AliasErrorPathTest extends AfterburnerTestBase
     public static class PlainBigBean {
         public int a, b, c, d, e, f, g;
     }
+
+    public static class CreatorBean {
+        final int a;
+
+        @JsonCreator
+        public CreatorBean(@JsonProperty("a") int a) { this.a = a; }
+    }
+
+    public record RecordBean(int a) { }
 
     public static class MergeHolder {
         @JsonMerge public BigBean big = new BigBean();
@@ -158,6 +169,15 @@ public class AliasErrorPathTest extends AfterburnerTestBase
                 "{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1,'zzz':1}")) {
             _verifyWrapped(mapper.readerFor(BigBean.class), json);
             _verifyWrapped(mapper.readerForUpdating(new BigBean()), json);
+        }
+        // Other settings: not "vanilla", so goes through stock code that is inherited
+        final ObjectMapper nonVanilla = afterburnerMapperBuilder().addHandler(handler).build();
+        _verifyWrapped(nonVanilla.readerFor(SmallBean.class), "{'a':1,'zzz':1}");
+        _verifyWrapped(nonVanilla.readerFor(BigBean.class), "{'a':1,'zzz':1}");
+        // With Creator, and record
+        for (Class<?> type : List.of(CreatorBean.class, RecordBean.class)) {
+            _verifyWrapped(mapper.readerFor(type), "{'a':1,'zzz':1}");
+            _verifyWrapped(nonVanilla.readerFor(type), "{'a':1,'zzz':1}");
         }
         // Unless wrapping is disabled
         assertThrows(IllegalStateException.class, () -> mapper.readerFor(BigBean.class)

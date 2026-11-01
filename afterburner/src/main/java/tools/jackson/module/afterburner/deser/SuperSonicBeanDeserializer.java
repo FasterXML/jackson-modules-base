@@ -246,8 +246,8 @@ public final class SuperSonicBeanDeserializer
                 if (p.hasToken(JsonToken.END_OBJECT)) {
                     return bean;
                 }
-                // we likely point to FIELD_NAME; offline
-                return _deserializeDisordered(p, ctxt, bean);
+                // we likely point to FIELD_NAME, so can just call parent impl
+                return super.deserialize(p, ctxt, bean);
             }
             p.nextToken();
             try {
@@ -258,7 +258,7 @@ public final class SuperSonicBeanDeserializer
         }
         // also, need to ensure we get closing END_OBJECT...
         if (p.nextToken() != JsonToken.END_OBJECT) {
-            return _deserializeDisordered(p, ctxt, bean);
+            return super.deserialize(p, ctxt, bean);
         }
         return bean;
     }
