@@ -48,7 +48,9 @@ Active maintainers:
   no more duplicate path segment for failures with out-of-order properties.
   Afterburner now matches stock deserializers in two more ways: parser failures have
   no property in their path, and non-Jackson exceptions from handling of unknown
-  properties (like ones `DeserializationProblemHandler` throws) are not wrapped
+  properties (like ones `DeserializationProblemHandler` throws) are not wrapped.
+  (blackbird) Reports unexpected token after unknown property, following
+  [databind#6357]
  (fix by @cowtowncoder, w/ Claude code)
 
 3.2.5 (not yet released)

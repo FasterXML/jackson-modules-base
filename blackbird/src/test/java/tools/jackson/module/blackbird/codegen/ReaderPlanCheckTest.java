@@ -30,7 +30,7 @@ public class ReaderPlanCheckTest extends BlackbirdTestBase
             IllegalStateException e = assertThrows(IllegalStateException.class,
                     () -> ReaderCodegen.generate(Bean.class, List.of(new GenProp("x", kind, null)),
                             null, new int[] { 0 }, null, null, Construction.instantiator(null),
-                            false, false, ViewStrategy.NONE, null));
+                            false, ViewStrategy.NONE, null));
             assertTrue(e.getMessage().contains("no store handle for " + kind), e.getMessage());
         }
     }

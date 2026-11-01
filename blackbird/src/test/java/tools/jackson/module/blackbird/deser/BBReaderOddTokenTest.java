@@ -17,13 +17,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * A token that is neither a name nor END_OBJECT where a name is expected
- * (possible from a non-JSON parser or a replayed buffer). Stock's vanilla
- * loop reports it as unexpected, unless an unknown name came before it: then
- * _vanillaDeserializeWithUnknown returns the bean as it is. Stock takes the
- * vanilla loop only with DEFAULT_VIEW_INCLUSION on (off by default in 3.x);
- * otherwise its general loop reports the token either way. A record (stock's
- * property-based loop, which runs only while it sees names) ends its loop on
- * the token and builds as at END_OBJECT. Every case compares against a
+ * (possible from a non-JSON parser or a replayed buffer). Stock's loops report
+ * it as unexpected, with or without an unknown name before it, including
+ * _vanillaDeserializeWithUnknown since [databind#6357]. Stock takes the vanilla
+ * loop only with DEFAULT_VIEW_INCLUSION on (off by default in 3.x). A record
+ * (stock's property-based loop, which runs only while it sees names) ends its
+ * loop on the token and builds as at END_OBJECT. Every case compares against a
  * vanilla mapper.
  */
 public class BBReaderOddTokenTest extends BlackbirdTestBase
@@ -46,14 +45,10 @@ public class BBReaderOddTokenTest extends BlackbirdTestBase
             .enable(MapperFeature.DEFAULT_VIEW_INCLUSION).build();
 
     @Test
-    public void oddTokenAfterUnknownReturnsBean() throws Exception
+    public void oddTokenAfterUnknownFailsWithVanillaLoop() throws Exception
     {
         assertGeneratedReader(viewInclusionMapper, Plain.class);
-        Plain expected = read(viewInclusionVanilla, true);
-        Plain actual = read(viewInclusionMapper, true);
-        assertEquals("a", expected.s);
-        assertEquals("a", actual.s);
-        assertEquals(expected.i, actual.i);
+        assertSameFailure(viewInclusionVanilla, viewInclusionMapper, true);
     }
 
     @Test
@@ -105,11 +100,6 @@ public class BBReaderOddTokenTest extends BlackbirdTestBase
         MismatchedInputException actual = assertThrows(MismatchedInputException.class,
                 () -> read(bb, withUnknown, type));
         assertEquals(expected.getOriginalMessage(), actual.getOriginalMessage());
-    }
-
-    private static Plain read(ObjectMapper m, boolean withUnknown) throws Exception
-    {
-        return read(m, withUnknown, Plain.class);
     }
 
     // {"s":"a", ["x":1,] 3, "i":5}: a bare number where a name belongs.

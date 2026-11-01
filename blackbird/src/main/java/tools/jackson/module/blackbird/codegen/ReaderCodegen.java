@@ -98,13 +98,10 @@ public final class ReaderCodegen
      * inputNames tells whether a matched name can differ from the
      * property's own name (aliases, case-insensitive matching), which
      * error paths then need.
-     * vanillaLoop (POJO mode only) tells whether stock reads the bean with
-     * its vanilla loop, which ends quietly on an odd token after an unknown
-     * name.
      */
     record Plan(String className, List<GenProp> props, String[] stockName,
             String[] childName, String[] handleName, Mode mode, boolean injectables,
-            boolean vanillaLoop, ViewStrategy views, int[] matchArms, String[] localNames, boolean inputNames) {}
+            ViewStrategy views, int[] matchArms, String[] localNames, boolean inputNames) {}
 
     private ReaderCodegen() {}
 
@@ -117,7 +114,7 @@ public final class ReaderCodegen
     public static ValueDeserializer<Object> generate(Class<?> beanClass, List<GenProp> props,
             PropertyNameMatcher matcher, int[] matchArms, BeanDeserializerBase source,
             BeanPropertyMap beanProps, Construction construction, boolean injectables,
-            boolean vanillaLoop, ViewStrategy views, String[] localNames)
+            ViewStrategy views, String[] localNames)
             throws ReflectiveOperationException {
         Map<String, Object> classData = new LinkedHashMap<>();
         classData.put("matcher", matcher);
@@ -164,7 +161,7 @@ public final class ReaderCodegen
         String className = definer.lookupClass().getPackageName()
                 + ".BBReader_" + codecName(beanClass);
         byte[] bytes = ClassFileEmitters.emit(new Plan(className, props, stockName, childName,
-                handleName, mode, injectables, vanillaLoop, views, matchArms, localNames,
+                handleName, mode, injectables, views, matchArms, localNames,
                 beanProps.hasAliases() || beanProps.isCaseInsensitive()));
         if (bytes == null) {
             CodegenDebug.log("reader gate: a generated method is over "

@@ -341,10 +341,6 @@ final class BeanReaderGenerator
         // Names that can differ from the property's own: each arm reads the
         // input name, for its failure handlers. Negative if they cannot.
         final int inputNameSlot = plan.inputNames() ? 11 : -1;
-        // Set once a name has gone to unknown-name handling; tracked only
-        // where stock reads with its vanilla loop.
-        final boolean trackUnknown = plan.vanillaLoop();
-        final int afterUnknownSlot = 12;
         Label propHandler = cob.newLabel();
         Label storeHandler = cob.newLabel();
 
@@ -402,9 +398,6 @@ final class BeanReaderGenerator
                .invokevirtual(base, "_injectValues", MTD_INJECT);
         }
 
-        if (trackUnknown) {
-            cob.iconst_0().istore(afterUnknownSlot);
-        }
         ldcData(cob, "matcher", CD_NAME_MATCHER);
         cob.astore(matcherSlot);
 
@@ -469,23 +462,12 @@ final class BeanReaderGenerator
         }
 
         cob.labelBinding(unknown);
-        if (trackUnknown) {
-            cob.iconst_1().istore(afterUnknownSlot);
-        }
         cob.aload(0).aload(parser).aload(ctxt).aload(beanSlot);
         cob.invokevirtual(base, "_handleUnknown", MTD_HANDLE_UNKNOWN);
         nextNameMatch(cob, parser, matcherSlot, ixSlot);
         cob.goto_(loop);
 
         cob.labelBinding(oddToken);
-        if (trackUnknown) {
-            // Once an unknown name has been seen, stock's vanilla loop
-            // (_vanillaDeserializeWithUnknown) returns the bean as it is.
-            Label beforeUnknown = cob.newLabel();
-            cob.iload(afterUnknownSlot).ifeq(beforeUnknown);
-            cob.aload(beanSlot).areturn();
-            cob.labelBinding(beforeUnknown);
-        }
         cob.aload(0).aload(parser).aload(ctxt).aload(beanSlot)
            .invokevirtual(base, "_unexpectedToken", MTD_UNEXPECTED)
            .areturn();
@@ -529,10 +511,6 @@ final class BeanReaderGenerator
         }
         if (inputNameSlot >= 0) {
             cob.localVariable(inputNameSlot, "inputName", ConstantDescs.CD_String,
-                    scopeStart, scopeEnd);
-        }
-        if (trackUnknown) {
-            cob.localVariable(afterUnknownSlot, "afterUnknown", ConstantDescs.CD_boolean,
                     scopeStart, scopeEnd);
         }
     }
