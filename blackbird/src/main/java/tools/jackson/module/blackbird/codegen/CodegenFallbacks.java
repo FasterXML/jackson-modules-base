@@ -24,6 +24,12 @@ public final class CodegenFallbacks
     public static final String FAIL_ON_ERROR_PROPERTY =
             "tools.jackson.module.blackbird.failOnCodegenError";
 
+    /**
+     * Strict mode: {@link #FAIL_ON_ERROR_PROPERTY}, read once, so every
+     * check in the JVM agrees.
+     */
+    public static final boolean FAIL_ON_ERROR = Boolean.getBoolean(FAIL_ON_ERROR_PROPERTY);
+
     private CodegenFallbacks() {}
 
     public static void gateFailure(Class<?> beanClass, Throwable cause) {
@@ -34,7 +40,7 @@ public final class CodegenFallbacks
     }
 
     public static void generationFailure(Class<?> beanClass, Throwable cause) {
-        if (Boolean.getBoolean(FAIL_ON_ERROR_PROPERTY)) {
+        if (FAIL_ON_ERROR) {
             if (cause instanceof RuntimeException re) {
                 throw re;
             }

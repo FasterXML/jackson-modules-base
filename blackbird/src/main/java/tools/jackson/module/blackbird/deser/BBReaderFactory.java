@@ -78,10 +78,10 @@ final class BBReaderFactory
             boolean nonStandardCreation, boolean hasDelegateCreator, boolean hasExternalTypeId,
             boolean hasUnwrapped, boolean asArray, AnnotatedMethod buildMethod) {}
 
-    // Strict mode (see CodegenFallbacks), read once: the stack overflow
-    // handler of tryGenerate must not do more than read a field.
-    private static final boolean FAIL_ON_STACK_OVERFLOW =
-            Boolean.getBoolean(CodegenFallbacks.FAIL_ON_ERROR_PROPERTY);
+    // CodegenFallbacks.FAIL_ON_ERROR, copied here: the stack overflow
+    // handler of tryGenerate must not do more than read a field of this
+    // (initialized) class.
+    private static final boolean FAIL_ON_STACK_OVERFLOW = CodegenFallbacks.FAIL_ON_ERROR;
 
     static ValueDeserializer<Object> tryGenerate(Source stock, DeserializationContext ctxt,
             boolean declaresViews) {
