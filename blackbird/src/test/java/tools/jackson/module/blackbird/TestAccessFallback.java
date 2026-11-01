@@ -15,13 +15,15 @@ public class TestAccessFallback extends BlackbirdTestBase
         }
     }
     
-    // Getter fails when called through the generated accessor, and works when
-    // called by the fallback writer
+    // Getter that fails on request, counting its calls. Generated writers are
+    // hidden classes, left out of stack traces, so the calls can't tell which
+    // path made them; `assertGeneratedWriter` checks that instead.
     public static class MyBean
     {
         private String e;
 
-        int optimizedCalls, fallbackCalls;
+        boolean fail;
+        int calls;
 
         public MyBean() { }
 
@@ -37,17 +39,9 @@ public class TestAccessFallback extends BlackbirdTestBase
 
         public String getE()
         {
-            // nearest of databind's `BeanPropertyWriter` (which calls the getter through
-            // a method handle) or a Blackbird frame tells which path called
-            for (StackTraceElement elem : new Throwable().getStackTrace()) {
-                if (elem.getClassName().equals("tools.jackson.databind.ser.BeanPropertyWriter")) {
-                    ++fallbackCalls;
-                    return e;
-                }
-                if (elem.getClassName().startsWith("tools.jackson.module.blackbird.ser.")) {
-                    ++optimizedCalls;
-                    throw new BogusTestError("boom!");
-                }
+            ++calls;
+            if (fail) {
+                throw new BogusTestError("boom!");
             }
             return e;
         }
@@ -59,17 +53,35 @@ public class TestAccessFallback extends BlackbirdTestBase
     public void testSerializeAccess() throws Exception
     {
         ObjectMapper abMapper = newObjectMapper();
+        assertGeneratedWriter(abMapper, MyBean.class);
         MyBean bean = new MyBean("a");
         assertEquals(BEAN_JSON, abMapper.writeValueAsString(bean));
-        // the generated getter failed, and the value was then written by the fallback writer
-        assertEquals(1, bean.optimizedCalls);
-        assertEquals(1, bean.fallbackCalls);
+        assertEquals(1, bean.calls);
+    }
 
-        // after that, the fallback writer is used directly
-        MyBean bean2 = new MyBean("a");
-        assertEquals(BEAN_JSON, abMapper.writeValueAsString(bean2));
-        assertEquals(0, bean2.optimizedCalls);
-        assertEquals(1, bean2.fallbackCalls);
+    // A failing getter is called once, not retried through the stock writer,
+    // and its failure is reported as plain databind reports it
+    @Test
+    public void testFailingGetterIsNotRetried() throws Exception
+    {
+        MyBean expectedBean = new MyBean("a");
+        expectedBean.fail = true;
+        Throwable expected = assertThrows(Throwable.class,
+                () -> newVanillaJSONMapper().writeValueAsString(expectedBean));
+        assertEquals(1, expectedBean.calls);
+
+        ObjectMapper abMapper = newObjectMapper();
+        // twice, as a failure must not change how later writes go
+        for (int i = 0; i < 2; ++i) {
+            MyBean bean = new MyBean("a");
+            bean.fail = true;
+            Throwable actual = assertThrows(Throwable.class, () -> abMapper.writeValueAsString(bean));
+            assertEquals(1, bean.calls);
+            assertEquals(expected.getClass(), actual.getClass());
+            assertEquals(expected.getMessage(), actual.getMessage());
+            assertEquals(String.valueOf(expected.getCause()), String.valueOf(actual.getCause()));
+        }
+        assertEquals(BEAN_JSON, abMapper.writeValueAsString(new MyBean("a")));
     }
 
     // 18-Jan-2025, tatu: Fails on JDK-17/JPMS, for reasons unknown.

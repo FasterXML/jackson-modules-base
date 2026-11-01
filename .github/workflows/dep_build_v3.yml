@@ -15,13 +15,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java_version: ['17', '21']
+        # 17, 21: all modules except Blackbird (profile-gated to JDK 25+).
+        # 25: only the Blackbird modules, which the other two leave out.
+        java_version: ['17', '21', '25']
     env:
       JAVA_OPTS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         ref: 3.x
+    # Blackbird builds only on JDK 25+, but its jar must run on 17-24 too
+    # (module discovery skips it there); blackbird-tests starts those JDKs.
+    # Keep in sync with main.yml.
+    - name: Set up older JDKs for Blackbird runtime tests
+      if: ${{ matrix.java_version == '25' }}
+      uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      with:
+        distribution: 'temurin'
+        java-version: |
+          17
+          21
     - name: Set up JDK
       uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
       with:
@@ -29,6 +42,16 @@ jobs:
         java-version: ${{ matrix.java_version }}
         cache: 'maven'
     - name: Build and test
-      run: ./mvnw -B -ff -ntp clean verify
+      run: |
+        BUILD_ARGS=""
+        if [ "${{ matrix.java_version }}" = "25" ]; then
+          if [ -z "${JAVA_HOME_17_X64:-}" ] || [ -z "${JAVA_HOME_21_X64:-}" ]; then
+            echo "::error::JDK 17/21 homes not found; Blackbird old-JDK tests would be skipped"
+            exit 1
+          fi
+          BUILD_ARGS="-pl blackbird,blackbird-tests,blackbird-jpms-tests -am"
+          BUILD_ARGS="${BUILD_ARGS} -Dblackbird.test.oldJdks=${JAVA_HOME_17_X64},${JAVA_HOME_21_X64}"
+        fi
+        ./mvnw -B -ff -ntp clean verify ${BUILD_ARGS}
 
 # No recursive rebuild (yet?)

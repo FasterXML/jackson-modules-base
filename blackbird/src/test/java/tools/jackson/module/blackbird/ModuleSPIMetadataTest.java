@@ -3,6 +3,7 @@ package tools.jackson.module.blackbird;
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.databind.JacksonModule;
+import tools.jackson.module.blackbird.internal.DiscoveredBlackbirdModule;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,7 +18,9 @@ public class ModuleSPIMetadataTest
             = ServiceLoader.load(JacksonModule.class);
         assertTrue(loader.iterator().hasNext(),
                 "Expected at least one `Module` implementation to be found via `ServiceLoader`");
-        final String exp = BlackbirdModule.class.getName();
+        // Discovery instantiates the dedicated provider subclass (see
+        // DiscoveredBlackbirdModule), not BlackbirdModule itself.
+        final String exp = DiscoveredBlackbirdModule.class.getName();
         int count = 0;
 
         try {

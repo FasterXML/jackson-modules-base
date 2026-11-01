@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
@@ -15,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
@@ -25,7 +22,6 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.PropertyName;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonPOJOBuilder;
-import tools.jackson.databind.deser.DeserializationContextExt;
 import tools.jackson.databind.deser.SettableBeanProperty;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.deser.impl.MethodProperty;
@@ -807,12 +803,16 @@ public class TestBuilders extends BlackbirdTestBase
         assertEquals(expected.foo, actual.foo);
     }
 
+    // Only the `List` property, which generated readers leave to its stock
+    // `MethodProperty`, goes through reflection; the scalar ones are generated
+    private static final int STOCK_PROPERTIES = 1;
+
     @Test
     public void testMutableBuilderSkipsReflection() throws Exception
     {
         Values v = MAPPER.readValue(VALUES_JSON, MutableBuilt.class);
         _verifyValues(v);
-        assertEquals(0, v.reflectiveCalls);
+        assertEquals(STOCK_PROPERTIES, v.reflectiveCalls);
     }
 
     @Test
@@ -820,7 +820,7 @@ public class TestBuilders extends BlackbirdTestBase
     {
         Values v = MAPPER.readValue(VALUES_JSON, CopyingBuilt.class);
         _verifyValues(v);
-        assertEquals(0, v.reflectiveCalls);
+        assertEquals(STOCK_PROPERTIES, v.reflectiveCalls);
     }
 
     // Sanity check that the reflection probe works at all
@@ -870,7 +870,7 @@ public class TestBuilders extends BlackbirdTestBase
     {
         Values v = MAPPER.readValue(VALUES_JSON, VoidSetterBuilt.class);
         _verifyValues(v);
-        assertEquals(0, v.reflectiveCalls);
+        assertEquals(STOCK_PROPERTIES, v.reflectiveCalls);
         // as reflection would, with Jackson's own access rules
         assertEquals(5, newVanillaJSONMapper().readValue(VALUES_JSON, VoidSetterBuilt.class).reflectiveCalls);
     }
@@ -931,13 +931,16 @@ public class TestBuilders extends BlackbirdTestBase
                     String desc = "wrap=" + wrap + ", " + json + ", " + expected;
                     assertEquals(2, setterCalls, desc);
                     _assertSameFailure(desc, expected, actual);
-                    // and the Blackbird failure came from the generated accessor
+                    // and the Blackbird failure came from the generated reader, except
+                    // for the `List` property, which stays on the stock path
                     Throwable root = actual;
                     while (root.getCause() != null) {
                         root = root.getCause();
                     }
-                    assertTrue(Arrays.stream(root.getStackTrace())
-                            .noneMatch(e -> e.getClassName().equals(MethodProperty.class.getName())), desc);
+                    if (!json.contains("list")) {
+                        assertTrue(Arrays.stream(root.getStackTrace())
+                                .noneMatch(e -> e.getClassName().equals(MethodProperty.class.getName())), desc);
+                    }
                 }
             }
         }
@@ -996,8 +999,8 @@ public class TestBuilders extends BlackbirdTestBase
     @Test
     public void testUnusableBuilderInstanceMatchesVanilla() throws Exception
     {
-        assertTrue(_findProperty(MAPPER, UnrelatedBuilt.class, "x") instanceof OptimizedSettableBeanProperty);
-        assertTrue(_findProperty(MAPPER, NullCreatorBuilt.class, "x") instanceof OptimizedSettableBeanProperty);
+        assertGeneratedReader(MAPPER, UnrelatedBuilt.class);
+        assertGeneratedReader(MAPPER, NullCreatorBuilt.class);
         for (boolean wrap : new boolean[] { true, false }) {
             ObjectMapper vanilla = JsonMapper.builder()
                     .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
@@ -1017,46 +1020,6 @@ public class TestBuilders extends BlackbirdTestBase
                 }
             }
         }
-    }
-
-    // A failure of the generated accessor itself (simulated by the anonymous classes)
-    // is reported like the setter's (an `Error` as it is, as `MethodProperty` does),
-    // without trying the setter again through reflection
-    @Test
-    public void testAccessorFailureIsNotRetried() throws Exception
-    {
-        ObjectMapper vanilla = newVanillaJSONMapper();
-        BeanDeserializerBase deser = (BeanDeserializerBase) vanilla._deserializationContext()
-                .findRootValueDeserializer(vanilla.constructType(ThrowingBuilt.class));
-        IllegalAccessError failure = new IllegalAccessError("simulated");
-        SettableStringProperty prop = new SettableStringProperty(deser.findProperty(PropertyName.construct("str")),
-                new BiConsumer<Object, String>() {
-                    @Override
-                    public void accept(Object bean, String v) {
-                        throw failure;
-                    }
-                },
-                new BiFunction<Object, Object, Object>() {
-                    @Override
-                    public Object apply(Object bean, Object v) {
-                        throw failure;
-                    }
-                },
-                ThrowingBuilder.class, true);
-        toThrow = () -> new IllegalStateException("thrown by setter");
-        setterCalls = 0;
-
-        assertSame(failure, assertThrows(IllegalAccessError.class,
-                () -> prop.setAndReturn(CTXT, new ThrowingBuilder(), "foo")));
-        try (JsonParser p = vanilla.createParser(a2q("{'str':'foo'}"))) {
-            p.nextToken();
-            p.nextToken();
-            p.nextToken();
-            DeserializationContextExt ctxt = vanilla._deserializationContext().assignParser(p);
-            assertSame(failure, assertThrows(IllegalAccessError.class,
-                    () -> prop.deserializeSetAndReturn(p, ctxt, new ThrowingBuilder())));
-        }
-        assertEquals(0, setterCalls);
     }
 
     @Test
@@ -1080,8 +1043,8 @@ public class TestBuilders extends BlackbirdTestBase
         }
     }
 
-    // As `deserializeSetAndReturn` does, `setAndReturn` leaves a builder the generated
-    // setter can't take to reflection, and skips nulls
+    // `setAndReturn` with a builder the setter can't take fails as reflection does,
+    // and skips nulls
     @Test
     public void testSetAndReturnWithUnusableBuilder() throws Exception
     {
@@ -1100,7 +1063,6 @@ public class TestBuilders extends BlackbirdTestBase
         }
         for (String name : new String[] { "str", "list" }) {
             SettableBeanProperty prop = _findProperty(MAPPER, SkipNullsBuilt.class, name);
-            assertTrue(prop instanceof OptimizedSettableBeanProperty, name);
             SkipNullsBuilder builder = new SkipNullsBuilder();
             assertSame(builder, prop.setAndReturn(CTXT, builder, null));
             assertEquals("default", builder.str);
@@ -1111,10 +1073,7 @@ public class TestBuilders extends BlackbirdTestBase
     @Test
     public void testNullReturningBuilderForAllTypes() throws Exception
     {
-        for (String name : new String[] { "l", "b", "list" }) {
-            assertTrue(_findProperty(MAPPER, NullReturningAllBuilt.class, name) instanceof OptimizedSettableBeanProperty,
-                    name);
-        }
+        assertGeneratedReader(MAPPER, NullReturningAllBuilt.class);
         NullReturningAllBuilt v = MAPPER.readValue(a2q("{'l':7,'b':true,'list':['x']}"), NullReturningAllBuilt.class);
         assertEquals(7L, v.l);
         assertTrue(v.b);
@@ -1134,9 +1093,7 @@ public class TestBuilders extends BlackbirdTestBase
                 .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT).build();
         ObjectMapper blackbird = mapperBuilder()
                 .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT).build();
-        for (String name : new String[] { "empty", "skip" }) {
-            assertTrue(_findProperty(blackbird, NullsBuilt.class, name) instanceof OptimizedSettableBeanProperty, name);
-        }
+        assertGeneratedReader(blackbird, NullsBuilt.class);
         // explicit nulls, and empty Strings the deserializer turns into nulls
         for (String json : new String[] { a2q("{'empty':null,'skip':null}"), a2q("{'empty':'','skip':''}") }) {
             String expected = vanilla.readValue(json, NullsBuilt.class).result;
@@ -1153,7 +1110,6 @@ public class TestBuilders extends BlackbirdTestBase
         for (String name : new String[] { "i", "l", "b" }) {
             SettableBeanProperty expectedProperty = _findProperty(vanilla, name);
             SettableBeanProperty actualProperty = _findProperty(MAPPER, name);
-            assertTrue(actualProperty instanceof OptimizedSettableBeanProperty, name);
             MutableBuilder expectedBuilder = new MutableBuilder();
             MutableBuilder actualBuilder = new MutableBuilder();
             Throwable expected = assertThrows(Throwable.class,
@@ -1164,13 +1120,12 @@ public class TestBuilders extends BlackbirdTestBase
             assertEquals(0, actualBuilder.reflectiveCalls, name);
 
             SettableBeanProperty skipping = actualProperty.withNullProvider(NullsConstantProvider.skipper());
-            assertTrue(skipping instanceof OptimizedSettableBeanProperty, name);
             assertSame(actualBuilder, skipping.setAndReturn(CTXT, actualBuilder, null), name);
             assertEquals(0, actualBuilder.reflectiveCalls, name);
         }
     }
 
-    // The generated setter may only call what `MethodProperty`'s method handle could:
+    // The generated reader may only call what `MethodProperty`'s method handle could:
     // the protected setters only if Jackson made them accessible, and (with databind in
     // its own module, which doesn't read this one) the public one too
     @Test
@@ -1188,18 +1143,10 @@ public class TestBuilders extends BlackbirdTestBase
                         .configure(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS, canOverride)
                         .configure(MapperFeature.OVERRIDE_PUBLIC_ACCESS_MODIFIERS, overridePublic).build();
 
-                // including a property buffered before the creator property, and a
-                // builder without a build method (which is still a builder)
-                for (Class<?> type : new Class<?>[] { ProtectedSetterBuilt.class,
-                        ProtectedCreatorSetterBuilt.class, NoBuildMethodBuilder.class }) {
-                    assertEquals(canOverride, _findProperty(blackbird, type, "value")
-                            instanceof OptimizedSettableBeanProperty, desc + ", " + type.getSimpleName());
-                }
-                assertEquals(canOverride && overridePublic, _findProperty(blackbird, PublicSetterBuilt.class, "value")
-                        instanceof OptimizedSettableBeanProperty, desc);
-
                 if (!canOverride) {
-                    // the protected setter isn't called (and fails as with reflection)
+                    // the protected setter isn't called (and fails as with reflection),
+                    // including for a property buffered before the creator property,
+                    // and a builder without a build method (which is still a builder)
                     for (String j : new String[] { json, bufferedJson }) {
                         for (Class<?> type : new Class<?>[] { ProtectedSetterBuilt.class,
                                 ProtectedCreatorSetterBuilt.class, NoBuildMethodBuilder.class }) {
@@ -1225,7 +1172,7 @@ public class TestBuilders extends BlackbirdTestBase
     @Test
     public void testValueOfAnotherTypeMatchesVanilla() throws Exception
     {
-        assertTrue(_findProperty(MAPPER, ChildBuilt.class, "child") instanceof OptimizedSettableBeanProperty);
+        assertGeneratedReader(MAPPER, ChildBuilt.class);
         String json = a2q("{'child':{}}");
         Throwable expected = assertThrows(Throwable.class, () -> newVanillaJSONMapper().readValue(json, ChildBuilt.class));
         Throwable actual = assertThrows(Throwable.class, () -> MAPPER.readValue(json, ChildBuilt.class));
@@ -1256,7 +1203,6 @@ public class TestBuilders extends BlackbirdTestBase
             String name = (String) c[0];
             SettableBeanProperty expectedProp = _findProperty(vanilla, VoidSetterBuilt.class, name);
             SettableBeanProperty actualProp = _findProperty(MAPPER, VoidSetterBuilt.class, name);
-            assertTrue(actualProp instanceof OptimizedSettableBeanProperty, name);
             for (int i = 2; i < c.length; i++) {
                 Object value = c[i];
                 String desc = name + " = " + value + " (" + value.getClass().getSimpleName() + ")";
@@ -1287,8 +1233,7 @@ public class TestBuilders extends BlackbirdTestBase
     @Test
     public void testPolymorphicNullMatchesVanilla() throws Exception
     {
-        assertTrue(_findProperty(MAPPER, ItemBuilt.class, "fluent") instanceof OptimizedSettableBeanProperty);
-        assertTrue(_findProperty(MAPPER, ItemBuilt.class, "void") instanceof OptimizedSettableBeanProperty);
+        assertGeneratedReader(MAPPER, ItemBuilt.class);
         for (String name : new String[] { "fluent", "void" }) {
             String json = a2q("{'" + name + "':{'@type':'Unknown'}}");
             itemCalls = 0;
@@ -1302,7 +1247,7 @@ public class TestBuilders extends BlackbirdTestBase
 
     // `setAndReturn` can be given values its property's deserializer didn't produce,
     // such as an object id from a generator. Reflection widens some and rejects
-    // others, and the generated setters must not cast or truncate them instead.
+    // others, and Blackbird must not cast or truncate them instead.
     @Test
     public void testSetAndReturnWithOtherValueTypes() throws Exception
     {
@@ -1315,16 +1260,8 @@ public class TestBuilders extends BlackbirdTestBase
         ObjectMapper vanilla = newVanillaJSONMapper();
         for (Object[] c : cases) {
             String name = (String) c[0];
-            assertTrue(_findProperty(MAPPER, name) instanceof OptimizedSettableBeanProperty, name);
             assertEquals(_setAndReturn(vanilla, name, c[1]), _setAndReturn(MAPPER, name, c[1]),
                     name + "=" + c[1] + " (" + c[1].getClass().getSimpleName() + ")");
-        }
-        // while values of the setter's own type still use the generated setters
-        for (Object[] c : new Object[][] { { "i", 42 }, { "l", 42L }, { "b", true }, { "str", "x" },
-                { "list", Arrays.asList("x") } }) {
-            MutableBuilder b = (MutableBuilder) _findProperty(MAPPER, (String) c[0])
-                    .setAndReturn(CTXT, new MutableBuilder(), c[1]);
-            assertEquals(0, b.reflectiveCalls, String.valueOf(c[0]));
         }
     }
 

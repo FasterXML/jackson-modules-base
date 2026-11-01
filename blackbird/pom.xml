@@ -14,7 +14,8 @@
   <name>Jackson module: Blackbird</name>
   <packaging>jar</packaging>
   <description>Jackson (https://github.com/FasterXML/jackson) extension module
-that uses LambdaMetafactory based code generation to replace reflection calls.
+that generates a deserializer and a serializer class per bean with the JDK ClassFile API
+(Java 25 or later at run time).
   </description>
   <url>https://github.com/FasterXML/jackson-modules-base</url>
 
@@ -27,6 +28,16 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
   </licenses>
 
   <properties>
+    <!-- A multi-release jar: everything compiles at the reactor's release 17
+         except the two ClassFile API generators in src/main/java25, which
+         compile at release 25 and ship under META-INF/versions/25 (see the
+         build section). Tests run on JDK 25+ only. -->
+    <maven.compiler.testRelease>25</maven.compiler.testRelease>
+    <!-- Only the module class is API, as in module-info. -->
+    <osgi.export>tools.jackson.module.blackbird;version=${project.version}</osgi.export>
+    <!-- The ClassFile API exists only on Java 25+; the bundle must still
+         resolve on 17-24, where codegen is simply unavailable. -->
+    <osgi.import>java.lang.classfile;resolution:=optional,java.lang.classfile.*;resolution:=optional,*</osgi.import>
     <packageVersion.dir>tools/jackson/module/blackbird</packageVersion.dir>
     <packageVersion.package>${project.groupId}.blackbird</packageVersion.package>
   </properties>
@@ -50,6 +61,139 @@ that uses LambdaMetafactory based code generation to replace reflection calls.
         <!-- Inherited from oss-base. Generate PackageVersion.java.-->
         <groupId>com.google.code.maven-replacer-plugin</groupId>
         <artifactId>replacer</artifactId>
+      </plugin>
+
+      <!-- Multi-release layout. The release-25 classes compile into
+           META-INF/versions/25. A copy goes to the base output directory, so
+           that the unit tests and the reactor modules that read
+           target/classes (which is not multi-release) see them, and the jar
+           leaves the base copies out. The copy runs in the compile phase so
+           that bnd (bundle-manifest, process-classes) analyzes them too and
+           imports the packages they use. On Java 17-24 the JVM never sees them,
+           and ClassFileEmitters reports code generation as unavailable. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <!-- For the sources jar and IDEs; default-compile excludes them. -->
+            <id>add-java25-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.basedir}/src/main/java25</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <configuration>
+              <excludes>
+                <exclude>tools/jackson/module/blackbird/codegen/BeanReaderGenerator.java</exclude>
+                <exclude>tools/jackson/module/blackbird/codegen/BeanWriterGenerator.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>compile-java25</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <release>25</release>
+              <multiReleaseOutput>true</multiReleaseOutput>
+              <compileSourceRoots>
+                <compileSourceRoot>${project.basedir}/src/main/java25</compileSourceRoot>
+              </compileSourceRoots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-java25-classes</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.build.outputDirectory}/META-INF/versions/25</directory>
+                  <includes>
+                    <include>tools/jackson/module/blackbird/codegen/BeanReaderGenerator*.class</include>
+                    <include>tools/jackson/module/blackbird/codegen/BeanWriterGenerator*.class</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>tools/jackson/module/blackbird/codegen/BeanReaderGenerator*.class</exclude>
+            <exclude>tools/jackson/module/blackbird/codegen/BeanWriterGenerator*.class</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <!-- bnd derives osgi.ee from the newest class file it sees,
+                 which here are the release-25 ones (and bnd 6 maps class
+                 file 69 to UNKNOWN); the base classes need JavaSE 17. -->
+            <_noee>true</_noee>
+            <Require-Capability>osgi.ee;filter:="(&amp;(osgi.ee=JavaSE)(version=17))"</Require-Capability>
+            <Multi-Release>true</Multi-Release>
+          </instructions>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <!-- The release-25 sources are on the source path too. -->
+          <release>25</release>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- The test descriptor (src/test/java/module-info.java) names
+               this module, so surefire puts test-classes first on the module
+               path, and the target/classes module of the same name is
+               shadowed. Patch the main classes in explicitly (patched
+               classes take precedence), including the release-25
+               generators, which no test references at compile time. -->
+          <argLine>@{argLine} --patch-module tools.jackson.module.blackbird=${project.build.outputDirectory}</argLine>
+          <systemPropertyVariables>
+            <!-- Strict mode for every test class, whatever loads first: a
+                 codec-generation failure fails the test instead of demoting
+                 to the stock path (see CodegenFallbacks). -->
+            <tools.jackson.module.blackbird.failOnCodegenError>true</tools.jackson.module.blackbird.failOnCodegenError>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
       <!-- 29-Apr-2025, tatu: SBOM generation [JSTEP-14] -->
       <plugin>

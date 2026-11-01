@@ -1,0 +1,11 @@
+# The 7 failures that the harness itself causes. The harness adds
+# BlackbirdModule to every mapper, so a test that asserts the exact list or
+# number of registered modules sees one module more. None of them is a
+# Blackbird behavior difference. Format: class#method :: assertion.
+tools.jackson.databind.ObjectMapperTest#testRegisterDependentModules :: expected: <[dep1, dep2, main]> but was: <[dep1, dep2, main, tools.jackson.module.blackbird.BlackbirdModule]>
+tools.jackson.databind.ObjectMapperTest#testRegisterTransitiveModuleDependencies :: expected: <[A, B, C]> but was: <[A, B, C, tools.jackson.module.blackbird.BlackbirdModule]>
+tools.jackson.databind.module.BuilderModuleReuse5481Test#testBuilderReuseWithDifferentModules :: expected: <[ModuleA, ModuleB]> but was: <[ModuleA, ModuleB, BlackbirdModule]>
+tools.jackson.databind.module.SimpleModuleTest#testGetRegisteredModules :: expected: <2> but was: <3>
+tools.jackson.databind.module.SimpleModuleTest#testMultipleSimpleModules :: expected: <2> but was: <3>
+tools.jackson.databind.module.SimpleModuleTest#testAutoDiscovery :: expected: <0> but was: <1>
+tools.jackson.databind.module.SimpleModuleTest#testDuplicateModules5063 :: expected: <2> but was: <3>
