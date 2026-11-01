@@ -179,65 +179,79 @@ public final class SuperSonicUnrolledDeserializer
         if (_injectables != null) {
             injectValues(ctxt, bean);
         }
-        SettableBeanProperty prop = null;
-
-        try {
-            switch (_propCount) {
-            default:
-            //case 6:
-                prop = _prop1;
-                if (!p.nextName(_name1)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 5:
-                prop = _prop2;
-                if (!p.nextName(_name2)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 4:
-                prop = _prop3;
-                if (!p.nextName(_name3)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 3:
-                prop = _prop4;
-                if (!p.nextName(_name4)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 2:
-                prop = _prop5;
-                if (!p.nextName(_name5)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 1:
-                prop = _prop6;
-                if (!p.nextName(_name6)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // also, need to ensure we get closing END_OBJECT...
-                if (p.nextToken() == JsonToken.END_OBJECT) {
-                    return bean;
-                }
+        // Each property with a call site of its own, for type profiles; parser calls
+        // outside of `try`, as stock has them
+        switch (_propCount) {
+        default:
+        //case 6:
+            if (!p.nextName(_name1)) {
+                break;
             }
-        } catch (Exception e) {
-            wrapAndThrow(e, bean, prop.getName(), ctxt);
+            p.nextToken();
+            try {
+                _prop1.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop1.getName(), ctxt);
+            }
+            // fall through
+        case 5:
+            if (!p.nextName(_name2)) {
+                break;
+            }
+            p.nextToken();
+            try {
+                _prop2.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop2.getName(), ctxt);
+            }
+            // fall through
+        case 4:
+            if (!p.nextName(_name3)) {
+                break;
+            }
+            p.nextToken();
+            try {
+                _prop3.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop3.getName(), ctxt);
+            }
+            // fall through
+        case 3:
+            if (!p.nextName(_name4)) {
+                break;
+            }
+            p.nextToken();
+            try {
+                _prop4.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop4.getName(), ctxt);
+            }
+            // fall through
+        case 2:
+            if (!p.nextName(_name5)) {
+                break;
+            }
+            p.nextToken();
+            try {
+                _prop5.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop5.getName(), ctxt);
+            }
+            // fall through
+        case 1:
+            if (!p.nextName(_name6)) {
+                break;
+            }
+            p.nextToken();
+            try {
+                _prop6.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop6.getName(), ctxt);
+            }
+            // also, need to ensure we get closing END_OBJECT...
+            if (p.nextToken() == JsonToken.END_OBJECT) {
+                return bean;
+            }
         }
         // may have encountered pre-mature END_OBJECT too
         if (p.currentToken() == JsonToken.END_OBJECT) {
@@ -283,184 +297,72 @@ public final class SuperSonicUnrolledDeserializer
         try {
             prop.deserializeAndSet(p, ctxt, bean);
         } catch (Exception e) {
-            wrapAndThrow(e, bean, prop.getName(), ctxt);
+            throw wrapAndThrow(e, bean, prop.getName(), ctxt);
         }
         // then rest of properties. NOTE! Off-by-one, to skip one we did above
-        try {
-            switch (_propCount) {
-            default:
-            //case 6:
-                prop = _prop2;
-                if (!p.nextName(_name2)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 5:
-                prop = _prop3;
-                if (!p.nextName(_name3)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 4:
-                prop = _prop4;
-                if (!p.nextName(_name4)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 3:
-                prop = _prop5;
-                if (!p.nextName(_name5)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 2:
-                prop = _prop6;
-                if (!p.nextName(_name6)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 1:
-                // NOTE! skip "last" one to compensate for OBO
-                // But we still need to ensure we get closing END_OBJECT...
-                if (p.nextToken() == JsonToken.END_OBJECT) {
-                    return bean;
-                }
+        switch (_propCount) {
+        default:
+        //case 6:
+            if (!p.nextName(_name2)) {
+                break;
             }
-        } catch (Exception e) {
-            wrapAndThrow(e, bean, prop.getName(), ctxt);
-        }
-        // may have encountered pre-mature END_OBJECT too
-        if (p.currentToken() == JsonToken.END_OBJECT) {
-            return bean;
-        }
-        return _deserializeDisordered(p, ctxt, bean);
-    }
-
-    // much of below is cut'n pasted from BeanSerializer
-    @Override
-    public Object deserializeFromObject(JsonParser p, DeserializationContext ctxt)
-        throws JacksonException
-    {
-        // The ordered-property fast path below is only safe when no view filtering,
-        // non-standard creation or other non-vanilla features are in play; otherwise
-        // fall back to the parent implementation which handles all of those.
-        if (!_vanillaProcessing) {
-            return super.deserializeFromObject(p, ctxt);
-        }
-        // See BeanDeserializer.deserializeFromObject [databind#622]
-        // Allow Object Id references to come in as JSON Objects as well...
-        if ((_objectIdReader != null) && _objectIdReader.maySerializeAsObject()) {
-            if (p.hasTokenId(JsonTokenId.ID_PROPERTY_NAME)
-                    && _objectIdReader.isValidReferencePropertyName(p.currentName(), p)) {
-                return deserializeFromObjectId(p, ctxt);
+            p.nextToken();
+            try {
+                _prop2.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop2.getName(), ctxt);
             }
-        }
-        if (_nonStandardCreation) {
-            if (_unwrappedPropertyHandler != null) {
-                return deserializeWithUnwrapped(p, ctxt);
+            // fall through
+        case 5:
+            if (!p.nextName(_name3)) {
+                break;
             }
-            if (_externalTypeIdHandler != null) {
-                return deserializeWithExternalTypeId(p, ctxt);
+            p.nextToken();
+            try {
+                _prop3.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop3.getName(), ctxt);
             }
-            Object bean = deserializeFromObjectUsingNonDefault(p, ctxt);
-            if (_injectables != null) {
-                injectValues(ctxt, bean);
+            // fall through
+        case 4:
+            if (!p.nextName(_name4)) {
+                break;
             }
-            return bean;
-        }
-        final Object bean = _valueInstantiator.createUsingDefault(ctxt);
-        // [databind#631]: Assign current value, to be accessible by custom serializers
-        p.assignCurrentValue(bean);
-        if (p.canReadObjectId()) {
-            Object id = p.getObjectId();
-            if (id != null) {
-                _handleTypedObjectId(p, ctxt, bean, id);
+            p.nextToken();
+            try {
+                _prop4.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop4.getName(), ctxt);
             }
-        }
-        if (_injectables != null) {
-            injectValues(ctxt, bean);
-        }
-        SettableBeanProperty prop = _orderedProperties[0];
-        // First: verify that first name is expected
-        if (p.isExpectedStartObjectToken()) {
-            if (!p.nextName(_orderedPropertyNames[0])) {
-                return _deserializeDisordered(p, ctxt, bean);
+            // fall through
+        case 3:
+            if (!p.nextName(_name5)) {
+                break;
             }
-        } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
-                || !prop.getName().equals(p.currentName())) {
-            return _deserializeDisordered(p, ctxt, bean);
-        }
-        // and deserialize
-        p.nextToken();
-        try {
-            prop.deserializeAndSet(p, ctxt, bean);
-        } catch (Exception e) {
-            wrapAndThrow(e, bean, prop.getName(), ctxt);
-        }
-
-        // then rest of properties. NOTE! Off-by-one, to skip one we did above
-        try {
-            switch (_propCount) {
-            default:
-            //case 6:
-                prop = _prop2;
-                if (!p.nextName(_name2)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 5:
-                prop = _prop3;
-                if (!p.nextName(_name3)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 4:
-                prop = _prop4;
-                if (!p.nextName(_name4)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 3:
-                prop = _prop5;
-                if (!p.nextName(_name5)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 2:
-                prop = _prop6;
-                if (!p.nextName(_name6)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 1:
-                // NOTE! skip "last" one to compensate for OBO
-                // But we still need to ensure we get closing END_OBJECT...
-                if (p.nextToken() == JsonToken.END_OBJECT) {
-                    return bean;
-                }
+            p.nextToken();
+            try {
+                _prop5.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop5.getName(), ctxt);
             }
-        } catch (Exception e) {
-            wrapAndThrow(e, bean, prop.getName(), ctxt);
+            // fall through
+        case 2:
+            if (!p.nextName(_name6)) {
+                break;
+            }
+            p.nextToken();
+            try {
+                _prop6.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop6.getName(), ctxt);
+            }
+            // fall through
+        case 1:
+            // NOTE! skip "last" one to compensate for OBO
+            // But we still need to ensure we get closing END_OBJECT...
+            if (p.nextToken() == JsonToken.END_OBJECT) {
+                return bean;
+            }
         }
         // may have encountered pre-mature END_OBJECT too
         if (p.currentToken() == JsonToken.END_OBJECT) {

@@ -3,6 +3,7 @@ package tools.jackson.module.blackbird.internal;
 import java.util.ArrayList;
 import java.util.List;
 
+import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
@@ -94,21 +95,24 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
 
     // Called from the generated exception handler that covers every property
     // arm: the stock loop's wrapAndThrow, so property errors carry the
-    // reference path. Always throws; the return type only satisfies the
-    // generated athrow.
+    // reference path. inputName is the name the generated arm read, or null
+    // for a bean without aliases or case-insensitive matching, where it always
+    // is the property's own name; resolved here, so the arms pay nothing for
+    // such beans. Always throws; the return type only satisfies the generated
+    // athrow.
     protected final RuntimeException _propertyException(Throwable t, Object beanOrNull,
-            SettableBeanProperty prop, DeserializationContext ctxt) {
+            SettableBeanProperty prop, String inputName, DeserializationContext ctxt) {
         Object ref = (beanOrNull == null) ? handledType() : beanOrNull;
-        throw wrapAndThrow(t, ref, prop.getName(), ctxt);
+        throw wrapAndThrow(t, ref, _failedPropertyName(inputName, prop), ctxt);
     }
 
     // A generated store (setter call or field write) threw: what the stock
     // property throws for it, through the stock loop's wrapAndThrow.
     protected final RuntimeException _storeFailure(Throwable t, Object bean,
             Object childValue, SettableBeanProperty prop, JsonParser p,
-            DeserializationContext ctxt) {
+            String inputName, DeserializationContext ctxt) {
         throw wrapAndThrow(ReaderSupport.storeException(t, childValue, prop, p), bean,
-                prop.getName(), ctxt);
+                _failedPropertyName(inputName, prop), ctxt);
     }
 
     /*
@@ -131,6 +135,23 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
         String name = p.currentName();
         p.nextToken();
         handleUnknownVanilla(p, ctxt, bean, name);
+    }
+
+    // Non-Jackson exceptions (like ones from a DeserializationProblemHandler) get
+    // the property as their path; stock lets them through as they are. All routes
+    // to unknown-property handling come here, including those of stock code the
+    // codec inherits, and buffered unknown properties of records.
+    @Override
+    protected void handleUnknownProperty(JsonParser p, DeserializationContext ctxt,
+            Object beanOrClass, String propName) {
+        try {
+            super.handleUnknownProperty(p, ctxt, beanOrClass, propName);
+        } catch (JacksonException e) { // has its path already
+            throw e;
+        } catch (Exception e) {
+            throw wrapAndThrow(e, (beanOrClass == null) ? handledType() : beanOrClass,
+                    propName, ctxt);
+        }
     }
 
     // Neither a name nor the end of the object where a name was expected.

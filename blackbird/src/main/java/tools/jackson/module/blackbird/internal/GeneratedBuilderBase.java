@@ -1,5 +1,6 @@
 package tools.jackson.module.blackbird.internal;
 
+import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.deser.SettableBeanProperty;
@@ -59,35 +60,21 @@ public abstract class GeneratedBuilderBase extends BuilderBasedDeserializer
         return finishBuild(ctxt, builder);
     }
 
-    // The property name that stock reports for a failing property: its
-    // general loop (deserializeFromObject) reports the name as written in
-    // the input (an alias, another case), its vanilla loop and view loop
-    // the property's own name. inputName is the name the generated arm read,
-    // or null for a bean without aliases or case-insensitive matching, where
-    // the two always agree; startObject tells whether the call entered on
-    // START_OBJECT (the stock vanilla loop's entry) or on a property name.
-    // Resolved here, on the failure path, so the entry pays nothing for it.
-    private String _failedName(SettableBeanProperty prop, String inputName,
-            boolean startObject, DeserializationContext ctxt) {
-        if ((inputName == null)
-                || (_vanillaProcessing && startObject)
-                || (_needViewProcesing && ctxt.getActiveView() != null)) {
-            return prop.getName();
-        }
-        return inputName;
-    }
-
+    // As in stock, a failing property is reported under the name as written
+    // in the input (an alias, another case). inputName is the name the
+    // generated arm read, or null for a bean without aliases or
+    // case-insensitive matching, where it always is the property's own name;
+    // resolved here, so the arms pay nothing for such beans.
     protected final RuntimeException _propertyException(Throwable t, Object builder,
-            SettableBeanProperty prop, String inputName, boolean startObject,
-            DeserializationContext ctxt) {
-        throw wrapAndThrow(t, builder, _failedName(prop, inputName, startObject, ctxt), ctxt);
+            SettableBeanProperty prop, String inputName, DeserializationContext ctxt) {
+        throw wrapAndThrow(t, builder, _failedPropertyName(inputName, prop), ctxt);
     }
 
     protected final RuntimeException _storeFailure(Throwable t, Object builder,
             Object childValue, SettableBeanProperty prop, JsonParser p,
-            String inputName, boolean startObject, DeserializationContext ctxt) {
+            String inputName, DeserializationContext ctxt) {
         throw wrapAndThrow(ReaderSupport.storeException(t, childValue, prop, p), builder,
-                _failedName(prop, inputName, startObject, ctxt), ctxt);
+                _failedPropertyName(inputName, prop), ctxt);
     }
 
     protected final void _injectValues(DeserializationContext ctxt, Object builder) {
@@ -99,6 +86,23 @@ public abstract class GeneratedBuilderBase extends BuilderBasedDeserializer
         String name = p.currentName();
         p.nextToken();
         handleUnknownVanilla(p, ctxt, builder, name);
+    }
+
+    // Non-Jackson exceptions (like ones from a DeserializationProblemHandler) get
+    // the property as their path; stock lets them through as they are. All routes
+    // to unknown-property handling come here, including those of stock code the
+    // codec inherits, and buffered unknown properties of records.
+    @Override
+    protected void handleUnknownProperty(JsonParser p, DeserializationContext ctxt,
+            Object beanOrClass, String propName) {
+        try {
+            super.handleUnknownProperty(p, ctxt, beanOrClass, propName);
+        } catch (JacksonException e) { // has its path already
+            throw e;
+        } catch (Exception e) {
+            throw wrapAndThrow(e, (beanOrClass == null) ? handledType() : beanOrClass,
+                    propName, ctxt);
+        }
     }
 
     // As in the stock vanilla loop, whatever the unexpected-token handling

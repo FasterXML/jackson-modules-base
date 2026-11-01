@@ -121,19 +121,13 @@ final class BeanReaderGenerator
             CD_DESER_CONTEXT, CD_SETTABLE_PROP, CD_FORWARD_REF, CD_OBJECT);
     private static final MethodTypeDesc MTD_CREATION_FAILURE =
             MethodTypeDesc.of(CD_OBJECT, CD_DESER_CONTEXT, CD_THROWABLE);
+    // Input name (or null, see loadInputName) comes before the DeserializationContext.
     private static final MethodTypeDesc MTD_PROP_WRAP = MethodTypeDesc.of(
-            CD_RTE, CD_THROWABLE, CD_OBJECT, CD_SETTABLE_PROP, CD_DESER_CONTEXT);
+            CD_RTE, CD_THROWABLE, CD_OBJECT, CD_SETTABLE_PROP, ConstantDescs.CD_String,
+            CD_DESER_CONTEXT);
     private static final MethodTypeDesc MTD_STORE_FAILURE = MethodTypeDesc.of(CD_RTE,
             CD_THROWABLE, CD_OBJECT, CD_OBJECT, CD_SETTABLE_PROP, CD_JSON_PARSER,
-            CD_DESER_CONTEXT);
-    // Builder codecs: the same with the input name and the entry kind (see
-    // GeneratedBuilderBase._failedName) before the DeserializationContext.
-    private static final MethodTypeDesc MTD_BUILDER_PROP_WRAP = MethodTypeDesc.of(
-            CD_RTE, CD_THROWABLE, CD_OBJECT, CD_SETTABLE_PROP, ConstantDescs.CD_String,
-            ConstantDescs.CD_boolean, CD_DESER_CONTEXT);
-    private static final MethodTypeDesc MTD_BUILDER_STORE_FAILURE = MethodTypeDesc.of(CD_RTE,
-            CD_THROWABLE, CD_OBJECT, CD_OBJECT, CD_SETTABLE_PROP, CD_JSON_PARSER,
-            ConstantDescs.CD_String, ConstantDescs.CD_boolean, CD_DESER_CONTEXT);
+            ConstantDescs.CD_String, CD_DESER_CONTEXT);
     private static final MethodTypeDesc MTD_IS_ENABLED =
             MethodTypeDesc.of(ConstantDescs.CD_boolean, CD_DESER_FEATURE);
     private static final MethodTypeDesc MTD_GET_ACTIVE_VIEW =
@@ -344,18 +338,9 @@ final class BeanReaderGenerator
         final int excSlot = 7;
         final int maskSlot = 8;
         final int valueSlot = 10;
-        // Builder mode with names that can differ from the property's own
-        // (see GeneratedBuilderBase._failedName): each arm reads the input
-        // name, and the first match records the entry token.
-        final boolean inputNames = builderMode && plan.inputNames();
-        final int inputNameSlot = 11;
-        final int startObjectSlot = 12;
-        // Set once a name has gone to unknown-name handling; tracked only
-        // where stock reads with its vanilla loop.
-        final boolean trackUnknown = plan.vanillaLoop();
-        final int afterUnknownSlot = 13;
-        final Names names = !builderMode ? null
-                : inputNames ? new Names(inputNameSlot, startObjectSlot) : Names.NONE;
+        // Names that can differ from the property's own: each arm reads the
+        // input name, for its failure handlers. Negative if they cannot.
+        final int inputNameSlot = plan.inputNames() ? 11 : -1;
         Label propHandler = cob.newLabel();
         Label storeHandler = cob.newLabel();
 
@@ -413,9 +398,6 @@ final class BeanReaderGenerator
                .invokevirtual(base, "_injectValues", MTD_INJECT);
         }
 
-        if (trackUnknown) {
-            cob.iconst_0().istore(afterUnknownSlot);
-        }
         ldcData(cob, "matcher", CD_NAME_MATCHER);
         cob.astore(matcherSlot);
 
@@ -425,7 +407,7 @@ final class BeanReaderGenerator
         Label oddToken = cob.newLabel();
         Label defaultCase = cob.newLabel();
 
-        emitFirstMatch(cob, parser, matcherSlot, ixSlot, inputNames ? startObjectSlot : -1);
+        emitFirstMatch(cob, parser, matcherSlot, ixSlot);
         Label[] caseLabels = emitLoopHead(cob, plan, ixSlot, loop, endObject, unknown,
                 oddToken, defaultCase);
 
@@ -435,10 +417,8 @@ final class BeanReaderGenerator
                 emitArmViewCheck(cob, base, parser, ctxt, maskSlot, matcherSlot, ixSlot, i,
                         plan.stockName()[i], loop);
             }
-            if (inputNames) {
-                // As stock's general loop: the name of the value token.
-                cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentName", MTD_GET_STRING);
-                cob.astore(inputNameSlot);
+            if (inputNameSlot >= 0) {
+                emitReadInputName(cob, parser, inputNameSlot);
             }
             Label armEnd = beginArm(cob, plan.stockName()[i], propSlot, propHandler);
             GenProp prop = props.get(i);
@@ -482,41 +462,25 @@ final class BeanReaderGenerator
         }
 
         cob.labelBinding(unknown);
-        if (trackUnknown) {
-            cob.iconst_1().istore(afterUnknownSlot);
-        }
         cob.aload(0).aload(parser).aload(ctxt).aload(beanSlot);
         cob.invokevirtual(base, "_handleUnknown", MTD_HANDLE_UNKNOWN);
         nextNameMatch(cob, parser, matcherSlot, ixSlot);
         cob.goto_(loop);
 
         cob.labelBinding(oddToken);
-        if (trackUnknown) {
-            // Once an unknown name has been seen, stock's vanilla loop
-            // (_vanillaDeserializeWithUnknown) returns the bean as it is.
-            Label beforeUnknown = cob.newLabel();
-            cob.iload(afterUnknownSlot).ifeq(beforeUnknown);
-            cob.aload(beanSlot).areturn();
-            cob.labelBinding(beforeUnknown);
-        }
         cob.aload(0).aload(parser).aload(ctxt).aload(beanSlot)
            .invokevirtual(base, "_unexpectedToken", MTD_UNEXPECTED)
            .areturn();
 
-        emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, beanSlot, names);
+        emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, beanSlot, inputNameSlot);
         if (anyStore) {
             cob.labelBinding(storeHandler);
             cob.astore(excSlot);
             cob.aload(0).aload(excSlot).aload(beanSlot).aload(valueSlot).aload(propSlot)
                .aload(parser);
-            if (builderMode) {
-                names.load(cob);
-                cob.aload(ctxt);
-                cob.invokevirtual(base, "_storeFailure", MTD_BUILDER_STORE_FAILURE);
-            } else {
-                cob.aload(ctxt);
-                cob.invokevirtual(base, "_storeFailure", MTD_STORE_FAILURE);
-            }
+            loadInputName(cob, inputNameSlot);
+            cob.aload(ctxt);
+            cob.invokevirtual(base, "_storeFailure", MTD_STORE_FAILURE);
             cob.athrow();
         }
         if (ctorHandler != null) {
@@ -545,14 +509,8 @@ final class BeanReaderGenerator
         if (anyStore) {
             cob.localVariable(valueSlot, "value", CD_OBJECT, scopeStart, scopeEnd);
         }
-        if (inputNames) {
+        if (inputNameSlot >= 0) {
             cob.localVariable(inputNameSlot, "inputName", ConstantDescs.CD_String,
-                    scopeStart, scopeEnd);
-            cob.localVariable(startObjectSlot, "startObject", ConstantDescs.CD_boolean,
-                    scopeStart, scopeEnd);
-        }
-        if (trackUnknown) {
-            cob.localVariable(afterUnknownSlot, "afterUnknown", ConstantDescs.CD_boolean,
                     scopeStart, scopeEnd);
         }
     }
@@ -744,6 +702,8 @@ final class BeanReaderGenerator
         final int beanSlot = next++;
         final int pendingSlot = next++;
         final int referringsSlot = next++;
+        // Names that can differ from the component's own: see the POJO loop.
+        final int inputNameSlot = plan.inputNames() ? next++ : -1;
         // Primitive components: the stock value when it is not exactly the
         // wrapper (see emitStockValueToLocal).
         int[] rawSlot = new int[n];
@@ -789,7 +749,7 @@ final class BeanReaderGenerator
         Label oddToken = cob.newLabel();
         Label defaultCase = cob.newLabel();
 
-        emitFirstMatch(cob, parser, matcherSlot, ixSlot, -1);
+        emitFirstMatch(cob, parser, matcherSlot, ixSlot);
         Label[] caseLabels = emitLoopHead(cob, plan, ixSlot, loop, endObject, unknown,
                 oddToken, defaultCase);
 
@@ -803,6 +763,9 @@ final class BeanReaderGenerator
                 // it the absent value, as for a stock hidden creator property.
                 emitArmViewCheck(cob, base, parser, ctxt, maskSlot, matcherSlot, ixSlot, i,
                         plan.stockName()[i], loop);
+            }
+            if (inputNameSlot >= 0) {
+                emitReadInputName(cob, parser, inputNameSlot);
             }
             GenProp prop = props.get(i);
             // A stock component value may be a forward Object Id reference,
@@ -974,12 +937,14 @@ final class BeanReaderGenerator
         nextNameMatch(cob, parser, matcherSlot, ixSlot);
         cob.goto_(loop);
 
-        // Stock's property-based loop runs only while it sees names: any
-        // other token ends it, and the record builds as at END_OBJECT.
+        // As stock's property-based loop: the record is only built at END_OBJECT,
+        // any other token gets reported.
         cob.labelBinding(oddToken);
-        cob.goto_(endObject);
+        cob.aload(0).aload(parser).aload(ctxt).aconst_null()
+           .invokevirtual(base, "_unexpectedToken", MTD_UNEXPECTED)
+           .areturn();
 
-        emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, -1, null);
+        emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, -1, inputNameSlot);
         emitDelegateTail(cob, base, parser, ctxt, delegate);
 
         Label scopeEnd = cob.newBoundLabel();
@@ -1002,6 +967,10 @@ final class BeanReaderGenerator
         cob.localVariable(beanSlot, "bean", CD_OBJECT, scopeStart, scopeEnd);
         cob.localVariable(pendingSlot, "ctorFailure", CD_THROWABLE, scopeStart, scopeEnd);
         cob.localVariable(referringsSlot, "referrings", CD_OBJECT, scopeStart, scopeEnd);
+        if (inputNameSlot >= 0) {
+            cob.localVariable(inputNameSlot, "inputName", ConstantDescs.CD_String,
+                    scopeStart, scopeEnd);
+        }
         if (views == ViewStrategy.MASK) {
             cob.localVariable(maskSlot, "viewMask", ConstantDescs.CD_long, scopeStart, scopeEnd);
         }
@@ -1182,26 +1151,27 @@ final class BeanReaderGenerator
         return armEnd;
     }
 
-    // The builder failure handlers' name arguments: the locals holding the
-    // input name and the entry kind, or null and false where the names
-    // cannot differ (NONE).
-    private record Names(int inputNameSlot, int startObjectSlot) {
-        static final Names NONE = new Names(-1, -1);
+    // As stock's loops: the name of the value token, which arrives after
+    // nextNameMatchAndToken has already moved past the name.
+    private static void emitReadInputName(CodeBuilder cob, int parser, int inputNameSlot) {
+        cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentName", MTD_GET_STRING);
+        cob.astore(inputNameSlot);
+    }
 
-        void load(CodeBuilder cob) {
-            if (inputNameSlot < 0) {
-                cob.aconst_null().iconst_0();
-            } else {
-                cob.aload(inputNameSlot).iload(startObjectSlot);
-            }
+    // The failure handlers' name argument: the local holding the input name,
+    // or null where the names cannot differ (negative slot).
+    private static void loadInputName(CodeBuilder cob, int inputNameSlot) {
+        if (inputNameSlot < 0) {
+            cob.aconst_null();
+        } else {
+            cob.aload(inputNameSlot);
         }
     }
 
-    // receiverSlot < 0 selects aconst_null (record mode: no instance yet);
-    // non-null names (builder mode) passes the name arguments.
+    // receiverSlot < 0 selects aconst_null (record mode: no instance yet).
     private static void emitPropertyHandler(CodeBuilder cob, ClassDesc base, Label handler,
             int ctxt,
-            int propSlot, int excSlot, int receiverSlot, Names names) {
+            int propSlot, int excSlot, int receiverSlot, int inputNameSlot) {
         cob.labelBinding(handler);
         cob.astore(excSlot);
         cob.aload(0);
@@ -1212,14 +1182,9 @@ final class BeanReaderGenerator
             cob.aload(receiverSlot);
         }
         cob.aload(propSlot);
-        if (names != null) {
-            names.load(cob);
-            cob.aload(ctxt);
-            cob.invokevirtual(base, "_propertyException", MTD_BUILDER_PROP_WRAP);
-        } else {
-            cob.aload(ctxt);
-            cob.invokevirtual(base, "_propertyException", MTD_PROP_WRAP);
-        }
+        loadInputName(cob, inputNameSlot);
+        cob.aload(ctxt);
+        cob.invokevirtual(base, "_propertyException", MTD_PROP_WRAP);
         cob.athrow();
     }
 
@@ -1238,23 +1203,16 @@ final class BeanReaderGenerator
     // the current token, so a matched name entry advances to its value here;
     // fusing the entry itself would double-advance (the current name is
     // already consumed). Negative results stay on the name, as the unknown
-    // arm expects. startObjectSlot >= 0 records which entry was taken.
-    private static void emitFirstMatch(CodeBuilder cob, int parser, int matcherSlot, int ixSlot,
-            int startObjectSlot) {
+    // arm expects.
+    private static void emitFirstMatch(CodeBuilder cob, int parser, int matcherSlot, int ixSlot) {
         Label nameEntry = cob.newLabel();
         Label done = cob.newLabel();
         cob.aload(parser).invokevirtual(CD_JSON_PARSER, "currentToken", MTD_NEXT_TOKEN);
         cob.getstatic(CD_JSON_TOKEN, "PROPERTY_NAME", CD_JSON_TOKEN);
         cob.if_acmpeq(nameEntry);
-        if (startObjectSlot >= 0) {
-            cob.iconst_1().istore(startObjectSlot);
-        }
         nextNameMatch(cob, parser, matcherSlot, ixSlot);
         cob.goto_(done);
         cob.labelBinding(nameEntry);
-        if (startObjectSlot >= 0) {
-            cob.iconst_0().istore(startObjectSlot);
-        }
         cob.aload(parser).aload(matcherSlot)
                 .invokevirtual(CD_JSON_PARSER, "currentNameMatch", MTD_NEXT_NAME_MATCH)
                 .istore(ixSlot);

@@ -12,13 +12,16 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectReader;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.deser.DeserializationProblemHandler;
@@ -180,6 +183,55 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
         public List<Item> items;
     }
 
+    // A POJO property with an alias; a negative value fails in the setter.
+    public static class AliasedPojo {
+        int v;
+
+        @JsonAlias("alt")
+        public void setV(int v) {
+            if (v < 0) {
+                throw new IllegalArgumentException("negative");
+            }
+            this.v = v;
+        }
+    }
+
+    public record AliasedRecord(@JsonAlias("alt") int v) { }
+
+    public static class AliasedChild {
+        public int n;
+    }
+
+    // Aliased properties with structured values: the input name gets read at
+    // START_OBJECT or START_ARRAY. Fields and setters, child codecs and stock.
+    public static class AliasedStructured {
+        @JsonAlias("c1") public AliasedChild child;
+        @JsonAlias("l1") public List<Integer> list;
+        @JsonAlias("f1") public int count;
+
+        @JsonAlias("t1")
+        public void setThrowing(AliasedChild c) {
+            throw new IllegalArgumentException("setter failure");
+        }
+    }
+
+    public record AliasedStructuredRecord(@JsonAlias("c1") AliasedChild child,
+            @JsonAlias("l1") List<Integer> list) { }
+
+    public static class ViewA { }
+    public static class ViewB { }
+
+    // Under an active view, with properties that the view hides
+    public static class AliasedViews {
+        @JsonView(ViewA.class) @JsonAlias("a1") public int a;
+        @JsonView(ViewB.class) @JsonAlias("b1") public int b;
+        @JsonView(ViewA.class) @JsonAlias("c1") public AliasedChild c;
+    }
+
+    public record AliasedViewsRecord(@JsonView(ViewA.class) @JsonAlias("a1") int a,
+            @JsonView(ViewB.class) @JsonAlias("b1") int b,
+            @JsonView(ViewA.class) @JsonAlias("c1") AliasedChild c) { }
+
     private static final ObjectMapper VANILLA = newVanillaJSONMapper();
     private static final ObjectMapper MODULE = newObjectMapper();
 
@@ -298,22 +350,91 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
                 r -> r.ref().get().name + "/" + r.items().get(0).name + "/" + r.tag());
     }
 
+    // As builder properties below: POJO properties and record components are
+    // reported under the name in the input, with default settings and with
+    // those for stock's vanilla loop.
+    @Test
+    public void testPojoAndRecordFailureReportsInputName() throws Exception {
+        _assertFailureNames(VANILLA, MODULE);
+        _assertFailureNames(
+                JsonMapper.builder().enable(MapperFeature.DEFAULT_VIEW_INCLUSION).build(),
+                blackbirdMapperBuilder().enable(MapperFeature.DEFAULT_VIEW_INCLUSION).build());
+    }
+
+    @Test
+    public void testFailureUnderCaseInsensitiveMapper() throws Exception {
+        ObjectMapper vanilla = JsonMapper.builder()
+                .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES).build();
+        ObjectMapper module = blackbirdMapperBuilder()
+                .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES).build();
+        _assertSameFailure(vanilla, module, "{\"V\":-1}", AliasedPojo.class, "V");
+        _assertSameFailure(vanilla, module, "{\"V\":\"x\"}", AliasedRecord.class, "V");
+    }
+
+    private void _assertFailureNames(ObjectMapper vanilla, ObjectMapper module) throws Exception {
+        assertGeneratedReader(module, AliasedPojo.class);
+        assertGeneratedReader(module, AliasedRecord.class);
+        // Scalar read, then setter (the store handler)
+        _assertSameFailure(vanilla, module, "{\"alt\":\"x\"}", AliasedPojo.class, "alt");
+        _assertSameFailure(vanilla, module, "{\"alt\":-1}", AliasedPojo.class, "alt");
+        _assertSameFailure(vanilla, module, "{\"v\":-1}", AliasedPojo.class, "v");
+        _assertSameFailure(vanilla, module, "{\"alt\":\"x\"}", AliasedRecord.class, "alt");
+        _assertSameFailure(vanilla, module, "{\"v\":\"x\"}", AliasedRecord.class, "v");
+    }
+
+    @Test
+    public void testFailureNameWithStructuredValue() throws Exception {
+        for (Class<?> type : List.of(AliasedStructured.class, AliasedStructuredRecord.class)) {
+            assertGeneratedReader(MODULE, type);
+            _assertSameFailure(VANILLA, MODULE, a2q("{'c1':[]}"), type, "c1");
+            _assertSameFailure(VANILLA, MODULE, a2q("{'l1':{}}"), type, "l1");
+            // Failures within: names within do not replace this name
+            _assertSameFailure(VANILLA, MODULE, a2q("{'c1':{'n':'x'}}"), type, "c1");
+            _assertSameFailure(VANILLA, MODULE, a2q("{'l1':['x']}"), type, "l1");
+            _assertSameFailure(VANILLA, MODULE, a2q("{'c1':{'n':1},'l1':{}}"), type, "l1");
+            _assertSameFailure(VANILLA, MODULE, a2q("{'child':[]}"), type, "child");
+        }
+        _assertSameFailure(VANILLA, MODULE, a2q("{'f1':'x'}"), AliasedStructured.class, "f1");
+        // Setter fails after child has been read
+        _assertSameFailure(VANILLA, MODULE, a2q("{'t1':{'n':1}}"), AliasedStructured.class, "t1");
+    }
+
+    @Test
+    public void testFailureNameUnderActiveView() throws Exception {
+        for (Class<?> type : List.of(AliasedViews.class, AliasedViewsRecord.class)) {
+            assertGeneratedReader(MODULE, type);
+            final ObjectReader vanilla = VANILLA.readerFor(type).withView(ViewA.class);
+            final ObjectReader module = MODULE.readerFor(type).withView(ViewA.class);
+            _assertSameFailure(vanilla, module, a2q("{'a1':'x'}"), "a1");
+            _assertSameFailure(vanilla, module, a2q("{'c1':[]}"), "c1");
+            // Past a property hidden by the view, with invalid value that gets skipped
+            _assertSameFailure(vanilla, module, a2q("{'b1':'x','a1':'y'}"), "a1");
+            _assertSameFailure(vanilla, module, a2q("{'b1':{'z':1},'c1':[]}"), "c1");
+        }
+    }
+
+    private void _assertSameFailure(ObjectMapper vanilla, ObjectMapper module,
+            String doc, Class<?> type, String expName) {
+        _assertSameFailure(vanilla.readerFor(type), module.readerFor(type), doc, expName);
+    }
+
+    private void _assertSameFailure(ObjectReader vanilla, ObjectReader module,
+            String doc, String expName) {
+        Exception expected = assertThrows(Exception.class, () -> vanilla.readValue(doc));
+        Exception actual = assertThrows(Exception.class, () -> module.readValue(doc));
+        assertEquals(expected.getClass(), actual.getClass(), doc);
+        assertEquals(expected.getMessage(), actual.getMessage(), doc);
+        assertTrue(actual.getMessage().contains("[\"" + expName + "\"]"), actual.getMessage());
+    }
+
     // A failing builder property is reported under the name in the input,
-    // as stock's general builder loop does: here the alias.
+    // as stock does: here the alias.
     @Test
     public void testBuilderFailureReportsInputName() throws Exception {
         assertGeneratedReader(MODULE, Aliased.class);
-        for (String doc : new String[] { "{\"alt\":\"x\"}", "{\"alt\":-1}", "{\"v\":-1}" }) {
-            Exception expected = assertThrows(Exception.class,
-                    () -> VANILLA.readValue(doc, Aliased.class));
-            Exception actual = assertThrows(Exception.class,
-                    () -> MODULE.readValue(doc, Aliased.class));
-            assertEquals(expected.getClass(), actual.getClass(), doc);
-            assertEquals(expected.getMessage(), actual.getMessage(), doc);
-        }
-        Exception e = assertThrows(Exception.class,
-                () -> MODULE.readValue("{\"alt\":-1}", Aliased.class));
-        assertTrue(e.getMessage().contains("[\"alt\"]"), e.getMessage());
+        _assertSameFailure(VANILLA, MODULE, "{\"alt\":\"x\"}", Aliased.class, "alt");
+        _assertSameFailure(VANILLA, MODULE, "{\"alt\":-1}", Aliased.class, "alt");
+        _assertSameFailure(VANILLA, MODULE, "{\"v\":-1}", Aliased.class, "v");
     }
 
     // The same after a type id that follows a buffered property: the

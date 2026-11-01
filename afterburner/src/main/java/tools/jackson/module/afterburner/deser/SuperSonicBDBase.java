@@ -125,20 +125,41 @@ public abstract class SuperSonicBDBase
 
 //    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
 //    public final Object deserialize(JsonParser p, DeserializationContext ctxt, Object bean) throws IOException;;
-//    public final Object deserializeFromObject(JsonParser p, DeserializationContext ctxt) throws IOException;
+
+    // Non-Jackson exceptions (like ones from a `DeserializationProblemHandler`) get the
+    // property as their path; stock lets them through as they are. All routes to
+    // unknown-property handling come here, including those of inherited stock code.
+    @Override
+    protected void handleUnknownProperty(JsonParser p, DeserializationContext ctxt,
+            Object beanOrClass, String propName)
+        throws JacksonException
+    {
+        try {
+            super.handleUnknownProperty(p, ctxt, beanOrClass, propName);
+        } catch (JacksonException e) { // has its path already
+            throw e;
+        } catch (Exception e) {
+            throw wrapAndThrow(e, (beanOrClass == null) ? handledType() : beanOrClass,
+                    propName, ctxt);
+        }
+    }
 
     protected final Object _deserializeDisordered(JsonParser p, DeserializationContext ctxt,
             Object bean)
         throws JacksonException
     {
+        // Input name can only differ from logical one with these
+        final boolean inputNames = _beanProperties.hasAliases() || _beanProperties.isCaseInsensitive();
         for (int ix = p.currentNameMatch(_propNameMatcher); ; ix = p.nextNameMatch(_propNameMatcher)) {
             if (ix >= 0) {
                 p.nextToken();
+                // Report name as found in input, read at the value token as stock does
+                final String inputName = inputNames ? p.currentName() : null;
                 SettableBeanProperty prop = _propsByIndex[ix];
                 try {
                     prop.deserializeAndSet(p, ctxt, bean);
                 } catch (Exception e) {
-                    wrapAndThrow(e, bean, prop.getName(), ctxt);
+                    wrapAndThrow(e, bean, _failedPropertyName(inputName, prop), ctxt);
                 }
                 continue;
             }
