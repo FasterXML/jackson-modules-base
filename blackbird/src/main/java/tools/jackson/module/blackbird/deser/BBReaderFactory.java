@@ -78,9 +78,12 @@ final class BBReaderFactory
             boolean nonStandardCreation, boolean hasDelegateCreator, boolean hasExternalTypeId,
             boolean hasUnwrapped, boolean asArray, AnnotatedMethod buildMethod) {}
 
-    // CodegenFallbacks.FAIL_ON_ERROR, copied here: the stack overflow
-    // handler of tryGenerate must not do more than read a field of this
-    // (initialized) class.
+    // CodegenFallbacks.FAIL_ON_ERROR, copied here so that the stack overflow
+    // handler of tryGenerate reads a field of this initialized class.
+    // Reading CodegenFallbacks there would instead run its static
+    // initializer (a logger lookup) on the nearly exhausted stack, if
+    // nothing has used it yet; this copy initializes it along with this
+    // class, early.
     private static final boolean FAIL_ON_STACK_OVERFLOW = CodegenFallbacks.FAIL_ON_ERROR;
 
     static ValueDeserializer<Object> tryGenerate(Source stock, DeserializationContext ctxt,
@@ -95,7 +98,7 @@ final class BBReaderFactory
             // can still complete the call. Nothing more (not even logging)
             // runs on the nearly exhausted stack. In strict mode (the test
             // suites) it more likely is unbounded recursion in the
-            // generator, so it fails the test; the check only reads a field
+            // generator, so it fails the test. The check only reads a field
             // of this (initialized) class.
             if (FAIL_ON_STACK_OVERFLOW) {
                 throw e;

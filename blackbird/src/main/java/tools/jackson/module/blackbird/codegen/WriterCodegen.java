@@ -115,6 +115,10 @@ public final class WriterCodegen
                 MethodType.methodType(void.class, BeanSerializerBase.class, String.class));
         try {
             return (ValueSerializer<Object>) ctor.invoke(fallback, layout.toString());
+        } catch (RuntimeException | Error e) {
+            // As they are: tryGenerate treats StackOverflowError and other
+            // VirtualMachineErrors specially.
+            throw e;
         } catch (Throwable t) {
             throw new IllegalStateException("cannot instantiate generated writer", t);
         }

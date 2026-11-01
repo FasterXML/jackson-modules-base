@@ -10,7 +10,6 @@ import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.MismatchedInputException;
-import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.util.TokenBuffer;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
@@ -43,7 +42,7 @@ public class BBReaderOddTokenTest extends BlackbirdTestBase
 
     private final ObjectMapper viewInclusionMapper = mapperBuilder()
             .enable(MapperFeature.DEFAULT_VIEW_INCLUSION).build();
-    private final ObjectMapper viewInclusionVanilla = JsonMapper.builder()
+    private final ObjectMapper viewInclusionVanilla = newVanillaJSONMapper().rebuild()
             .enable(MapperFeature.DEFAULT_VIEW_INCLUSION).build();
 
     @Test

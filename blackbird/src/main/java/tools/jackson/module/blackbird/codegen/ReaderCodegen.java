@@ -188,6 +188,10 @@ public final class ReaderCodegen
                         String.class));
         try {
             return (ValueDeserializer<Object>) ctor.invoke(source, beanProps, layout.toString());
+        } catch (RuntimeException | Error e) {
+            // As they are: tryGenerate treats StackOverflowError and other
+            // VirtualMachineErrors specially.
+            throw e;
         } catch (Throwable t) {
             throw new IllegalStateException("cannot instantiate generated codec", t);
         }

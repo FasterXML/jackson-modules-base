@@ -30,7 +30,9 @@ public abstract class DifferentialTestBase
     static {
         // Strict mode: a codec-generation failure fails the test instead of
         // demoting to the stock path (see CodegenFallbacks). Surefire sets
-        // this for every test class; this covers runs outside Maven.
+        // this for every test class. Outside Maven (an IDE) this takes
+        // effect only if it runs before Blackbird's codegen classes first
+        // load, which read the property once.
         System.setProperty("tools.jackson.module.blackbird.failOnCodegenError", "true");
     }
 
