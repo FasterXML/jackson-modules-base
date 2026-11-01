@@ -937,10 +937,12 @@ final class BeanReaderGenerator
         nextNameMatch(cob, parser, matcherSlot, ixSlot);
         cob.goto_(loop);
 
-        // Stock's property-based loop runs only while it sees names: any
-        // other token ends it, and the record builds as at END_OBJECT.
+        // As stock's property-based loop: the record is only built at END_OBJECT,
+        // any other token gets reported.
         cob.labelBinding(oddToken);
-        cob.goto_(endObject);
+        cob.aload(0).aload(parser).aload(ctxt).aconst_null()
+           .invokevirtual(base, "_unexpectedToken", MTD_UNEXPECTED)
+           .areturn();
 
         emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, -1, inputNameSlot);
         emitDelegateTail(cob, base, parser, ctxt, delegate);

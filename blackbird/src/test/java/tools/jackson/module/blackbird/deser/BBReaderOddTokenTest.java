@@ -5,10 +5,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
 import tools.jackson.core.ObjectReadContext;
+import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.deser.DeserializationProblemHandler;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.util.TokenBuffer;
 import tools.jackson.module.blackbird.BlackbirdTestBase;
@@ -17,13 +21,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * A token that is neither a name nor END_OBJECT where a name is expected
- * (possible from a non-JSON parser or a replayed buffer). Stock's loops report
- * it as unexpected, with or without an unknown name before it, including
- * _vanillaDeserializeWithUnknown since [databind#6357]. Stock takes the vanilla
- * loop only with DEFAULT_VIEW_INCLUSION on (off by default in 3.x). A record
- * (stock's property-based loop, which runs only while it sees names) ends its
- * loop on the token and builds as at END_OBJECT. Every case compares against a
- * vanilla mapper.
+ * (possible from a non-JSON parser or a replayed buffer). Since [databind#6357]
+ * all of stock's loops report it as unexpected, with or without an unknown name
+ * before it, and a record does not get built. Stock takes the vanilla loop only
+ * with DEFAULT_VIEW_INCLUSION on (off by default in 3.x). Every case compares
+ * against a vanilla mapper.
  */
 public class BBReaderOddTokenTest extends BlackbirdTestBase
 {
@@ -68,22 +70,36 @@ public class BBReaderOddTokenTest extends BlackbirdTestBase
     }
 
     @Test
-    public void oddTokenEndsRecord() throws Exception
+    public void oddTokenInRecordFails() throws Exception
     {
         assertGeneratedReader(mapper, Rec.class);
         for (boolean withUnknown : new boolean[] { false, true }) {
-            Rec expected = read(vanilla, withUnknown, Rec.class);
-            assertEquals(new Rec("a", 0), expected);
-            assertEquals(expected, read(mapper, withUnknown, Rec.class));
+            assertSameFailure(vanilla, mapper, withUnknown, Rec.class);
         }
     }
 
-    // The component after the token is missing, as at END_OBJECT.
+    // Reported before missing required component would be
     @Test
-    public void oddTokenEndsRecordMissingRequired() throws Exception
+    public void oddTokenInRecordMissingRequiredFails() throws Exception
     {
         assertGeneratedReader(mapper, RequiredRec.class);
         assertSameFailure(vanilla, mapper, false, RequiredRec.class);
+    }
+
+    // Problem handler gets to provide the value, in place of building the record
+    @Test
+    public void oddTokenInRecordWithProblemHandler() throws Exception
+    {
+        final DeserializationProblemHandler handler = new DeserializationProblemHandler() {
+            @Override
+            public Object handleUnexpectedToken(DeserializationContext ctxt, JavaType targetType,
+                    JsonToken t, JsonParser p, String failureMsg) {
+                return new Rec("handler", 1);
+            }
+        };
+        Rec expected = new Rec("handler", 1);
+        assertEquals(expected, read(vanilla.rebuild().addHandler(handler).build(), false, Rec.class));
+        assertEquals(expected, read(mapper.rebuild().addHandler(handler).build(), false, Rec.class));
     }
 
     private static void assertSameFailure(ObjectMapper stock, ObjectMapper bb,
@@ -120,7 +136,7 @@ public class BBReaderOddTokenTest extends BlackbirdTestBase
         tb.writeEndObject();
         try (JsonParser p = tb.asParser(ObjectReadContext.empty())) {
             return m.readerFor(type)
-                    // Stock's early return leaves the rest of the object
+                    // A problem handler's value leaves the rest of the object
                     // unread.
                     .without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
                             DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
