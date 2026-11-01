@@ -52,6 +52,11 @@ final class BBWriterFactory
 
     private BBWriterFactory() {}
 
+    // Strict mode (see CodegenFallbacks), read once: the stack overflow
+    // handler of tryGenerate must not do more than read a field.
+    private static final boolean FAIL_ON_STACK_OVERFLOW =
+            Boolean.getBoolean(CodegenFallbacks.FAIL_ON_ERROR_PROPERTY);
+
     // props and filtered: the resolved _props and _filteredProps of delegate,
     // which are protected. asArray: the bean's own shape is ARRAY.
     static ValueSerializer<Object> tryGenerate(BeanSerializerBase delegate,
@@ -67,9 +72,9 @@ final class BBWriterFactory
             // can still complete the call. Nothing more (not even logging)
             // runs on the nearly exhausted stack. In strict mode (the test
             // suites) it more likely is unbounded recursion in the
-            // generator, so it fails the test; the property name is a
-            // constant, so the check initializes no Blackbird class.
-            if (Boolean.getBoolean(CodegenFallbacks.FAIL_ON_ERROR_PROPERTY)) {
+            // generator, so it fails the test; the check only reads a field
+            // of this (initialized) class.
+            if (FAIL_ON_STACK_OVERFLOW) {
                 throw e;
             }
             return null;

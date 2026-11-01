@@ -78,6 +78,11 @@ final class BBReaderFactory
             boolean nonStandardCreation, boolean hasDelegateCreator, boolean hasExternalTypeId,
             boolean hasUnwrapped, boolean asArray, AnnotatedMethod buildMethod) {}
 
+    // Strict mode (see CodegenFallbacks), read once: the stack overflow
+    // handler of tryGenerate must not do more than read a field.
+    private static final boolean FAIL_ON_STACK_OVERFLOW =
+            Boolean.getBoolean(CodegenFallbacks.FAIL_ON_ERROR_PROPERTY);
+
     static ValueDeserializer<Object> tryGenerate(Source stock, DeserializationContext ctxt,
             boolean declaresViews) {
         BeanDeserializerBase delegate = stock.deser();
@@ -90,9 +95,9 @@ final class BBReaderFactory
             // can still complete the call. Nothing more (not even logging)
             // runs on the nearly exhausted stack. In strict mode (the test
             // suites) it more likely is unbounded recursion in the
-            // generator, so it fails the test; the property name is a
-            // constant, so the check initializes no Blackbird class.
-            if (Boolean.getBoolean(CodegenFallbacks.FAIL_ON_ERROR_PROPERTY)) {
+            // generator, so it fails the test; the check only reads a field
+            // of this (initialized) class.
+            if (FAIL_ON_STACK_OVERFLOW) {
                 throw e;
             }
             return null;
