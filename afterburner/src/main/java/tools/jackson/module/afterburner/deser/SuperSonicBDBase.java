@@ -131,6 +131,8 @@ public abstract class SuperSonicBDBase
      * pointing to its name. Name matched exactly, so logical name is the input name.
      * Only failures of the value get the property in their path: as with stock
      * deserializers, parser failures for the next token or next name do not.
+     *
+     * @since 3.3
      */
     protected final void _readAndSet(JsonParser p, DeserializationContext ctxt,
             Object bean, SettableBeanProperty prop)
