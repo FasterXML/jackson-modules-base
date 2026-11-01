@@ -68,7 +68,7 @@ public class TestAccessorGeneration extends AfterburnerTestBase
                 null,
                 null, null, null,
                 false, null, null,
-                JsonInclude.Value.empty());
+                JsonInclude.Value.empty(), null);
         coll.addIntGetter(bpw);
         BeanPropertyAccessor acc = coll.findAccessor(null);
         Bean1 bean = new Bean1();
@@ -103,7 +103,7 @@ public class TestAccessorGeneration extends AfterburnerTestBase
                     null,
                     null, null, null,
                     false, null, null,
-                    JsonInclude.Value.empty()));
+                    JsonInclude.Value.empty(), null));
         }
 
         BeanPropertyAccessor acc = coll.findAccessor(null);
@@ -131,7 +131,7 @@ public class TestAccessorGeneration extends AfterburnerTestBase
                     null,
                     null, null, null,
                     false, null, null,
-                    JsonInclude.Value.empty()));
+                    JsonInclude.Value.empty(), null));
         }
 
         BeanPropertyAccessor acc = coll.findAccessor(null);

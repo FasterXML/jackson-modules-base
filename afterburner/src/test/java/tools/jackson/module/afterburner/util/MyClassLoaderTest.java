@@ -4,7 +4,6 @@ import java.util.concurrent.*;
 
 import tools.jackson.module.afterburner.AfterburnerTestBase;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.objectweb.asm.ClassWriter;
@@ -14,7 +13,6 @@ import static org.objectweb.asm.Opcodes.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Disabled("Fails on JVM 17 + JPMS")
 public class MyClassLoaderTest extends AfterburnerTestBase
 {
     @Test

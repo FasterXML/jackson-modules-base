@@ -82,6 +82,18 @@ field access and method calls
         <artifactId>cyclonedx-maven-plugin</artifactId>
       </plugin>
 
+      <!-- Tests run inside Afterburner's named module: open java.lang to it so
+           MyClassLoader can reach ClassLoader#findLoadedClass/#defineClass on the
+           parent loader (same as afterburner-tests does for ALL-UNNAMED).
+           @{argLine} preserves the jacoco agent config. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>@{argLine} --add-opens java.base/java.lang=tools.jackson.module.afterburner</argLine>
+        </configuration>
+      </plugin>
+
       <!-- 03-Feb-2025, tatu: No more shading of ByteBuddy
 	   (see [modules-base#284])
         -->

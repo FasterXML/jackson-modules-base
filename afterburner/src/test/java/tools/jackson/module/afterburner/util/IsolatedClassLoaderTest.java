@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * It would be nice to improve test to avoid storing pre-compiled class but
  * for now it'll have to do.
  */
-@Disabled("Fails on JVM 17 + JPMS")
+@Disabled("Needs pre-compiled `Bean.class` test resource, which is not in git (`*.class` is ignored)")
 public class IsolatedClassLoaderTest extends AfterburnerTestBase
 {
     @Test

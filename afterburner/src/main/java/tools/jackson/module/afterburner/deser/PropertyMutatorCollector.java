@@ -540,7 +540,7 @@ public class PropertyMutatorCollector
                         while (!toProcess.isEmpty()) { // process all the interfaces (including super interfaces which will be looked up on demand)
                             TypeDefinition iface = toProcess.poll();
 
-                            MethodList<MethodDescription> matches = getMatchingMethods(iface, methodName);
+                            MethodList<?> matches = getMatchingMethods(iface, methodName);
                             if (matches.size() == 1) {
                                 return MethodInvocation.invoke(matches.getOnly());
                             } else if (matches.size() > 1) {  // should never happen
@@ -560,7 +560,7 @@ public class PropertyMutatorCollector
                         throw new IllegalStateException("Could not find definition of method: " + methodName);
                     }
 
-                    MethodList<MethodDescription> matches = getMatchingMethods(klass, methodName);
+                    MethodList<?> matches = getMatchingMethods(klass, methodName);
                     if (matches.size() == 1) {
                         return MethodInvocation.invoke(matches.getOnly());
                     } else if (matches.size() > 1) {  // should never happen
@@ -585,10 +585,10 @@ public class PropertyMutatorCollector
 
         }
 
-        private MethodList<MethodDescription> getMatchingMethods(TypeDefinition beanClassDescription, String methodName) {
+        private MethodList<?> getMatchingMethods(TypeDefinition beanClassDescription, String methodName) {
             // Filter by name, non-static, and parameter count (1 for setters) to handle
             // overloaded methods with same name but different signatures [modules-base#314]
-            return (MethodList<MethodDescription>) beanClassDescription.getDeclaredMethods()
+            return beanClassDescription.getDeclaredMethods()
                     .filter(named(methodName).and(not(isStatic())).and(takesArguments(1)));
         }
     }

@@ -283,7 +283,7 @@ public class PropertyAccessorCollector
 
             final String methodName = annotatedMember.getName();
             
-            final MethodList<MethodDescription> matchingMethods = getMatchingMethods(beanClassDescription, methodName);
+            final MethodList<?> matchingMethods = getMatchingMethods(beanClassDescription, methodName);
             if (matchingMethods.size() == 1) { //method was declared on class
                 return MethodInvocation.invoke(matchingMethods.getOnly());
             }
@@ -298,7 +298,7 @@ public class PropertyAccessorCollector
                         while (!toProcess.isEmpty()) { // process all the interfaces (including super interfaces which will be looked up on demand)
                             TypeDefinition iface = toProcess.poll();
 
-                            MethodList<MethodDescription> matches = getMatchingMethods(iface, methodName);
+                            MethodList<?> matches = getMatchingMethods(iface, methodName);
                             if (matches.size() == 1) {
                                 return MethodInvocation.invoke(matches.getOnly());
                             } else if (matches.size() > 1) {  // should never happen
@@ -318,7 +318,7 @@ public class PropertyAccessorCollector
                         throw new IllegalStateException("Could not find definition of method: " + methodName);
                     }
 
-                    MethodList<MethodDescription> matches = getMatchingMethods(klass, methodName);
+                    MethodList<?> matches = getMatchingMethods(klass, methodName);
                     if (matches.size() == 1) {
                         return MethodInvocation.invoke(matches.getOnly());
                     } else if (matches.size() > 1) {  // should never happen
@@ -342,10 +342,10 @@ public class PropertyAccessorCollector
             }
         }
 
-        private MethodList<MethodDescription> getMatchingMethods(TypeDefinition beanClassDescription, String methodName) {
+        private MethodList<?> getMatchingMethods(TypeDefinition beanClassDescription, String methodName) {
             // Filter by name, non-static, and parameter count (0 for getters) to handle
             // overloaded methods with same name but different signatures [modules-base#314]
-            return (MethodList<MethodDescription>) beanClassDescription.getDeclaredMethods()
+            return beanClassDescription.getDeclaredMethods()
                     .filter(named(methodName).and(not(isStatic())).and(takesArguments(0)));
         }
     }

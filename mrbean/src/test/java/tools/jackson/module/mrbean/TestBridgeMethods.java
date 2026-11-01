@@ -216,11 +216,6 @@ public class TestBridgeMethods extends BaseTest
         }
 
         @Override
-        public void visitMethodInsn(int opcode, String owner, String name, String descriptor) {
-            _visits.add(visitor -> visitor.visitMethodInsn(opcode, owner, name, descriptor));
-        }
-
-        @Override
         public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
             _visits.add(visitor -> visitor.visitMethodInsn(opcode, owner, name, descriptor, isInterface));
         }
