@@ -126,26 +126,6 @@ public abstract class SuperSonicBDBase
 //    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
 //    public final Object deserialize(JsonParser p, DeserializationContext ctxt, Object bean) throws IOException;;
 
-    /**
-     * Reads and sets the value of a property matched by expected order, with parser
-     * pointing to its name. Name matched exactly, so logical name is the input name.
-     * Only failures of the value get the property in their path: as with stock
-     * deserializers, parser failures for the next token or next name do not.
-     *
-     * @since 3.3
-     */
-    protected final void _readAndSet(JsonParser p, DeserializationContext ctxt,
-            Object bean, SettableBeanProperty prop)
-        throws JacksonException
-    {
-        p.nextToken();
-        try {
-            prop.deserializeAndSet(p, ctxt, bean);
-        } catch (Exception e) {
-            wrapAndThrow(e, bean, prop.getName(), ctxt);
-        }
-    }
-
     protected final Object _deserializeDisordered(JsonParser p, DeserializationContext ctxt,
             Object bean)
         throws JacksonException

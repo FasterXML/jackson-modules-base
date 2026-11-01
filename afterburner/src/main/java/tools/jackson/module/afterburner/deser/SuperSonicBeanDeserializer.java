@@ -110,23 +110,44 @@ public final class SuperSonicBeanDeserializer
             injectValues(ctxt, bean);
         }
 
-        // We also we have at least 6 properties, so roll out first few
+        // We also we have at least 6 properties, so roll out first few. Each with a call site
+        // of its own, for type profiles; parser calls outside of `try`, as stock has them
         if (!p.nextName(_orderedPropertyNames[0])) {
             return _deserializeDisordered(p, ctxt, bean);
         }
-        _readAndSet(p, ctxt, bean, _orderedProperties[0]);
+        p.nextToken();
+        try {
+            _orderedProperties[0].deserializeAndSet(p, ctxt, bean);
+        } catch (Exception e) {
+            throw wrapAndThrow(e, bean, _orderedProperties[0].getName(), ctxt);
+        }
         if (!p.nextName(_orderedPropertyNames[1])) {
             return _deserializeDisordered(p, ctxt, bean);
         }
-        _readAndSet(p, ctxt, bean, _orderedProperties[1]);
+        p.nextToken();
+        try {
+            _orderedProperties[1].deserializeAndSet(p, ctxt, bean);
+        } catch (Exception e) {
+            throw wrapAndThrow(e, bean, _orderedProperties[1].getName(), ctxt);
+        }
         if (!p.nextName(_orderedPropertyNames[2])) {
             return _deserializeDisordered(p, ctxt, bean);
         }
-        _readAndSet(p, ctxt, bean, _orderedProperties[2]);
+        p.nextToken();
+        try {
+            _orderedProperties[2].deserializeAndSet(p, ctxt, bean);
+        } catch (Exception e) {
+            throw wrapAndThrow(e, bean, _orderedProperties[2].getName(), ctxt);
+        }
         if (!p.nextName(_orderedPropertyNames[3])) {
             return _deserializeDisordered(p, ctxt, bean);
         }
-        _readAndSet(p, ctxt, bean, _orderedProperties[3]);
+        p.nextToken();
+        try {
+            _orderedProperties[3].deserializeAndSet(p, ctxt, bean);
+        } catch (Exception e) {
+            throw wrapAndThrow(e, bean, _orderedProperties[3].getName(), ctxt);
+        }
 
         for (int i = 4, len = _orderedProperties.length; i < len; ++i) {
             if (!p.nextName(_orderedPropertyNames[i])) { // miss...
@@ -136,7 +157,12 @@ public final class SuperSonicBeanDeserializer
                 // we likely point to FIELD_NAME still; offline
                 return _deserializeDisordered(p, ctxt, bean);
             }
-            _readAndSet(p, ctxt, bean, _orderedProperties[i]);
+            p.nextToken();
+            try {
+                _orderedProperties[i].deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _orderedProperties[i].getName(), ctxt);
+            }
         }
         // also, need to ensure we get closing END_OBJECT...
         if (p.nextToken() != JsonToken.END_OBJECT) {
@@ -167,29 +193,52 @@ public final class SuperSonicBeanDeserializer
         if (_externalTypeIdHandler != null) {
             return deserializeWithExternalTypeId(p, ctxt, bean);
         }
-        // We also we have at least 6 properties, so roll out first few
+        // We also we have at least 6 properties, so roll out first few. Each with a call site
+        // of its own, for type profiles; parser calls outside of `try`, as stock has them
         SettableBeanProperty prop = _orderedProperties[0];
         if (p.isExpectedStartObjectToken()) {
             if (!p.nextName(_orderedPropertyNames[0])) {
                 return _deserializeDisordered(p, ctxt, bean);
             }
-        } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
-                || !prop.getName().equals(p.currentName())) {
+        } else if (!p.hasToken(JsonToken.PROPERTY_NAME)) {
+            // not an Object at all: stock leaves the bean as is
+            return super.deserialize(p, ctxt, bean);
+        } else if (!prop.getName().equals(p.currentName())) {
             return _deserializeDisordered(p, ctxt, bean);
         }
-        _readAndSet(p, ctxt, bean, prop);
+        p.nextToken();
+        try {
+            prop.deserializeAndSet(p, ctxt, bean);
+        } catch (Exception e) {
+            throw wrapAndThrow(e, bean, prop.getName(), ctxt);
+        }
         if (!p.nextName(_orderedPropertyNames[1])) {
             return _deserializeDisordered(p, ctxt, bean);
         }
-        _readAndSet(p, ctxt, bean, _orderedProperties[1]);
+        p.nextToken();
+        try {
+            _orderedProperties[1].deserializeAndSet(p, ctxt, bean);
+        } catch (Exception e) {
+            throw wrapAndThrow(e, bean, _orderedProperties[1].getName(), ctxt);
+        }
         if (!p.nextName(_orderedPropertyNames[2])) {
             return _deserializeDisordered(p, ctxt, bean);
         }
-        _readAndSet(p, ctxt, bean, _orderedProperties[2]);
+        p.nextToken();
+        try {
+            _orderedProperties[2].deserializeAndSet(p, ctxt, bean);
+        } catch (Exception e) {
+            throw wrapAndThrow(e, bean, _orderedProperties[2].getName(), ctxt);
+        }
         if (!p.nextName(_orderedPropertyNames[3])) {
             return _deserializeDisordered(p, ctxt, bean);
         }
-        _readAndSet(p, ctxt, bean, _orderedProperties[3]);
+        p.nextToken();
+        try {
+            _orderedProperties[3].deserializeAndSet(p, ctxt, bean);
+        } catch (Exception e) {
+            throw wrapAndThrow(e, bean, _orderedProperties[3].getName(), ctxt);
+        }
 
         // then rest of properties
         for (int i = 4, len = _orderedProperties.length; i < len; ++i) {
@@ -200,7 +249,12 @@ public final class SuperSonicBeanDeserializer
                 // we likely point to FIELD_NAME, so can just call parent impl
                 return super.deserialize(p, ctxt, bean);
             }
-            _readAndSet(p, ctxt, bean, _orderedProperties[i]);
+            p.nextToken();
+            try {
+                _orderedProperties[i].deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _orderedProperties[i].getName(), ctxt);
+            }
         }
         // also, need to ensure we get closing END_OBJECT...
         if (p.nextToken() != JsonToken.END_OBJECT) {

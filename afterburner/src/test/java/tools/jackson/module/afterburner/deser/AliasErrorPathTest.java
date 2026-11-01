@@ -6,6 +6,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonMerge;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
@@ -42,6 +43,10 @@ public class AliasErrorPathTest extends AfterburnerTestBase
 
     public static class PlainBigBean {
         public int a, b, c, d, e, f, g;
+    }
+
+    public static class MergeHolder {
+        @JsonMerge public BigBean big = new BigBean();
     }
 
     // Afterburner's optimized deserializers need "vanilla" processing
@@ -119,7 +124,24 @@ public class AliasErrorPathTest extends AfterburnerTestBase
             InvalidFormatException e = assertThrows(InvalidFormatException.class,
                     () -> MAPPER.readerForUpdating(new BigBean()).readValue(p));
             _verifyException(e, "a1");
-            _verifyFrames(e, "_deserializeDisordered");
+            assertTrue(_hasFrame(e, "_deserializeDisordered"));
+        }
+    }
+
+    // Not an Object: nothing to update, bean is left as is, same as stock
+    @Test
+    public void updateFromNonObject() throws Exception {
+        final ObjectMapper stock = newVanillaJSONMapper();
+        for (ObjectMapper mapper : List.of(stock, MAPPER)) {
+            for (String json : List.of("12", "\"x\"", "true")) {
+                for (Object bean : List.of(new SmallBean(), new BigBean())) {
+                    assertSame(bean, mapper.readerForUpdating(bean).readValue(json), json);
+                }
+            }
+            MergeHolder holder = mapper.readValue("""
+                    {"big":12}
+                    """, MergeHolder.class);
+            assertNotNull(holder.big);
         }
     }
 
@@ -190,7 +212,7 @@ public class AliasErrorPathTest extends AfterburnerTestBase
             }
         };
         final ObjectMapper afterburner = _mapperBuilder().addHandler(handler).build();
-        final ObjectMapper stock = JsonMapper.builder().addHandler(handler).build();
+        final ObjectMapper stock = newVanillaJSONMapper().rebuild().addHandler(handler).build();
         for (Class<?> type : List.of(SmallBean.class, BigBean.class)) {
             for (String json : List.of("""
                     {"zzz":1}
@@ -209,7 +231,7 @@ public class AliasErrorPathTest extends AfterburnerTestBase
     // Parser failures are not failures of a property: no path, same as stock
     @Test
     public void parserFailures() throws Exception {
-        final ObjectMapper stock = JsonMapper.builder().build();
+        final ObjectMapper stock = newVanillaJSONMapper();
         for (Class<?> type : List.of(SmallBean.class, BigBean.class)) {
             for (String json : List.of(
                     "{ bad",
@@ -251,12 +273,6 @@ public class AliasErrorPathTest extends AfterburnerTestBase
     private static boolean _hasFrame(Throwable e, String method) {
         return Arrays.stream(e.getStackTrace()).anyMatch(
                 f -> f.getClassName().contains("SuperSonic") && f.getMethodName().equals(method));
-    }
-
-    private static void _verifyFrames(Throwable e, String... methods) {
-        for (String method : methods) {
-            assertTrue(_hasFrame(e, method), "should go through " + method + "()");
-        }
     }
 
     private void _verifyPath(Class<?> type, String json, String expName) {

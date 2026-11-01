@@ -179,43 +179,75 @@ public final class SuperSonicUnrolledDeserializer
         if (_injectables != null) {
             injectValues(ctxt, bean);
         }
+        // Each property with a call site of its own, for type profiles; parser calls
+        // outside of `try`, as stock has them
         switch (_propCount) {
         default:
         //case 6:
             if (!p.nextName(_name1)) {
                 break;
             }
-            _readAndSet(p, ctxt, bean, _prop1);
+            p.nextToken();
+            try {
+                _prop1.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop1.getName(), ctxt);
+            }
             // fall through
         case 5:
             if (!p.nextName(_name2)) {
                 break;
             }
-            _readAndSet(p, ctxt, bean, _prop2);
+            p.nextToken();
+            try {
+                _prop2.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop2.getName(), ctxt);
+            }
             // fall through
         case 4:
             if (!p.nextName(_name3)) {
                 break;
             }
-            _readAndSet(p, ctxt, bean, _prop3);
+            p.nextToken();
+            try {
+                _prop3.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop3.getName(), ctxt);
+            }
             // fall through
         case 3:
             if (!p.nextName(_name4)) {
                 break;
             }
-            _readAndSet(p, ctxt, bean, _prop4);
+            p.nextToken();
+            try {
+                _prop4.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop4.getName(), ctxt);
+            }
             // fall through
         case 2:
             if (!p.nextName(_name5)) {
                 break;
             }
-            _readAndSet(p, ctxt, bean, _prop5);
+            p.nextToken();
+            try {
+                _prop5.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop5.getName(), ctxt);
+            }
             // fall through
         case 1:
             if (!p.nextName(_name6)) {
                 break;
             }
-            _readAndSet(p, ctxt, bean, _prop6);
+            p.nextToken();
+            try {
+                _prop6.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop6.getName(), ctxt);
+            }
             // also, need to ensure we get closing END_OBJECT...
             if (p.nextToken() == JsonToken.END_OBJECT) {
                 return bean;
@@ -261,7 +293,12 @@ public final class SuperSonicUnrolledDeserializer
             // no, something funky, use base impl for special cases
             return super.deserialize(p,  ctxt, bean);
         }
-        _readAndSet(p, ctxt, bean, prop);
+        p.nextToken();
+        try {
+            prop.deserializeAndSet(p, ctxt, bean);
+        } catch (Exception e) {
+            throw wrapAndThrow(e, bean, prop.getName(), ctxt);
+        }
         // then rest of properties. NOTE! Off-by-one, to skip one we did above
         switch (_propCount) {
         default:
@@ -269,31 +306,56 @@ public final class SuperSonicUnrolledDeserializer
             if (!p.nextName(_name2)) {
                 break;
             }
-            _readAndSet(p, ctxt, bean, _prop2);
+            p.nextToken();
+            try {
+                _prop2.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop2.getName(), ctxt);
+            }
             // fall through
         case 5:
             if (!p.nextName(_name3)) {
                 break;
             }
-            _readAndSet(p, ctxt, bean, _prop3);
+            p.nextToken();
+            try {
+                _prop3.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop3.getName(), ctxt);
+            }
             // fall through
         case 4:
             if (!p.nextName(_name4)) {
                 break;
             }
-            _readAndSet(p, ctxt, bean, _prop4);
+            p.nextToken();
+            try {
+                _prop4.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop4.getName(), ctxt);
+            }
             // fall through
         case 3:
             if (!p.nextName(_name5)) {
                 break;
             }
-            _readAndSet(p, ctxt, bean, _prop5);
+            p.nextToken();
+            try {
+                _prop5.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop5.getName(), ctxt);
+            }
             // fall through
         case 2:
             if (!p.nextName(_name6)) {
                 break;
             }
-            _readAndSet(p, ctxt, bean, _prop6);
+            p.nextToken();
+            try {
+                _prop6.deserializeAndSet(p, ctxt, bean);
+            } catch (Exception e) {
+                throw wrapAndThrow(e, bean, _prop6.getName(), ctxt);
+            }
             // fall through
         case 1:
             // NOTE! skip "last" one to compensate for OBO

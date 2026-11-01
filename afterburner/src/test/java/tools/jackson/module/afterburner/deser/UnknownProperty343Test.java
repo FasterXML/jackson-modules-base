@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
 
@@ -35,21 +36,50 @@ public class UnknownProperty343Test extends AfterburnerTestBase
         @JsonProperty("h") public String h;
     }
 
+    // No views: Afterburner's own ordered fast paths handle this one
+    public static class Vanilla343 {
+        public String a, b, c, d, e, f, g, h;
+    }
+
+    private final static String JSON = "{"
+            + "\"a\":\"a\",\"b\":\"b\",\"c\":\"c\",\"d\":\"d\","
+            + "\"e\":\"e\",\"f\":\"f\",\"g\":\"g\",\"h\":\"h\","
+            + "\"i\":\"i\"}";
+
     private final ObjectMapper MAPPER = afterburnerMapperBuilder()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .build();
+
+    // Afterburner's optimized deserializers need "vanilla" processing
+    private final ObjectMapper VANILLA_MAPPER = afterburnerMapperBuilder()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .enable(MapperFeature.DEFAULT_VIEW_INCLUSION)
             .build();
 
     @Test
     public void testTrailingUnknownProperty() throws Exception
     {
-        String json = "{"
-                + "\"a\":\"a\",\"b\":\"b\",\"c\":\"c\",\"d\":\"d\","
-                + "\"e\":\"e\",\"f\":\"f\",\"g\":\"g\",\"h\":\"h\","
-                + "\"i\":\"i\"}";
         POJO343 result = MAPPER.readerWithView(DefaultView.class)
                 .forType(POJO343.class)
-                .readValue(json);
+                .readValue(JSON);
         assertEquals("a", result.a);
         assertEquals("h", result.h);
+    }
+
+    @Test
+    public void testTrailingUnknownPropertyVanilla() throws Exception
+    {
+        Vanilla343 result = VANILLA_MAPPER.readValue(JSON, Vanilla343.class);
+        assertEquals("a", result.a);
+        assertEquals("h", result.h);
+    }
+
+    @Test
+    public void testTrailingUnknownPropertyVanillaForUpdate() throws Exception
+    {
+        Vanilla343 bean = new Vanilla343();
+        assertSame(bean, VANILLA_MAPPER.readerForUpdating(bean).readValue(JSON));
+        assertEquals("a", bean.a);
+        assertEquals("h", bean.h);
     }
 }
