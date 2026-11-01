@@ -179,65 +179,47 @@ public final class SuperSonicUnrolledDeserializer
         if (_injectables != null) {
             injectValues(ctxt, bean);
         }
-        SettableBeanProperty prop = null;
-
-        try {
-            switch (_propCount) {
-            default:
-            //case 6:
-                prop = _prop1;
-                if (!p.nextName(_name1)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 5:
-                prop = _prop2;
-                if (!p.nextName(_name2)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 4:
-                prop = _prop3;
-                if (!p.nextName(_name3)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 3:
-                prop = _prop4;
-                if (!p.nextName(_name4)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 2:
-                prop = _prop5;
-                if (!p.nextName(_name5)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 1:
-                prop = _prop6;
-                if (!p.nextName(_name6)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // also, need to ensure we get closing END_OBJECT...
-                if (p.nextToken() == JsonToken.END_OBJECT) {
-                    return bean;
-                }
+        switch (_propCount) {
+        default:
+        //case 6:
+            if (!p.nextName(_name1)) {
+                break;
             }
-        } catch (Exception e) {
-            wrapAndThrow(e, bean, prop.getName(), ctxt);
+            _readAndSet(p, ctxt, bean, _prop1);
+            // fall through
+        case 5:
+            if (!p.nextName(_name2)) {
+                break;
+            }
+            _readAndSet(p, ctxt, bean, _prop2);
+            // fall through
+        case 4:
+            if (!p.nextName(_name3)) {
+                break;
+            }
+            _readAndSet(p, ctxt, bean, _prop3);
+            // fall through
+        case 3:
+            if (!p.nextName(_name4)) {
+                break;
+            }
+            _readAndSet(p, ctxt, bean, _prop4);
+            // fall through
+        case 2:
+            if (!p.nextName(_name5)) {
+                break;
+            }
+            _readAndSet(p, ctxt, bean, _prop5);
+            // fall through
+        case 1:
+            if (!p.nextName(_name6)) {
+                break;
+            }
+            _readAndSet(p, ctxt, bean, _prop6);
+            // also, need to ensure we get closing END_OBJECT...
+            if (p.nextToken() == JsonToken.END_OBJECT) {
+                return bean;
+            }
         }
         // may have encountered pre-mature END_OBJECT too
         if (p.currentToken() == JsonToken.END_OBJECT) {
@@ -279,65 +261,46 @@ public final class SuperSonicUnrolledDeserializer
             // no, something funky, use base impl for special cases
             return super.deserialize(p,  ctxt, bean);
         }
-        p.nextToken();
-        try {
-            prop.deserializeAndSet(p, ctxt, bean);
-        } catch (Exception e) {
-            wrapAndThrow(e, bean, prop.getName(), ctxt);
-        }
+        _readAndSet(p, ctxt, bean, prop);
         // then rest of properties. NOTE! Off-by-one, to skip one we did above
-        try {
-            switch (_propCount) {
-            default:
-            //case 6:
-                prop = _prop2;
-                if (!p.nextName(_name2)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 5:
-                prop = _prop3;
-                if (!p.nextName(_name3)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 4:
-                prop = _prop4;
-                if (!p.nextName(_name4)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 3:
-                prop = _prop5;
-                if (!p.nextName(_name5)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 2:
-                prop = _prop6;
-                if (!p.nextName(_name6)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 1:
-                // NOTE! skip "last" one to compensate for OBO
-                // But we still need to ensure we get closing END_OBJECT...
-                if (p.nextToken() == JsonToken.END_OBJECT) {
-                    return bean;
-                }
+        switch (_propCount) {
+        default:
+        //case 6:
+            if (!p.nextName(_name2)) {
+                break;
             }
-        } catch (Exception e) {
-            wrapAndThrow(e, bean, prop.getName(), ctxt);
+            _readAndSet(p, ctxt, bean, _prop2);
+            // fall through
+        case 5:
+            if (!p.nextName(_name3)) {
+                break;
+            }
+            _readAndSet(p, ctxt, bean, _prop3);
+            // fall through
+        case 4:
+            if (!p.nextName(_name4)) {
+                break;
+            }
+            _readAndSet(p, ctxt, bean, _prop4);
+            // fall through
+        case 3:
+            if (!p.nextName(_name5)) {
+                break;
+            }
+            _readAndSet(p, ctxt, bean, _prop5);
+            // fall through
+        case 2:
+            if (!p.nextName(_name6)) {
+                break;
+            }
+            _readAndSet(p, ctxt, bean, _prop6);
+            // fall through
+        case 1:
+            // NOTE! skip "last" one to compensate for OBO
+            // But we still need to ensure we get closing END_OBJECT...
+            if (p.nextToken() == JsonToken.END_OBJECT) {
+                return bean;
+            }
         }
         // may have encountered pre-mature END_OBJECT too
         if (p.currentToken() == JsonToken.END_OBJECT) {
@@ -401,66 +364,47 @@ public final class SuperSonicUnrolledDeserializer
             return _deserializeDisordered(p, ctxt, bean);
         }
         // and deserialize
-        p.nextToken();
-        try {
-            prop.deserializeAndSet(p, ctxt, bean);
-        } catch (Exception e) {
-            wrapAndThrow(e, bean, prop.getName(), ctxt);
-        }
+        _readAndSet(p, ctxt, bean, prop);
 
         // then rest of properties. NOTE! Off-by-one, to skip one we did above
-        try {
-            switch (_propCount) {
-            default:
-            //case 6:
-                prop = _prop2;
-                if (!p.nextName(_name2)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 5:
-                prop = _prop3;
-                if (!p.nextName(_name3)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 4:
-                prop = _prop4;
-                if (!p.nextName(_name4)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 3:
-                prop = _prop5;
-                if (!p.nextName(_name5)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 2:
-                prop = _prop6;
-                if (!p.nextName(_name6)) {
-                    break;
-                }
-                p.nextToken();
-                prop.deserializeAndSet(p, ctxt, bean);
-                // fall through
-            case 1:
-                // NOTE! skip "last" one to compensate for OBO
-                // But we still need to ensure we get closing END_OBJECT...
-                if (p.nextToken() == JsonToken.END_OBJECT) {
-                    return bean;
-                }
+        switch (_propCount) {
+        default:
+        //case 6:
+            if (!p.nextName(_name2)) {
+                break;
             }
-        } catch (Exception e) {
-            wrapAndThrow(e, bean, prop.getName(), ctxt);
+            _readAndSet(p, ctxt, bean, _prop2);
+            // fall through
+        case 5:
+            if (!p.nextName(_name3)) {
+                break;
+            }
+            _readAndSet(p, ctxt, bean, _prop3);
+            // fall through
+        case 4:
+            if (!p.nextName(_name4)) {
+                break;
+            }
+            _readAndSet(p, ctxt, bean, _prop4);
+            // fall through
+        case 3:
+            if (!p.nextName(_name5)) {
+                break;
+            }
+            _readAndSet(p, ctxt, bean, _prop5);
+            // fall through
+        case 2:
+            if (!p.nextName(_name6)) {
+                break;
+            }
+            _readAndSet(p, ctxt, bean, _prop6);
+            // fall through
+        case 1:
+            // NOTE! skip "last" one to compensate for OBO
+            // But we still need to ensure we get closing END_OBJECT...
+            if (p.nextToken() == JsonToken.END_OBJECT) {
+                return bean;
+            }
         }
         // may have encountered pre-mature END_OBJECT too
         if (p.currentToken() == JsonToken.END_OBJECT) {

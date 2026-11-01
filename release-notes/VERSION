@@ -45,7 +45,10 @@ Active maintainers:
 #362: Bump `byte-buddy` dependency from 1.17.8 to 1.18.15
 #368: (afterburner, blackbird) Report property name as found in input (alias or
   different case), not canonical name, in deserialization error paths; (afterburner)
-  no more duplicate path segment for failures with out-of-order properties
+  no more duplicate path segment for failures with out-of-order properties.
+  Afterburner now matches stock deserializers in two more ways: parser failures have
+  no property in their path, and non-Jackson exceptions from handling of unknown
+  properties (like ones `DeserializationProblemHandler` throws) are not wrapped
  (fix by @cowtowncoder, w/ Claude code)
 
 3.2.5 (not yet released)
