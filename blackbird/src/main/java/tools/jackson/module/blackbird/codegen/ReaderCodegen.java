@@ -97,7 +97,7 @@ public final class ReaderCodegen
      * only), which name the component locals in the debug table.
      * inputNames tells whether a matched name can differ from the
      * property's own name (aliases, case-insensitive matching), which
-     * builder-mode error messages then need.
+     * error paths then need.
      * vanillaLoop (POJO mode only) tells whether stock reads the bean with
      * its vanilla loop, which ends quietly on an odd token after an unknown
      * name.

@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.annotation.JsonDeserialize;
@@ -180,6 +181,21 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
         public List<Item> items;
     }
 
+    // A POJO property with an alias; a negative value fails in the setter.
+    public static class AliasedPojo {
+        int v;
+
+        @JsonAlias("alt")
+        public void setV(int v) {
+            if (v < 0) {
+                throw new IllegalArgumentException("negative");
+            }
+            this.v = v;
+        }
+    }
+
+    public record AliasedRecord(@JsonAlias("alt") int v) { }
+
     private static final ObjectMapper VANILLA = newVanillaJSONMapper();
     private static final ObjectMapper MODULE = newObjectMapper();
 
@@ -298,8 +314,49 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
                 r -> r.ref().get().name + "/" + r.items().get(0).name + "/" + r.tag());
     }
 
+    // As builder properties below: POJO properties and record components are
+    // reported under the name in the input, with default settings and with
+    // those for stock's vanilla loop.
+    @Test
+    public void testPojoAndRecordFailureReportsInputName() throws Exception {
+        _assertFailureNames(VANILLA, MODULE);
+        _assertFailureNames(
+                JsonMapper.builder().enable(MapperFeature.DEFAULT_VIEW_INCLUSION).build(),
+                blackbirdMapperBuilder().enable(MapperFeature.DEFAULT_VIEW_INCLUSION).build());
+    }
+
+    @Test
+    public void testFailureUnderCaseInsensitiveMapper() throws Exception {
+        ObjectMapper vanilla = JsonMapper.builder()
+                .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES).build();
+        ObjectMapper module = blackbirdMapperBuilder()
+                .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES).build();
+        _assertSameFailure(vanilla, module, "{\"V\":-1}", AliasedPojo.class, "V");
+        _assertSameFailure(vanilla, module, "{\"V\":\"x\"}", AliasedRecord.class, "V");
+    }
+
+    private void _assertFailureNames(ObjectMapper vanilla, ObjectMapper module) throws Exception {
+        assertGeneratedReader(module, AliasedPojo.class);
+        assertGeneratedReader(module, AliasedRecord.class);
+        // Scalar read, then setter (the store handler)
+        _assertSameFailure(vanilla, module, "{\"alt\":\"x\"}", AliasedPojo.class, "alt");
+        _assertSameFailure(vanilla, module, "{\"alt\":-1}", AliasedPojo.class, "alt");
+        _assertSameFailure(vanilla, module, "{\"v\":-1}", AliasedPojo.class, "v");
+        _assertSameFailure(vanilla, module, "{\"alt\":\"x\"}", AliasedRecord.class, "alt");
+        _assertSameFailure(vanilla, module, "{\"v\":\"x\"}", AliasedRecord.class, "v");
+    }
+
+    private void _assertSameFailure(ObjectMapper vanilla, ObjectMapper module,
+            String doc, Class<?> type, String expName) {
+        Exception expected = assertThrows(Exception.class, () -> vanilla.readValue(doc, type));
+        Exception actual = assertThrows(Exception.class, () -> module.readValue(doc, type));
+        assertEquals(expected.getClass(), actual.getClass(), doc);
+        assertEquals(expected.getMessage(), actual.getMessage(), doc);
+        assertTrue(actual.getMessage().contains("[\"" + expName + "\"]"), actual.getMessage());
+    }
+
     // A failing builder property is reported under the name in the input,
-    // as stock's general builder loop does: here the alias.
+    // as stock does: here the alias.
     @Test
     public void testBuilderFailureReportsInputName() throws Exception {
         assertGeneratedReader(MODULE, Aliased.class);

@@ -134,10 +134,11 @@ public final class SuperSonicBeanDeserializer
                         }
                     }
                 }
-                return _deserializeDisordered(p, ctxt, bean);
             } catch (Exception e) {
                 wrapAndThrow(e, bean, prop.getName(), ctxt);
             }
+            // Outside of `try`: reports its own failures, must not get wrapped again
+            return _deserializeDisordered(p, ctxt, bean);
         } while (false);
 
         for (int i = 4, len = _orderedProperties.length; i < len; ++i) {
@@ -187,16 +188,17 @@ public final class SuperSonicBeanDeserializer
         }
         // We also we have at least 6 properties, so roll out first few
         SettableBeanProperty prop = _orderedProperties[0];
+        // Outside of `try`: reports its own failures, must not get wrapped again
+        if (p.isExpectedStartObjectToken()) {
+            if (!p.nextName(_orderedPropertyNames[0])) {
+                return _deserializeDisordered(p, ctxt, bean);
+            }
+        } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
+                || !prop.getName().equals(p.currentName())) {
+            return _deserializeDisordered(p, ctxt, bean);
+        }
         do {
             try {
-                if (p.isExpectedStartObjectToken()) {
-                    if (!p.nextName(_orderedPropertyNames[0])) {
-                        return _deserializeDisordered(p, ctxt, bean);
-                    }
-                } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
-                        || !prop.getName().equals(p.currentName())) {
-                    return _deserializeDisordered(p, ctxt, bean);
-                }
                 p.nextToken();
                 prop.deserializeAndSet(p, ctxt, bean);
                 if (p.nextName(_orderedPropertyNames[1])) {
@@ -215,10 +217,11 @@ public final class SuperSonicBeanDeserializer
                         }
                     }
                 }
-                return _deserializeDisordered(p, ctxt, bean);
             } catch (Exception e) {
                 wrapAndThrow(e, bean, prop.getName(), ctxt);
             }
+            // Outside of `try`: reports its own failures, must not get wrapped again
+            return _deserializeDisordered(p, ctxt, bean);
         } while (false);
 
         // then rest of properties
@@ -291,16 +294,17 @@ public final class SuperSonicBeanDeserializer
         }
         // We also we have at least 6 properties, so roll out first few
         SettableBeanProperty prop = _orderedProperties[0];
+        // Outside of `try`: reports its own failures, must not get wrapped again
+        if (p.isExpectedStartObjectToken()) {
+            if (!p.nextName(_orderedPropertyNames[0])) {
+                return _deserializeDisordered(p, ctxt, bean);
+            }
+        } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
+                || !prop.getName().equals(p.currentName())) {
+            return _deserializeDisordered(p, ctxt, bean);
+        }
         do {
             try {
-                if (p.isExpectedStartObjectToken()) {
-                    if (!p.nextName(_orderedPropertyNames[0])) {
-                        return _deserializeDisordered(p, ctxt, bean);
-                    }
-                } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
-                        || !prop.getName().equals(p.currentName())) {
-                    return _deserializeDisordered(p, ctxt, bean);
-                }
                 p.nextToken();
                 prop.deserializeAndSet(p, ctxt, bean);
                 if (p.nextName(_orderedPropertyNames[1])) {
@@ -319,10 +323,11 @@ public final class SuperSonicBeanDeserializer
                         }
                     }
                 }
-                return _deserializeDisordered(p, ctxt, bean);
             } catch (Exception e) {
                 wrapAndThrow(e, bean, prop.getName(), ctxt);
             }
+            // Outside of `try`: reports its own failures, must not get wrapped again
+            return _deserializeDisordered(p, ctxt, bean);
         } while (false);
 
         // then rest of properties

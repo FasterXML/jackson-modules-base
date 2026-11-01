@@ -133,12 +133,14 @@ public abstract class SuperSonicBDBase
     {
         for (int ix = p.currentNameMatch(_propNameMatcher); ; ix = p.nextNameMatch(_propNameMatcher)) {
             if (ix >= 0) {
+                // Report name as found in input (may be alias), as stock does
+                final String inputName = p.currentName();
                 p.nextToken();
                 SettableBeanProperty prop = _propsByIndex[ix];
                 try {
                     prop.deserializeAndSet(p, ctxt, bean);
                 } catch (Exception e) {
-                    wrapAndThrow(e, bean, prop.getName(), ctxt);
+                    wrapAndThrow(e, bean, inputName, ctxt);
                 }
                 continue;
             }
