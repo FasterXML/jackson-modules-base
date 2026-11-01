@@ -13,14 +13,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 // [modules-base#343]: SuperSonicBeanDeserializer.deserializeFromObject threw on a
 // trailing unknown property after all known ordered properties were consumed, even
-// with FAIL_ON_UNKNOWN_PROPERTIES disabled.
+// with FAIL_ON_UNKNOWN_PROPERTIES disabled. That override no longer exists: this
+// stays as a regression test for the same input.
 public class UnknownProperty343Test extends AfterburnerTestBase
 {
     // Marker class used purely to force the bean deserializer to operate in
     // non-vanilla mode (view processing active), which routes through
-    // BeanDeserializer.deserializeFromObject rather than the vanilla fast path —
-    // and thus through SuperSonicBeanDeserializer.deserializeFromObject, which is
-    // where issue #343 lives.
+    // BeanDeserializer.deserializeFromObject rather than the vanilla fast path.
     static class DefaultView { }
 
     // 8 properties -> SuperSonicBeanDeserializer (threshold is > 6)

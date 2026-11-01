@@ -125,7 +125,6 @@ public abstract class SuperSonicBDBase
 
 //    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
 //    public final Object deserialize(JsonParser p, DeserializationContext ctxt, Object bean) throws IOException;;
-//    public final Object deserializeFromObject(JsonParser p, DeserializationContext ctxt) throws IOException;
 
     /**
      * Reads and sets the value of a property matched by expected order, with parser

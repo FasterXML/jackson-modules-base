@@ -12,7 +12,6 @@ import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.*;
-import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.deser.DeserializationProblemHandler;
 import tools.jackson.databind.exc.InvalidFormatException;
 import tools.jackson.databind.exc.MismatchedInputException;
@@ -44,34 +43,6 @@ public class AliasErrorPathTest extends AfterburnerTestBase
     public static class PlainBigBean {
         public int a, b, c, d, e, f, g;
     }
-
-    // Databind only calls `deserializeFromObject()` of a vanilla deserializer through
-    // this kind of direct call: from START_OBJECT, or from first property name
-    public static class FromObjectDeserializer extends ValueDeserializer<Object> {
-        protected boolean advance() { return false; }
-
-        @Override
-        public Object deserialize(JsonParser p, DeserializationContext ctxt) {
-            ValueDeserializer<Object> deser = ctxt.findRootValueDeserializer(
-                    ctxt.constructType(BigBean.class));
-            assertInstanceOf(SuperSonicBeanDeserializer.class, deser);
-            if (advance()) {
-                p.nextToken();
-            }
-            return ((SuperSonicBeanDeserializer) deser).deserializeFromObject(p, ctxt);
-        }
-    }
-
-    public static class FromNameDeserializer extends FromObjectDeserializer {
-        @Override
-        protected boolean advance() { return true; }
-    }
-
-    @JsonDeserialize(using = FromObjectDeserializer.class)
-    public static class FromObjectHolder { }
-
-    @JsonDeserialize(using = FromNameDeserializer.class)
-    public static class FromNameHolder { }
 
     // Afterburner's optimized deserializers need "vanilla" processing
     private final ObjectMapper MAPPER = _mapperBuilder().build();
@@ -149,26 +120,6 @@ public class AliasErrorPathTest extends AfterburnerTestBase
                     () -> MAPPER.readerForUpdating(new BigBean()).readValue(p));
             _verifyException(e, "a1");
             _verifyFrames(e, "_deserializeDisordered");
-        }
-    }
-
-    @Test
-    public void orderedFromObject() throws Exception {
-        for (Class<?> type : List.of(FromObjectHolder.class, FromNameHolder.class)) {
-            InvalidFormatException e = assertThrows(InvalidFormatException.class,
-                    () -> MAPPER.readValue("""
-                            {"a1":"bad"}
-                            """, type));
-            _verifyException(e, "a1");
-            _verifyFrames(e, "deserializeFromObject", "_deserializeDisordered");
-
-            // Matched by the fast path
-            e = assertThrows(InvalidFormatException.class,
-                    () -> MAPPER.readValue("""
-                            {"a":"bad"}
-                            """, type));
-            _verifyException(e, "a");
-            _verifyFrames(e, "deserializeFromObject");
         }
     }
 
