@@ -151,8 +151,15 @@ public abstract class SuperSonicBDBase
             if (ix != PropertyNameMatcher.MATCH_UNKNOWN_NAME) {
                 return _handleUnexpectedWithin(p, ctxt, bean);
             }
+            final String unknownName = p.currentName();
             p.nextToken();
-            handleUnknownVanilla(p, ctxt, bean, p.currentName());
+            try {
+                handleUnknownVanilla(p, ctxt, bean, unknownName);
+            } catch (JacksonException e) { // has its path already
+                throw e;
+            } catch (Exception e) { // like one from `DeserializationProblemHandler`
+                throw wrapAndThrow(e, bean, unknownName, ctxt);
+            }
         }
     }
 }

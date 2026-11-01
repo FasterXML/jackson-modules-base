@@ -286,12 +286,13 @@ public final class SuperSonicUnrolledDeserializer
         // First: verify that first name is expected
         if (p.isExpectedStartObjectToken()) {
             if (!p.nextName(_orderedPropertyNames[0])) {
-                return super.deserialize(p,  ctxt, bean);
+                return _deserializeDisordered(p, ctxt, bean);
             }
-        } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
-                || !prop.getName().equals(p.currentName())) {
-            // no, something funky, use base impl for special cases
-            return super.deserialize(p,  ctxt, bean);
+        } else if (!p.hasToken(JsonToken.PROPERTY_NAME)) {
+            // not an Object at all: stock leaves the bean as is
+            return super.deserialize(p, ctxt, bean);
+        } else if (!prop.getName().equals(p.currentName())) {
+            return _deserializeDisordered(p, ctxt, bean);
         }
         p.nextToken();
         try {

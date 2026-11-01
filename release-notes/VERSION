@@ -46,9 +46,10 @@ Active maintainers:
 #368: (afterburner, blackbird) Report property name as found in input (alias or
   different case), not canonical name, in deserialization error paths; (afterburner)
   no more duplicate path segment for failures with out-of-order properties.
-  Afterburner now matches stock deserializers in two more ways: parser failures have
-  no property in their path, and non-Jackson exceptions from handling of unknown
-  properties (like ones `DeserializationProblemHandler` throws) are not wrapped.
+  Afterburner parser failures have no property in their path, as with stock
+  deserializers, and non-Jackson exceptions from handling of unknown properties (like
+  ones `DeserializationProblemHandler` throws) get wrapped on all paths, with that
+  property as their path, unless `WRAP_EXCEPTIONS` is disabled.
   (blackbird) Reports unexpected token within Object, also for records and after
   unknown property, following [databind#6357]
  (fix by @cowtowncoder, w/ Claude code)

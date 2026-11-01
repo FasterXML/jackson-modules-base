@@ -131,10 +131,12 @@ public class AliasErrorPathTest extends AfterburnerTestBase
         for (Class<?> type : BEANS) {
             _verifyPath(mapper.readerFor(type), "{'zzz':1}", "zzz");
             _verifyPath(mapper.readerFor(type), "{'a':1,'zzz':1}", "zzz");
+            _verifyPath(mapper.readerForUpdating(new SmallBean()), "{'zzz':1}", "zzz");
+            _verifyPath(mapper.readerForUpdating(new BigBean()), "{'zzz':1}", "zzz");
         }
     }
 
-    // Exception that a problem handler throws is not wrapped, same as stock
+    // Exception that a problem handler throws gets wrapped, with property in path
     @Test
     public void unknownPropertyHandlerFailure() throws Exception {
         final DeserializationProblemHandler handler = new DeserializationProblemHandler() {
@@ -144,16 +146,23 @@ public class AliasErrorPathTest extends AfterburnerTestBase
                 throw new IllegalStateException("handler failure");
             }
         };
-        final ObjectMapper afterburner = _mapperBuilder().addHandler(handler).build();
-        final ObjectMapper stock = newVanillaJSONMapper().rebuild().addHandler(handler).build();
-        final String json = a2q("{'a':1,'zzz':1}");
-        for (Class<?> type : BEANS) {
-            assertThrows(IllegalStateException.class,
-                    () -> stock.readerFor(type).readValue(json));
-            assertTrue(_hasFrame(assertThrows(IllegalStateException.class,
-                    () -> afterburner.readerFor(type).readValue(json)),
-                    "_deserializeDisordered"));
+        final ObjectMapper mapper = _mapperBuilder().addHandler(handler).build();
+        for (String json : List.of("{'zzz':1}", "{'a':1,'zzz':1}", "{'a':1,'b':1,'zzz':1}")) {
+            _verifyWrapped(mapper.readerFor(SmallBean.class), json);
+            _verifyWrapped(mapper.readerForUpdating(new SmallBean()), json);
+            _verifyWrapped(mapper.readerFor(BigBean.class), json);
+            _verifyWrapped(mapper.readerForUpdating(new BigBean()), json);
         }
+        // Past the rolled out first properties of SuperSonicBeanDeserializer, and past all
+        for (String json : List.of("{'a':1,'b':1,'c':1,'d':1,'e':1,'zzz':1}",
+                "{'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1,'zzz':1}")) {
+            _verifyWrapped(mapper.readerFor(BigBean.class), json);
+            _verifyWrapped(mapper.readerForUpdating(new BigBean()), json);
+        }
+        // Unless wrapping is disabled
+        assertThrows(IllegalStateException.class, () -> mapper.readerFor(BigBean.class)
+                .without(DeserializationFeature.WRAP_EXCEPTIONS)
+                .readValue(a2q("{'zzz':1}")));
     }
 
     // Parser failures are not failures of a property: no path, same as stock
@@ -174,6 +183,13 @@ public class AliasErrorPathTest extends AfterburnerTestBase
     private static JsonMapper.Builder _mapperBuilder() {
         return afterburnerMapperBuilder()
                 .enable(MapperFeature.DEFAULT_VIEW_INCLUSION);
+    }
+
+    private static void _verifyWrapped(ObjectReader r, String json) {
+        DatabindException e = assertThrows(DatabindException.class,
+                () -> r.readValue(a2q(json)), json);
+        assertInstanceOf(IllegalStateException.class, e.getCause(), json);
+        assertEquals(List.of("zzz"), _path(e), json);
     }
 
     private static void _verifyPath(ObjectReader r, String json, String expName) {
