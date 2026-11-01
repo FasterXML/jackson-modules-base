@@ -60,7 +60,7 @@ jobs:
           fi
           OLD_JDKS="-Dblackbird.test.oldJdks=${JAVA_HOME_17_X64},${JAVA_HOME_21_X64}"
         fi
-        ./mvnw -B -ff -ntp clean verify ${OLD_JDKS}
+        ./mvnw -B -ff -ntp -U clean verify ${OLD_JDKS}
     - name: Extract project Maven version
       id: projectVersion
       run: echo "version=$(./mvnw org.apache.maven.plugins:maven-help-plugin:3.5.1:evaluate -DforceStdout -Dexpression=project.version -q)" >> $GITHUB_OUTPUT
