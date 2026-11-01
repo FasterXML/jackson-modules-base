@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
@@ -20,6 +21,7 @@ import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectReader;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.deser.DeserializationProblemHandler;
@@ -196,6 +198,40 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
 
     public record AliasedRecord(@JsonAlias("alt") int v) { }
 
+    public static class AliasedChild {
+        public int n;
+    }
+
+    // Aliased properties with structured values: the input name gets read at
+    // START_OBJECT or START_ARRAY. Fields and setters, child codecs and stock.
+    public static class AliasedStructured {
+        @JsonAlias("c1") public AliasedChild child;
+        @JsonAlias("l1") public List<Integer> list;
+        @JsonAlias("f1") public int count;
+
+        @JsonAlias("t1")
+        public void setThrowing(AliasedChild c) {
+            throw new IllegalArgumentException("setter failure");
+        }
+    }
+
+    public record AliasedStructuredRecord(@JsonAlias("c1") AliasedChild child,
+            @JsonAlias("l1") List<Integer> list) { }
+
+    public static class ViewA { }
+    public static class ViewB { }
+
+    // Under an active view, with properties that the view hides
+    public static class AliasedViews {
+        @JsonView(ViewA.class) @JsonAlias("a1") public int a;
+        @JsonView(ViewB.class) @JsonAlias("b1") public int b;
+        @JsonView(ViewA.class) @JsonAlias("c1") public AliasedChild c;
+    }
+
+    public record AliasedViewsRecord(@JsonView(ViewA.class) @JsonAlias("a1") int a,
+            @JsonView(ViewB.class) @JsonAlias("b1") int b,
+            @JsonView(ViewA.class) @JsonAlias("c1") AliasedChild c) { }
+
     private static final ObjectMapper VANILLA = newVanillaJSONMapper();
     private static final ObjectMapper MODULE = newObjectMapper();
 
@@ -346,10 +382,51 @@ public class BBCodecStockChecksTest extends BlackbirdTestBase
         _assertSameFailure(vanilla, module, "{\"v\":\"x\"}", AliasedRecord.class, "v");
     }
 
+    @Test
+    public void testFailureNameWithStructuredValue() throws Exception {
+        assertGeneratedReader(MODULE, AliasedStructured.class);
+        assertGeneratedReader(MODULE, AliasedStructuredRecord.class);
+        for (Class<?> type : List.of(AliasedStructured.class, AliasedStructuredRecord.class)) {
+            // Failures at the structured value itself: read at the child, stock read
+            _assertSameFailure(VANILLA, MODULE, "{\"c1\":[]}", type, "c1");
+            _assertSameFailure(VANILLA, MODULE, "{\"l1\":{}}", type, "l1");
+            // Failures within: first name stays, and later ones do not replace it
+            _assertSameFailure(VANILLA, MODULE, "{\"c1\":{\"n\":\"x\"}}", type, "c1");
+            _assertSameFailure(VANILLA, MODULE, "{\"l1\":[\"x\"]}", type, "l1");
+            _assertSameFailure(VANILLA, MODULE, "{\"c1\":{\"n\":1},\"l1\":{}}", type, "l1");
+            // Canonical name
+            _assertSameFailure(VANILLA, MODULE, "{\"child\":[]}", type, "child");
+        }
+        // Field, scalar value
+        _assertSameFailure(VANILLA, MODULE, "{\"f1\":\"x\"}", AliasedStructured.class, "f1");
+        // Setter fails after child has been read: name was read before that
+        _assertSameFailure(VANILLA, MODULE, "{\"t1\":{\"n\":1}}", AliasedStructured.class, "t1");
+    }
+
+    @Test
+    public void testFailureNameUnderActiveView() throws Exception {
+        assertGeneratedReader(MODULE, AliasedViews.class);
+        assertGeneratedReader(MODULE, AliasedViewsRecord.class);
+        for (Class<?> type : List.of(AliasedViews.class, AliasedViewsRecord.class)) {
+            final ObjectReader vanilla = VANILLA.readerFor(type).withView(ViewA.class);
+            final ObjectReader module = MODULE.readerFor(type).withView(ViewA.class);
+            _assertSameFailure(vanilla, module, "{\"a1\":\"x\"}", "a1");
+            _assertSameFailure(vanilla, module, "{\"c1\":[]}", "c1");
+            // Past a property hidden by the view, with invalid value that gets skipped
+            _assertSameFailure(vanilla, module, "{\"b1\":\"x\",\"a1\":\"y\"}", "a1");
+            _assertSameFailure(vanilla, module, "{\"b1\":{\"z\":1},\"c1\":[]}", "c1");
+        }
+    }
+
     private void _assertSameFailure(ObjectMapper vanilla, ObjectMapper module,
             String doc, Class<?> type, String expName) {
-        Exception expected = assertThrows(Exception.class, () -> vanilla.readValue(doc, type));
-        Exception actual = assertThrows(Exception.class, () -> module.readValue(doc, type));
+        _assertSameFailure(vanilla.readerFor(type), module.readerFor(type), doc, expName);
+    }
+
+    private void _assertSameFailure(ObjectReader vanilla, ObjectReader module,
+            String doc, String expName) {
+        Exception expected = assertThrows(Exception.class, () -> vanilla.readValue(doc));
+        Exception actual = assertThrows(Exception.class, () -> module.readValue(doc));
         assertEquals(expected.getClass(), actual.getClass(), doc);
         assertEquals(expected.getMessage(), actual.getMessage(), doc);
         assertTrue(actual.getMessage().contains("[\"" + expName + "\"]"), actual.getMessage());

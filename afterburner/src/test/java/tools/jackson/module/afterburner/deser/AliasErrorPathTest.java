@@ -17,7 +17,6 @@ import tools.jackson.databind.deser.DeserializationProblemHandler;
 import tools.jackson.databind.exc.InvalidFormatException;
 import tools.jackson.databind.exc.MismatchedInputException;
 import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.module.afterburner.AfterburnerModule;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -75,10 +74,7 @@ public class AliasErrorPathTest extends AfterburnerTestBase
     public static class FromNameHolder { }
 
     // Afterburner's optimized deserializers need "vanilla" processing
-    private final ObjectMapper MAPPER = JsonMapper.builder()
-            .addModule(new AfterburnerModule())
-            .enable(MapperFeature.DEFAULT_VIEW_INCLUSION)
-            .build();
+    private final ObjectMapper MAPPER = _mapperBuilder().build();
 
     @Test
     public void unrolledAlias() throws Exception {

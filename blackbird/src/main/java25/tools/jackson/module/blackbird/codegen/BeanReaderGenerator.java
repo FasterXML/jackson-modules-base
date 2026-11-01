@@ -121,7 +121,7 @@ final class BeanReaderGenerator
             CD_DESER_CONTEXT, CD_SETTABLE_PROP, CD_FORWARD_REF, CD_OBJECT);
     private static final MethodTypeDesc MTD_CREATION_FAILURE =
             MethodTypeDesc.of(CD_OBJECT, CD_DESER_CONTEXT, CD_THROWABLE);
-    // Input name (or null, see Names) comes before the DeserializationContext.
+    // Input name (or null, see loadInputName) comes before the DeserializationContext.
     private static final MethodTypeDesc MTD_PROP_WRAP = MethodTypeDesc.of(
             CD_RTE, CD_THROWABLE, CD_OBJECT, CD_SETTABLE_PROP, ConstantDescs.CD_String,
             CD_DESER_CONTEXT);
@@ -339,14 +339,12 @@ final class BeanReaderGenerator
         final int maskSlot = 8;
         final int valueSlot = 10;
         // Names that can differ from the property's own: each arm reads the
-        // input name, for its failure handlers.
-        final boolean inputNames = plan.inputNames();
-        final int inputNameSlot = 11;
+        // input name, for its failure handlers. Negative if they cannot.
+        final int inputNameSlot = plan.inputNames() ? 11 : -1;
         // Set once a name has gone to unknown-name handling; tracked only
         // where stock reads with its vanilla loop.
         final boolean trackUnknown = plan.vanillaLoop();
         final int afterUnknownSlot = 12;
-        final Names names = inputNames ? new Names(inputNameSlot) : Names.NONE;
         Label propHandler = cob.newLabel();
         Label storeHandler = cob.newLabel();
 
@@ -426,7 +424,7 @@ final class BeanReaderGenerator
                 emitArmViewCheck(cob, base, parser, ctxt, maskSlot, matcherSlot, ixSlot, i,
                         plan.stockName()[i], loop);
             }
-            if (inputNames) {
+            if (inputNameSlot >= 0) {
                 emitReadInputName(cob, parser, inputNameSlot);
             }
             Label armEnd = beginArm(cob, plan.stockName()[i], propSlot, propHandler);
@@ -492,13 +490,13 @@ final class BeanReaderGenerator
            .invokevirtual(base, "_unexpectedToken", MTD_UNEXPECTED)
            .areturn();
 
-        emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, beanSlot, names);
+        emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, beanSlot, inputNameSlot);
         if (anyStore) {
             cob.labelBinding(storeHandler);
             cob.astore(excSlot);
             cob.aload(0).aload(excSlot).aload(beanSlot).aload(valueSlot).aload(propSlot)
                .aload(parser);
-            names.load(cob);
+            loadInputName(cob, inputNameSlot);
             cob.aload(ctxt);
             cob.invokevirtual(base, "_storeFailure", MTD_STORE_FAILURE);
             cob.athrow();
@@ -529,7 +527,7 @@ final class BeanReaderGenerator
         if (anyStore) {
             cob.localVariable(valueSlot, "value", CD_OBJECT, scopeStart, scopeEnd);
         }
-        if (inputNames) {
+        if (inputNameSlot >= 0) {
             cob.localVariable(inputNameSlot, "inputName", ConstantDescs.CD_String,
                     scopeStart, scopeEnd);
         }
@@ -727,9 +725,7 @@ final class BeanReaderGenerator
         final int pendingSlot = next++;
         final int referringsSlot = next++;
         // Names that can differ from the component's own: see the POJO loop.
-        final boolean inputNames = plan.inputNames();
-        final int inputNameSlot = next++;
-        final Names names = inputNames ? new Names(inputNameSlot) : Names.NONE;
+        final int inputNameSlot = plan.inputNames() ? next++ : -1;
         // Primitive components: the stock value when it is not exactly the
         // wrapper (see emitStockValueToLocal).
         int[] rawSlot = new int[n];
@@ -790,7 +786,7 @@ final class BeanReaderGenerator
                 emitArmViewCheck(cob, base, parser, ctxt, maskSlot, matcherSlot, ixSlot, i,
                         plan.stockName()[i], loop);
             }
-            if (inputNames) {
+            if (inputNameSlot >= 0) {
                 emitReadInputName(cob, parser, inputNameSlot);
             }
             GenProp prop = props.get(i);
@@ -968,7 +964,7 @@ final class BeanReaderGenerator
         cob.labelBinding(oddToken);
         cob.goto_(endObject);
 
-        emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, -1, names);
+        emitPropertyHandler(cob, base, propHandler, ctxt, propSlot, excSlot, -1, inputNameSlot);
         emitDelegateTail(cob, base, parser, ctxt, delegate);
 
         Label scopeEnd = cob.newBoundLabel();
@@ -991,6 +987,10 @@ final class BeanReaderGenerator
         cob.localVariable(beanSlot, "bean", CD_OBJECT, scopeStart, scopeEnd);
         cob.localVariable(pendingSlot, "ctorFailure", CD_THROWABLE, scopeStart, scopeEnd);
         cob.localVariable(referringsSlot, "referrings", CD_OBJECT, scopeStart, scopeEnd);
+        if (inputNameSlot >= 0) {
+            cob.localVariable(inputNameSlot, "inputName", ConstantDescs.CD_String,
+                    scopeStart, scopeEnd);
+        }
         if (views == ViewStrategy.MASK) {
             cob.localVariable(maskSlot, "viewMask", ConstantDescs.CD_long, scopeStart, scopeEnd);
         }
@@ -1179,23 +1179,19 @@ final class BeanReaderGenerator
     }
 
     // The failure handlers' name argument: the local holding the input name,
-    // or null where the names cannot differ (NONE).
-    private record Names(int inputNameSlot) {
-        static final Names NONE = new Names(-1);
-
-        void load(CodeBuilder cob) {
-            if (inputNameSlot < 0) {
-                cob.aconst_null();
-            } else {
-                cob.aload(inputNameSlot);
-            }
+    // or null where the names cannot differ (negative slot).
+    private static void loadInputName(CodeBuilder cob, int inputNameSlot) {
+        if (inputNameSlot < 0) {
+            cob.aconst_null();
+        } else {
+            cob.aload(inputNameSlot);
         }
     }
 
     // receiverSlot < 0 selects aconst_null (record mode: no instance yet).
     private static void emitPropertyHandler(CodeBuilder cob, ClassDesc base, Label handler,
             int ctxt,
-            int propSlot, int excSlot, int receiverSlot, Names names) {
+            int propSlot, int excSlot, int receiverSlot, int inputNameSlot) {
         cob.labelBinding(handler);
         cob.astore(excSlot);
         cob.aload(0);
@@ -1206,7 +1202,7 @@ final class BeanReaderGenerator
             cob.aload(receiverSlot);
         }
         cob.aload(propSlot);
-        names.load(cob);
+        loadInputName(cob, inputNameSlot);
         cob.aload(ctxt);
         cob.invokevirtual(base, "_propertyException", MTD_PROP_WRAP);
         cob.athrow();
