@@ -53,6 +53,7 @@ public class TestSetterFailures extends BlackbirdTestBase
         public void setObj(List<String> value) { failOnce(); }
         public void setI(int value) { failOnce(); }
         public void setL(long value) { failOnce(); }
+        public void setD(double value) { failOnce(); }
         public void setB(boolean value) { failOnce(); }
     }
 
@@ -61,6 +62,7 @@ public class TestSetterFailures extends BlackbirdTestBase
         public FluentBean setObj(List<String> value) { failOnce(); return this; }
         public FluentBean setI(int value) { failOnce(); return this; }
         public FluentBean setL(long value) { failOnce(); return this; }
+        public FluentBean setD(double value) { failOnce(); return this; }
         public FluentBean setB(boolean value) { failOnce(); return this; }
     }
 
@@ -70,6 +72,7 @@ public class TestSetterFailures extends BlackbirdTestBase
     static class AlwaysFailingBean {
         public void setStr(String value) { alwaysFail(); }
         public void setI(int value) { alwaysFail(); }
+        public void setD(double value) { alwaysFail(); }
     }
 
     private static void alwaysFail() {
@@ -88,6 +91,7 @@ public class TestSetterFailures extends BlackbirdTestBase
         List<String> list = Arrays.asList("keep");
         int i = 7;
         long l = 8L;
+        double d = 9.5;
         boolean b = true;
 
         @JsonCreator
@@ -98,6 +102,9 @@ public class TestSetterFailures extends BlackbirdTestBase
 
         @JsonSetter(nulls=Nulls.SKIP)
         public void setL(long value) { calls++; l = value; }
+
+        @JsonSetter(nulls=Nulls.SKIP)
+        public void setD(double value) { calls++; d = value; }
 
         @JsonSetter(nulls=Nulls.SKIP)
         public void setB(boolean value) { calls++; b = value; }
@@ -201,7 +208,7 @@ public class TestSetterFailures extends BlackbirdTestBase
                     .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
             for (Class<?> beanType : new Class<?>[] { VoidBean.class, FluentBean.class }) {
                 for (String json : new String[] { a2q("{'str':'foo'}"), a2q("{'obj':['foo']}"),
-                        a2q("{'i':42}"), a2q("{'l':12345678901}"), a2q("{'b':true}") }) {
+                        a2q("{'i':42}"), a2q("{'l':12345678901}"), a2q("{'d':1.5}"), a2q("{'b':true}") }) {
                     for (Supplier<Throwable> nextFailure : failures()) {
                         failure = nextFailure;
                         assertRunsOnce(() -> mapper.readValue(json, beanType),
@@ -215,8 +222,8 @@ public class TestSetterFailures extends BlackbirdTestBase
     @Test
     public void testSetDoesNotRetrySetterFailures() throws Exception {
         ObjectMapper mapper = newObjectMapper();
-        String[] names = { "str", "obj", "i", "l", "b" };
-        Object[] values = { "foo", Arrays.asList("foo"), 42, 12345678901L, true };
+        String[] names = { "str", "obj", "i", "l", "d", "b" };
+        Object[] values = { "foo", Arrays.asList("foo"), 42, 12345678901L, 1.5, true };
         List<Supplier<Object>> beans = Arrays.asList(VoidBean::new, FluentBean::new);
         for (Supplier<Object> newBean : beans) {
             Class<?> beanType = newBean.get().getClass();
@@ -242,7 +249,7 @@ public class TestSetterFailures extends BlackbirdTestBase
             ObjectMapper blackbird = mapperBuilder().configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
             for (Throwable t : new Throwable[] { new SecurityException("se"), new IllegalAccessError("iae"),
                     new IllegalStateException("ise"), new NoClassDefFoundError("ncdfe"), new AssertionError("ae") }) {
-                for (String json : new String[] { a2q("{'str':'foo'}"), a2q("{'i':42}") }) {
+                for (String json : new String[] { a2q("{'str':'foo'}"), a2q("{'i':42}"), a2q("{'d':1.5}") }) {
                     String desc = "wrap=" + wrap + ", " + t + ", " + json;
                     alwaysThrow = t;
                     calls = 0;
@@ -263,7 +270,7 @@ public class TestSetterFailures extends BlackbirdTestBase
 
     @Test
     public void testSetSkipsNulls() throws Exception {
-        for (String name : new String[] { "str", "list", "i", "l", "b" }) {
+        for (String name : new String[] { "str", "list", "i", "l", "d", "b" }) {
             SettableBeanProperty property = property(newObjectMapper(), SkipNullsBean.class, name);
             assertTrue(property instanceof OptimizedSettableBeanProperty, name);
             SkipNullsBean bean = new SkipNullsBean(1);
@@ -272,7 +279,7 @@ public class TestSetterFailures extends BlackbirdTestBase
             assertEquals(0, calls, name);
         }
         // with the nulls before the creator property, so they're buffered
-        String json = a2q("{'str':null,'list':null,'i':null,'l':null,'b':null,'id':1}");
+        String json = a2q("{'str':null,'list':null,'i':null,'l':null,'d':null,'b':null,'id':1}");
         for (ObjectMapper mapper : new ObjectMapper[] { newVanillaJSONMapper(), newObjectMapper() }) {
             calls = 0;
             SkipNullsBean bean = mapper.readValue(json, SkipNullsBean.class);
@@ -280,6 +287,7 @@ public class TestSetterFailures extends BlackbirdTestBase
             assertEquals(Arrays.asList("keep"), bean.list);
             assertEquals(7, bean.i);
             assertEquals(8L, bean.l);
+            assertEquals(9.5, bean.d);
             assertTrue(bean.b);
             assertEquals(0, calls);
         }
@@ -290,7 +298,7 @@ public class TestSetterFailures extends BlackbirdTestBase
     public void testSetNullPrimitiveWithoutSkipping() throws Exception {
         ObjectMapper vanilla = newVanillaJSONMapper();
         ObjectMapper blackbird = newObjectMapper();
-        for (String name : new String[] { "i", "l", "b" }) {
+        for (String name : new String[] { "i", "l", "d", "b" }) {
             SettableBeanProperty expectedProperty = property(vanilla, VoidBean.class, name);
             SettableBeanProperty actualProperty = property(blackbird, VoidBean.class, name);
             assertTrue(actualProperty instanceof OptimizedSettableBeanProperty, name);

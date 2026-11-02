@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.ObjDoubleConsumer;
 import java.util.function.ObjIntConsumer;
 import java.util.function.ObjLongConsumer;
 import java.util.function.UnaryOperator;
@@ -182,7 +183,8 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
             }
             type = ((AnnotatedMethod) member).getRawParameterType(0);
             // Only these get a generated setter, so don't check (or load) anything for others
-            if (type.isPrimitive() && (type != Integer.TYPE) && (type != Long.TYPE) && (type != Boolean.TYPE)) {
+            if (type.isPrimitive() && (type != Integer.TYPE) && (type != Long.TYPE)
+                    && (type != Double.TYPE) && (type != Boolean.TYPE)) {
                 return;
             }
             // A generated setter that would fail on every call (like one taking a
@@ -231,6 +233,15 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
                 ObjLongBiFunction thunk = !forBuilder ? null : (returning != null) ? returning
                         : (bean, v) -> { consumer.accept(bean, v); return null; };
                 newProps.add(new SettableLongProperty(prop, consumer,
+                    thunk, receiverType, forBuilder));
+            } else if (type == Double.TYPE) {
+                ObjDoubleBiFunction returning = createThunk(lookup, ObjDoubleBiFunction.class, double.class, setter);
+                ObjDoubleConsumer<Object> consumer = (returning == null)
+                        ? createConsumer(lookup, ObjDoubleConsumer.class, double.class, setter)
+                        : (bean, v) -> returning.apply(bean, v);
+                ObjDoubleBiFunction thunk = !forBuilder ? null : (returning != null) ? returning
+                        : (bean, v) -> { consumer.accept(bean, v); return null; };
+                newProps.add(new SettableDoubleProperty(prop, consumer,
                     thunk, receiverType, forBuilder));
             } else if (type == Boolean.TYPE) {
                 ObjBooleanBiFunction returning = createThunk(lookup, ObjBooleanBiFunction.class, boolean.class, setter);
@@ -354,6 +365,11 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
     @FunctionalInterface
     public interface ObjLongBiFunction {
         Object apply(Object bean, long value);
+    }
+
+    @FunctionalInterface
+    public interface ObjDoubleBiFunction {
+        Object apply(Object bean, double value);
     }
 
     @FunctionalInterface

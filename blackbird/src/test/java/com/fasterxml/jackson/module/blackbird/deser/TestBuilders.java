@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.ObjDoubleConsumer;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
@@ -73,6 +74,7 @@ public class TestBuilders extends BlackbirdTestBase
         List<String> list;
         int i;
         long l;
+        double d;
         boolean b;
         int reflectiveCalls;
 
@@ -100,6 +102,12 @@ public class TestBuilders extends BlackbirdTestBase
             return this;
         }
 
+        public MutableBuilder withD(double v) {
+            reflectiveCalls += reflectiveCall();
+            d = v;
+            return this;
+        }
+
         public MutableBuilder withB(boolean v) {
             reflectiveCalls += reflectiveCall();
             b = v;
@@ -107,14 +115,14 @@ public class TestBuilders extends BlackbirdTestBase
         }
 
         public MutableBuilt build() {
-            return new MutableBuilt(str, list, i, l, b, reflectiveCalls);
+            return new MutableBuilt(str, list, i, l, d, b, reflectiveCalls);
         }
     }
 
     @JsonDeserialize(builder=MutableBuilder.class)
     static class MutableBuilt extends Values {
-        MutableBuilt(String str, List<String> list, int i, long l, boolean b, int reflectiveCalls) {
-            super(str, list, i, l, b, reflectiveCalls);
+        MutableBuilt(String str, List<String> list, int i, long l, double d, boolean b, int reflectiveCalls) {
+            super(str, list, i, l, d, b, reflectiveCalls);
         }
     }
 
@@ -125,51 +133,57 @@ public class TestBuilders extends BlackbirdTestBase
         final List<String> list;
         final int i;
         final long l;
+        final double d;
         final boolean b;
         final int reflectiveCalls;
 
         public CopyingBuilder() {
-            this(null, null, 0, 0L, false, 0);
+            this(null, null, 0, 0L, 0.0, false, 0);
         }
 
-        CopyingBuilder(String str, List<String> list, int i, long l, boolean b, int reflectiveCalls) {
+        CopyingBuilder(String str, List<String> list, int i, long l, double d, boolean b, int reflectiveCalls) {
             this.str = str;
             this.list = list;
             this.i = i;
             this.l = l;
+            this.d = d;
             this.b = b;
             this.reflectiveCalls = reflectiveCalls;
         }
 
         public CopyingBuilder withStr(String v) {
-            return new CopyingBuilder(v, list, i, l, b, reflectiveCalls + reflectiveCall());
+            return new CopyingBuilder(v, list, i, l, d, b, reflectiveCalls + reflectiveCall());
         }
 
         public CopyingBuilder withList(List<String> v) {
-            return new CopyingBuilder(str, v, i, l, b, reflectiveCalls + reflectiveCall());
+            return new CopyingBuilder(str, v, i, l, d, b, reflectiveCalls + reflectiveCall());
         }
 
         public CopyingBuilder withI(int v) {
-            return new CopyingBuilder(str, list, v, l, b, reflectiveCalls + reflectiveCall());
+            return new CopyingBuilder(str, list, v, l, d, b, reflectiveCalls + reflectiveCall());
         }
 
         public CopyingBuilder withL(long v) {
-            return new CopyingBuilder(str, list, i, v, b, reflectiveCalls + reflectiveCall());
+            return new CopyingBuilder(str, list, i, v, d, b, reflectiveCalls + reflectiveCall());
+        }
+
+        public CopyingBuilder withD(double v) {
+            return new CopyingBuilder(str, list, i, l, v, b, reflectiveCalls + reflectiveCall());
         }
 
         public CopyingBuilder withB(boolean v) {
-            return new CopyingBuilder(str, list, i, l, v, reflectiveCalls + reflectiveCall());
+            return new CopyingBuilder(str, list, i, l, d, v, reflectiveCalls + reflectiveCall());
         }
 
         public CopyingBuilt build() {
-            return new CopyingBuilt(str, list, i, l, b, reflectiveCalls);
+            return new CopyingBuilt(str, list, i, l, d, b, reflectiveCalls);
         }
     }
 
     @JsonDeserialize(builder=CopyingBuilder.class)
     static class CopyingBuilt extends Values {
-        CopyingBuilt(String str, List<String> list, int i, long l, boolean b, int reflectiveCalls) {
-            super(str, list, i, l, b, reflectiveCalls);
+        CopyingBuilt(String str, List<String> list, int i, long l, double d, boolean b, int reflectiveCalls) {
+            super(str, list, i, l, d, b, reflectiveCalls);
         }
     }
 
@@ -197,7 +211,7 @@ public class TestBuilders extends BlackbirdTestBase
     @JsonDeserialize(builder=NullReturningBuilder.class)
     static class NullReturningBuilt extends Values {
         NullReturningBuilt(String str, int i) {
-            super(str, null, i, 0L, false, 0);
+            super(str, null, i, 0L, 0.0, false, 0);
         }
     }
 
@@ -208,6 +222,7 @@ public class TestBuilders extends BlackbirdTestBase
         List<String> list;
         int i;
         long l;
+        double d;
         boolean b;
         int reflectiveCalls;
 
@@ -215,17 +230,18 @@ public class TestBuilders extends BlackbirdTestBase
         public void withList(List<String> v) { list = v; reflectiveCalls += reflectiveCall(); }
         public void withI(int v) { i = v; reflectiveCalls += reflectiveCall(); }
         public void withL(long v) { l = v; reflectiveCalls += reflectiveCall(); }
+        public void withD(double v) { d = v; reflectiveCalls += reflectiveCall(); }
         public void withB(boolean v) { b = v; reflectiveCalls += reflectiveCall(); }
 
         public VoidSetterBuilt build() {
-            return new VoidSetterBuilt(str, list, i, l, b, reflectiveCalls);
+            return new VoidSetterBuilt(str, list, i, l, d, b, reflectiveCalls);
         }
     }
 
     @JsonDeserialize(builder=VoidSetterBuilder.class)
     static class VoidSetterBuilt extends Values {
-        VoidSetterBuilt(String str, List<String> list, int i, long l, boolean b, int reflectiveCalls) {
-            super(str, list, i, l, b, reflectiveCalls);
+        VoidSetterBuilt(String str, List<String> list, int i, long l, double d, boolean b, int reflectiveCalls) {
+            super(str, list, i, l, d, b, reflectiveCalls);
         }
     }
 
@@ -255,7 +271,7 @@ public class TestBuilders extends BlackbirdTestBase
     @JsonDeserialize(builder=SkipNullsBuilder.class)
     static class SkipNullsBuilt extends Values {
         SkipNullsBuilt(String str, List<String> list) {
-            super(str, list, 0, 0L, false, 0);
+            super(str, list, 0, 0L, 0.0, false, 0);
         }
     }
 
@@ -267,6 +283,7 @@ public class TestBuilders extends BlackbirdTestBase
         List<String> list = Arrays.asList("keep");
         int i = 7;
         long l = 8L;
+        double d = 9.5;
         boolean b = true;
 
         @JsonCreator
@@ -297,20 +314,26 @@ public class TestBuilders extends BlackbirdTestBase
         }
 
         @JsonSetter(nulls=Nulls.SKIP)
+        public CreatorSkipNullsBuilder withD(double v) {
+            d = v;
+            return this;
+        }
+
+        @JsonSetter(nulls=Nulls.SKIP)
         public CreatorSkipNullsBuilder withB(boolean v) {
             b = v;
             return this;
         }
 
         public CreatorSkipNullsBuilt build() {
-            return new CreatorSkipNullsBuilt(str, list, i, l, b);
+            return new CreatorSkipNullsBuilt(str, list, i, l, d, b);
         }
     }
 
     @JsonDeserialize(builder=CreatorSkipNullsBuilder.class)
     static class CreatorSkipNullsBuilt extends Values {
-        CreatorSkipNullsBuilt(String str, List<String> list, int i, long l, boolean b) {
-            super(str, list, i, l, b, 0);
+        CreatorSkipNullsBuilt(String str, List<String> list, int i, long l, double d, boolean b) {
+            super(str, list, i, l, d, b, 0);
         }
     }
 
@@ -333,6 +356,10 @@ public class TestBuilders extends BlackbirdTestBase
         }
 
         public ThrowingBuilder withL(long v) throws Exception {
+            return fail();
+        }
+
+        public ThrowingBuilder withD(double v) throws Exception {
             return fail();
         }
 
@@ -384,6 +411,11 @@ public class TestBuilders extends BlackbirdTestBase
         }
 
         public CreatorThrowingBuilder withL(long v) throws Exception {
+            ThrowingBuilder.fail();
+            return this;
+        }
+
+        public CreatorThrowingBuilder withD(double v) throws Exception {
             ThrowingBuilder.fail();
             return this;
         }
@@ -442,6 +474,7 @@ public class TestBuilders extends BlackbirdTestBase
 
         public UnrelatedBuilder withX(int v) { return this; }
         public UnrelatedBuilder withL(long v) { return this; }
+        public UnrelatedBuilder withD(double v) { return this; }
         public UnrelatedBuilder withB(boolean v) { return this; }
         public UnrelatedBuilder withS(String v) { return this; }
         public UnrelatedBuilder withList(List<String> v) { return this; }
@@ -463,6 +496,7 @@ public class TestBuilders extends BlackbirdTestBase
 
         public NullCreatorBuilder withX(int v) { return this; }
         public NullCreatorBuilder withL(long v) { return this; }
+        public NullCreatorBuilder withD(double v) { return this; }
         public NullCreatorBuilder withB(boolean v) { return this; }
         public NullCreatorBuilder withS(String v) { return this; }
         public NullCreatorBuilder withList(List<String> v) { return this; }
@@ -730,25 +764,29 @@ public class TestBuilders extends BlackbirdTestBase
     static final class NullReturningAllBuilder
     {
         long l;
+        double d;
         boolean b;
         List<String> list;
 
         public NullReturningAllBuilder withL(long v) { l = v; return null; }
+        public NullReturningAllBuilder withD(double v) { d = v; return null; }
         public NullReturningAllBuilder withB(boolean v) { b = v; return null; }
         public NullReturningAllBuilder withList(List<String> v) { list = v; return null; }
 
-        public NullReturningAllBuilt build() { return new NullReturningAllBuilt(l, b, list); }
+        public NullReturningAllBuilt build() { return new NullReturningAllBuilt(l, d, b, list); }
     }
 
     @JsonDeserialize(builder=NullReturningAllBuilder.class)
     static class NullReturningAllBuilt
     {
         final long l;
+        final double d;
         final boolean b;
         final List<String> list;
 
-        NullReturningAllBuilt(long l, boolean b, List<String> list) {
+        NullReturningAllBuilt(long l, double d, boolean b, List<String> list) {
             this.l = l;
+            this.d = d;
             this.b = b;
             this.list = list;
         }
@@ -792,14 +830,16 @@ public class TestBuilders extends BlackbirdTestBase
         final List<String> list;
         final int i;
         final long l;
+        final double d;
         final boolean b;
         final int reflectiveCalls;
 
-        Values(String str, List<String> list, int i, long l, boolean b, int reflectiveCalls) {
+        Values(String str, List<String> list, int i, long l, double d, boolean b, int reflectiveCalls) {
             this.str = str;
             this.list = list;
             this.i = i;
             this.l = l;
+            this.d = d;
             this.b = b;
             this.reflectiveCalls = reflectiveCalls;
         }
@@ -818,7 +858,7 @@ public class TestBuilders extends BlackbirdTestBase
     }
 
     private static final String VALUES_JSON = a2q(
-            "{'str':'foo','list':['a','b'],'i':123456,'l':12345678901,'b':true}");
+            "{'str':'foo','list':['a','b'],'i':123456,'l':12345678901,'d':-1.25,'b':true}");
 
     /*
     /**********************************************************
@@ -862,10 +902,10 @@ public class TestBuilders extends BlackbirdTestBase
         ObjectMapper vanilla = newVanillaJSONMapper();
         Values v = vanilla.readValue(VALUES_JSON, MutableBuilt.class);
         _verifyValues(v);
-        assertEquals(5, v.reflectiveCalls);
+        assertEquals(6, v.reflectiveCalls);
         v = vanilla.readValue(VALUES_JSON, CopyingBuilt.class);
         _verifyValues(v);
-        assertEquals(5, v.reflectiveCalls);
+        assertEquals(6, v.reflectiveCalls);
     }
 
     @Test
@@ -904,7 +944,7 @@ public class TestBuilders extends BlackbirdTestBase
         _verifyValues(v);
         assertEquals(0, v.reflectiveCalls);
         // as reflection would, with Jackson's own access rules
-        assertEquals(5, newVanillaJSONMapper().readValue(VALUES_JSON, VoidSetterBuilt.class).reflectiveCalls);
+        assertEquals(6, newVanillaJSONMapper().readValue(VALUES_JSON, VoidSetterBuilt.class).reflectiveCalls);
     }
 
     @Test
@@ -918,15 +958,17 @@ public class TestBuilders extends BlackbirdTestBase
     @Test
     public void testSkipNullsBeforeCreatorProperty() throws Exception
     {
-        String json = a2q("{'str':null,'list':null,'i':null,'l':null,'b':null,'id':'x'}");
+        String json = a2q("{'str':null,'list':null,'i':null,'l':null,'d':null,'b':null,'id':'x'}");
         Values expected = newVanillaJSONMapper().readValue(json, CreatorSkipNullsBuilt.class);
         Values v = MAPPER.readValue(json, CreatorSkipNullsBuilt.class);
         assertEquals("default", expected.str);
         assertEquals(7, expected.i);
+        assertEquals(9.5, expected.d);
         assertEquals(expected.str, v.str);
         assertEquals(expected.list, v.list);
         assertEquals(expected.i, v.i);
         assertEquals(expected.l, v.l);
+        assertEquals(expected.d, v.d);
         assertEquals(expected.b, v.b);
     }
 
@@ -953,7 +995,7 @@ public class TestBuilders extends BlackbirdTestBase
                     .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
             for (Supplier<Throwable> failure : failures) {
                 for (String json : new String[] { a2q("{'str':'foo'}"), a2q("{'list':['a']}"),
-                        a2q("{'i':42}"), a2q("{'l':42}"), a2q("{'b':true}"), voidJson }) {
+                        a2q("{'i':42}"), a2q("{'l':42}"), a2q("{'d':4.5}"), a2q("{'b':true}"), voidJson }) {
                     toThrow = failure;
                     setterCalls = 0;
                     Throwable expected = assertThrows(Throwable.class,
@@ -993,7 +1035,7 @@ public class TestBuilders extends BlackbirdTestBase
                     .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
             for (Supplier<Throwable> failure : failures) {
                 for (String prop : new String[] { "'str':'foo'", "'list':['a']",
-                        "'i':42", "'l':42", "'b':true" }) {
+                        "'i':42", "'l':42", "'d':4.5", "'b':true" }) {
                     for (String json : new String[] { a2q("{" + prop + ",'id':'a'}"),
                             a2q("{'id':'a'," + prop + "}") }) {
                         toThrow = failure;
@@ -1035,7 +1077,7 @@ public class TestBuilders extends BlackbirdTestBase
                     .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
             ObjectMapper blackbird = mapperBuilder()
                     .configure(DeserializationFeature.WRAP_EXCEPTIONS, wrap).build();
-            for (String value : new String[] { "'x':2", "'l':2", "'b':true", "'s':'a'", "'list':['a']" }) {
+            for (String value : new String[] { "'x':2", "'l':2", "'d':2.5", "'b':true", "'s':'a'", "'list':['a']" }) {
                 // the unrelated builder comes from `withFirst`, the null one from its creator
                 for (String json : new String[] { a2q("{'first':1," + value + "}"), a2q("{" + value + "}") }) {
                     Class<?> type = json.contains("first") ? UnrelatedBuilt.class : NullCreatorBuilt.class;
@@ -1094,6 +1136,36 @@ public class TestBuilders extends BlackbirdTestBase
             assertNotNull(e.getLocation());
         }
         assertEquals(0, setterCalls);
+
+        // and the same for a primitive double
+        SettableDoubleProperty doubleProp = new SettableDoubleProperty(deser.findProperty("d"),
+                new ObjDoubleConsumer<Object>() {
+                    @Override
+                    public void accept(Object bean, double v) {
+                        throw failure;
+                    }
+                },
+                new BBDeserializerModifier.ObjDoubleBiFunction() {
+                    @Override
+                    public Object apply(Object bean, double v) {
+                        throw failure;
+                    }
+                },
+                ThrowingBuilder.class, true);
+        e = assertThrows(JsonMappingException.class, () -> doubleProp.setAndReturn(new ThrowingBuilder(), 1.5));
+        assertSame(failure, e.getCause());
+        try (JsonParser p = vanilla.createParser(a2q("{'d':1.5}"))) {
+            p.nextToken();
+            p.nextToken();
+            p.nextToken();
+            DefaultDeserializationContext ctxt = ((DefaultDeserializationContext) vanilla.getDeserializationContext())
+                    .createInstance(vanilla.getDeserializationConfig(), p, null);
+            e = assertThrows(JsonMappingException.class,
+                    () -> doubleProp.deserializeSetAndReturn(p, ctxt, new ThrowingBuilder()));
+            assertSame(failure, e.getCause());
+            assertNotNull(e.getLocation());
+        }
+        assertEquals(0, setterCalls);
     }
 
     @Test
@@ -1123,7 +1195,8 @@ public class TestBuilders extends BlackbirdTestBase
     public void testSetAndReturnWithUnusableBuilder() throws Exception
     {
         ObjectMapper vanilla = newVanillaJSONMapper();
-        Object[][] cases = { { "i", 1 }, { "l", 1L }, { "b", true }, { "str", "x" }, { "list", Arrays.asList("x") } };
+        Object[][] cases = { { "i", 1 }, { "l", 1L }, { "d", 1.5 }, { "b", true }, { "str", "x" },
+                { "list", Arrays.asList("x") } };
         for (Object[] c : cases) {
             String name = (String) c[0];
             for (Object instance : new Object[] { "not a builder", null }) {
@@ -1148,17 +1221,21 @@ public class TestBuilders extends BlackbirdTestBase
     @Test
     public void testNullReturningBuilderForAllTypes() throws Exception
     {
-        for (String name : new String[] { "l", "b", "list" }) {
+        for (String name : new String[] { "l", "d", "b", "list" }) {
             assertTrue(_findProperty(MAPPER, NullReturningAllBuilt.class, name) instanceof OptimizedSettableBeanProperty,
                     name);
         }
-        NullReturningAllBuilt v = MAPPER.readValue(a2q("{'l':7,'b':true,'list':['x']}"), NullReturningAllBuilt.class);
+        NullReturningAllBuilt v = MAPPER.readValue(a2q("{'l':7,'d':7.5,'b':true,'list':['x']}"),
+                NullReturningAllBuilt.class);
         assertEquals(7L, v.l);
+        assertEquals(7.5, v.d);
         assertTrue(v.b);
         assertEquals(Arrays.asList("x"), v.list);
         // and through setAndReturn
         NullReturningAllBuilder builder = new NullReturningAllBuilder();
         assertSame(builder, _findProperty(MAPPER, NullReturningAllBuilt.class, "l").setAndReturn(builder, 3L));
+        assertSame(builder, _findProperty(MAPPER, NullReturningAllBuilt.class, "d").setAndReturn(builder, 3.5));
+        assertEquals(3.5, builder.d);
         assertSame(builder, _findProperty(MAPPER, NullReturningAllBuilt.class, "b").setAndReturn(builder, true));
         assertSame(builder, _findProperty(MAPPER, NullReturningAllBuilt.class, "list")
                 .setAndReturn(builder, Collections.singletonList("y")));
@@ -1187,7 +1264,7 @@ public class TestBuilders extends BlackbirdTestBase
     public void testSetAndReturnNullPrimitives() throws Exception
     {
         ObjectMapper vanilla = newVanillaJSONMapper();
-        for (String name : new String[] { "i", "l", "b" }) {
+        for (String name : new String[] { "i", "l", "d", "b" }) {
             SettableBeanProperty expectedProperty = _findProperty(vanilla, name);
             SettableBeanProperty actualProperty = _findProperty(MAPPER, name);
             assertTrue(actualProperty instanceof OptimizedSettableBeanProperty, name);
@@ -1299,6 +1376,8 @@ public class TestBuilders extends BlackbirdTestBase
             { "list", Arrays.asList("a"), "x", 42 },
             { "i", 1, 42L, "x", true, (short) 3, 'c' },
             { "l", 1L, "x", 2.5, 3, (byte) 4 },
+            { "d", 1.5, "x", 2.5f, Float.NaN, 3, 9007199254740993L, (short) 5, (byte) 6, 'c', true,
+                    new java.math.BigDecimal("0.1") },
             { "b", true, "x", 1 },
         };
         for (Object[] c : cases) {
@@ -1321,6 +1400,8 @@ public class TestBuilders extends BlackbirdTestBase
                     actualProp.set(actualBuilder, value);
                     assertEquals(expectedBuilder.i, actualBuilder.i, desc);
                     assertEquals(expectedBuilder.l, actualBuilder.l, desc);
+                    assertEquals(Double.doubleToRawLongBits(expectedBuilder.d),
+                            Double.doubleToRawLongBits(actualBuilder.d), desc);
                 } else {
                     Throwable actual = assertThrows(Throwable.class, () -> actualProp.set(actualBuilder, value), desc);
                     _assertSameFailure(desc + ", " + expected, expected, actual);
@@ -1371,6 +1452,8 @@ public class TestBuilders extends BlackbirdTestBase
         Object[][] cases = {
             { "i", 'A' }, { "i", (short) 7 }, { "i", 4294967297L }, { "i", 3.9 }, { "i", "x" },
             { "l", 'A' }, { "l", 7 }, { "l", 3.9 },
+            { "d", 'A' }, { "d", (short) 7 }, { "d", 7 }, { "d", 9007199254740993L }, { "d", 0.1f },
+            { "d", Float.NaN }, { "d", new java.math.BigDecimal("0.1") }, { "d", "1.5" },
             { "b", 1 }, { "b", "true" },
             { "str", 1 }, { "list", "x" },
         };
@@ -1382,8 +1465,8 @@ public class TestBuilders extends BlackbirdTestBase
                     name + "=" + c[1] + " (" + c[1].getClass().getSimpleName() + ")");
         }
         // while values of the setter's own type still use the generated setters
-        for (Object[] c : new Object[][] { { "i", 42 }, { "l", 42L }, { "b", true }, { "str", "x" },
-                { "list", Arrays.asList("x") } }) {
+        for (Object[] c : new Object[][] { { "i", 42 }, { "l", 42L }, { "d", 4.5 }, { "d", -0.0 },
+                { "d", Double.NaN }, { "b", true }, { "str", "x" }, { "list", Arrays.asList("x") } }) {
             MutableBuilder b = (MutableBuilder) _findProperty(MAPPER, (String) c[0])
                     .setAndReturn(new MutableBuilder(), c[1]);
             assertEquals(0, b.reflectiveCalls, String.valueOf(c[0]));
@@ -1393,7 +1476,8 @@ public class TestBuilders extends BlackbirdTestBase
     private static String _setAndReturn(ObjectMapper mapper, String name, Object value) throws Exception {
         try {
             MutableBuilder b = (MutableBuilder) _findProperty(mapper, name).setAndReturn(new MutableBuilder(), value);
-            return "str=" + b.str + " list=" + b.list + " i=" + b.i + " l=" + b.l + " b=" + b.b;
+            return "str=" + b.str + " list=" + b.list + " i=" + b.i + " l=" + b.l
+                    + " d=" + b.d + " (" + Long.toHexString(Double.doubleToRawLongBits(b.d)) + ") b=" + b.b;
         } catch (Exception e) {
             return e.getClass().getName() + ": " + e.getMessage();
         }
@@ -1418,18 +1502,24 @@ public class TestBuilders extends BlackbirdTestBase
         if (expected instanceof JsonMappingException) {
             JsonMappingException e = (JsonMappingException) expected;
             JsonMappingException a = (JsonMappingException) actual;
-            assertEquals(e.getOriginalMessage(), a.getOriginalMessage(), desc);
+            assertEquals(_withoutHashes(e.getOriginalMessage()), _withoutHashes(a.getOriginalMessage()), desc);
             assertEquals(e.getPathReference(), a.getPathReference(), desc);
             assertEquals(e.getLocation(), a.getLocation(), desc);
         } else {
-            assertEquals(expected.getMessage(), actual.getMessage(), desc);
+            assertEquals(_withoutHashes(expected.getMessage()), _withoutHashes(actual.getMessage()), desc);
         }
         Throwable ec = expected.getCause();
         Throwable ac = actual.getCause();
         assertEquals((ec == null) ? null : ec.getClass(), (ac == null) ? null : ac.getClass(), desc);
         if (ec != null) {
-            assertEquals(ec.getMessage(), ac.getMessage(), desc);
+            assertEquals(_withoutHashes(ec.getMessage()), _withoutHashes(ac.getMessage()), desc);
         }
+    }
+
+    // Once a method has been called often enough, reflection on Java 17 and earlier
+    // reports a bad receiver or argument with the identity hash of a `ClassCastException`
+    private static String _withoutHashes(String message) {
+        return (message == null) ? null : message.replaceAll("(Exception)@[0-9a-f]+", "$1@...");
     }
 
     private void _verifyValues(Values v) {
@@ -1437,6 +1527,7 @@ public class TestBuilders extends BlackbirdTestBase
         assertEquals(Arrays.asList("a", "b"), v.list);
         assertEquals(123456, v.i);
         assertEquals(12345678901L, v.l);
+        assertEquals(-1.25, v.d);
         assertTrue(v.b);
     }
 }
