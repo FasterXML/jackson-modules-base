@@ -13,13 +13,18 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.StreamWriteFeature;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonTypeResolver;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
+import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
@@ -196,6 +201,28 @@ public class DoublePropertyWriterTest extends BlackbirdTestBase
         public int getX() { return 1; }
     }
 
+    // A resolver that gives primitives a type serializer, which `DoubleSerializer`
+    // uses for non-finite values
+    public static class PrimitiveTypeResolver extends StdTypeResolverBuilder {
+        @Override
+        protected boolean allowPrimitiveTypes(MapperConfig<?> config, JavaType baseType) {
+            return true;
+        }
+    }
+
+    static class Typed extends Holder {
+        @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.WRAPPER_ARRAY)
+        @JsonTypeResolver(PrimitiveTypeResolver.class)
+        public double getD() { return get(); }
+    }
+
+    @JsonFormat(shape = JsonFormat.Shape.ARRAY)
+    static class ArrayTyped extends Holder {
+        @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.WRAPPER_ARRAY)
+        @JsonTypeResolver(PrimitiveTypeResolver.class)
+        public double getD() { return get(); }
+    }
+
     // Unwrapping with a prefix renames each property of the inner bean
     static class Unwrapping {
         @JsonUnwrapped(prefix = "p_")
@@ -282,15 +309,15 @@ public class DoublePropertyWriterTest extends BlackbirdTestBase
             List<Class<? extends Holder>> types = new ArrayList<>(TYPES);
             types.add(Raw.class);
             types.add(Converted.class);
+            types.add(Typed.class);
+            types.add(ArrayTyped.class);
             for (Class<? extends Holder> type : types) {
                 for (double value : VALUES) {
                     String desc = "config " + i + ", " + type.getSimpleName() + ", " + value
                             + " (" + Long.toHexString(Double.doubleToRawLongBits(value)) + ")";
-                    String expected = vanilla.writeValueAsString(holder(type, value));
-                    assertEquals(expected, blackbird.writeValueAsString(holder(type, value)), desc);
+                    assertEquals(_write(vanilla, holder(type, value)), _write(blackbird, holder(type, value)), desc);
                     // and through a buffer
-                    assertEquals(String.valueOf(vanilla.valueToTree(holder(type, value))),
-                            String.valueOf(blackbird.valueToTree(holder(type, value))), desc);
+                    assertEquals(_toTree(vanilla, holder(type, value)), _toTree(blackbird, holder(type, value)), desc);
                 }
             }
         }
@@ -358,6 +385,15 @@ public class DoublePropertyWriterTest extends BlackbirdTestBase
     }
 
     @Test
+    public void testTypedNonFiniteValues() throws Exception
+    {
+        assertEquals(a2q("{'d':['java.lang.Double','NaN']}"), MAPPER.writeValueAsString(holder(Typed.class, Double.NaN)));
+        assertEquals(a2q("{'d':1.5}"), MAPPER.writeValueAsString(holder(Typed.class, 1.5)));
+        assertEquals(a2q("[['java.lang.Double','Infinity']]"),
+                MAPPER.writeValueAsString(holder(ArrayTyped.class, Double.POSITIVE_INFINITY)));
+    }
+
+    @Test
     public void testNonFiniteValues() throws Exception
     {
         assertEquals(a2q("{'d':'NaN'}"), MAPPER.writeValueAsString(holder(Plain.class, Double.NaN)));
@@ -375,6 +411,23 @@ public class DoublePropertyWriterTest extends BlackbirdTestBase
         assertEquals(DoublePropertyWriter.class, _findWriter(MAPPER, ArrayFailingAccessor.class, "d").getClass());
         assertEquals(a2q("{'d':2.5}"), newObjectMapper().writeValueAsString(new FailingAccessor()));
         assertEquals("[2.5,1]", newObjectMapper().writeValueAsString(new ArrayFailingAccessor()));
+    }
+
+    // The output, or the failure (as with a custom serializer that can't write a type id)
+    private static String _write(ObjectMapper mapper, Object value) {
+        try {
+            return mapper.writeValueAsString(value);
+        } catch (Exception e) {
+            return e.getClass().getName() + ": " + e.getMessage();
+        }
+    }
+
+    private static String _toTree(ObjectMapper mapper, Object value) {
+        try {
+            return String.valueOf(mapper.valueToTree(value));
+        } catch (Exception e) {
+            return e.getClass().getName() + ": " + e.getMessage();
+        }
     }
 
     private static PropertyWriter _findWriter(ObjectMapper mapper, Class<?> type, String name) throws Exception

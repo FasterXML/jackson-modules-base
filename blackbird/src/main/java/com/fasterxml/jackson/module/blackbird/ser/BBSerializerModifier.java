@@ -152,6 +152,12 @@ public class BBSerializerModifier extends BeanSerializerModifier
                     .getTarget().invokeExact();
                 it.set(new LongPropertyWriter(bpw, accessor, null));
             } else if (type == Double.TYPE) {
+                // `DoubleSerializer` writes a type id for non-finite values, so a property
+                // with a type serializer (which no standard resolver gives a primitive)
+                // is left to `BeanPropertyWriter`
+                if (bpw.getTypeSerializer() != null) {
+                    return;
+                }
                 ToDoubleFunction<Object> accessor = (ToDoubleFunction<Object>) LambdaMetafactory.metafactory(
                         lookup,
                         "applyAsDouble",
