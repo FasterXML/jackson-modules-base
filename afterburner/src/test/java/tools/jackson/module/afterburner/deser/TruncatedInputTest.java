@@ -208,8 +208,9 @@ public class TruncatedInputTest extends AfterburnerTestBase
         }
     }
 
-    // With a dangling name, value deserializer sees no token at all: for now, stock
-    // only fails by wrapping the resulting NPE, so cannot expect more specific type
+    // With a dangling name, value deserializer sees no token at all. Exact type depends
+    // on databind version: `String` values only get `MismatchedInputException` with
+    // [databind#6376], so can only be more specific once that is required
     private Class<? extends DatabindException> _expectedFailure(boolean danglingName)
     {
         return danglingName ? DatabindException.class : MismatchedInputException.class;
