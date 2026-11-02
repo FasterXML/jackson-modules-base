@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.deser.SettableBeanProperty;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -63,15 +64,16 @@ public class ViewDeserializationInjectionTest extends AfterburnerInjectionTestBa
     @Test
     public void testNarrowRead() throws Exception
     {
+        _verifySetup(NarrowBean.class, "SuperSonicUnrolledDeserializer");
         _verifyNarrow(h.mapper.readValue(NARROW_JSON, NarrowBean.class), false);
         _verifyNarrow(h.mapper.readerWithView(ViewA.class).forType(NarrowBean.class)
                 .<NarrowBean>readValue(NARROW_JSON), true);
-        _verifySetup(NarrowBean.class, "SuperSonicUnrolledDeserializer");
     }
 
     @Test
     public void testNarrowUpdate() throws Exception
     {
+        _verifySetup(NarrowBean.class, "SuperSonicUnrolledDeserializer");
         NarrowBean bean = new NarrowBean();
         h.mapper.readerForUpdating(bean).readValue(NARROW_JSON);
         _verifyNarrow(bean, false);
@@ -79,21 +81,21 @@ public class ViewDeserializationInjectionTest extends AfterburnerInjectionTestBa
         bean = new NarrowBean();
         h.mapper.readerWithView(ViewA.class).withValueToUpdate(bean).readValue(NARROW_JSON);
         _verifyNarrow(bean, true);
-        _verifySetup(NarrowBean.class, "SuperSonicUnrolledDeserializer");
     }
 
     @Test
     public void testWideRead() throws Exception
     {
+        _verifySetup(WideBean.class, "SuperSonicBeanDeserializer");
         _verifyWide(h.mapper.readValue(WIDE_JSON, WideBean.class), false);
         _verifyWide(h.mapper.readerWithView(ViewA.class).forType(WideBean.class)
                 .<WideBean>readValue(WIDE_JSON), true);
-        _verifySetup(WideBean.class, "SuperSonicBeanDeserializer");
     }
 
     @Test
     public void testWideUpdate() throws Exception
     {
+        _verifySetup(WideBean.class, "SuperSonicBeanDeserializer");
         WideBean bean = new WideBean();
         h.mapper.readerForUpdating(bean).readValue(WIDE_JSON);
         _verifyWide(bean, false);
@@ -101,7 +103,6 @@ public class ViewDeserializationInjectionTest extends AfterburnerInjectionTestBa
         bean = new WideBean();
         h.mapper.readerWithView(ViewA.class).withValueToUpdate(bean).readValue(WIDE_JSON);
         _verifyWide(bean, true);
-        _verifySetup(WideBean.class, "SuperSonicBeanDeserializer");
     }
 
     private void _verifyNarrow(NarrowBean bean, boolean filtered)
@@ -124,13 +125,16 @@ public class ViewDeserializationInjectionTest extends AfterburnerInjectionTestBa
         assertEquals(filtered ? null : "y", bean.h);
     }
 
-    // Tests would prove nothing about injection unless these hold
+    // Tests would prove nothing about injection unless these hold: so verify first,
+    // which requires forcing construction of the deserializer
     private void _verifySetup(Class<?> beanClass, String expDeserializer)
     {
-        assertTrue(afterburnerClassChainIncludes(h.deserFor(beanClass).getClass(), expDeserializer),
-                "Wrong deserializer for "+beanClass.getSimpleName()+": "
-                +h.deserFor(beanClass).getClass().getName());
-        for (SettableBeanProperty prop : propsOf(h.deserFor(beanClass))) {
+        h.mapper._deserializationContext()
+                .findRootValueDeserializer(h.mapper.constructType(beanClass));
+        ValueDeserializer<?> deser = h.deserFor(beanClass);
+        assertTrue(afterburnerClassChainIncludes(deser.getClass(), expDeserializer),
+                "Wrong deserializer for "+beanClass.getSimpleName()+": "+deser.getClass().getName());
+        for (SettableBeanProperty prop : propsOf(deser)) {
             assertTrue(isOptimizedProperty(prop),
                     "Property '"+prop.getName()+"' not optimized: "+prop.getClass().getName());
         }

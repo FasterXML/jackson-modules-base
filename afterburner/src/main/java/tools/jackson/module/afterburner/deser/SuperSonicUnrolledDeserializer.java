@@ -159,12 +159,6 @@ public final class SuperSonicUnrolledDeserializer
         final Object bean = _valueInstantiator.createUsingDefault(ctxt);
         // [databind#631]: Assign current value, to be accessible by custom serializers
         p.assignCurrentValue(bean);
-        if (p.canReadObjectId()) {
-            Object id = p.getObjectId();
-            if (id != null) {
-                _handleTypedObjectId(p, ctxt, bean, id);
-            }
-        }
         // Each property with a call site of its own, for type profiles; parser calls
         // outside of `try`, as stock has them
         switch (_propCount) {

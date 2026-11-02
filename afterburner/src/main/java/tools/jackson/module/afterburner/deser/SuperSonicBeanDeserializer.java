@@ -89,12 +89,6 @@ public final class SuperSonicBeanDeserializer
         final Object bean = _valueInstantiator.createUsingDefault(ctxt);
         // [databind#631]: Assign current value, to be accessible by custom serializers
         p.assignCurrentValue(bean);
-        if (p.canReadObjectId()) {
-            Object id = p.getObjectId();
-            if (id != null) {
-                _handleTypedObjectId(p, ctxt, bean, id);
-            }
-        }
 
         // We also we have at least 6 properties, so roll out first few. Each with a call site
         // of its own, for type profiles; parser calls outside of `try`, as stock has them
@@ -140,7 +134,7 @@ public final class SuperSonicBeanDeserializer
                 if (p.currentToken() == JsonToken.END_OBJECT) {
                     return bean;
                 }
-                // we likely point to FIELD_NAME still; offline
+                // out-of-order or unknown name, unexpected token or end of input: offline
                 return _deserializeDisordered(p, ctxt, bean);
             }
             p.nextToken();
@@ -223,7 +217,7 @@ public final class SuperSonicBeanDeserializer
                 if (p.hasToken(JsonToken.END_OBJECT)) {
                     return bean;
                 }
-                // we likely point to FIELD_NAME still; offline
+                // out-of-order or unknown name, unexpected token or end of input: offline
                 return _deserializeDisordered(p, ctxt, bean);
             }
             p.nextToken();
