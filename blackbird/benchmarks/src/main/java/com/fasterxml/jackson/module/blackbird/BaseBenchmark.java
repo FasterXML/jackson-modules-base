@@ -8,6 +8,7 @@ import java.util.stream.IntStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.util.TokenBuffer;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -45,6 +46,9 @@ public abstract class BaseBenchmark {
     ObjectReader classicBeanReader;
     DoubleBean[] doubleBeans;
     byte[] doubleBeansBytes;
+    ObjectReader doubleBeanReader;
+    ObjectWriter doubleBeanWriter;
+    TokenBuffer doubleBeansBuffer;
 
     public static void main(final String[] args) throws RunnerException {
         final Options options = new OptionsBuilder()
@@ -78,6 +82,10 @@ public abstract class BaseBenchmark {
                 .mapToObj(i -> DoubleBean.random(random))
                 .toArray(DoubleBean[]::new);
         doubleBeansBytes = mapper.writeValueAsBytes(doubleBeans);
+        doubleBeanReader = mapper.readerFor(DoubleBean[].class);
+        doubleBeanWriter = mapper.writerFor(DoubleBean[].class);
+        doubleBeansBuffer = new TokenBuffer(mapper, false);
+        doubleBeanWriter.writeValue(doubleBeansBuffer, doubleBeans);
     }
 
     @Benchmark
@@ -108,6 +116,19 @@ public abstract class BaseBenchmark {
     @Benchmark
     public DoubleBean[] doubleBeanArrayDeser() throws Exception {
         return mapper.readValue(doubleBeansBytes, DoubleBean[].class);
+    }
+
+    // Through a buffer, as with `convertValue`, so without number parsing or formatting
+    @Benchmark
+    public TokenBuffer doubleBeanArrayBufferSer() throws Exception {
+        TokenBuffer buffer = new TokenBuffer(mapper, false);
+        doubleBeanWriter.writeValue(buffer, doubleBeans);
+        return buffer;
+    }
+
+    @Benchmark
+    public DoubleBean[] doubleBeanArrayBufferDeser() throws Exception {
+        return doubleBeanReader.readValue(doubleBeansBuffer.asParser());
     }
 
     @Benchmark
