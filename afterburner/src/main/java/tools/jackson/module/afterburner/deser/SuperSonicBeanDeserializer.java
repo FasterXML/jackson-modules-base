@@ -75,7 +75,7 @@ public final class SuperSonicBeanDeserializer
     public Object deserialize(JsonParser p, DeserializationContext ctxt)
         throws JacksonException
     {
-        if (!_vanillaProcessing || (_objectIdReader != null)) {
+        if (!_useVanillaProcessing(ctxt) || (_objectIdReader != null)) {
             // should we ever get here? Just in case
             return super.deserialize(p, ctxt);
         }
@@ -179,7 +179,7 @@ public final class SuperSonicBeanDeserializer
         // The ordered-property fast path below is only safe when no view filtering,
         // non-standard creation or other non-vanilla features are in play; otherwise
         // fall back to the parent implementation which handles all of those.
-        if (!_vanillaProcessing) {
+        if (!_useVanillaProcessing(ctxt)) {
             return super.deserialize(p, ctxt, bean);
         }
         // [databind#631]: Assign current value, to be accessible by custom serializers
