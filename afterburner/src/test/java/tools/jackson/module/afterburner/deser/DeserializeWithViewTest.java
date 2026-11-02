@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.*;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -75,6 +77,21 @@ public class DeserializeWithViewTest extends AfterburnerTestBase
 
     private final static String WIDE_JSON = a2q(
             "{'a':'1','b':'2','c':'3','d':'4','e':'5','f':'6','g':'7','h':'8'}");
+
+    // Verify that beans really use the deserializers tests expect to cover
+    @Test
+    public void testDeserializerTypes() throws Exception
+    {
+        JsonMapper mapper = afterburnerMapperBuilder().build();
+        assertInstanceOf(SuperSonicUnrolledDeserializer.class, _deserializerFor(mapper, ViewBean.class));
+        assertInstanceOf(SuperSonicBeanDeserializer.class, _deserializerFor(mapper, WideViewBean.class));
+    }
+
+    private ValueDeserializer<Object> _deserializerFor(JsonMapper mapper, Class<?> type)
+    {
+        return mapper._deserializationContext()
+                .findRootValueDeserializer(mapper.constructType(type));
+    }
 
     @Test
     public void testUpdateWithView() throws Exception

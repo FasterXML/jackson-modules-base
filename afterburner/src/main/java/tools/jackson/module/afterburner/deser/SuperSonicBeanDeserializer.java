@@ -75,27 +75,16 @@ public final class SuperSonicBeanDeserializer
     public Object deserialize(JsonParser p, DeserializationContext ctxt)
         throws JacksonException
     {
-        if (!_useVanillaProcessing(ctxt) || (_objectIdReader != null)) {
-            // should we ever get here? Just in case
+        // Regular route for an active view that needs filtering, and for any feature
+        // that is not "vanilla" (non-standard creation, including unwrapped properties
+        // and external type ids; injectables; Object Id reader): stock handles those,
+        // and none of them can occur past this check
+        if (!_useVanillaProcessing(ctxt)) {
             return super.deserialize(p, ctxt);
         }
         // common case first:
         if (!p.isExpectedStartObjectToken()) {
             return _deserializeOther(p, ctxt, p.currentToken());
-        }
-        if (_nonStandardCreation) {
-            p.nextToken();
-            if (_unwrappedPropertyHandler != null) {
-                return deserializeWithUnwrapped(p, ctxt);
-            }
-            if (_externalTypeIdHandler != null) {
-                return deserializeWithExternalTypeId(p, ctxt);
-            }
-            Object bean = deserializeFromObjectUsingNonDefault(p, ctxt);
-            if (_injectables != null) {
-                injectValues(ctxt, bean);
-            }
-            return bean;
         }
         final Object bean = _valueInstantiator.createUsingDefault(ctxt);
         // [databind#631]: Assign current value, to be accessible by custom serializers
@@ -105,9 +94,6 @@ public final class SuperSonicBeanDeserializer
             if (id != null) {
                 _handleTypedObjectId(p, ctxt, bean, id);
             }
-        }
-        if (_injectables != null) {
-            injectValues(ctxt, bean);
         }
 
         // We also we have at least 6 properties, so roll out first few. Each with a call site
@@ -184,15 +170,6 @@ public final class SuperSonicBeanDeserializer
         }
         // [databind#631]: Assign current value, to be accessible by custom serializers
         p.assignCurrentValue(bean);
-        if (_injectables != null) {
-            injectValues(ctxt, bean);
-        }
-        if (_unwrappedPropertyHandler != null) {
-            return deserializeWithUnwrapped(p, ctxt, bean);
-        }
-        if (_externalTypeIdHandler != null) {
-            return deserializeWithExternalTypeId(p, ctxt, bean);
-        }
         // We also we have at least 6 properties, so roll out first few. Each with a call site
         // of its own, for type profiles; parser calls outside of `try`, as stock has them
         SettableBeanProperty prop = _orderedProperties[0];
@@ -246,8 +223,8 @@ public final class SuperSonicBeanDeserializer
                 if (p.hasToken(JsonToken.END_OBJECT)) {
                     return bean;
                 }
-                // we likely point to FIELD_NAME, so can just call parent impl
-                return super.deserialize(p, ctxt, bean);
+                // we likely point to FIELD_NAME still; offline
+                return _deserializeDisordered(p, ctxt, bean);
             }
             p.nextToken();
             try {
@@ -258,7 +235,7 @@ public final class SuperSonicBeanDeserializer
         }
         // also, need to ensure we get closing END_OBJECT...
         if (p.nextToken() != JsonToken.END_OBJECT) {
-            return super.deserialize(p, ctxt, bean);
+            return _deserializeDisordered(p, ctxt, bean);
         }
         return bean;
     }

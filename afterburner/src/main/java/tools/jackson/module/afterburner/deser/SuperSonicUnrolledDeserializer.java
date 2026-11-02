@@ -145,27 +145,16 @@ public final class SuperSonicUnrolledDeserializer
     public Object deserialize(JsonParser p, DeserializationContext ctxt)
         throws JacksonException
     {
-        if (!_useVanillaProcessing(ctxt) || (_objectIdReader != null)) {
-            // should we ever get here? Just in case
+        // Regular route for an active view that needs filtering, and for any feature
+        // that is not "vanilla" (non-standard creation, including unwrapped properties
+        // and external type ids; injectables; Object Id reader): stock handles those,
+        // and none of them can occur past this check
+        if (!_useVanillaProcessing(ctxt)) {
             return super.deserialize(p, ctxt);
         }
         // common case first:
         if (!p.isExpectedStartObjectToken()) {
             return _deserializeOther(p, ctxt, p.currentToken());
-        }
-        if (_nonStandardCreation) {
-            p.nextToken();
-            if (_unwrappedPropertyHandler != null) {
-                return deserializeWithUnwrapped(p, ctxt);
-            }
-            if (_externalTypeIdHandler != null) {
-                return deserializeWithExternalTypeId(p, ctxt);
-            }
-            Object bean = deserializeFromObjectUsingNonDefault(p, ctxt);
-            if (_injectables != null) {
-                injectValues(ctxt, bean);
-            }
-            return bean;
         }
         final Object bean = _valueInstantiator.createUsingDefault(ctxt);
         // [databind#631]: Assign current value, to be accessible by custom serializers
@@ -175,9 +164,6 @@ public final class SuperSonicUnrolledDeserializer
             if (id != null) {
                 _handleTypedObjectId(p, ctxt, bean, id);
             }
-        }
-        if (_injectables != null) {
-            injectValues(ctxt, bean);
         }
         // Each property with a call site of its own, for type profiles; parser calls
         // outside of `try`, as stock has them
@@ -273,20 +259,11 @@ public final class SuperSonicUnrolledDeserializer
         }
         // [databind#631]: Assign current value, to be accessible by custom serializers
         p.assignCurrentValue(bean);
-        if (_injectables != null) {
-            injectValues(ctxt, bean);
-        }
-        if (_unwrappedPropertyHandler != null) {
-            return deserializeWithUnwrapped(p, ctxt, bean);
-        }
-        if (_externalTypeIdHandler != null) {
-            return deserializeWithExternalTypeId(p, ctxt, bean);
-        }
         SettableBeanProperty prop = _orderedProperties[0];
         // First: verify that first name is expected
         if (p.isExpectedStartObjectToken()) {
             if (!p.nextName(_orderedPropertyNames[0])) {
-                return super.deserialize(p,  ctxt, bean);
+                return _deserializeDisordered(p, ctxt, bean);
             }
         } else if (!p.hasToken(JsonToken.PROPERTY_NAME)
                 || !prop.getName().equals(p.currentName())) {
