@@ -89,7 +89,7 @@ public class TestSimpleMaterializedInterfaces
         assertNotNull(impl);
         assertTrue(Bean.class.isAssignableFrom(impl));
         // also, let's instantiate to make sure:
-        Object ob = impl.newInstance();
+        Object ob = impl.getDeclaredConstructor().newInstance();
         // and just for good measure do actual cast
         Bean bean = (Bean) ob;
         // call something to ensure generation worked...
