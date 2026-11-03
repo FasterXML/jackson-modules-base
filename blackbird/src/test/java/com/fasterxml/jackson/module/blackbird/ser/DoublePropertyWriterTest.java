@@ -323,14 +323,12 @@ public class DoublePropertyWriterTest extends BlackbirdTestBase
         }
     }
 
-    // (Not with the STRING shape, which Blackbird already ignores for every type of
-    // property in an unwrapped bean, as a renamed writer doesn't know it's broken)
     @Test
     public void testUnwrappedMatchesVanilla() throws Exception
     {
         ObjectMapper vanilla = newVanillaJSONMapper();
         for (Class<? extends Holder> type : TYPES) {
-            if (type.getSimpleName().startsWith("Array") || (type == AsString.class)) {
+            if (type.getSimpleName().startsWith("Array")) {
                 continue;
             }
             for (double value : VALUES) {
