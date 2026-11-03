@@ -1,4 +1,4 @@
-# The 7 failures that the harness itself causes. The harness adds
+# The failures that the harness itself causes. The harness adds
 # BlackbirdModule to every mapper, so a test that asserts the exact list or
 # number of registered modules sees one module more. None of them is a
 # Blackbird behavior difference. Format: class#method :: assertion.
