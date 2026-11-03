@@ -121,6 +121,9 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
         return findOptimizableProperties(lookup, config, propIterator, false);
     }
 
+    /**
+     * @since 2.23
+     */
     protected List<OptimizedSettableBeanProperty<?>> findOptimizableProperties(
             Lookup lookup, DeserializationConfig config,
             Iterator<SettableBeanProperty> propIterator, boolean forBuilder)
@@ -174,7 +177,7 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
         if (jdkMember instanceof Method && prop instanceof MethodProperty) {
             final Method method = (Method) jdkMember;
             try {
-                setter = lookup.unreflect(_withoutAccessOverride(method));
+                setter = lookup.unreflect(ReflectionHack.withoutAccessOverride(method));
             } catch (IllegalAccessException | NoSuchMethodException | SecurityException e) {
                 // e.g. an inherited protected setter, where the lookup class isn't the
                 // subclass (as with `CrossLoaderAccess` on some JDKs); reflection can still call it
@@ -323,17 +326,6 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
                 .getTarget().invoke());
     }
 
-    // `unreflect` skips its access checks for a method made accessible (as databind
-    // does early for injection or back references), but the generated accessor
-    // can't skip them, so check a copy that isn't
-    @SuppressWarnings("deprecation")
-    private static Method _withoutAccessOverride(Method method) throws NoSuchMethodException {
-        if (!method.isAccessible()) {
-            return method;
-        }
-        return method.getDeclaringClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
-    }
-
     private static void _logSkipped(Method setter, Lookup lookup, Throwable cause) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, String.format(
@@ -367,6 +359,9 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
         Object apply(Object bean, long value);
     }
 
+    /**
+     * @since 2.23
+     */
     @FunctionalInterface
     public interface ObjDoubleBiFunction {
         Object apply(Object bean, double value);

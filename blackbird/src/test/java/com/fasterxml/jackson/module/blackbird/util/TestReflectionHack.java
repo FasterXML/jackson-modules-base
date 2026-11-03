@@ -2,6 +2,7 @@ package com.fasterxml.jackson.module.blackbird.util;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +13,16 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TestReflectionHack
 {
     static class SamePackage { }
+
+    static class Base {
+        public Object get() { return null; }
+    }
+
+    // Declares `String get()` and, for overriding, a bridge `Object get()`
+    static class Covariant extends Base {
+        @Override
+        public String get() { return "x"; }
+    }
 
     private static final Lookup LOOKUP = MethodHandles.lookup();
 
@@ -37,6 +48,27 @@ public class TestReflectionHack
         assertTrue(ReflectionHack.canAccessClassWithoutModules(self, ModeBeanBase.class));
         assertTrue(ReflectionHack.canAccessClassWithoutModules(self, SamePackage.class));
         assertFalse(ReflectionHack.canAccessClassWithoutModules(self, _packagePrivateFromOtherPackage()));
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testWithoutAccessOverride() throws Exception
+    {
+        Method plain = Covariant.class.getDeclaredMethod("get");
+        assertSame(plain, ReflectionHack.withoutAccessOverride(plain));
+
+        // the bridge and the method it bridges to have the same name and parameters
+        for (Method method : Covariant.class.getDeclaredMethods()) {
+            if (!method.getName().equals("get")) {
+                continue;
+            }
+            method.setAccessible(true);
+            Method copy = ReflectionHack.withoutAccessOverride(method);
+            assertNotSame(method, copy);
+            assertEquals(method, copy);
+            assertEquals(method.getReturnType(), copy.getReturnType());
+            assertFalse(copy.isAccessible());
+        }
     }
 
     private static Class<?> _packagePrivateFromOtherPackage() throws Exception {
