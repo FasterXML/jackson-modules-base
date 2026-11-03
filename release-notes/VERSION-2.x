@@ -35,6 +35,11 @@ Active maintainers:
 #367: (blackbird) Don't retry failed bean setters through reflection; report
   anything a setter throws as `JsonMappingException`, as plain databind does
  (contributed by Parker W)
+#375: (blackbird) Use generated accessors for primitive `double` setters and getters;
+  fix `@JsonFormat(shape = STRING)` and custom serializers ignored for unwrapped
+  properties, `NullSerializer` ignored for primitive and String properties, and
+  custom inclusion filters ignored for `int`, `long` and `boolean` getters
+ (contributed by Parker W)
 
 2.22.4 (17-Oct-2026)
 2.22.3 (21-Sep-2026)
