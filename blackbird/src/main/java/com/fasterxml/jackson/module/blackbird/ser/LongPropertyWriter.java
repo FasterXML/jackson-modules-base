@@ -85,7 +85,7 @@ final class LongPropertyWriter
         try {
             value = _acc.applyAsLong(bean);
         } catch (Throwable t) {
-            _handleProblem(bean, gen, prov, t, false);
+            _handleProblem(bean, gen, prov, t, true);
             return;
         }
         if (!_suppressableSet || _suppressableLong != value) {
