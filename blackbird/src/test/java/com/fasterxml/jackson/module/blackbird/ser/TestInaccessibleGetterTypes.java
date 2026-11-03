@@ -8,6 +8,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
@@ -37,6 +38,23 @@ public class TestInaccessibleGetterTypes extends BlackbirdTestBase
 
     public static final class HiddenGetterBean extends HiddenGetterBeanBase { }
 
+    // For the default values, databind makes the getters accessible before Blackbird
+    // sees them
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    public static final class NonDefaultHiddenGetterBean extends HiddenGetterBeanBase {
+        int z;
+
+        public NonDefaultHiddenGetterBean() { }
+
+        NonDefaultHiddenGetterBean(int z) {
+            this.z = z;
+        }
+
+        public int getZ() {
+            return z;
+        }
+    }
+
     private final ObjectMapper MAPPER = newObjectMapper();
 
     // `unreflect` refuses some inherited getters that reflection can call; these used
@@ -46,6 +64,21 @@ public class TestInaccessibleGetterTypes extends BlackbirdTestBase
     {
         assertEquals(a2q("{'y':3}"), MAPPER.writeValueAsString(new HiddenGetterBean()));
         assertEquals(BeanPropertyWriter.class, _findWriter(HiddenGetterBean.class, "y").getClass());
+    }
+
+    // `unreflect` doesn't check access to a getter made accessible, but the generated
+    // getter must still be refused, as it can't call it
+    @Test
+    public void testInheritedGetterMadeAccessible() throws Exception
+    {
+        // (`y` always has its default value, so is always suppressed)
+        assertEquals(newVanillaJSONMapper().writeValueAsString(new NonDefaultHiddenGetterBean(5)),
+                MAPPER.writeValueAsString(new NonDefaultHiddenGetterBean(5)));
+        assertEquals(a2q("{'z':5}"), MAPPER.writeValueAsString(new NonDefaultHiddenGetterBean(5)));
+        assertEquals("{}", MAPPER.writeValueAsString(new NonDefaultHiddenGetterBean()));
+        assertEquals(BeanPropertyWriter.class, _findWriter(NonDefaultHiddenGetterBean.class, "y").getClass());
+        // and the bean's own getter is still optimized
+        assertNotEquals(BeanPropertyWriter.class, _findWriter(NonDefaultHiddenGetterBean.class, "z").getClass());
     }
 
     // The bean's loader has its own copy of `Level`, so a generated getter would

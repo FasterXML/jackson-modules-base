@@ -30,6 +30,21 @@ public class ReflectionHack {
     }
 
     /**
+     * {@code method}, or if it was made accessible, a copy that isn't: {@code unreflect}
+     * skips its access checks for an accessible method, but an accessor generated from
+     * the handle can't skip them, so it must be unreflected from a copy that isn't.
+     * Databind makes some accessors accessible early (like getters, for the default
+     * values of a {@code NON_DEFAULT} bean; or setters, for injection or back references).
+     */
+    @SuppressWarnings("deprecation")
+    public static Method withoutAccessOverride(Method method) throws NoSuchMethodException {
+        if (!method.isAccessible()) {
+            return method;
+        }
+        return method.getDeclaringClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
+    }
+
+    /**
      * Whether an accessor spun with {@code lookup} can call {@code handle}, unreflected
      * from {@code method}, without failing on every call. It casts to each parameter
      * type (including the receiver), so those must be accessible from the lookup
