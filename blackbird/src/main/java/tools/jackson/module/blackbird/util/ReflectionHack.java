@@ -31,12 +31,43 @@ public class ReflectionHack {
     }
 
     /**
+     * {@code method}, or if it was made accessible, a copy that isn't: {@code unreflect}
+     * skips its access checks for an accessible method, but an accessor generated from
+     * the handle can't skip them, so it must be unreflected from a copy that isn't.
+     * Databind makes some accessors accessible early (like getters, for the default
+     * values of a {@code NON_DEFAULT} bean; or setters, for injection or back references).
+     *
+     * @since 3.1.9
+     */
+    @SuppressWarnings("deprecation")
+    public static Method withoutAccessOverride(Method method) throws NoSuchMethodException {
+        if (!method.isAccessible()) {
+            return method;
+        }
+        final Class<?> declaringClass = method.getDeclaringClass();
+        Method copy = declaringClass.getDeclaredMethod(method.getName(), method.getParameterTypes());
+        if (copy.equals(method)) {
+            return copy;
+        }
+        // Another method with the same parameters, and so a different return type (like
+        // a bridge method, or the method it bridges to) was picked; find this one
+        for (Method m : declaringClass.getDeclaredMethods()) {
+            if (m.equals(method)) {
+                return m;
+            }
+        }
+        throw new NoSuchMethodException(method.toString());
+    }
+
+    /**
      * Whether an accessor spun with {@code lookup} can call {@code handle}, unreflected
      * from {@code method}, without failing on every call. It casts to each parameter
      * type (including the receiver), so those must be accessible from the lookup
      * class; and the call names every type in the method's signature, so those must
      * also be the same classes from the lookup class's loader (see
      * {@link #isSameClassWithoutLoading}).
+     *
+     * @since 3.1.9
      */
     public static boolean canLinkAccessor(Lookup lookup, Method method, MethodHandle handle) {
         final MethodType type = handle.type();
@@ -84,6 +115,8 @@ public class ReflectionHack {
      * class from the lookup class's loader (see {@link #isSameClassWithoutLoading})
      * and accessible from it. If not, that code fails when it runs, not when it is
      * created.
+     *
+     * @since 3.1.9
      */
     public static boolean canAccessClass(Lookup lookup, Class<?> type) {
         return isSameClassWithoutLoading(lookup, type) && isAccessible(lookup, type);
@@ -113,6 +146,8 @@ public class ReflectionHack {
      * that relies on it never doing so. So only a class that loader defined itself
      * qualifies, or a {@code java.*} one (which only the JDK's loaders can define);
      * types from other loaders, even JDK {@code javax.*} ones, don't.
+     *
+     * @since 3.1.9
      */
     public static boolean isSameClassWithoutLoading(Lookup lookup, Class<?> type) {
         type = elementType(type);

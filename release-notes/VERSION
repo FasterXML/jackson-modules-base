@@ -44,6 +44,9 @@ No changes since 3.1
   properties, `NullSerializer` ignored for primitive and String properties, and
   custom inclusion filters ignored for `int`, `long` and `boolean` getters
  (contributed by @parker89; 3.x port by @cowtowncoder, w/ Claude code)
+#377: Blackbird: serialization fails for a `NON_DEFAULT` bean inheriting
+  a package-private getter from another package
+ (fix by @cowtowncoder, w/ Claude code)
 
 3.1.8 (17-Oct-2026)
 
