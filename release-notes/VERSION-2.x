@@ -37,7 +37,8 @@ Active maintainers:
  (contributed by Parker W)
 #375: (blackbird) Use generated accessors for primitive `double` setters and getters;
   fix `@JsonFormat(shape = STRING)` and custom serializers ignored for unwrapped
-  properties, and `NullSerializer` ignored for primitive and String properties
+  properties, `NullSerializer` ignored for primitive and String properties, and
+  custom inclusion filters ignored for `int`, `long` and `boolean` getters
  (contributed by Parker W)
 
 2.22.4 (17-Oct-2026)
