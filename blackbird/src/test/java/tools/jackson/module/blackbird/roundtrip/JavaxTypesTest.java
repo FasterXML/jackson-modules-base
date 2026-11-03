@@ -37,6 +37,7 @@ public class JavaxTypesTest extends BlackbirdTestBase
     }
 
     @Test
+    @SuppressWarnings("removal") // AuthPermission marked for removal in newer JDKs
     public void testAuthPermission() throws Exception
     {
         AuthPermission in = new AuthPermission("foo");

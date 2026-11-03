@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.ObjectWriteContext;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.util.TokenBuffer;
 import tools.jackson.module.afterburner.AfterburnerTestBase;
@@ -65,7 +66,7 @@ public class NativeObjectIdOnPojoTest extends AfterburnerTestBase
 
     private TokenBuffer _withObjectId(int count)
     {
-        TokenBuffer buf = new TokenBuffer(true);
+        TokenBuffer buf = new TokenBuffer(ObjectWriteContext.empty(), true);
         buf.writeObjectId("anchor1");
         buf.writeStartObject();
         for (int i = 0; i < count; ++i) {
