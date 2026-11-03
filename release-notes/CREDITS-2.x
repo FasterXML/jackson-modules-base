@@ -178,3 +178,6 @@ Parker Winchester (@parker89)
  (2.23.0)
 * Contributed #367: (blackbird) Don't retry failed bean setters through reflection
  (2.23.0)
+* Contributed #375: (blackbird) Use generated accessors for primitive `double` setters
+  and getters
+ (2.23.0)

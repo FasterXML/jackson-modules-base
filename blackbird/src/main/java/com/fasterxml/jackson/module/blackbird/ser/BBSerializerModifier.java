@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 import java.util.function.UnaryOperator;
@@ -150,6 +151,22 @@ public class BBSerializerModifier extends BeanSerializerModifier
                         getter.type())
                     .getTarget().invokeExact();
                 it.set(new LongPropertyWriter(bpw, accessor, null));
+            } else if (type == Double.TYPE) {
+                // `DoubleSerializer` writes a type id for non-finite values, so a property
+                // with a type serializer (which no standard resolver gives a primitive)
+                // is left to `BeanPropertyWriter`
+                if (bpw.getTypeSerializer() != null) {
+                    return;
+                }
+                ToDoubleFunction<Object> accessor = (ToDoubleFunction<Object>) LambdaMetafactory.metafactory(
+                        lookup,
+                        "applyAsDouble",
+                        methodType(ToDoubleFunction.class),
+                        methodType(double.class, Object.class),
+                        getter,
+                        getter.type())
+                    .getTarget().invokeExact();
+                it.set(new DoublePropertyWriter(bpw, accessor, null));
             } else if (type == Boolean.TYPE) {
                 ToBooleanFunction accessor = (ToBooleanFunction) LambdaMetafactory.metafactory(
                         lookup,

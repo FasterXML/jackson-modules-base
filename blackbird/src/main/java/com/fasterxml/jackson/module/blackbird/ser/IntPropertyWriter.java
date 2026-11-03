@@ -16,6 +16,11 @@ final class IntPropertyWriter
     private final int _suppressableInt;
     private final boolean _suppressableIntSet;
 
+    // A suppressable value that isn't of the property type, like a custom inclusion
+    // filter, decides through its own `equals`, which is given the boxed value as
+    // `BeanPropertyWriter` does
+    private final boolean _suppressableFilter;
+
     private final ToIntFunction<Object> _acc;
 
     public IntPropertyWriter(BeanPropertyWriter src, ToIntFunction<Object> acc, JsonSerializer<Object> ser) {
@@ -25,9 +30,11 @@ final class IntPropertyWriter
         if (_suppressableValue instanceof Integer) {
             _suppressableInt = (Integer)_suppressableValue;
             _suppressableIntSet = true;
+            _suppressableFilter = false;
         } else {
             _suppressableInt = 0;
             _suppressableIntSet = false;
+            _suppressableFilter = (_suppressableValue != null) && (_suppressableValue != MARKER_FOR_EMPTY);
         }
     }
 
@@ -35,6 +42,7 @@ final class IntPropertyWriter
         super(base, name);
         _suppressableInt = base._suppressableInt;
         _suppressableIntSet = base._suppressableIntSet;
+        _suppressableFilter = base._suppressableFilter;
         _acc = base._acc;
     }
 
@@ -68,7 +76,7 @@ final class IntPropertyWriter
             _handleProblem(bean, gen, prov, t, false);
             return;
         }
-        if (!_suppressableIntSet || _suppressableInt != value) {
+        if (!_isSuppressed(value)) {
             gen.writeFieldName(_fastName);
             gen.writeNumber(value);
         }
@@ -88,10 +96,17 @@ final class IntPropertyWriter
             _handleProblem(bean, gen, prov, t, true);
             return;
         }
-        if (!_suppressableIntSet || _suppressableInt != value) {
+        if (!_isSuppressed(value)) {
             gen.writeNumber(value);
         } else { // important: MUST output a placeholder
             serializeAsPlaceholder(bean, gen, prov);
         }
+    }
+
+    private boolean _isSuppressed(int value) {
+        if (_suppressableIntSet) {
+            return _suppressableInt == value;
+        }
+        return _suppressableFilter && _suppressableValue.equals(value);
     }
 }

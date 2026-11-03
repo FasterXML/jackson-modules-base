@@ -73,13 +73,13 @@ Following things are optimized:
 
 * For serialization (POJOs to JSON):
     * Getter methods are inlined using generated lambdas instead of reflection
-    * Serializers for small number of 'primitive' types (`int`, `long`, `boolean`, `String`) are replaced with lambda-specialized generators, instead of getting delegated to `JsonSerializer`s
+    * Serializers for small number of 'primitive' types (`int`, `long`, `double`, `boolean`, `String`) are replaced with lambda-specialized generators, instead of getting delegated to `JsonSerializer`s
 * For deserialization (JSON to POJOs):
     * Calls to default (no-argument) constructors are lambda-fied instead of using reflection
     * Calls to @JsonCreate factory methods and constructors with arguments get a slightly less efficient lambda based implementation
       - This is new in Blackbird; Afterburner never did this
     * Setter methods are called using lambdas instead of reflection
-    * Deserializers for small number of 'primitive' types (`int`, `long`, `boolean`, `String`) are replaced with lambda-specialized parsers, instead of getting delegated to `JsonDeserializer`s
+    * Deserializers for small number of 'primitive' types (`int`, `long`, `double`, `boolean`, `String`) are replaced with lambda-specialized parsers, instead of getting delegated to `JsonDeserializer`s
  
 ### ... and what is not?
 

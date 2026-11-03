@@ -4,6 +4,9 @@ import java.lang.reflect.Proxy;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -55,6 +58,35 @@ public class TestAccessFallback extends BlackbirdTestBase
     }
 
     private static final String BEAN_JSON = "{\"e\":\"a\"}";
+
+    // As an array, a failed generated getter falls back to writing an element
+    @JsonFormat(shape = JsonFormat.Shape.ARRAY)
+    @JsonPropertyOrder({ "i", "l", "b", "s" })
+    public static class ArrayBean
+    {
+        public int getI() { return fail(1); }
+        public long getL() { return fail(2L); }
+        public boolean isB() { return fail(true); }
+        public String getS() { return fail("s"); }
+
+        static <T> T fail(T value) {
+            for (StackTraceElement elem : new Throwable().getStackTrace()) {
+                if (elem.getClassName().equals("java.lang.reflect.Method")) {
+                    return value;
+                }
+                if (elem.getClassName().startsWith("com.fasterxml.jackson.module.blackbird.ser.")) {
+                    throw new BogusTestError("boom!");
+                }
+            }
+            return value;
+        }
+    }
+
+    @Test
+    public void testSerializeAccessAsArray() throws Exception
+    {
+        assertEquals("[1,2,true,\"s\"]", newObjectMapper().writeValueAsString(new ArrayBean()));
+    }
 
     @Test
     public void testSerializeAccess() throws Exception

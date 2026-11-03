@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.SerializableString;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import com.fasterxml.jackson.databind.util.NameTransformer;
 
 /**
  * Intermediate base class that is used for concrete
@@ -40,10 +41,28 @@ abstract class OptimizedBeanPropertyWriter<T extends OptimizedBeanPropertyWriter
 
     protected OptimizedBeanPropertyWriter(OptimizedBeanPropertyWriter<?> base, PropertyName name) {
         super(base, name);
-        // 24-Oct-2017, tatu: Should this be changed too?
-        fallbackWriter = base.fallbackWriter;
+        // Renamed (as for an unwrapped property, after its serializer was assigned):
+        // the fallback must write the new name, and a writer that already uses it
+        // (like one with a non-default serializer) must keep doing so
+        fallbackWriter = _renamed(base.fallbackWriter, name);
         _serializer = base._serializer;
         _fastName = getSerializedName();
+        broken = base.broken;
+    }
+
+    private static BeanPropertyWriter _renamed(BeanPropertyWriter writer, PropertyName name) {
+        final String newName = name.getSimpleName();
+        return writer.rename(new NameTransformer() {
+            @Override
+            public String transform(String original) {
+                return newName;
+            }
+
+            @Override
+            public String reverse(String transformed) {
+                return null;
+            }
+        });
     }
 
     private BeanPropertyWriter unwrapFallbackWriter(BeanPropertyWriter srcIn)
