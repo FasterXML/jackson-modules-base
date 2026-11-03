@@ -121,6 +121,9 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
         return findOptimizableProperties(lookup, config, propIterator, false);
     }
 
+    /**
+     * @since 2.23
+     */
     protected List<OptimizedSettableBeanProperty<?>> findOptimizableProperties(
             Lookup lookup, DeserializationConfig config,
             Iterator<SettableBeanProperty> propIterator, boolean forBuilder)
@@ -356,6 +359,9 @@ public class BBDeserializerModifier extends BeanDeserializerModifier
         Object apply(Object bean, long value);
     }
 
+    /**
+     * @since 2.23
+     */
     @FunctionalInterface
     public interface ObjDoubleBiFunction {
         Object apply(Object bean, double value);

@@ -35,6 +35,8 @@ public class ReflectionHack {
      * the handle can't skip them, so it must be unreflected from a copy that isn't.
      * Databind makes some accessors accessible early (like getters, for the default
      * values of a {@code NON_DEFAULT} bean; or setters, for injection or back references).
+     *
+     * @since 2.23
      */
     @SuppressWarnings("deprecation")
     public static Method withoutAccessOverride(Method method) throws NoSuchMethodException {
@@ -63,6 +65,8 @@ public class ReflectionHack {
      * class; and the call names every type in the method's signature, so those must
      * also be the same classes from the lookup class's loader (see
      * {@link #isSameClassWithoutLoading}).
+     *
+     * @since 2.23
      */
     public static boolean canLinkAccessor(Lookup lookup, Method method, MethodHandle handle) {
         final MethodType type = handle.type();
@@ -107,6 +111,8 @@ public class ReflectionHack {
     /**
      * Whether any code, reflection included, can access {@code type} without being
      * granted access: it is public and, with modules, in a package exported to all.
+     *
+     * @since 2.23
      */
     public static boolean isPubliclyAccessible(Class<?> type) {
         if (!Modifier.isPublic(type.getModifiers())) {
@@ -128,6 +134,8 @@ public class ReflectionHack {
      * class from the lookup class's loader (see {@link #isSameClassWithoutLoading})
      * and accessible from it. If not, that code fails when it runs, not when it is
      * created.
+     *
+     * @since 2.23
      */
     public static boolean canAccessClass(Lookup lookup, Class<?> type) {
         return isSameClassWithoutLoading(lookup, type) && isAccessible(lookup, type);
@@ -157,6 +165,8 @@ public class ReflectionHack {
      * that relies on it never doing so. So only a class that loader defined itself
      * qualifies, or a {@code java.*} one (which only the JDK's loaders can define);
      * types from other loaders, even JDK {@code javax.*} ones, don't.
+     *
+     * @since 2.23
      */
     public static boolean isSameClassWithoutLoading(Lookup lookup, Class<?> type) {
         type = elementType(type);
