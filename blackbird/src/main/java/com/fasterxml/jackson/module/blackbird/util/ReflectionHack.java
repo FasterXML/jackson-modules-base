@@ -41,7 +41,19 @@ public class ReflectionHack {
         if (!method.isAccessible()) {
             return method;
         }
-        return method.getDeclaringClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
+        final Class<?> declaringClass = method.getDeclaringClass();
+        Method copy = declaringClass.getDeclaredMethod(method.getName(), method.getParameterTypes());
+        if (copy.equals(method)) {
+            return copy;
+        }
+        // Another method with the same parameters, and so a different return type (like
+        // a bridge method, or the method it bridges to) was picked; find this one
+        for (Method m : declaringClass.getDeclaredMethods()) {
+            if (m.equals(method)) {
+                return m;
+            }
+        }
+        throw new NoSuchMethodException(method.toString());
     }
 
     /**
