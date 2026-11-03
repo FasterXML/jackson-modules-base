@@ -165,6 +165,15 @@ that generates a deserializer and a serializer class per bean with the JDK Class
             <_noee>true</_noee>
             <Require-Capability>osgi.ee;filter:="(&amp;(osgi.ee=JavaSE)(version=17))"</Require-Capability>
             <Multi-Release>true</Multi-Release>
+            <!-- bnd before 7.0.0 does not know the multi-release layout
+                 (bndtools/bnd#5346), so it reports the classes under
+                 META-INF/versions/25 as in the wrong directory (an error,
+                 which the plugin's default fixup, replaced here, turns into
+                 a warning). Their base copies (copy-java25-classes) give
+                 bnd the imports. The fixup also hides any other misplaced
+                 class: remove it when oss-parent moves to
+                 maven-bundle-plugin 6, which uses bnd 7. -->
+            <_fixupmessages>"Classes found in the wrong directory";is:=ignore</_fixupmessages>
           </instructions>
         </configuration>
       </plugin>
