@@ -14,6 +14,11 @@ final class BooleanPropertyWriter
     private final boolean _suppressableSet;
     private final boolean _suppressableBoolean;
 
+    // A suppressable value that isn't of the property type, like a custom inclusion
+    // filter, decides through its own `equals`, which is given the boxed value as
+    // `BeanPropertyWriter` does
+    private final boolean _suppressableFilter;
+
     private final ToBooleanFunction _acc;
 
     public BooleanPropertyWriter(BeanPropertyWriter src, ToBooleanFunction acc, ValueSerializer<Object> ser) {
@@ -23,15 +28,18 @@ final class BooleanPropertyWriter
         if (_suppressableValue instanceof Boolean) {
             _suppressableBoolean = ((Boolean)_suppressableValue).booleanValue();
             _suppressableSet = true;
+            _suppressableFilter = false;
         } else {
             _suppressableBoolean = false;
             _suppressableSet = false;
+            _suppressableFilter = (_suppressableValue != null) && (_suppressableValue != MARKER_FOR_EMPTY);
         }
     }
 
     protected BooleanPropertyWriter(BooleanPropertyWriter base, PropertyName name) {
         super(base, name);
         _suppressableSet = base._suppressableSet;
+        _suppressableFilter = base._suppressableFilter;
         _suppressableBoolean = base._suppressableBoolean;
         _acc = base._acc;
     }
@@ -67,7 +75,7 @@ final class BooleanPropertyWriter
             _handleProblem(bean, g, ctxt, t, false);
             return;
         }
-        if (!_suppressableSet || _suppressableBoolean != value) {
+        if (!_isSuppressed(value)) {
             g.writeName(_fastName);
             g.writeBoolean(value);
         }
@@ -88,10 +96,17 @@ final class BooleanPropertyWriter
             _handleProblem(bean, g, ctxt, t, true);
             return;
         }
-        if (!_suppressableSet || _suppressableBoolean != value) {
+        if (!_isSuppressed(value)) {
             g.writeBoolean(value);
         } else { // important: MUST output a placeholder
             serializeAsOmittedElement(bean, g, ctxt);
         }
+    }
+
+    private boolean _isSuppressed(boolean value) {
+        if (_suppressableSet) {
+            return _suppressableBoolean == value;
+        }
+        return _suppressableFilter && _suppressableValue.equals(value);
     }
 }

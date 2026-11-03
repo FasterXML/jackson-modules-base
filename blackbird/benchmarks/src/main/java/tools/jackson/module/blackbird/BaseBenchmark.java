@@ -8,6 +8,7 @@ import java.util.stream.IntStream;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectReader;
 import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.util.TokenBuffer;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -43,6 +44,11 @@ public abstract class BaseBenchmark {
     byte[] classicBeansJson;
     ObjectWriter classicBeanWriter;
     ObjectReader classicBeanReader;
+    DoubleBean[] doubleBeans;
+    byte[] doubleBeansBytes;
+    ObjectReader doubleBeanReader;
+    ObjectWriter doubleBeanWriter;
+    TokenBuffer doubleBeansBuffer;
 
     public static void main(final String[] args) throws RunnerException {
         final Options options = new OptionsBuilder()
@@ -71,6 +77,15 @@ public abstract class BaseBenchmark {
         classicBean.setUp();
         classicBeans = Collections.nCopies(1000, classicBean).toArray(new ClassicBean[0]);
         classicBeansJson = classicBeanWriter.writeValueAsBytes(classicBeans);
+
+        doubleBeans = IntStream.range(0, 1000)
+                .mapToObj(i -> DoubleBean.random(random))
+                .toArray(DoubleBean[]::new);
+        doubleBeansBytes = mapper.writeValueAsBytes(doubleBeans);
+        doubleBeanReader = mapper.readerFor(DoubleBean[].class);
+        doubleBeanWriter = mapper.writerFor(DoubleBean[].class);
+        doubleBeansBuffer = TokenBuffer.forGeneration();
+        doubleBeanWriter.writeValue(doubleBeansBuffer, doubleBeans);
     }
 
     @Benchmark
@@ -91,6 +106,34 @@ public abstract class BaseBenchmark {
     @Benchmark
     public BeanWithBuilder[] builderArrayDeser() throws Exception {
         return mapper.readValue(beansBytes, BeanWithBuilder[].class);
+    }
+
+    @Benchmark
+    public byte[] doubleBeanArraySer() throws Exception {
+        return mapper.writeValueAsBytes(doubleBeans);
+    }
+
+    @Benchmark
+    public DoubleBean[] doubleBeanArrayDeser() throws Exception {
+        return mapper.readValue(doubleBeansBytes, DoubleBean[].class);
+    }
+
+    // Through a buffer, as with `convertValue`, so without number parsing or formatting
+    @Benchmark
+    public TokenBuffer doubleBeanArrayBufferSer() throws Exception {
+        TokenBuffer buffer = TokenBuffer.forGeneration();
+        doubleBeanWriter.writeValue(buffer, doubleBeans);
+        return buffer;
+    }
+
+    @Benchmark
+    public DoubleBean[] doubleBeanArrayBufferDeser() throws Exception {
+        return doubleBeanReader.readValue(doubleBeansBuffer.asParser());
+    }
+
+    @Benchmark
+    public DoubleBeanWithBuilder[] doubleBuilderArrayDeser() throws Exception {
+        return mapper.readValue(doubleBeansBytes, DoubleBeanWithBuilder[].class);
     }
 
     @Benchmark
