@@ -1,6 +1,7 @@
 package com.fasterxml.jackson.module.blackbird.ser;
 
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ser.std.NullSerializer;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 
@@ -26,6 +27,10 @@ class SerializerUtil
             // 20-Nov-2020, tatu: As per [modules-base#117], need to consider
             //   one standard serializer that should not be replaced...
             if (ser instanceof ToStringSerializer) {
+                return false;
+            }
+            // Nor one that writes null whatever the value (as used to hide one)
+            if (ser instanceof NullSerializer) {
                 return false;
             }
             return true;

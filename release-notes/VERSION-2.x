@@ -36,7 +36,8 @@ Active maintainers:
   anything a setter throws as `JsonMappingException`, as plain databind does
  (contributed by Parker W)
 #375: (blackbird) Use generated accessors for primitive `double` setters and getters;
-  keep `@JsonFormat(shape = STRING)` and custom serializers for unwrapped properties
+  fix `@JsonFormat(shape = STRING)` and custom serializers ignored for unwrapped
+  properties, and `NullSerializer` ignored for primitive and String properties
  (contributed by Parker W)
 
 2.22.4 (17-Oct-2026)
