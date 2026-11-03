@@ -109,8 +109,8 @@ public class BBSerializerModifier extends ValueSerializerModifier
         if (member instanceof AnnotatedMethod) {
             method = (Method) member.getMember();
             try {
-                getter = lookup.unreflect(method);
-            } catch (IllegalAccessException e) {
+                getter = lookup.unreflect(ReflectionHack.withoutAccessOverride(method));
+            } catch (IllegalAccessException | NoSuchMethodException | SecurityException e) {
                 // e.g. an inherited protected getter, where the lookup class isn't the
                 // subclass (as with `CrossLoaderAccess` on some JDKs); reflection can still call it
                 _logSkipped(method, lookup, e);
