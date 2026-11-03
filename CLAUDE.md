@@ -67,7 +67,7 @@ afterburner, mrbean, and paranamer shade their dependencies into relocated packa
 
 ## Release & Branching
 
-- **Main branches:** `3.x` (Jackson 3 development, default branch) and `2.x` (head of the 2.x line, 2.23.0-SNAPSHOT); there is no `master`
+- **Main branches:** `3.x` (Jackson 3 development, default branch) and `2.x` (head of the 2.x line, the next 2.x minor version); there is no `master`
 - **Development branches:** per-minor-version branches (e.g., `2.20`, `2.21`, `2.22`); fixes merge forward (e.g., `2.20` → `2.21` → `2.22` → `2.x`)
-- **Current version (this branch, `2.21`):** 2.21.8-SNAPSHOT
+- **Version:** each branch has its own (e.g., `2.21` is at 2.21.x-SNAPSHOT); check `<version>` in the root `pom.xml`. This file merges forward unchanged, so it doesn't name the branch or version it's on
 - Releases use maven-release-plugin; snapshots deploy to Sonatype Central Portal
