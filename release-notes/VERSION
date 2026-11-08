@@ -22,7 +22,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-3.3.0 (not yet released)
+3.3.0 (07-Nov-2026)
 
 #359: (blackbird) New code generation engine: per-bean codec classes, generated with
   the JDK ClassFile API, replace the LambdaMetafactory accessors. The codecs also
