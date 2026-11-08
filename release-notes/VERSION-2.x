@@ -23,7 +23,7 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
-2.23.0 (not yet released)
+2.23.0 (07-Nov-2026)
 
 #363: (blackbird) `@JsonSetter(nulls = Nulls.SKIP)` ignored for properties of
   beans with a properties-based creator
