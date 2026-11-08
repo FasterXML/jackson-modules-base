@@ -8,7 +8,7 @@
   <groupId>tools.jackson.module</groupId>
   <artifactId>jackson-modules-base</artifactId>
   <name>Jackson modules: Base</name>
-  <version>3.3.0-SNAPSHOT</version>
+  <version>3.3.0</version>
   <packaging>pom</packaging>
   <description>Parent pom for Jackson "base" modules: modules that build directly on databind, and are
 not datatype, data format, or JAX-RS provider modules.
@@ -63,8 +63,7 @@ not datatype, data format, or JAX-RS provider modules.
       </modules>
     </profile>
     <!-- maven-release-plugin passes -Prelease (oss-parent) to both its
-         preparation build and the deploy. A release on JDK < 25 would leave
-         out the Blackbird modules without an error, so it fails instead. -->
+         preparation build and the deploy. A release on JDK < 25 would leave out the Blackbird modules without an error, so it fails instead. -->
     <profile>
       <id>release</id>
       <build>
@@ -100,7 +99,7 @@ not datatype, data format, or JAX-RS provider modules.
     <connection>scm:git:git@github.com:FasterXML/jackson-modules-base.git</connection>
     <developerConnection>scm:git:git@github.com:FasterXML/jackson-modules-base.git</developerConnection>
     <url>https://github.com/FasterXML/jackson-modules-base</url>
-    <tag>HEAD</tag>
+    <tag>jackson-modules-base-3.3.0</tag>
   </scm>
   <issueManagement>
     <url>https://github.com/FasterXML/jackson-modules-base/issues</url>
