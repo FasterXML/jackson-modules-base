@@ -341,12 +341,13 @@ final class BBReaderFactory
         for (int i = 0; i < comps.length; i++) {
             SettableBeanProperty prop = creatorProps[i];
             // Wrapper classes (managed references among them) do work at
-            // construction that the typed-locals loop does not.
+            // construction that the typed-locals loop does not. A type-variable
+            // component erases to its bound; the resolved type need only fit it.
             if (prop == null || prop.getClass() != CreatorProperty.class
                     || prop.getCreatorIndex() != i
                     || prop.getMetadata().getMergeInfo() != null
                     || prop.getInjectionDefinition() != null
-                    || prop.getType().getRawClass() != comps[i].getType()) {
+                    || !comps[i].getType().isAssignableFrom(prop.getType().getRawClass())) {
                 return gate("record component " + i);
             }
         }
