@@ -16,6 +16,7 @@ import tools.jackson.databind.deser.bean.BeanDeserializer;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.deser.bean.BeanPropertyMap;
 import tools.jackson.databind.deser.bean.BuilderBasedDeserializer;
+import tools.jackson.databind.util.AccessPattern;
 
 /**
  * Defines the hidden-class deserializer for one bean: assembles the class
@@ -49,6 +50,18 @@ public final class ReaderCodegen
             Class<?> type, ValueDeserializer<?> child, MethodHandle handle) {
         public GenProp(String name, Kind kind, SettableBeanProperty stock) {
             this(name, kind, stock, null, null, null);
+        }
+
+        // Record mode: whether stock gives an absent component the local's
+        // initial value (see PropertyValueBuffer._findMissing). Scalar kinds
+        // use the stock deserializers, whose absent primitive is zero.
+        boolean absentIsDefault() {
+            ValueDeserializer<?> deser = stock.getValueDeserializer();
+            if (stock.isRequired() || stock.getNullValueProvider() != deser) {
+                return false;
+            }
+            return type.isPrimitive() ? kind != Kind.STOCK
+                    : deser.getNullAccessPattern() == AccessPattern.ALWAYS_NULL;
         }
     }
 

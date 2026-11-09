@@ -665,12 +665,12 @@ final class BeanReaderGenerator
 
     // Record mode: components collect into typed locals in canonical order.
     // At the end of the object the canonical constructor runs directly when
-    // the document supplied every component and nothing needs stock
-    // argument handling; otherwise, and when the constructor throws, the base
-    // finishes through the stock creator (see GeneratedReaderBase
-    // ._recordBuild). Names no component takes are handled, or buffered and
-    // replayed against the record, the way the stock property-based loop
-    // handles them.
+    // every component was supplied or takes its initial value when absent,
+    // and nothing needs stock argument handling; otherwise, and when the
+    // constructor throws, the base finishes through the stock creator (see
+    // GeneratedReaderBase._recordBuild). Names no component takes are
+    // handled, or buffered and replayed against the record, the way the
+    // stock property-based loop handles them.
     private static void buildRecordDeserialize(CodeBuilder cob, ReaderCodegen.Plan plan) {
         final ClassDesc base = CD_READER_BASE;
         final List<GenProp> props = plan.props();
@@ -682,11 +682,15 @@ final class BeanReaderGenerator
         int next = 3;
         int[] componentSlot = new int[n];
         boolean anyPrimitive = false;
+        long defaultAbsent = 0L;
         for (int i = 0; i < n; i++) {
             componentSlot[i] = next;
             Class<?> t = props.get(i).type();
             next += (t == long.class || t == double.class) ? 2 : 1;
             anyPrimitive |= t.isPrimitive();
+            if (props.get(i).absentIsDefault()) {
+                defaultAbsent |= 1L << i;
+            }
         }
         final int matcherSlot = next++;
         final int ixSlot = next++;
@@ -853,7 +857,25 @@ final class BeanReaderGenerator
         cob.lload(seenSlot);
         cob.loadConstant(allSeen);
         cob.lcmp();
-        cob.ifne(slow);
+        if (defaultAbsent == 0L) {
+            cob.ifne(slow);
+        } else {
+            // Some absent: direct only if all of those take their initial
+            // value and FAIL_ON_MISSING_CREATOR_PROPERTIES is off.
+            Label complete = cob.newLabel();
+            cob.ifeq(complete);
+            cob.lload(seenSlot);
+            cob.loadConstant(defaultAbsent);
+            cob.lor();
+            cob.loadConstant(allSeen);
+            cob.lcmp();
+            cob.ifne(slow);
+            cob.aload(ctxt);
+            cob.getstatic(CD_DESER_FEATURE, "FAIL_ON_MISSING_CREATOR_PROPERTIES", CD_DESER_FEATURE);
+            cob.invokevirtual(CD_DESER_CONTEXT, "isEnabled", MTD_IS_ENABLED);
+            cob.ifne(slow);
+            cob.labelBinding(complete);
+        }
         if (anyPrimitive) {
             cob.lload(rawPrimSlot);
             cob.lconst_0();
@@ -883,7 +905,7 @@ final class BeanReaderGenerator
         cob.labelBinding(ctorEnd);
         cob.astore(beanSlot);
         cob.goto_(finish);
-        // The constructor failed with every component present: the base
+        // The constructor failed with every argument in place: the base
         // reports it the way the stock instantiator would.
         cob.labelBinding(ctorHandler);
         cob.astore(pendingSlot);
