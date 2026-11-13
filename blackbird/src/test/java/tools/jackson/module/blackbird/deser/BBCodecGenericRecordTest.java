@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ObjectMapper;
@@ -26,6 +29,15 @@ public class BBCodecGenericRecordTest extends BlackbirdTestBase
 
     public record Payload(String s, int n) {}
 
+    // A non-canonical creator of the canonical arity whose parameter types
+    // fit the components but differ from them: not the canonical constructor.
+    public record Narrowed(Object a, Object b) {
+        @JsonCreator
+        public Narrowed(@JsonProperty("a") String a, @JsonProperty("b") String b) {
+            this((Object) ("ctor:" + a), (Object) ("ctor:" + b));
+        }
+    }
+
     private static final ObjectMapper MAPPER = newBlackbirdMapper();
 
     private static ValueDeserializer<Object> genericReader(ObjectMapper mapper,
@@ -40,6 +52,19 @@ public class BBCodecGenericRecordTest extends BlackbirdTestBase
                 genericReader(MAPPER, new TypeReference<Envelope<Payload>>() {}));
         assertInstanceOf(GeneratedReaderBase.class,
                 genericReader(MAPPER, new TypeReference<Bounded<Integer>>() {}));
+        // Unresolved, the type variable binds as its bound.
+        assertGeneratedReader(MAPPER, Envelope.class);
+        assertGeneratedReader(MAPPER, Bounded.class);
+    }
+
+    @Test
+    public void testNonCanonicalCreatorStaysStock() throws Exception {
+        assertStockReader(MAPPER, Narrowed.class);
+        String doc = "{\"a\":\"x\",\"b\":\"y\"}";
+        assertEquals(new Narrowed((Object) "ctor:x", (Object) "ctor:y"),
+                MAPPER.readValue(doc, Narrowed.class));
+        assertEquals(newVanillaJSONMapper().readValue(doc, Narrowed.class),
+                MAPPER.readValue(doc, Narrowed.class));
     }
 
     @Test

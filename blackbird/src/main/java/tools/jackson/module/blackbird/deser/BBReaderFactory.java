@@ -294,7 +294,8 @@ final class BBReaderFactory
 
     // Records collect components into typed locals and construct through the
     // canonical constructor; every property must be a plain CreatorProperty
-    // whose creator index and type line up with the record components.
+    // whose creator index lines up with its record component and whose type
+    // fits the component's type.
     private static ValueDeserializer<Object> generateRecord(BeanDeserializerBase delegate,
             DeserializationContext ctxt, Class<?> beanClass, Source stock,
             boolean declaresViews)
@@ -313,8 +314,8 @@ final class BBReaderFactory
         // mirrors the failure handling of the stock instantiator. A
         // @JsonCreator factory or a custom instantiator must construct
         // through the instantiator, so such records stay on the stock path.
-        // An AnnotatedConstructor that also passes the per-component index
-        // and type match below is the canonical constructor: a second
+        // An AnnotatedConstructor whose parameter types equal the component
+        // types (checked below) is the canonical constructor: a second
         // constructor with the same signature cannot exist.
         if (delegate.getValueInstantiator().getClass() != StdValueInstantiator.class
                 || !(delegate.getValueInstantiator().getWithArgsCreator()
@@ -329,6 +330,16 @@ final class BBReaderFactory
         SettableBeanProperty[] creatorProps = creator.allPropertiesInOrder();
         if (creatorProps.length != comps.length) {
             return gate("record creator arity");
+        }
+        // Property types need only fit their components (below), so a
+        // non-canonical @JsonCreator constructor of the same arity with
+        // narrower parameter types would pass that check: compare the
+        // constructor's own signature with the components.
+        Class<?>[] paramTypes = ctor.getAnnotated().getParameterTypes();
+        for (int i = 0; i < comps.length; i++) {
+            if (paramTypes[i] != comps[i].getType()) {
+                return gate("record creator is not the canonical constructor");
+            }
         }
         // Stock reads names through the creator, then through the bean
         // properties for non-creator ones; records whose bean properties are
