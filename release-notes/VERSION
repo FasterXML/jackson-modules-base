@@ -22,6 +22,11 @@ Active maintainers:
 === Releases ===
 ------------------------------------------------------------------------
 
+3.3.1 (not yet released)
+
+#378: (blackbird) Record codegen gated off for generic record components
+ (contributed by @phraktle)
+
 3.3.0 (07-Nov-2026)
 
 #359: (blackbird) New code generation engine: per-bean codec classes, generated with
