@@ -49,6 +49,7 @@ public class BBCodecGenericRecordTest extends BlackbirdTestBase
     private static final Type ENVELOPE_PAYLOAD = new TypeReference<Envelope<Payload>>() {}.getType();
     private static final Type ENVELOPE_LIST = new TypeReference<Envelope<List<String>>>() {}.getType();
     private static final Type BOUNDED_INT = new TypeReference<Bounded<Integer>>() {}.getType();
+    private static final Type ENVELOPE_STRING = new TypeReference<Envelope<String>>() {}.getType();
 
     private static final ObjectMapper MAPPER = newBlackbirdMapper();
     private static final ObjectMapper VANILLA = newVanillaJSONMapper();
@@ -75,6 +76,21 @@ public class BBCodecGenericRecordTest extends BlackbirdTestBase
 
         assertGeneratedReader(MAPPER, BOUNDED_INT);
         assertEquals(new Bounded<>("b", 7), read("{\"name\":\"b\",\"value\":7}", BOUNDED_INT));
+    }
+
+    @Test
+    public void testTypeVariableResolvedToString() throws Exception {
+        // String reads through the scalar arm into the Object-typed local.
+        String layout = assertGeneratedReader(MAPPER, ENVELOPE_STRING);
+        assertTrue(layout.contains("data=STRING"), layout);
+        assertEquals(new Envelope<>("t", 1L, "x"),
+                read("{\"topic\":\"t\",\"ts\":1,\"data\":\"x\"}", ENVELOPE_STRING));
+        // Other tokens take the stock arm, which coerces or fails as stock does.
+        assertEquals(new Envelope<>("t", 1L, null),
+                read("{\"topic\":\"t\",\"ts\":1,\"data\":null}", ENVELOPE_STRING));
+        assertEquals(new Envelope<>("t", 1L, "42"),
+                read("{\"topic\":\"t\",\"ts\":1,\"data\":42}", ENVELOPE_STRING));
+        read("{\"topic\":\"t\"}", ENVELOPE_STRING);
     }
 
     @Test

@@ -388,7 +388,9 @@ final class BBReaderFactory
                 kind = Kind.CHILD;
                 child = valueDeser;
             } else {
-                kind = scalarKind(compType);
+                // The resolved type: a type variable resolved to String reads
+                // through the String arm into the component's erased local.
+                kind = scalarKind(prop.getType().getRawClass());
                 if (kind == null || valueDeser == null
                         || !STOCK_SCALAR_DESERS.contains(valueDeser.getClass())) {
                     kind = Kind.STOCK;
