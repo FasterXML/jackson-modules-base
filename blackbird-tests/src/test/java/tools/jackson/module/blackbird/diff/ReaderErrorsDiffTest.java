@@ -168,13 +168,13 @@ public class ReaderErrorsDiffTest extends DifferentialTestBase
         Mappers m = mappers();
         DatabindException e = assertSameRead(m, "{\"other\":\"o\",\"age\":-1}", Guarded.class)
                 .error(DatabindException.class);
-        assertTrue(e.getMessage().startsWith("Problem deserializing property 'age'"),
+        assertTrue(e.getMessage().startsWith("Problem setting property 'age': age must be >= 0"),
                 e.getMessage());
         // Stock turns the IllegalArgumentException into a DatabindException
         // even without wrapping.
         assertSameRead(mappers(b -> b.disable(DeserializationFeature.WRAP_EXCEPTIONS)),
                 "{\"age\":-1}", Guarded.class).error(DatabindException.class);
-        // A child value: the message names its class; no message from the setter.
+        // A child value, with no message from the setter.
         assertSameRead(m, "{\"child\":{}}", Guarded.class).error(DatabindException.class);
         String layout = assertGeneratedReader(m.blackbird(), Guarded.class);
         assertArm(layout, "age=INT");

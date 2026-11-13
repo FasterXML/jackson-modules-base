@@ -20,15 +20,16 @@ final class ReaderSupport
      * The exception that the stock MethodProperty throws when its setter or
      * field store throws t: SettableBeanProperty._throwAsJacksonE itself,
      * called through a probe. A scalar arm no longer has its value, but the
-     * message needs only the value's class (ClassUtil.classNameOf takes a
-     * Class as is), which the property type fixes; a child arm passes its
-     * value.
+     * message depends only on whether the value is an instance of the
+     * property type (and, if not, on its class): a scalar arm's value always
+     * was one, so a stand-in of that type gives the same message. A child
+     * arm passes its value.
      */
     static Throwable storeException(Throwable t, Object childValue, SettableBeanProperty prop,
             JsonParser p) {
         Class<?> raw = prop.getType().getRawClass();
-        Object value = raw.isPrimitive() ? ClassUtil.wrapperType(raw)
-                : (raw == String.class) ? String.class : childValue;
+        Object value = raw.isPrimitive() ? ClassUtil.defaultValue(raw)
+                : (raw == String.class) ? "" : childValue;
         return PropertyProbe.storeException(prop, p, t, value);
     }
 
