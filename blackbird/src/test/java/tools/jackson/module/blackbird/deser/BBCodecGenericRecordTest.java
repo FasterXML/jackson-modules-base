@@ -1,5 +1,6 @@
 package tools.jackson.module.blackbird.deser;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -8,12 +9,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 import tools.jackson.module.blackbird.BlackbirdTestBase;
-import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,33 +39,24 @@ public class BBCodecGenericRecordTest extends BlackbirdTestBase
         }
     }
 
-    private static final ObjectMapper MAPPER = newBlackbirdMapper();
+    // Non-generic components narrowed by annotation: the property type is a
+    // subtype of the component type, as for a resolved type variable.
+    public record AnnotationNarrowed(
+            @JsonDeserialize(as = LinkedList.class) List<String> items,
+            @JsonDeserialize(as = Payload.class) Object payload) {}
 
-    private static ValueDeserializer<Object> genericReader(ObjectMapper mapper,
-            TypeReference<?> type) {
-        DeserializationContext ctxt = mapper._deserializationContext();
-        return ctxt.findRootValueDeserializer(ctxt.constructType(type.getType()));
-    }
+    private static final ObjectMapper MAPPER = newBlackbirdMapper();
 
     @Test
     public void testResolvedTypeVariableGenerates() throws Exception {
-        assertInstanceOf(GeneratedReaderBase.class,
-                genericReader(MAPPER, new TypeReference<Envelope<Payload>>() {}));
-        assertInstanceOf(GeneratedReaderBase.class,
-                genericReader(MAPPER, new TypeReference<Bounded<Integer>>() {}));
+        // The resolved Payload links its child codec into the Object-typed local.
+        assertTrue(assertGeneratedReader(MAPPER, new TypeReference<Envelope<Payload>>() {}.getType())
+                .contains("data=CHILD"));
+        assertGeneratedReader(MAPPER, new TypeReference<Envelope<List<String>>>() {}.getType());
+        assertGeneratedReader(MAPPER, new TypeReference<Bounded<Integer>>() {}.getType());
         // Unresolved, the type variable binds as its bound.
         assertGeneratedReader(MAPPER, Envelope.class);
         assertGeneratedReader(MAPPER, Bounded.class);
-    }
-
-    @Test
-    public void testNonCanonicalCreatorStaysStock() throws Exception {
-        assertStockReader(MAPPER, Narrowed.class);
-        String doc = "{\"a\":\"x\",\"b\":\"y\"}";
-        assertEquals(new Narrowed((Object) "ctor:x", (Object) "ctor:y"),
-                MAPPER.readValue(doc, Narrowed.class));
-        assertEquals(newVanillaJSONMapper().readValue(doc, Narrowed.class),
-                MAPPER.readValue(doc, Narrowed.class));
     }
 
     @Test
@@ -90,5 +82,42 @@ public class BBCodecGenericRecordTest extends BlackbirdTestBase
         @SuppressWarnings("rawtypes")
         Envelope raw = MAPPER.readValue(doc, Envelope.class);
         assertEquals(vanilla.readValue(doc, Envelope.class), raw);
+    }
+
+    @Test
+    public void testBindingOutsideBoundStaysStock() throws Exception {
+        // A binding that breaks the declared bound gives a property type the
+        // component cannot hold; the canonical constructor would reject it.
+        JavaType type = MAPPER.getTypeFactory().constructParametricType(Bounded.class, String.class);
+        assertStockReader(MAPPER, type);
+        String doc = "{\"name\":\"b\",\"value\":\"x\"}";
+        DatabindException bb = assertThrows(DatabindException.class,
+                () -> MAPPER.readValue(doc, type));
+        DatabindException vanilla = assertThrows(DatabindException.class,
+                () -> newVanillaJSONMapper().readValue(doc, type));
+        assertEquals(vanilla.getClass(), bb.getClass());
+    }
+
+    @Test
+    public void testNonCanonicalCreatorStaysStock() throws Exception {
+        assertStockReader(MAPPER, Narrowed.class);
+        String doc = "{\"a\":\"x\",\"b\":\"y\"}";
+        assertEquals(new Narrowed((Object) "ctor:x", (Object) "ctor:y"),
+                MAPPER.readValue(doc, Narrowed.class));
+        assertEquals(newVanillaJSONMapper().readValue(doc, Narrowed.class),
+                MAPPER.readValue(doc, Narrowed.class));
+    }
+
+    @Test
+    public void testAnnotationNarrowedComponentsGenerate() throws Exception {
+        String layout = assertGeneratedReader(MAPPER, AnnotationNarrowed.class);
+        assertTrue(layout.contains("payload=CHILD"), layout);
+
+        String doc = "{\"items\":[\"a\",\"b\"],\"payload\":{\"s\":\"x\",\"n\":3}}";
+        AnnotationNarrowed value = MAPPER.readValue(doc, AnnotationNarrowed.class);
+        assertEquals(new AnnotationNarrowed(new LinkedList<>(List.of("a", "b")), new Payload("x", 3)),
+                value);
+        assertEquals(LinkedList.class, value.items().getClass());
+        assertEquals(newVanillaJSONMapper().readValue(doc, AnnotationNarrowed.class), value);
     }
 }

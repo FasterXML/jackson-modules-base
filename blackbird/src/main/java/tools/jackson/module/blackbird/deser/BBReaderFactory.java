@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -331,15 +332,16 @@ final class BBReaderFactory
         if (creatorProps.length != comps.length) {
             return gate("record creator arity");
         }
+        Class<?>[] compTypes = new Class<?>[comps.length];
+        for (int i = 0; i < comps.length; i++) {
+            compTypes[i] = comps[i].getType();
+        }
         // Property types need only fit their components (below), so a
         // non-canonical @JsonCreator constructor of the same arity with
         // narrower parameter types would pass that check: compare the
         // constructor's own signature with the components.
-        Class<?>[] paramTypes = ctor.getAnnotated().getParameterTypes();
-        for (int i = 0; i < comps.length; i++) {
-            if (paramTypes[i] != comps[i].getType()) {
-                return gate("record creator is not the canonical constructor");
-            }
+        if (!Arrays.equals(ctor.getAnnotated().getParameterTypes(), compTypes)) {
+            return gate("record creator is not the canonical constructor");
         }
         // Stock reads names through the creator, then through the bean
         // properties for non-creator ones; records whose bean properties are
@@ -358,7 +360,7 @@ final class BBReaderFactory
                     || prop.getCreatorIndex() != i
                     || prop.getMetadata().getMergeInfo() != null
                     || prop.getInjectionDefinition() != null
-                    || !comps[i].getType().isAssignableFrom(prop.getType().getRawClass())) {
+                    || !compTypes[i].isAssignableFrom(prop.getType().getRawClass())) {
                 return gate("record component " + i);
             }
         }
@@ -374,7 +376,7 @@ final class BBReaderFactory
         List<GenProp> props = new ArrayList<>(comps.length);
         String[] localNames = new String[comps.length];
         for (int i = 0; i < comps.length; i++) {
-            Class<?> compType = comps[i].getType();
+            Class<?> compType = compTypes[i];
             SettableBeanProperty prop = creatorProps[i];
             localNames[i] = comps[i].getName();
             ValueDeserializer<?> valueDeser = prop.getValueDeserializer();

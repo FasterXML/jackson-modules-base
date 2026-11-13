@@ -51,5 +51,5 @@ Parker Winchester (@parker89)
  (3.1.9)
 
 Viktor Szathmáry (@phraktle)
-* Contributed #378: (blackbird) Record codegen gated off for generic record components
+* Contributed fix for #378: (blackbird) Record codegen gated off for generic record components
  (3.3.1)
