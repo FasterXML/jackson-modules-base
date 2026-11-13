@@ -1,5 +1,6 @@
 package tools.jackson.module.blackbird;
 
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
@@ -307,8 +308,11 @@ public abstract class BlackbirdTestBase
     /**********************************************************
      */
 
-    /** The (contextualized) deserializer the mapper uses for a root value of the type. */
-    protected static ValueDeserializer<Object> rootReader(ObjectMapper mapper, Class<?> type) {
+    /**
+     * The (contextualized) deserializer the mapper uses for a root value of the type;
+     * a parameterized type (e.g. from a {@code TypeReference}) works too.
+     */
+    protected static ValueDeserializer<Object> rootReader(ObjectMapper mapper, Type type) {
         DeserializationContext ctxt = mapper._deserializationContext();
         return ctxt.findRootValueDeserializer(ctxt.constructType(type));
     }
@@ -339,7 +343,7 @@ public abstract class BlackbirdTestBase
     }
 
     /** Asserts that the generated reader handles the type, and returns its arm layout. */
-    protected static String assertGeneratedReader(ObjectMapper mapper, Class<?> type) {
+    protected static String assertGeneratedReader(ObjectMapper mapper, Type type) {
         ValueDeserializer<Object> d = rootReader(mapper, type);
         if (d instanceof GeneratedReaderBase r) {
             return r.codecLayout();
@@ -347,14 +351,18 @@ public abstract class BlackbirdTestBase
         if (d instanceof GeneratedBuilderBase b) {
             return b.codecLayout();
         }
-        return fail(type.getSimpleName() + " should use a generated reader, uses " + d);
+        return fail(simpleName(type) + " should use a generated reader, uses " + d);
     }
 
     /** Asserts that the stock deserializer handles the type. */
-    protected static void assertStockReader(ObjectMapper mapper, Class<?> type) {
+    protected static void assertStockReader(ObjectMapper mapper, Type type) {
         ValueDeserializer<Object> d = rootReader(mapper, type);
         assertFalse(d instanceof GeneratedReaderBase || d instanceof GeneratedBuilderBase,
-                type.getSimpleName() + " should keep the stock deserializer, uses " + d);
+                simpleName(type) + " should keep the stock deserializer, uses " + d);
+    }
+
+    private static String simpleName(Type type) {
+        return (type instanceof Class<?> c) ? c.getSimpleName() : type.getTypeName();
     }
 
     /** Asserts that the generated writer handles the type, and returns its layout. */
