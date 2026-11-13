@@ -272,14 +272,15 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
     }
 
     // Record codecs call the canonical constructor directly only when every
-    // component was supplied or takes its initial value when absent (and
-    // then FAIL_ON_MISSING_CREATOR_PROPERTIES is off), every primitive
-    // component received its exact wrapper (not null or another type from a
-    // custom deserializer), and FAIL_ON_NULL_CREATOR_PROPERTIES is off.
-    // Everything else ends here: values holds the components (boxed, or the
-    // raw stock value, in creator-index order) and seen marks the ones the
-    // document supplied. Without a constructor failure, the stock creator
-    // completes the arguments (absent values, required and FAIL_ON_MISSING /
+    // component was supplied or has its absent value without the stock
+    // creator (not required, FAIL_ON_MISSING_CREATOR_PROPERTIES off), every
+    // primitive component received its exact wrapper (not null or another
+    // type from a custom deserializer), and FAIL_ON_NULL_CREATOR_PROPERTIES
+    // is off. Everything else ends here: values holds the components (boxed,
+    // or the raw stock value, in creator-index order) and seen marks the ones
+    // the document supplied or the generated code filled with their absent
+    // value. Without a constructor failure, the stock creator completes the
+    // arguments (absent values, required and FAIL_ON_MISSING /
     // FAIL_ON_NULL_CREATOR_PROPERTIES checks) and constructs; a failure from
     // the fast path goes where StdValueInstantiator sends it. Either way a
     // failure ends in wrapInstantiationProblem, as in the stock loop.
@@ -296,7 +297,7 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
         SettableBeanProperty[] props = _propertyBasedCreator.allPropertiesInOrder();
         PropertyValueBuffer buffer = _propertyBasedCreator.startBuilding(p, ctxt, null, false);
         for (int i = 0; i < props.length; i++) {
-            if ((seen & (1L << i)) != 0) {
+            if (IndexMasks.isSet(seen, i)) {
                 buffer.assignParameter(props[i], values[i]);
             }
         }

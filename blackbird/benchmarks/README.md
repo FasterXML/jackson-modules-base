@@ -14,6 +14,8 @@ Each benchmark class has a `mode` parameter: `stock` (no module),
   through a property-based `@JsonCreator`, the media item bean, and arrays
   of 1000 beans with 8 `int` properties.
 - `RecordBenchmark`: a record with a nested record and a list of 3 records.
+- `RecordAbsentBenchmark`: a record read with one component absent (none, a
+  `String`, an `Optional`, a `List` or an `OptionalInt`).
 - `BuilderBenchmark`: a bean with 8 properties and a fluent builder
   (`@JsonPOJOBuilder`).
 - `WideBeanBenchmark`: setter beans with 40 and 200 properties.
