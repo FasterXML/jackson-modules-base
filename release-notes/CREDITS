@@ -49,3 +49,7 @@ Parker Winchester (@parker89)
 * Contributed #375: Blackbird: use generated accessors for primitive `double` setters
   and getters
  (3.1.9)
+
+Viktor Szathmáry (@phraktle)
+* Contributed fix for #378: (blackbird) Record codegen gated off for generic record components
+ (3.3.1)
