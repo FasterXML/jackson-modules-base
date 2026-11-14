@@ -58,7 +58,9 @@ import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
  */
 final class BBReaderFactory
 {
-    // Exact classes: a subclass may read differently
+    // Exact classes: a subclass may read differently, or have another absent
+    // value (ReaderCodegen.GenProp.absentIsDefault relies on every non-STOCK
+    // kind using one of these, or a generated codec)
     private static final Set<Class<?>> STOCK_SCALAR_DESERS = Set.of(
             StringDeserializer.class,
             NumberDeserializers.IntegerDeserializer.class,

@@ -108,10 +108,15 @@ Deserialization (JSON to POJOs):
   ones do. Non-final fields (any visibility) store through constant field
   handles. Final fields keep stock behavior.
 - Records with their canonical constructor: typed locals in
-  canonical-constructor order and a direct constructor call. When the
-  document leaves out a component, the stock creator completes the
-  arguments (absent values such as `Optional.empty()`, required and
-  `FAIL_ON_MISSING_CREATOR_PROPERTIES` checks).
+  canonical-constructor order and a direct constructor call. A component
+  the document leaves out keeps the direct call when it is a `String`,
+  `int`, `long` or `boolean` read by the stock deserializer, or a nested
+  bean with a generated codec, unless it is required, has a null-handling
+  override (such as `@JsonSetter(nulls = ...)`), or
+  `FAIL_ON_MISSING_CREATOR_PROPERTIES` is enabled. Otherwise the stock
+  creator completes the arguments (absent values such as
+  `Optional.empty()`, required and `FAIL_ON_MISSING_CREATOR_PROPERTIES`
+  checks).
 - Builder-based beans (for example Immutables types): fluent setter calls
   through constant handles, and the build method called through a constant
   handle.
