@@ -10,6 +10,8 @@ import java.util.Objects;
  * IndexOutOfBoundsException for an index outside 0 to 63, and
  * {@link #lowBits} for a count outside 0 to 64, because a shift of a
  * {@code long} by 64 or more wraps instead of failing.
+ *
+ * @since 3.3.1
  */
 public final class IndexMasks
 {
