@@ -26,6 +26,9 @@ Active maintainers:
 
 #378: (blackbird) Record codegen gated off for generic record components
  (contributed by @phraktle)
+#380: (blackbird) Record codegen falls back to stock creator when a component
+  is absent
+ (contributed by @phraktle)
 
 3.3.0 (07-Nov-2026)
 

@@ -53,3 +53,6 @@ Parker Winchester (@parker89)
 Viktor Szathmáry (@phraktle)
 * Contributed fix for #378: (blackbird) Record codegen gated off for generic record components
  (3.3.1)
+* Contributed fix for #380: (blackbird) Record codegen falls back to stock creator
+  when a component is absent
+ (3.3.1)
