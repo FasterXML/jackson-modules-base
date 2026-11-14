@@ -23,6 +23,7 @@ import tools.jackson.databind.ObjectReader;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.cfg.JsonNodeFeature;
 import tools.jackson.databind.deser.std.StdScalarDeserializer;
+import tools.jackson.databind.deser.std.StdValueInstantiator;
 import tools.jackson.databind.json.JsonMapper;
 
 import tools.jackson.module.blackbird.BlackbirdTestBase;
@@ -40,6 +41,19 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
     public record Child(String name) {}
 
     public record Scalars(String s, int i, long l, boolean b, Integer w, double d) {}
+
+    // Only components whose absent value is the local's initial value: any
+    // subset may be absent and still take the direct constructor call. The
+    // constructor records whether the stock creator (StdValueInstantiator)
+    // called it.
+    public record Defaults(String s, int i, long l, boolean b, Child c) {
+        static boolean viaStock;
+
+        public Defaults {
+            viaStock = StackWalker.getInstance().walk(frames -> frames.anyMatch(
+                    f -> f.getClassName().equals(StdValueInstantiator.class.getName())));
+        }
+    }
 
     public record Refs(Color e, Object o, Child c, List<String> list, Map<String, Integer> map) {}
 
@@ -73,7 +87,7 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
 
     public record Required(@JsonProperty(required = true) String req, String s) {}
 
-    private static final List<Class<?>> TYPES = List.of(Scalars.class, Refs.class,
+    private static final List<Class<?>> TYPES = List.of(Scalars.class, Defaults.class, Refs.class,
             References.class, ScalarOptionals.class, CustomAbsent.class, NullHandling.class,
             NullsFail.class, Required.class);
 
@@ -82,7 +96,15 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
             "{\"e\":\"RED\",\"o\":1,\"c\":{\"name\":\"n\"},\"list\":[\"a\"],\"map\":{\"k\":1}}",
             "{\"opt\":\"v\",\"ref\":\"r\",\"node\":{\"a\":1}}",
             "{\"oi\":1,\"ol\":2,\"od\":3.5}",
-            "{\"req\":\"r\"}");
+            "{\"req\":\"r\"}",
+            "{\"i\":1,\"c\":{\"name\":\"n\"}}",
+            "{\"s\":\"x\",\"l\":2,\"b\":true}");
+
+    // Each of these leaves out only Defaults components that take their
+    // initial value, so the generated reader constructs directly.
+    private static final List<String> DIRECT_DOCS = List.of("{}", "{\"s\":\"x\"}",
+            "{\"i\":1,\"c\":{\"name\":\"n\"}}", "{\"s\":\"x\",\"l\":2,\"b\":true}",
+            "{\"s\":\"x\",\"i\":1,\"l\":2,\"b\":true,\"c\":{\"name\":\"n\"}}");
 
     @Test
     public void testDefaults() {
@@ -102,22 +124,39 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
                 mapperBuilder().enable(JsonNodeFeature.MAP_ABSENT_TO_MISSING));
     }
 
+    @Test
+    public void testDirectConstruction() {
+        JsonMapper vanilla = JsonMapper.builder().build();
+        JsonMapper bb = mapperBuilder().build();
+        assertGeneratedReader(bb, Defaults.class);
+        for (String doc : DIRECT_DOCS) {
+            String expected = read(vanilla, Defaults.class, doc);
+            assertTrue(Defaults.viaStock, "stock should construct through its creator");
+            assertEquals(expected, read(bb, Defaults.class, doc), doc);
+            assertFalse(Defaults.viaStock, "should construct directly: " + doc);
+        }
+    }
+
     // The feature is checked per call: one mapper, so one generated reader,
-    // reads the same document with and without it.
+    // reads the same documents with and without it.
     @Test
     public void testPerCallFailOnMissing() {
-        ObjectReader vanilla = JsonMapper.builder().build().readerFor(Scalars.class);
+        ObjectReader vanilla = JsonMapper.builder().build().readerFor(Defaults.class);
         JsonMapper bbMapper = mapperBuilder().build();
-        assertGeneratedReader(bbMapper, Scalars.class);
-        ObjectReader bb = bbMapper.readerFor(Scalars.class);
+        assertGeneratedReader(bbMapper, Defaults.class);
+        ObjectReader bb = bbMapper.readerFor(Defaults.class);
         DeserializationFeature f = DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES;
-        String doc = "{\"s\":\"x\"}";
-        String lenient = read(bb, doc);
-        String failing = read(bb.with(f), doc);
-        assertNotEquals(lenient, failing);
-        assertEquals(read(vanilla, doc), lenient);
-        assertEquals(read(vanilla.with(f), doc), failing);
-        assertEquals(lenient, read(bb, doc));
+        for (String doc : DIRECT_DOCS) {
+            assertEquals(read(vanilla, doc), read(bb, doc), doc);
+            assertEquals(read(vanilla.with(f), doc), read(bb.with(f), doc), doc);
+            assertEquals(read(vanilla, doc), read(bb, doc), doc);
+        }
+        // With every component present, the feature does not leave the direct path
+        String full = DIRECT_DOCS.get(DIRECT_DOCS.size() - 1);
+        read(bb.with(f), full);
+        assertFalse(Defaults.viaStock);
+        // and with one absent, it fails
+        assertNotEquals(read(bb, "{}"), read(bb.with(f), "{}"));
     }
 
     private static void assertParity(JsonMapper.Builder stock, JsonMapper.Builder blackbird) {
