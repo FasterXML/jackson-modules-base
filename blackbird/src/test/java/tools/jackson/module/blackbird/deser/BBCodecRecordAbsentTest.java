@@ -19,6 +19,7 @@ import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectReader;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.cfg.JsonNodeFeature;
 import tools.jackson.databind.deser.std.StdScalarDeserializer;
@@ -101,6 +102,24 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
                 mapperBuilder().enable(JsonNodeFeature.MAP_ABSENT_TO_MISSING));
     }
 
+    // The feature is checked per call: one mapper, so one generated reader,
+    // reads the same document with and without it.
+    @Test
+    public void testPerCallFailOnMissing() {
+        ObjectReader vanilla = JsonMapper.builder().build().readerFor(Scalars.class);
+        JsonMapper bbMapper = mapperBuilder().build();
+        assertGeneratedReader(bbMapper, Scalars.class);
+        ObjectReader bb = bbMapper.readerFor(Scalars.class);
+        DeserializationFeature f = DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES;
+        String doc = "{\"s\":\"x\"}";
+        String lenient = read(bb, doc);
+        String failing = read(bb.with(f), doc);
+        assertNotEquals(lenient, failing);
+        assertEquals(read(vanilla, doc), lenient);
+        assertEquals(read(vanilla.with(f), doc), failing);
+        assertEquals(lenient, read(bb, doc));
+    }
+
     private static void assertParity(JsonMapper.Builder stock, JsonMapper.Builder blackbird) {
         JsonMapper vanilla = stock.build();
         JsonMapper bb = blackbird.build();
@@ -115,8 +134,12 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
 
     // toString, as AtomicReference has identity equality; the exception class on failure.
     private static String read(JsonMapper mapper, Class<?> type, String doc) {
+        return read(mapper.readerFor(type), doc);
+    }
+
+    private static String read(ObjectReader reader, String doc) {
         try {
-            return String.valueOf(mapper.readValue(doc, type));
+            return String.valueOf((Object) reader.readValue(doc));
         } catch (JacksonException e) {
             return e.getClass().getName();
         }

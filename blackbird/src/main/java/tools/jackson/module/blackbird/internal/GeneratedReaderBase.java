@@ -278,8 +278,8 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
     // custom deserializer), and FAIL_ON_NULL_CREATOR_PROPERTIES is off.
     // Everything else ends here: values holds the components (boxed, or the
     // raw stock value, in creator-index order) and seen marks the ones the
-    // document supplied. Without a constructor failure, the stock creator completes the
-    // arguments (absent values, required and FAIL_ON_MISSING /
+    // document supplied. Without a constructor failure, the stock creator
+    // completes the arguments (absent values, required and FAIL_ON_MISSING /
     // FAIL_ON_NULL_CREATOR_PROPERTIES checks) and constructs; a failure from
     // the fast path goes where StdValueInstantiator sends it. Either way a
     // failure ends in wrapInstantiationProblem, as in the stock loop.
