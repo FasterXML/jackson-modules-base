@@ -15,9 +15,13 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.cfg.JsonNodeFeature;
+import tools.jackson.databind.deser.std.StdScalarDeserializer;
 import tools.jackson.databind.json.JsonMapper;
 
 import tools.jackson.module.blackbird.BlackbirdTestBase;
@@ -43,6 +47,25 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
     // [databind#6437]: absent scalar Optionals are empty, not null
     public record ScalarOptionals(OptionalInt oi, OptionalLong ol, OptionalDouble od, String s) {}
 
+    // Keeps the inherited ALWAYS_NULL null access (getNullValue is null), but
+    // its absent value is not null
+    public static class DefaultingDeserializer extends StdScalarDeserializer<String> {
+        public DefaultingDeserializer() { super(String.class); }
+
+        @Override
+        public String deserialize(JsonParser p, DeserializationContext ctxt) {
+            return p.getString();
+        }
+
+        @Override
+        public Object getAbsentValue(DeserializationContext ctxt) {
+            return "absent";
+        }
+    }
+
+    public record CustomAbsent(String s,
+            @JsonDeserialize(using = DefaultingDeserializer.class) String t) {}
+
     public record NullHandling(@JsonSetter(nulls = Nulls.AS_EMPTY) List<String> empty, String s) {}
 
     public record NullsFail(@JsonSetter(nulls = Nulls.FAIL) String fail, String s) {}
@@ -50,7 +73,8 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
     public record Required(@JsonProperty(required = true) String req, String s) {}
 
     private static final List<Class<?>> TYPES = List.of(Scalars.class, Refs.class,
-            References.class, ScalarOptionals.class, NullHandling.class, NullsFail.class, Required.class);
+            References.class, ScalarOptionals.class, CustomAbsent.class, NullHandling.class,
+            NullsFail.class, Required.class);
 
     private static final List<String> DOCS = List.of("{}", "{\"s\":\"x\"}",
             "{\"s\":\"x\",\"i\":1,\"l\":2,\"b\":true,\"w\":3,\"d\":4.5}",

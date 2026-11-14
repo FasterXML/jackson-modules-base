@@ -16,7 +16,6 @@ import tools.jackson.databind.deser.bean.BeanDeserializer;
 import tools.jackson.databind.deser.bean.BeanDeserializerBase;
 import tools.jackson.databind.deser.bean.BeanPropertyMap;
 import tools.jackson.databind.deser.bean.BuilderBasedDeserializer;
-import tools.jackson.databind.util.AccessPattern;
 
 /**
  * Defines the hidden-class deserializer for one bean: assembles the class
@@ -53,15 +52,15 @@ public final class ReaderCodegen
         }
 
         // Record mode: whether stock gives an absent component the local's
-        // initial value (see PropertyValueBuffer._findMissing). Scalar kinds
-        // use the stock deserializers, whose absent primitive is zero.
+        // initial value (see PropertyValueBuffer._findMissing). Only for
+        // deserializers whose absent value is known: the stock scalar ones
+        // (exact classes; absent is null, or zero for a primitive) and
+        // generated codecs (BeanDeserializerBase: null). A STOCK arm's
+        // deserializer may override getAbsentValue whatever its null access
+        // pattern, so it keeps the stock creator.
         boolean absentIsDefault() {
-            ValueDeserializer<?> deser = stock.getValueDeserializer();
-            if (stock.isRequired() || stock.getNullValueProvider() != deser) {
-                return false;
-            }
-            return type.isPrimitive() ? kind != Kind.STOCK
-                    : deser.getNullAccessPattern() == AccessPattern.ALWAYS_NULL;
+            return kind != Kind.STOCK && !stock.isRequired()
+                    && stock.getNullValueProvider() == stock.getValueDeserializer();
         }
     }
 
