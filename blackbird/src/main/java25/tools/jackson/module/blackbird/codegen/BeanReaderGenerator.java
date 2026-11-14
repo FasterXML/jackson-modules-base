@@ -1,11 +1,13 @@
 package tools.jackson.module.blackbird.codegen;
 
 import java.lang.classfile.Attributes;
+import java.lang.classfile.ClassBuilder;
 import java.lang.classfile.ClassFile;
 import java.lang.classfile.ClassHierarchyResolver;
 import java.lang.classfile.CodeBuilder;
 import java.lang.classfile.Label;
 import java.lang.classfile.MethodModel;
+import java.lang.classfile.TypeKind;
 import java.lang.classfile.attribute.CodeAttribute;
 import java.lang.classfile.attribute.MethodParameterInfo;
 import java.lang.classfile.attribute.MethodParametersAttribute;
@@ -39,6 +41,7 @@ import tools.jackson.module.blackbird.codegen.ReaderCodegen.Mode;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.ViewStrategy;
 import tools.jackson.module.blackbird.internal.GeneratedBuilderBase;
 import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
+import tools.jackson.module.blackbird.internal.IndexMasks;
 
 /**
  * Emits the class file of a hidden-class deserializer for one bean (see
@@ -97,6 +100,8 @@ final class BeanReaderGenerator
             MethodTypeDesc.of(CD_OBJECT, CD_DESER_CONTEXT);
     private static final MethodTypeDesc MTD_NEW_INSTANCE = MethodTypeDesc.of(CD_OBJECT);
     private static final MethodTypeDesc MTD_GET_NULL_PROVIDER = MethodTypeDesc.of(CD_NULL_PROVIDER);
+    private static final MethodTypeDesc MTD_GET_VALUE_DESER =
+            MethodTypeDesc.of(CD_VALUE_DESERIALIZER);
     private static final MethodTypeDesc MTD_GET_NULL_VALUE = MethodTypeDesc.of(CD_OBJECT,
             CD_DESER_CONTEXT);
     private static final MethodTypeDesc MTD_IS_SKIPPER = MethodTypeDesc.of(
@@ -155,8 +160,15 @@ final class BeanReaderGenerator
         return (plan.mode() == Mode.BUILDER) ? CD_BUILDER_BASE : CD_READER_BASE;
     }
 
+    // A record whose methods are too large with the absent-value fill (see
+    // buildRecordDeserialize) gets a codec without it: a missing component
+    // then takes the stock creator.
     static byte[] emit(ReaderCodegen.Plan plan) {
-        return withinSizeLimit(build(plan));
+        byte[] bytes = withinSizeLimit(build(plan, true));
+        if (bytes == null && plan.mode() == Mode.RECORD) {
+            bytes = withinSizeLimit(build(plan, false));
+        }
+        return bytes;
     }
 
     // The generated class, or null when one of its methods is too large for
@@ -173,7 +185,7 @@ final class BeanReaderGenerator
         return bytes;
     }
 
-    private static byte[] build(ReaderCodegen.Plan plan) {
+    private static byte[] build(ReaderCodegen.Plan plan, boolean fillAbsent) {
         ClassDesc thisClass = ClassDesc.of(plan.className());
         ClassDesc base = baseOf(plan);
         MethodTypeDesc ctor = (plan.mode() == Mode.BUILDER) ? MTD_BUILDER_CTOR : MTD_READER_CTOR;
@@ -188,13 +200,21 @@ final class BeanReaderGenerator
             clb.withMethod("deserialize", MTD_DESERIALIZE, ClassFile.ACC_PUBLIC,
                     mb -> mb.with(params("p", "ctxt")).withCode(cob -> {
                         if (plan.mode() == Mode.RECORD) {
-                            buildRecordDeserialize(cob, plan);
+                            buildRecordDeserialize(cob, plan, fillAbsent);
                         } else {
                             buildDeserialize(cob, plan);
                         }
                     }));
             if (plan.views() == ViewStrategy.MASK) {
                 emitComputeViewMask(clb, plan.props(), plan.stockName());
+            }
+            if (plan.mode() == Mode.RECORD && fillAbsent) {
+                for (int i = 0; i < plan.props().size(); i++) {
+                    GenProp prop = plan.props().get(i);
+                    if (!prop.stock().isRequired()) {
+                        emitAbsentValueMethod(clb, i, prop.type(), plan.stockName()[i]);
+                    }
+                }
             }
         });
     }
@@ -230,10 +250,7 @@ final class BeanReaderGenerator
                 cob.aload(1);
                 cob.invokevirtual(CD_SETTABLE_PROP, "visibleInView", MTD_VISIBLE_IN_VIEW);
                 cob.ifeq(skip);
-                cob.lload(maskSlot);
-                cob.loadConstant(1L << i);
-                cob.lor();
-                cob.lstore(maskSlot);
+                IndexMaskCode.setBit(cob, maskSlot, i);
                 cob.labelBinding(skip);
             }
             cob.lload(maskSlot).lreturn();
@@ -270,12 +287,7 @@ final class BeanReaderGenerator
             int ctxt, int maskSlot,
             int matcherSlot, int ixSlot, int armIndex, String stockName, Label loop) {
         Label visible = cob.newLabel();
-        cob.lload(maskSlot);
-        cob.loadConstant(1L << armIndex);
-        cob.land();
-        cob.lconst_0();
-        cob.lcmp();
-        cob.ifne(visible);
+        IndexMaskCode.ifSet(cob, maskSlot, armIndex, visible);
         // The fused match already advanced to the value token, so _hiddenView
         // consumes the current value without advancing.
         cob.aload(0).aload(parser).aload(ctxt);
@@ -665,13 +677,14 @@ final class BeanReaderGenerator
 
     // Record mode: components collect into typed locals in canonical order.
     // At the end of the object the canonical constructor runs directly when
-    // every component was supplied or takes its initial value when absent,
-    // and nothing needs stock argument handling; otherwise, and when the
-    // constructor throws, the base finishes through the stock creator (see
-    // GeneratedReaderBase._recordBuild). Names no component takes are
-    // handled, or buffered and replayed against the record, the way the
-    // stock property-based loop handles them.
-    private static void buildRecordDeserialize(CodeBuilder cob, ReaderCodegen.Plan plan) {
+    // every component was supplied or, with fillAbsent, has its absent value
+    // without the stock creator, and nothing needs stock argument handling.
+    // Otherwise, and when the constructor throws, the base finishes through
+    // the stock creator (see GeneratedReaderBase._recordBuild). Names no
+    // component takes are handled, or buffered and replayed against the
+    // record, the way the stock property-based loop handles them.
+    private static void buildRecordDeserialize(CodeBuilder cob, ReaderCodegen.Plan plan,
+            boolean fillAbsent) {
         final ClassDesc base = CD_READER_BASE;
         final List<GenProp> props = plan.props();
         final ViewStrategy views = plan.views();
@@ -682,14 +695,14 @@ final class BeanReaderGenerator
         int next = 3;
         int[] componentSlot = new int[n];
         boolean anyPrimitive = false;
-        long defaultAbsent = 0L;
+        long requiredMask = 0L;
         for (int i = 0; i < n; i++) {
             componentSlot[i] = next;
             Class<?> t = props.get(i).type();
             next += (t == long.class || t == double.class) ? 2 : 1;
             anyPrimitive |= t.isPrimitive();
-            if (props.get(i).absentIsDefault()) {
-                defaultAbsent |= 1L << i;
+            if (props.get(i).stock().isRequired()) {
+                requiredMask |= IndexMasks.bit(i);
             }
         }
         final int matcherSlot = next++;
@@ -763,8 +776,8 @@ final class BeanReaderGenerator
             }
             cob.labelBinding(caseLabels[i]);
             if (views == ViewStrategy.MASK) {
-                // A hidden component stays unseen, so the stock creator gives
-                // it the absent value, as for a stock hidden creator property.
+                // A hidden component stays unseen and gets its absent value at
+                // the end of the object, as a stock hidden creator property does.
                 emitArmViewCheck(cob, base, parser, ctxt, maskSlot, matcherSlot, ixSlot, i,
                         plan.stockName()[i], loop);
             }
@@ -822,10 +835,7 @@ final class BeanReaderGenerator
                 }
             }
             cob.labelBinding(armEnd);
-            cob.lload(seenSlot);
-            cob.loadConstant(1L << i);
-            cob.lor();
-            cob.lstore(seenSlot);
+            IndexMaskCode.setBit(cob, seenSlot, i);
             nextNameMatch(cob, parser, matcherSlot, ixSlot);
             cob.goto_(loop);
             if (fwdHandler != null) {
@@ -853,30 +863,57 @@ final class BeanReaderGenerator
         Label slow = cob.newLabel();
         Label finish = cob.newLabel();
         cob.aconst_null().astore(pendingSlot);
-        long allSeen = (n == 64) ? -1L : (1L << n) - 1;
-        // Direct only if every component was supplied or takes its initial
-        // value when absent, and with any of the latter absent,
-        // FAIL_ON_MISSING_CREATOR_PROPERTIES is off.
-        cob.lload(seenSlot);
-        if (defaultAbsent != 0L) {
-            cob.loadConstant(defaultAbsent);
-            cob.lor();
-        }
-        cob.loadConstant(allSeen);
-        cob.lcmp();
-        cob.ifne(slow);
-        if (defaultAbsent != 0L) {
-            Label complete = cob.newLabel();
-            cob.lload(seenSlot);
-            cob.loadConstant(allSeen);
-            cob.lcmp();
-            cob.ifeq(complete);
+        long allSeen = IndexMasks.lowBits(n);
+        Label complete = cob.newLabel();
+        IndexMaskCode.ifAllSet(cob, seenSlot, allSeen, complete);
+        if (!fillAbsent) {
+            cob.goto_(slow);
+        } else {
+            // Some absent: direct only if none of those is required and
+            // FAIL_ON_MISSING_CREATOR_PROPERTIES is off. Each absent component
+            // then gets stock's absent value from its absent-value method.
+            if (requiredMask != 0L) {
+                IndexMaskCode.ifNotAllSet(cob, seenSlot, requiredMask, slow);
+            }
             cob.aload(ctxt);
-            cob.getstatic(CD_DESER_FEATURE, "FAIL_ON_MISSING_CREATOR_PROPERTIES", CD_DESER_FEATURE);
+            cob.getstatic(CD_DESER_FEATURE, "FAIL_ON_MISSING_CREATOR_PROPERTIES",
+                    CD_DESER_FEATURE);
             cob.invokevirtual(CD_DESER_CONTEXT, "isEnabled", MTD_IS_ENABLED);
             cob.ifne(slow);
-            cob.labelBinding(complete);
+            long fillable = allSeen & ~requiredMask;
+            if (fillable != 0L) {
+                ClassDesc thisClass = ClassDesc.of(plan.className());
+                Label fillStart = cob.newLabel();
+                Label fillEnd = cob.newLabel();
+                Label fillHandler = cob.newLabel();
+                cob.exceptionCatch(fillStart, fillEnd, fillHandler, CD_EXCEPTION);
+                cob.labelBinding(fillStart);
+                for (int i = 0; i < n; i++) {
+                    if (!IndexMasks.isSet(fillable, i)) {
+                        continue;
+                    }
+                    Class<?> t = props.get(i).type();
+                    Label present = cob.newLabel();
+                    IndexMaskCode.ifSet(cob, seenSlot, i, present);
+                    cob.aload(ctxt);
+                    cob.invokestatic(thisClass, absentMethodName(i), absentMethodType(t));
+                    storeLocal(cob, t, componentSlot[i]);
+                    cob.labelBinding(present);
+                }
+                // The stock creator takes the filled components as supplied
+                // values, so it does not ask for their absent values again.
+                IndexMaskCode.setBits(cob, seenSlot, fillable);
+                cob.labelBinding(fillEnd);
+                cob.goto_(complete);
+                // An absent value threw, or is not the exact wrapper of a
+                // primitive component: stock computes the absent values again
+                // and reports or passes them as it does without Blackbird.
+                cob.labelBinding(fillHandler);
+                cob.pop();
+                cob.goto_(slow);
+            }
         }
+        cob.labelBinding(complete);
         if (anyPrimitive) {
             cob.lload(rawPrimSlot);
             cob.lconst_0();
@@ -922,8 +959,7 @@ final class BeanReaderGenerator
                 // A raw stock value goes to the stock creator as it is.
                 Label boxIt = cob.newLabel();
                 Label stored = cob.newLabel();
-                cob.lload(rawPrimSlot).loadConstant(1L << i).land().lconst_0().lcmp();
-                cob.ifeq(boxIt);
+                IndexMaskCode.ifClear(cob, rawPrimSlot, i, boxIt);
                 cob.aload(rawSlot[i]);
                 cob.goto_(stored);
                 cob.labelBinding(boxIt);
@@ -1055,19 +1091,65 @@ final class BeanReaderGenerator
         cob.labelBinding(done);
     }
 
+    // The absent-value method of record component i: the component's absent
+    // value, as stock computes it for a missing creator property, from the
+    // null provider, else from the value deserializer. Keep in sync with
+    // databind's PropertyValueBuffer._findMissing ("Third" and "Fourth").
+    // Its earlier steps (any-setter parameter, injection, required,
+    // FAIL_ON_MISSING_CREATOR_PROPERTIES) never reach this method: see
+    // generateRecord and buildRecordDeserialize. One method per component
+    // keeps each call site to one receiver class and the deserialize method
+    // small. A primitive component unboxes here, so a value that is not its
+    // exact wrapper throws (NullPointerException, ClassCastException) and
+    // the caller takes the slow path.
+    private static void emitAbsentValueMethod(ClassBuilder clb, int index, Class<?> type,
+            String stockName) {
+        clb.withMethod(absentMethodName(index), absentMethodType(type),
+                ClassFile.ACC_PRIVATE | ClassFile.ACC_STATIC,
+                mb -> mb.with(params("ctxt")).withCode(cob -> {
+                    Label have = cob.newLabel();
+                    emitNullProvider(cob, stockName);
+                    cob.aload(0);
+                    cob.invokeinterface(CD_NULL_PROVIDER, "getAbsentValue", MTD_GET_NULL_VALUE);
+                    cob.dup();
+                    cob.ifnonnull(have);
+                    cob.pop();
+                    ldcData(cob, stockName, CD_SETTABLE_PROP);
+                    cob.invokevirtual(CD_SETTABLE_PROP, "getValueDeserializer",
+                            MTD_GET_VALUE_DESER);
+                    cob.aload(0);
+                    cob.invokevirtual(CD_VALUE_DESERIALIZER, "getAbsentValue",
+                            MTD_GET_NULL_VALUE);
+                    cob.labelBinding(have);
+                    if (type.isPrimitive()) {
+                        ClassDesc boxDesc = Descs.of(ClassUtil.wrapperType(type));
+                        cob.checkcast(boxDesc);
+                        cob.invokevirtual(boxDesc, type.getName() + "Value",
+                                MethodTypeDesc.of(Descs.of(type)));
+                        cob.return_(TypeKind.from(type));
+                    } else {
+                        cob.areturn();
+                    }
+                }));
+    }
+
+    private static String absentMethodName(int index) {
+        return "absent$" + index;
+    }
+
+    private static MethodTypeDesc absentMethodType(Class<?> type) {
+        return MethodTypeDesc.of(type.isPrimitive() ? Descs.of(type) : CD_OBJECT,
+                CD_DESER_CONTEXT);
+    }
+
     // Sets or clears the component's bit in the rawPrimitives mask: a later
     // value for a duplicate name replaces an earlier one, as in stock.
     private static void emitRawPrimitive(CodeBuilder cob, ComponentLocal local, boolean isRaw) {
-        long bit = 1L << local.index();
-        cob.lload(local.rawPrimSlot());
         if (isRaw) {
-            cob.loadConstant(bit);
-            cob.lor();
+            IndexMaskCode.setBit(cob, local.rawPrimSlot(), local.index());
         } else {
-            cob.loadConstant(~bit);
-            cob.land();
+            IndexMaskCode.clearBit(cob, local.rawPrimSlot(), local.index());
         }
-        cob.lstore(local.rawPrimSlot());
     }
 
     private static void storeLocal(CodeBuilder cob, Class<?> type, int slot) {
@@ -1249,5 +1331,63 @@ final class BeanReaderGenerator
                 .invokespecial(CD_ISE, ConstantDescs.INIT_NAME,
                         MethodTypeDesc.of(ConstantDescs.CD_void, ConstantDescs.CD_String))
                 .athrow();
+    }
+
+    /**
+     * Bytecode for the {@link IndexMasks} operations on a mask held in a
+     * {@code long} local of a generated method. The bit constants come from
+     * {@link IndexMasks}, so an index outside the mask fails at code generation.
+     * Nested, so that the POM's rules for the release-25 classes cover it.
+     */
+    static final class IndexMaskCode
+    {
+        private IndexMaskCode() {}
+
+        /** {@code mask |= bit(index)} */
+        static void setBit(CodeBuilder cob, int maskSlot, int index) {
+            setBits(cob, maskSlot, IndexMasks.bit(index));
+        }
+
+        /** {@code mask |= bits} */
+        static void setBits(CodeBuilder cob, int maskSlot, long bits) {
+            cob.lload(maskSlot).loadConstant(bits).lor().lstore(maskSlot);
+        }
+
+        /** {@code mask &= ~bit(index)} */
+        static void clearBit(CodeBuilder cob, int maskSlot, int index) {
+            cob.lload(maskSlot).loadConstant(~IndexMasks.bit(index)).land().lstore(maskSlot);
+        }
+
+        /** {@code if ((mask & bit(index)) != 0) goto target} */
+        static void ifSet(CodeBuilder cob, int maskSlot, int index, Label target) {
+            testBits(cob, maskSlot, IndexMasks.bit(index));
+            cob.ifne(target);
+        }
+
+        /** {@code if ((mask & bit(index)) == 0) goto target} */
+        static void ifClear(CodeBuilder cob, int maskSlot, int index, Label target) {
+            testBits(cob, maskSlot, IndexMasks.bit(index));
+            cob.ifeq(target);
+        }
+
+        /** {@code if ((mask & bits) == bits) goto target} */
+        static void ifAllSet(CodeBuilder cob, int maskSlot, long bits, Label target) {
+            allBits(cob, maskSlot, bits);
+            cob.ifeq(target);
+        }
+
+        /** {@code if ((mask & bits) != bits) goto target} */
+        static void ifNotAllSet(CodeBuilder cob, int maskSlot, long bits, Label target) {
+            allBits(cob, maskSlot, bits);
+            cob.ifne(target);
+        }
+
+        private static void testBits(CodeBuilder cob, int maskSlot, long bits) {
+            cob.lload(maskSlot).loadConstant(bits).land().lconst_0().lcmp();
+        }
+
+        private static void allBits(CodeBuilder cob, int maskSlot, long bits) {
+            cob.lload(maskSlot).loadConstant(bits).land().loadConstant(bits).lcmp();
+        }
     }
 }

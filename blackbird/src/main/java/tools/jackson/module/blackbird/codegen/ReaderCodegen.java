@@ -50,18 +50,6 @@ public final class ReaderCodegen
         public GenProp(String name, Kind kind, SettableBeanProperty stock) {
             this(name, kind, stock, null, null, null);
         }
-
-        // Record mode: whether stock gives an absent component the local's
-        // initial value (see PropertyValueBuffer._findMissing). Only for
-        // deserializers whose absent value is known: the stock scalar ones
-        // (exact classes; absent is null, or zero for a primitive) and
-        // generated codecs (BeanDeserializerBase: null). A STOCK arm's
-        // deserializer may override getAbsentValue whatever its null access
-        // pattern, so it keeps the stock creator.
-        boolean absentIsDefault() {
-            return kind != Kind.STOCK && !stock.isRequired()
-                    && stock.getNullValueProvider() == stock.getValueDeserializer();
-        }
     }
 
     /** How the generated deserialize method obtains the value. */

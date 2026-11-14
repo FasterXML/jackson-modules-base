@@ -29,6 +29,7 @@ import tools.jackson.module.blackbird.codegen.WriterCodegen.GenWProp;
 import tools.jackson.module.blackbird.codegen.WriterCodegen.WKind;
 import tools.jackson.module.blackbird.codegen.MemberHandles;
 import tools.jackson.module.blackbird.internal.GeneratedWriterBase;
+import tools.jackson.module.blackbird.internal.IndexMasks;
 import tools.jackson.module.blackbird.codegen.CodegenDebug;
 import tools.jackson.module.blackbird.codegen.CodegenFallbacks;
 
@@ -172,7 +173,7 @@ final class BBWriterFactory
         if (!viewsFound) {
             return includeByDefault ? ViewStrategy.NONE : ViewStrategy.DELEGATE;
         }
-        return (props.size() > 64) ? ViewStrategy.DELEGATE : ViewStrategy.MASK;
+        return IndexMasks.fits(props.size()) ? ViewStrategy.MASK : ViewStrategy.DELEGATE;
     }
 
     // Whether filtered is what BeanSerializerFactory.processViews builds

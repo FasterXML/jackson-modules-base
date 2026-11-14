@@ -42,6 +42,7 @@ import tools.jackson.module.blackbird.codegen.ReaderCodegen.Kind;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.ViewStrategy;
 import tools.jackson.module.blackbird.internal.GeneratedBuilderBase;
 import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
+import tools.jackson.module.blackbird.internal.IndexMasks;
 
 /**
  * Builds a generated codec from a resolved stock bean deserializer, or returns
@@ -58,9 +59,7 @@ import tools.jackson.module.blackbird.internal.GeneratedReaderBase;
  */
 final class BBReaderFactory
 {
-    // Exact classes: a subclass may read differently, or have another absent
-    // value (ReaderCodegen.GenProp.absentIsDefault relies on every non-STOCK
-    // kind using one of these, or a generated codec)
+    // Exact classes: a subclass may read differently
     private static final Set<Class<?>> STOCK_SCALAR_DESERS = Set.of(
             StringDeserializer.class,
             NumberDeserializers.IntegerDeserializer.class,
@@ -292,7 +291,7 @@ final class BBReaderFactory
         } else if (!declaresViews) {
             return ViewStrategy.DELEGATE;
         }
-        return (props.size() > 64) ? ViewStrategy.DELEGATE : ViewStrategy.MASK;
+        return IndexMasks.fits(props.size()) ? ViewStrategy.MASK : ViewStrategy.DELEGATE;
     }
 
     // Records collect components into typed locals and construct through the
@@ -327,7 +326,7 @@ final class BBReaderFactory
         }
         RecordComponent[] comps = beanClass.getRecordComponents();
         // The seen-component mask in the generated code is one long.
-        if (comps.length > 64 || comps.length == 0) {
+        if (!IndexMasks.fits(comps.length) || comps.length == 0) {
             return gate("record size");
         }
         SettableBeanProperty[] creatorProps = creator.allPropertiesInOrder();

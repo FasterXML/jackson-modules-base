@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
@@ -20,11 +21,13 @@ import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectReader;
+import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.cfg.JsonNodeFeature;
-import tools.jackson.databind.deser.std.StdScalarDeserializer;
 import tools.jackson.databind.deser.std.StdValueInstantiator;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.util.AccessPattern;
+import tools.jackson.databind.util.StdConverter;
 
 import tools.jackson.module.blackbird.BlackbirdTestBase;
 
@@ -42,10 +45,9 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
 
     public record Scalars(String s, int i, long l, boolean b, Integer w, double d) {}
 
-    // Only components whose absent value is the local's initial value: any
-    // subset may be absent and still take the direct constructor call. The
-    // constructor records whether the stock creator (StdValueInstantiator)
-    // called it.
+    // Any subset of these components may be absent and still take the direct
+    // constructor call. The constructor records whether the stock creator
+    // (StdValueInstantiator) called it.
     public record Defaults(String s, int i, long l, boolean b, Child c) {
         static boolean viaStock;
 
@@ -59,17 +61,45 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
 
     public record References(Optional<String> opt, AtomicReference<String> ref, JsonNode node) {}
 
-    // [databind#6437]: absent scalar Optionals are empty, not null
-    public record ScalarOptionals(OptionalInt oi, OptionalLong ol, OptionalDouble od, String s) {}
+    public record NullHandling(@JsonSetter(nulls = Nulls.AS_EMPTY) List<String> empty, String s) {}
 
-    // Keeps the inherited ALWAYS_NULL null access (getNullValue is null), but
-    // its absent value is not null
-    public static class DefaultingDeserializer extends StdScalarDeserializer<String> {
-        public DefaultingDeserializer() { super(String.class); }
+    public record NullsFail(@JsonSetter(nulls = Nulls.FAIL) String fail, String s) {}
 
+    public record Required(@JsonProperty(required = true) String req, String s) {}
+
+    public record PrimitiveOptionals(OptionalInt i, OptionalLong l, OptionalDouble d, String s) {}
+
+    public record Converted(@JsonDeserialize(converter = Upper.class) String c, String s) {}
+
+    // A non-null absent value behind an ALWAYS_NULL null access pattern, as
+    // the OptionalInt deserializer of databind 3.3.0 reports
+    // (databind#6437): only stock's absent value gives the right component.
+    public record MisreportedAbsent(@JsonDeserialize(using = AbsentText.class) String t,
+            String s) {}
+
+    public record CustomPrimitive(@JsonDeserialize(using = NoAbsentInt.class) int p, String s) {}
+
+    public record MorePrimitives(char ch, short sh, byte by, float fl, String s) {}
+
+    public record ThrowingAbsent(@JsonDeserialize(using = AbsentFails.class) String f,
+            String s) {}
+
+    static class Upper extends StdConverter<String, String> {
+        @Override
+        public String convert(String value) {
+            return value.toUpperCase();
+        }
+    }
+
+    static class AbsentText extends ValueDeserializer<String> {
         @Override
         public String deserialize(JsonParser p, DeserializationContext ctxt) {
             return p.getString();
+        }
+
+        @Override
+        public AccessPattern getNullAccessPattern() {
+            return AccessPattern.ALWAYS_NULL;
         }
 
         @Override
@@ -78,30 +108,60 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
         }
     }
 
-    public record CustomAbsent(String s,
-            @JsonDeserialize(using = DefaultingDeserializer.class) String t) {}
+    // Gives null for an absent int, which stock passes to the constructor.
+    static class NoAbsentInt extends ValueDeserializer<Integer> {
+        @Override
+        public Integer deserialize(JsonParser p, DeserializationContext ctxt) {
+            return p.getIntValue();
+        }
+    }
 
-    public record NullHandling(@JsonSetter(nulls = Nulls.AS_EMPTY) List<String> empty, String s) {}
+    static class AbsentFails extends ValueDeserializer<String> {
+        @Override
+        public String deserialize(JsonParser p, DeserializationContext ctxt) {
+            return p.getString();
+        }
 
-    public record NullsFail(@JsonSetter(nulls = Nulls.FAIL) String fail, String s) {}
+        @Override
+        public Object getAbsentValue(DeserializationContext ctxt) {
+            return ctxt.reportInputMismatch(String.class, "no absent value");
+        }
+    }
 
-    public record Required(@JsonProperty(required = true) String req, String s) {}
+    // Counts the calls for an absent value, which stock makes once per read.
+    public record Counted(@JsonDeserialize(using = CountingAbsent.class) String n, String s) {}
+
+    static final AtomicInteger ABSENT_CALLS = new AtomicInteger();
+
+    static class CountingAbsent extends ValueDeserializer<String> {
+        @Override
+        public String deserialize(JsonParser p, DeserializationContext ctxt) {
+            return p.getString();
+        }
+
+        @Override
+        public Object getAbsentValue(DeserializationContext ctxt) {
+            ABSENT_CALLS.incrementAndGet();
+            return "absent";
+        }
+    }
 
     private static final List<Class<?>> TYPES = List.of(Scalars.class, Defaults.class, Refs.class,
-            References.class, ScalarOptionals.class, CustomAbsent.class, NullHandling.class,
-            NullsFail.class, Required.class);
+            References.class, NullHandling.class, NullsFail.class, Required.class,
+            PrimitiveOptionals.class, Converted.class, MisreportedAbsent.class,
+            CustomPrimitive.class, ThrowingAbsent.class, MorePrimitives.class);
 
     private static final List<String> DOCS = List.of("{}", "{\"s\":\"x\"}",
             "{\"s\":\"x\",\"i\":1,\"l\":2,\"b\":true,\"w\":3,\"d\":4.5}",
             "{\"e\":\"RED\",\"o\":1,\"c\":{\"name\":\"n\"},\"list\":[\"a\"],\"map\":{\"k\":1}}",
             "{\"opt\":\"v\",\"ref\":\"r\",\"node\":{\"a\":1}}",
-            "{\"oi\":1,\"ol\":2,\"od\":3.5}",
             "{\"req\":\"r\"}",
+            "{\"i\":1,\"l\":2,\"d\":3.5,\"c\":\"c\",\"t\":\"t\",\"p\":4,\"f\":\"f\",\"ch\":\"x\",\"sh\":5,\"by\":6,\"fl\":7.5}",
             "{\"i\":1,\"c\":{\"name\":\"n\"}}",
             "{\"s\":\"x\",\"l\":2,\"b\":true}");
 
-    // Each of these leaves out only Defaults components that take their
-    // initial value, so the generated reader constructs directly.
+    // Each of these leaves out only Defaults components, so the generated
+    // reader constructs directly.
     private static final List<String> DIRECT_DOCS = List.of("{}", "{\"s\":\"x\"}",
             "{\"i\":1,\"c\":{\"name\":\"n\"}}", "{\"s\":\"x\",\"l\":2,\"b\":true}",
             "{\"s\":\"x\",\"i\":1,\"l\":2,\"b\":true,\"c\":{\"name\":\"n\"}}");
@@ -159,6 +219,30 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
         assertNotEquals(read(bb, "{}"), read(bb.with(f), "{}"));
     }
 
+    // Stock asks once for an absent value. So does the generated reader, on
+    // the direct path and when it sends a filled read to the stock creator
+    // (FAIL_ON_NULL_CREATOR_PROPERTIES here, for the null of s).
+    @Test
+    public void testAbsentValueComputedOnce() {
+        JsonMapper bb = mapperBuilder().build();
+        assertGeneratedReader(bb, Counted.class);
+        assertEquals(1, absentCalls(bb, "{\"s\":\"x\"}"));
+        assertEquals(new Counted("absent", "x"), bb.readValue("{\"s\":\"x\"}", Counted.class));
+
+        JsonMapper vanilla = JsonMapper.builder()
+                .enable(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES).build();
+        JsonMapper nullsFail = mapperBuilder()
+                .enable(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES).build();
+        assertEquals(1, absentCalls(vanilla, "{}"));
+        assertEquals(1, absentCalls(nullsFail, "{}"));
+    }
+
+    private static int absentCalls(JsonMapper mapper, String doc) {
+        ABSENT_CALLS.set(0);
+        read(mapper, Counted.class, doc);
+        return ABSENT_CALLS.get();
+    }
+
     private static void assertParity(JsonMapper.Builder stock, JsonMapper.Builder blackbird) {
         JsonMapper vanilla = stock.build();
         JsonMapper bb = blackbird.build();
@@ -171,7 +255,8 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
         }
     }
 
-    // toString, as AtomicReference has identity equality; the exception class on failure.
+    // toString, because AtomicReference has identity equality. On failure,
+    // the exception class and message.
     private static String read(JsonMapper mapper, Class<?> type, String doc) {
         return read(mapper.readerFor(type), doc);
     }
@@ -180,7 +265,7 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
         try {
             return String.valueOf((Object) reader.readValue(doc));
         } catch (JacksonException e) {
-            return e.getClass().getName();
+            return e.getClass().getName() + ": " + e.getMessage();
         }
     }
 }

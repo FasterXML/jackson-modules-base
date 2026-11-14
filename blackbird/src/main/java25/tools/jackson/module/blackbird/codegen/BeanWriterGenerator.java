@@ -18,6 +18,7 @@ import tools.jackson.databind.jsontype.TypeSerializer;
 import tools.jackson.databind.ser.BeanPropertyWriter;
 import tools.jackson.databind.ser.PropertyWriter;
 import tools.jackson.databind.ser.bean.BeanSerializerBase;
+import tools.jackson.module.blackbird.codegen.BeanReaderGenerator.IndexMaskCode;
 import tools.jackson.module.blackbird.codegen.ReaderCodegen.ViewStrategy;
 import tools.jackson.module.blackbird.codegen.WriterCodegen.GenWProp;
 import tools.jackson.module.blackbird.codegen.WriterCodegen.WKind;
@@ -413,12 +414,7 @@ final class BeanWriterGenerator
             if (views == ViewStrategy.MASK) {
                 hidden = cob.newLabel();
                 next = hasDeclaredViews(prop) ? cob.newLabel() : hidden;
-                cob.lload(maskSlot);
-                cob.loadConstant(1L << i);
-                cob.land();
-                cob.lconst_0();
-                cob.lcmp();
-                cob.ifeq(hidden);
+                IndexMaskCode.ifClear(cob, maskSlot, i, hidden);
             }
             switch (prop.kind()) {
                 case INT -> emitScalar(cob, gen, nameName[i], handleName[i],
@@ -517,10 +513,7 @@ final class BeanWriterGenerator
                 cob.loadConstant(includeByDefault ? 1 : 0);
                 cob.invokestatic(CD_WRITER_BASE, "_propVisible", MTD_PROP_VISIBLE);
                 cob.ifeq(skip);
-                cob.lload(maskSlot);
-                cob.loadConstant(1L << i);
-                cob.lor();
-                cob.lstore(maskSlot);
+                IndexMaskCode.setBit(cob, maskSlot, i);
                 cob.labelBinding(skip);
             }
             cob.lload(maskSlot).lreturn();
