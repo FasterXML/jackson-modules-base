@@ -272,12 +272,13 @@ public abstract class GeneratedReaderBase extends BeanDeserializer
     }
 
     // Record codecs call the canonical constructor directly only when every
-    // component was supplied or takes its initial value when absent, every
-    // primitive component received its exact wrapper (not null or another
-    // type from a custom deserializer), and FAIL_ON_NULL_CREATOR_PROPERTIES
-    // is off. Everything else ends here: values holds the components (boxed, or the raw stock
-    // value, in creator-index order) and seen marks the ones the document
-    // supplied. Without a constructor failure, the stock creator completes the
+    // component was supplied or takes its initial value when absent (and
+    // then FAIL_ON_MISSING_CREATOR_PROPERTIES is off), every primitive
+    // component received its exact wrapper (not null or another type from a
+    // custom deserializer), and FAIL_ON_NULL_CREATOR_PROPERTIES is off.
+    // Everything else ends here: values holds the components (boxed, or the
+    // raw stock value, in creator-index order) and seen marks the ones the
+    // document supplied. Without a constructor failure, the stock creator completes the
     // arguments (absent values, required and FAIL_ON_MISSING /
     // FAIL_ON_NULL_CREATOR_PROPERTIES checks) and constructs; a failure from
     // the fast path goes where StdValueInstantiator sends it. Either way a

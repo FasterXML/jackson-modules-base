@@ -3,6 +3,9 @@ package tools.jackson.module.blackbird.deser;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
@@ -37,6 +40,9 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
 
     public record References(Optional<String> opt, AtomicReference<String> ref, JsonNode node) {}
 
+    // [databind#6437]: absent scalar Optionals are empty, not null
+    public record ScalarOptionals(OptionalInt oi, OptionalLong ol, OptionalDouble od, String s) {}
+
     public record NullHandling(@JsonSetter(nulls = Nulls.AS_EMPTY) List<String> empty, String s) {}
 
     public record NullsFail(@JsonSetter(nulls = Nulls.FAIL) String fail, String s) {}
@@ -44,12 +50,13 @@ public class BBCodecRecordAbsentTest extends BlackbirdTestBase
     public record Required(@JsonProperty(required = true) String req, String s) {}
 
     private static final List<Class<?>> TYPES = List.of(Scalars.class, Refs.class,
-            References.class, NullHandling.class, NullsFail.class, Required.class);
+            References.class, ScalarOptionals.class, NullHandling.class, NullsFail.class, Required.class);
 
     private static final List<String> DOCS = List.of("{}", "{\"s\":\"x\"}",
             "{\"s\":\"x\",\"i\":1,\"l\":2,\"b\":true,\"w\":3,\"d\":4.5}",
             "{\"e\":\"RED\",\"o\":1,\"c\":{\"name\":\"n\"},\"list\":[\"a\"],\"map\":{\"k\":1}}",
             "{\"opt\":\"v\",\"ref\":\"r\",\"node\":{\"a\":1}}",
+            "{\"oi\":1,\"ol\":2,\"od\":3.5}",
             "{\"req\":\"r\"}");
 
     @Test

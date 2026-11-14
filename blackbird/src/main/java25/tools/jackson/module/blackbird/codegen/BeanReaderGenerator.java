@@ -854,22 +854,23 @@ final class BeanReaderGenerator
         Label finish = cob.newLabel();
         cob.aconst_null().astore(pendingSlot);
         long allSeen = (n == 64) ? -1L : (1L << n) - 1;
+        // Direct only if every component was supplied or takes its initial
+        // value when absent, and with any of the latter absent,
+        // FAIL_ON_MISSING_CREATOR_PROPERTIES is off.
         cob.lload(seenSlot);
-        cob.loadConstant(allSeen);
-        cob.lcmp();
-        if (defaultAbsent == 0L) {
-            cob.ifne(slow);
-        } else {
-            // Some absent: direct only if all of those take their initial
-            // value and FAIL_ON_MISSING_CREATOR_PROPERTIES is off.
-            Label complete = cob.newLabel();
-            cob.ifeq(complete);
-            cob.lload(seenSlot);
+        if (defaultAbsent != 0L) {
             cob.loadConstant(defaultAbsent);
             cob.lor();
+        }
+        cob.loadConstant(allSeen);
+        cob.lcmp();
+        cob.ifne(slow);
+        if (defaultAbsent != 0L) {
+            Label complete = cob.newLabel();
+            cob.lload(seenSlot);
             cob.loadConstant(allSeen);
             cob.lcmp();
-            cob.ifne(slow);
+            cob.ifeq(complete);
             cob.aload(ctxt);
             cob.getstatic(CD_DESER_FEATURE, "FAIL_ON_MISSING_CREATOR_PROPERTIES", CD_DESER_FEATURE);
             cob.invokevirtual(CD_DESER_CONTEXT, "isEnabled", MTD_IS_ENABLED);
