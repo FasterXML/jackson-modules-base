@@ -87,7 +87,7 @@ No changes since 3.2.0
 - Removed project Android SDK level overrides, use defaults (ASDK 34)
  (affects `android-records` module's verification; was validating ASDK 26)
 
-3.1.9 (not yet released)
+3.1.9 (24-Nov-2026)
 
 #363: Blackbird: `@JsonSetter(nulls = Nulls.SKIP)` ignored for properties of
   beans with a properties-based creator
